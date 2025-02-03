@@ -1,0 +1,89 @@
+import React, { useState } from "react";
+import background from "../../assets/image/bg2.jpeg";
+import logo from "../../assets/image/mbbaylogo.png";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
+import Sliding from "../Reuseable/Sliding";
+
+const Forgotpasswordmessage: React.FC = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleResendEmail = async () => {
+    setIsLoading(true);
+    try {
+      // Call API to resend the reset link or OTP
+      const response = await axios.post("/resend-reset-link");
+      if (response.status === 200) {
+        toast.success("Reset link resent to your email!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (error: unknown) {
+          toast.error(
+            (error as Error)?.message || "Failed to create account",
+            {
+              position: "top-right",
+              autoClose: 4000,
+            }
+          );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const bg = {
+    backgroundImage: `url(${background})`,
+  };
+
+  return (
+    <div className="w-full h-screen">
+      <ToastContainer />
+      <div className="flex flex-col md:flex-row">
+        {/* Left Section */}
+        <Sliding />
+        {/* Right Section */}
+        <div
+          style={bg}
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
+        >
+          {/* Logo for small screens */}
+          <div className="items-left mt-6 flex-col min-h-[150px]">
+            <div className="lg:hidden">
+              <img src={logo} width={50} alt="" />
+            </div>
+          </div>
+          <div className="flex justify-center items-center">
+            <div className="w-full max-w-md">
+              <h1 className="text-2xl font-bold mb-2">FORGOT PASSWORD</h1>
+              <p className="text-gray-600 mb-6">
+                You will receive an email with a link to reset your password.
+                Please check your inbox.
+              </p>
+              <div className="text-left mt-4">
+                <button
+                  onClick={handleResendEmail}
+                  className="text-orange-500 hover:underline"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Resending..." : "Resend email link"}
+                </button>
+              </div>
+              <div className="text-left mt-4">
+                <a
+                  href="/forgot-password"
+                  className="text-black hover:underline"
+                >
+                  Change email ID
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Forgotpasswordmessage;
