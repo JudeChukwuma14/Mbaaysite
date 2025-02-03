@@ -40,3 +40,12 @@ export const resendOtp = async (userId: string) => {
     throw error.response?.data?.message || "Failed to resend OTP";
   }
 };
+
+export const LoginUser = async(userData:any)=>{
+  try {
+   const response = await api.post("/login-user", userData)
+   return response.data 
+  } catch (error:any) {
+    throw error.response?.data?.message || "Failed to Login account";
+  }
+}

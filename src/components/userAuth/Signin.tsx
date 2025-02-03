@@ -5,23 +5,17 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import Sliding from "../Reuseable/Sliding";
+import { LoginUser } from "@/utils/api";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   email: string;
   password: string;
 }
 
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
-
 const Signin: React.FC = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -31,46 +25,24 @@ const Signin: React.FC = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  const isApiError = (error: unknown): error is ApiError => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "response" in error &&
-      typeof (error as ApiError).response === "object"
-    );
-  };
-
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/signin", data);
-      if (response.status === 200) {
-        toast.success("Logged in successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
-    } catch (error) {
-      if (isApiError(error)) {
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to log in. Please try again.",
-          {
-            position: "top-right",
-            autoClose: 4000,
-          }
-        );
-      } else {
-        toast.error("An unexpected error occurred. Please try again.", {
-          position: "top-right",
-          autoClose: 4000,
-        });
-      }
+      const response = await LoginUser(data);
+      console.log("Signup Response:", response);
+      toast.success(response?.message || "Login successful");
+      navigate("/");
+    } catch (error: any) {
+      const errorMessage = typeof error === "string" ? error : error?.message || "Failed to Login";
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -84,9 +56,15 @@ const Signin: React.FC = () => {
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
-          <div className=" flex justify-between items-center px-4 my-6 ">
+           <div className="flex justify-between items-center px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
+            </div>
+            <div className="hidden lg:block text-right my-4 md:mx-16 lg:w-full">
+              <span className="text-gray-600">Don't have an Account? </span>
+              <a href="#" className="text-blue-500 hover:underline">
+                Sign Up now!
+              </a>
             </div>
           </div>
 

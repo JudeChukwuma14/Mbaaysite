@@ -29,6 +29,8 @@ const Number = lazy(()=>import("@/components/userAuth/NumberForgotPassword"))
 const Updatepassword = lazy(()=>import("@/components/userAuth/Updatedpassword"))
 const LoginVendor = lazy(()=>import("@/components/auth/LoginVendor"))
 const SignupVendor = lazy(()=>import("@/components/auth/SignupVendor"))
+const SignupAdmin =lazy(()=>import("@/components/auth/SignupAdmin"))
+const LoginAdmin =lazy(()=>import("@/components/auth/LoginAdmin"))
 
 const Dashboard = lazy(()=>import("@/components/VendorInfo/Dashboard"))
 const AllOrder = lazy(()=>import("@/components/VendorInfo/Orders/AllOrder"))
@@ -101,6 +103,8 @@ const routesConfig:RouteObject[]=[
 
 {path:"login-vendor",element:withSuspense(LoginVendor)},
 {path:"signup-vendor",element:withSuspense(SignupVendor)},
+{path:"signup-admin", element:withSuspense(SignupAdmin)},
+{path:"login-admin", element:withSuspense(LoginAdmin)}
 
 ]
 export const mainRouter = createBrowserRouter(routesConfig);

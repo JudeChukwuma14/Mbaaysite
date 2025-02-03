@@ -25,7 +25,7 @@ const Header: React.FC = () => {
     <header className="w-full shadow-md bg-white">
       {/* Top Bar */}
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden md:block">Welcome to mbacy Global Marketplaces</p>
+        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces</p>
         <div className="flex gap-6">
           <NavLink to="/shop" className="hover:underline">Shop Now</NavLink>
           <NavLink to="/language" className="hover:underline">English</NavLink>
@@ -42,7 +42,7 @@ const Header: React.FC = () => {
           <NavLink to="/recently-viewed" className="hover:text-orange-500 text-sm md:text-base">Recently Viewed</NavLink>
           <NavLink to="/become-vendor" className="hover:text-orange-500 text-sm md:text-base">Become a Vendor</NavLink>
           <NavLink to="/vendors-auction" className="hover:text-orange-500 text-sm md:text-base">Vendors Auction</NavLink>
-          <NavLink to="/sell" className="hover:text-orange-500 text-sm md:text-base">Sell on Mbacy</NavLink>
+          <NavLink to="/sell" className="hover:text-orange-500 text-sm md:text-base">Sell on Mbaay</NavLink>
         </nav>
 
         {/* Right Side Icons */}

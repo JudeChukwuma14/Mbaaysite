@@ -36,7 +36,10 @@ const Signup: React.FC = () => {
     try {
       const response = await createUser(data);
       console.log("Signup Response:", response);
-      toast.success(response.message);
+      toast.success(response.message,{
+        position: "top-right",
+        autoClose: 3000,
+      });
       navigate(`/verify-otp/${response.data._id}`);
     } catch (error: unknown) {
       toast.error((error as Error)?.message || "Failed to create account", {

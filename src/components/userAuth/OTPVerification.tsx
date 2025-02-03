@@ -30,21 +30,16 @@ const OTPVerification: React.FC = () => {
         throw new Error("User ID is missing");
       }
       const response = await verifyOtp(userId, data.otp);
-      if (response.status === 200) {
-        toast.success("OTP verified successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        navigate("/signin");
-      }
-    }  catch (error: unknown) {
-          toast.error(
-            (error as Error)?.message || "Failed to send OTP",
-            {
-              position: "top-right",
-              autoClose: 4000,
-            }
-          );
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate("/signin");
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || "Failed to send OTP", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -57,20 +52,16 @@ const OTPVerification: React.FC = () => {
         throw new Error("User ID is missing");
       }
       const response = await resendOtp(userId);
-      if (response.status === 200) {
-        toast.success("OTP resent to your email!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
+
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error: unknown) {
-          toast.error(
-            (error as Error)?.message || "Failed to Resend Otp",
-            {
-              position: "top-right",
-              autoClose: 4000,
-            }
-          );
+      toast.error((error as Error)?.message || "Failed to Resend Otp", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }

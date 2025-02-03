@@ -1,40 +1,34 @@
 import React, { useState } from "react";
 import background from "@/assets/image/bg2.jpeg";
-import image1 from "@/assets/image/img1.jpg";
-import image2 from "@/assets/image/img2.jpg";
-import image3 from "@/assets/image/img3.jpg";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import logo from "@/assets/image/mbbaylogo.png";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+import Sliding from "../Reuseable/Sliding";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { createVendor } from "@/utils/vendorApi";
 
 interface FormData {
-  username: string;
-  email: string;
   storeName: string;
-  address: string;
+  email: string;
+  userName: string;
+  address1: string;
   country: string;
   city: string;
   state: string;
-  postCode: string;
-  storeNumber: string;
+  postcode: string;
+  storePhone: string;
   password: string;
+  craftCategories: string;
   confirmPassword: string;
 }
 
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
-
 const Registration: React.FC = () => {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] =
+    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const {
@@ -44,72 +38,25 @@ const Registration: React.FC = () => {
     watch,
   } = useForm<FormData>();
 
-  const isApiError = (error: unknown): error is ApiError => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "response" in error &&
-      typeof (error as ApiError).response === "object"
-    );
-  };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/register", data);
-      if (response.status === 200) {
-        toast.success("Registration successful!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        // Redirect to login or dashboard
-        window.location.href = "/login";
-      }
-    } catch (error) {
-      if (isApiError(error)) {
-        toast.error(
-          error.response?.data?.message ||
-            "Registration failed. Please try again.",
-          {
+      const response = await createVendor(data);
+      console.log("Vender logs", response)
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate("/login-vendor");
+    } catch (error: unknown) {
+          toast.error((error as Error)?.message || "Failed to create account", {
             position: "top-right",
             autoClose: 4000,
-          }
-        );
-      } else {
-        toast.error("An unexpected error occurred. Please try again.", {
-          position: "top-right",
-          autoClose: 4000,
-        });
-      }
+          });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const [slides] = useState([
-    {
-      img: image1,
-      text: "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less",
-    },
-    {
-      img: image2,
-      text: "The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters",
-    },
-    {
-      img: image3,
-      text: "Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text",
-    },
-  ]);
-
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 3000,
-    arrows: false,
   };
 
   const bg = {
@@ -122,36 +69,10 @@ const Registration: React.FC = () => {
       <ToastContainer />
 
       <div className="flex flex-col md:flex-row">
-        {/* Left Section (Slider) */}
-        <div className="hidden lg:block w-[700px] h-screen overflow-hidden">
-          <Slider {...settings} className="w-full h-screen">
-            {slides.map((slide, index) => (
-              <div key={index} className="flex flex-col items-start relative">
-                {/* Logo */}
-                <div className="absolute z-10 flex justify-center w-full top-7">
-                  <img src={logo} alt="Logo" />
-                </div>
-                {/* Slide Image */}
-                <img
-                  src={slide.img}
-                  alt=""
-                  className="w-full h-screen object-cover mb-4"
-                />
-                {/* Overlay for the slide */}
-                <div className="bg-black w-full h-screen absolute inset-0 opacity-50"></div>
-                {/* Slide text */}
-                <p className="absolute text-white bottom-28 px-5 text-center z-10">
-                  {slide.text}
-                </p>
-              </div>
-            ))}
-          </Slider>
-        </div>
-
-        {/* Right Section (Form) */}
+        <Sliding />
         <div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
           {/* Logo for small screens */}
           <div className="flex justify-between items-center px-4 my-6">
@@ -169,7 +90,7 @@ const Registration: React.FC = () => {
 
           {/* Form container */}
           <div className="flex items-center justify-center px-4">
-            <div className="w-full">
+            <div className="w-max pb-10">
               {/* Header */}
               <h1 className="text-2xl font-bold mb-2">Welcome to Mbaay.com!</h1>
               <p className="text-gray-600 mb-4">
@@ -180,7 +101,7 @@ const Registration: React.FC = () => {
               {/* Form */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                className="grid grid-cols-1 md:grid-cols-2 gap-6"
               >
                 {/* Username */}
                 <div>
@@ -189,14 +110,14 @@ const Registration: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    {...register("username", {
+                    {...register("userName", {
                       required: "Username is required",
                     })}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                   />
-                  {errors.username && (
+                  {errors.userName && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.username.message}
+                      {errors.userName.message}
                     </p>
                   )}
                 </div>
@@ -250,14 +171,14 @@ const Registration: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    {...register("address", {
+                    {...register("address1", {
                       required: "Address is required",
                     })}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                   />
-                  {errors.address && (
+                  {errors.address1 && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.address.message}
+                      {errors.address1.message}
                     </p>
                   )}
                 </div>
@@ -324,14 +245,14 @@ const Registration: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    {...register("postCode", {
+                    {...register("postcode", {
                       required: "Post Code/Zip is required",
                     })}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                   />
-                  {errors.postCode && (
+                  {errors.postcode && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.postCode.message}
+                      {errors.postcode.message}
                     </p>
                   )}
                 </div>
@@ -343,62 +264,95 @@ const Registration: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    {...register("storeNumber", {
+                    {...register("storePhone", {
                       required: "Store Number is required",
                     })}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                   />
-                  {errors.storeNumber && (
+                  {errors.storePhone && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.storeNumber.message}
+                      {errors.storePhone.message}
                     </p>
                   )}
                 </div>
 
-                {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Password
+                    Craft Categories
                   </label>
                   <input
-                    type="password"
-                    {...register("password", {
-                      required: "Password is required",
-                      minLength: {
-                        value: 6,
-                        message: "Password must be at least 6 characters",
-                      },
+                    type="text"
+                    {...register("craftCategories", {
+                      required: "Address is required",
                     })}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                   />
-                  {errors.password && (
+                  {errors.craftCategories && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.password.message}
+                      {errors.craftCategories.message}
                     </p>
                   )}
                 </div>
 
-                {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Confirm Password
+                    Enter Password
                   </label>
-                  <input
-                    type="password"
-                    {...register("confirmPassword", {
-                      required: "Confirm Password is required",
-                      validate: (value) =>
-                        value === watch("password") || "Passwords do not match",
-                    })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                  />
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
+                  <div className="mb-2 relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      {...register("password", {
+                        required: "Password is required",
+                        minLength: {
+                          value: 6,
+                          message: "Password must be at least 6 characters",
+                        },
+                      })}
+                    />
+                    <span
+                      className="absolute right-5 top-3 text-gray-500 cursor-pointer"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                    {errors.password && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
-
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Comfirm Password
+                  </label>
+                  <div className="mb-2 relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      {...register("confirmPassword", {
+                        required: "Confirm Password is required",
+                        validate: (value) =>
+                          value === watch("password") ||
+                          "Passwords do not match",
+                      })}
+                    />
+                    <span
+                      className="absolute right-5 top-3 text-gray-500 cursor-pointer"
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
+                    {errors.confirmPassword && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
                 {/* Submit Button */}
                 <div className="md:col-span-2">
                   <button
