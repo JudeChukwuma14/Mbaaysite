@@ -80,22 +80,22 @@ const NewProduct = () => {
           transition={{ delay: 0.6 }}
         >
           <h2 className="text-lg font-semibold">Category</h2>
-          <select
+          <motion.select
             className="w-full p-2 border rounded outline-orange-500 border-orange-500"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
             <option value="Fashion">Fashion</option>
             <option value="Electronics">Electronics</option>
-          </select>
-          <select
+          </motion.select>
+          <motion.select
             className="w-full p-2 border rounded outline-orange-500 border-orange-500"
             value={subCategory}
             onChange={(e) => setSubCategory(e.target.value)}
           >
             <option value="Men's Wears">Men's Wears</option>
             <option value="Women's Wears">Women's Wears</option>
-          </select>
+          </motion.select>
         </motion.div>
 
           {/* Product Video Section */}

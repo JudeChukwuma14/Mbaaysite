@@ -94,9 +94,9 @@ const Dashboard = () => {
               <p className="text-2xl font-bold text-gray-800">{card.value}</p>
             </div>
             {card.icon && (
-              <button onClick={card.onClick} >
+              <motion.button onClick={card.onClick} >
                 <card.icon className="w-6 h-6 text-gray-600" />
-              </button>
+              </motion.button>
             )}
           </motion.div>
         ))}

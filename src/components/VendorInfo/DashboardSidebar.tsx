@@ -13,8 +13,10 @@ import {
   Inbox
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { useDarkMode } from "../Context/DarkModeContext";
 
-const DashboardSidebar = ({ darkMode }: { darkMode: boolean }) => {
+const DashboardSidebar = ()=> {
+  const { darkMode } = useDarkMode();
   return (
     <aside
       className={`w-64 p-5 h-screen flex flex-col justify-between overflow-y-auto transition-colors ${
