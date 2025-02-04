@@ -26,7 +26,7 @@ const Header: React.FC = () => {
     <header className="w-full shadow-md bg-white">
       {/* Top Bar */}
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces {userName?.user?.email} </p>
+        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces {userName?.user?.email|| "Guess"} </p>
         <div className="flex gap-6">
           <NavLink to="/shop" className="hover:underline">Shop Now</NavLink>
           <NavLink to="/language" className="hover:underline">English</NavLink>
