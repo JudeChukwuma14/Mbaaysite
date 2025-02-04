@@ -1,6 +1,5 @@
 import  { useState } from "react";
 import { motion } from "framer-motion";
-// import { FiUploadCloud, FiTrash2 } from "react-icons/fi";
 import { FiUploadCloud } from "react-icons/fi";
 import { CiVideoOn } from "react-icons/ci";
 import { FaYoutube } from "react-icons/fa";
@@ -15,6 +14,9 @@ const NewProduct = () => {
   const [price, setPrice] = useState("");
   const [comparePrice, setComparePrice] = useState("");
 
+  const handleDiscard = () => {
+    console.log("Discard remove.");
+  };
   const handleSaveDraft = () => {
     console.log("Draft saved.");
   };
@@ -166,6 +168,12 @@ const NewProduct = () => {
       </div>
 
       <div className="flex justify-end space-x-4">
+        <button
+          className="border border-orange-500 text-red-500 px-4 py-2 rounded-lg"
+          onClick={handleDiscard}
+        >
+          Discard
+        </button>
         <button
           className="bg-red-500 text-white px-4 py-2 rounded-lg"
           onClick={handleSaveDraft}

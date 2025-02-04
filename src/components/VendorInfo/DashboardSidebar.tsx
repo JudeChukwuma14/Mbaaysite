@@ -1,28 +1,68 @@
 import { NavLink } from "react-router-dom";
 import { useState } from "react";
-import { Home, Box, ShoppingCart, Users, DollarSign, Settings, MessageSquare, LogOutIcon } from "lucide-react";
+import {
+  Home,
+  Box,
+  ShoppingCart,
+  Users,
+  DollarSign,
+  Settings,
+  MessageSquare,
+  LogOutIcon,
+  ChevronDown,
+  Inbox
+} from "lucide-react";
+import { motion } from "framer-motion";
 
-const DashboardSidebar = () => {
+const DashboardSidebar = ({ darkMode }: { darkMode: boolean }) => {
   return (
-    <aside className="w-64 bg-[#F5F8FA] text-gray-900 p-5 h-screen flex flex-col justify-between overflow-y-auto">
+    <aside
+      className={`w-64 p-5 h-screen flex flex-col justify-between overflow-y-auto transition-colors ${
+        darkMode ? "bg-gray-900 text-white" : "bg-[#F5F8FA] text-gray-900"
+      }`}
+    >
       <div>
         <div className="text-2xl font-bold text-orange-500 mb-5">mbaay</div>
         <nav>
           <NavItem title="Dashboard" to="/app" Icon={Home} />
           <NavItem title="Orders" to="orders" Icon={ShoppingCart} />
-          <NavItem title="Products" subItems={["all-products", "New Product"]} Icon={Box} />
+          <NavItem
+            title="Products"
+            subItems={["All Products", "New Product"]}
+            Icon={Box}
+          />
           <NavItem title="Customers" to="customers" Icon={Users} />
-          <NavItem title="Payment" subItems={["Payments", "Preview Invoice"]} Icon={DollarSign} />
-          <NavItem title="Settings" subItems={["Edit Vendor Profile", "KYC Verification"]} Icon={Settings} />
-          <NavItem title="Community" subItems={["CreatePost", "All Post", "Profile", "Reviews"]} Icon={MessageSquare} />
+          <NavItem title="Inbox" to="inbox" Icon={Inbox} />
+          <NavItem
+            title="Payment"
+            subItems={["Payments", "Preview Invoice"]}
+            Icon={DollarSign}
+          />
+          <NavItem
+            title="Settings"
+            subItems={["Edit Vendor Profile", "KYC Verification"]}
+            Icon={Settings}
+          />
+          <NavItem
+            title="Community"
+            subItems={["Create Post", "All Post", "Profile", "Reviews"]}
+            Icon={MessageSquare}
+          />
           <NavItem title="LogOut" to="logout" Icon={LogOutIcon} />
         </nav>
       </div>
-      <div className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg">
-        <img src="/vendor-avatar.png" alt="Vendor" className="w-12 h-12 rounded-full" />
+      <div className="flex items-center gap-3 p-3 bg-gray-200 dark:bg-gray-700 rounded-lg">
+        <img
+          src="/vendor-avatar.png"
+          alt="Vendor"
+          className="w-12 h-12 rounded-full"
+        />
         <div>
           <p className="text-sm font-semibold">Finbarr</p>
-          <span className="text-green-500 text-xs">Vendor</span>
+          <div className="flex">
+          <div className="w-[15px] h-[15px] bg-green-500 rounded-full"></div>
+          <span className="text-green-500 text-xs rounded ml-[3px]">Online</span>
+          </div>
         </div>
       </div>
     </aside>
@@ -41,30 +81,61 @@ const NavItem = ({
   Icon?: React.ComponentType<{ className?: string }>;
 }) => {
   const [open, setOpen] = useState(false);
+
   return (
     <div>
       <div
-        className="p-2 flex items-center gap-3 cursor-pointer hover:bg-orange-400 hover:text-orange-700 rounded"
-        onClick={() => setOpen(!open)}
+        className={`p-2 flex items-center justify-between gap-3 cursor-pointer hover:bg-orange-400 rounded ${
+          open ? "bg-orange-400 text-white" : ""
+        }`}
+        onClick={() => (subItems ? setOpen(!open) : null)}
       >
-        {Icon && <Icon className="w-5 h-5" />}
-        {to ? <NavLink to={to}>{title}</NavLink> : <span>{title}</span>}
+        <div className="flex items-center gap-3">
+          {Icon && <Icon className="w-5 h-5" />}
+          {to && !subItems ? (
+            <NavLink
+              to={to}
+              className={({ isActive }) =>
+                isActive
+                  ? "font-semibold text-orange-500"
+                  : "text-gray-700 dark:text-gray-300"
+              }
+            >
+              {title}
+            </NavLink>
+          ) : (
+            <span>{title}</span>
+          )}
+        </div>
+        {subItems && <ChevronDown className={`w-5 h-5 ${open && "rotate-180"}`} />}
       </div>
-      {subItems && open && (
-        <div className="pl-8">
+      {subItems && (
+        <motion.div
+          className="pl-8 overflow-hidden"
+          initial={false}
+          animate={{ height: open ? "auto" : 0 }}
+          transition={{ duration: 0.3 }}
+        >
           {subItems.map((item) => (
             <NavLink
               key={item}
               to={item.toLowerCase().replace(/ /g, "-")}
-              className="block py-1 hover:text-gray-600"
+              className={({ isActive }) =>
+                `block py-1 ${
+                  isActive
+                    ? "text-orange-500 font-semibold"
+                    : "hover:text-gray-600 dark:hover:text-gray-300"
+                }`
+              }
             >
               {item}
             </NavLink>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
 };
+
 
 export default DashboardSidebar;
