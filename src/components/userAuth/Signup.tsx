@@ -9,6 +9,7 @@ import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
 import { useNavigate } from "react-router-dom";
 
+
 interface FormData {
   name: string;
   email: string;
@@ -19,6 +20,7 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -35,8 +37,8 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await createUser(data);
-      console.log("Signup Response:", response);
-      toast.success(response.message,{
+      console.log(response)
+      toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
@@ -49,7 +51,7 @@ const Signup: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -88,9 +90,7 @@ const Signup: React.FC = () => {
                 register your account.
               </p>
 
-              {/* Form */}
               <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Name Field */}
                 <div className="mb-2">
                   <input
                     type="text"
@@ -105,7 +105,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Email Field */}
                 <div className="mb-2">
                   <input
                     type="email"
@@ -141,7 +140,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Password Field */}
                 <div className="mb-2 relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -168,7 +166,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Confirm Password Field */}
                 <div className="mb-2 relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -193,7 +190,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center"

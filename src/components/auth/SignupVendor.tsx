@@ -38,22 +38,22 @@ const Registration: React.FC = () => {
     watch,
   } = useForm<FormData>();
 
-
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
       const response = await createVendor(data);
-      console.log("Vender logs", response)
+      console.log("Vender logs", response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
       navigate("/login-vendor");
     } catch (error: unknown) {
-          toast.error((error as Error)?.message || "Failed to create account", {
-            position: "top-right",
-            autoClose: 4000,
-          });
+      console.log(error);
+      toast.error((error as Error)?.message || "An unexpected error occurred", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }
@@ -65,7 +65,6 @@ const Registration: React.FC = () => {
 
   return (
     <div className="w-full h-screen">
-      {/* ToastContainer for displaying notifications */}
       <ToastContainer />
 
       <div className="flex flex-col md:flex-row">
@@ -74,12 +73,10 @@ const Registration: React.FC = () => {
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
-          {/* Logo for small screens */}
           <div className="flex justify-between items-center px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
             </div>
-            {/* Sign Up Link */}
             <div className="w-full hidden text-end lg:block">
               <span className="text-gray-600">Already have an account? </span>
               <a href="#" className="text-blue-500 hover:underline">
@@ -87,23 +84,17 @@ const Registration: React.FC = () => {
               </a>
             </div>
           </div>
-
-          {/* Form container */}
           <div className="flex items-center justify-center px-4">
             <div className="w-max pb-10">
-              {/* Header */}
               <h1 className="text-2xl font-bold mb-2">Welcome to Mbaay.com!</h1>
               <p className="text-gray-600 mb-4">
                 We’re excited to have you onboard—start selling and growing your
                 business with us today!
               </p>
-
-              {/* Form */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className="grid grid-cols-1 md:grid-cols-2 gap-6"
               >
-                {/* Username */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Username
@@ -121,8 +112,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Email */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Email
@@ -144,8 +133,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Store Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Store Name
@@ -163,8 +150,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Address */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Address
@@ -182,8 +167,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Country */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Country
@@ -201,8 +184,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* City/Town */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     City/Town
@@ -218,8 +199,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* State/Country */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     State/Country
@@ -237,8 +216,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Post Code/Zip */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Post Code/Zip
@@ -256,8 +233,6 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
-
-                {/* Store Number */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Store Number
@@ -353,7 +328,6 @@ const Registration: React.FC = () => {
                     )}
                   </div>
                 </div>
-                {/* Submit Button */}
                 <div className="md:col-span-2">
                   <button
                     type="submit"
@@ -368,15 +342,11 @@ const Registration: React.FC = () => {
                   </button>
                 </div>
               </form>
-
-              {/* Divider */}
               <div className="flex items-center my-6">
                 <hr className="flex-grow border-gray-300" />
                 <span className="mx-2 text-gray-500">or sign up with</span>
                 <hr className="flex-grow border-gray-300" />
               </div>
-
-              {/* Google Sign-Up Button */}
               <button className="w-full bg-black text-white p-3 font-semibold rounded-md flex items-center justify-center hover:bg-gray-800 transition duration-300">
                 <img
                   src="https://www.google.com/favicon.ico"
@@ -385,8 +355,6 @@ const Registration: React.FC = () => {
                 />
                 Sign up with Google
               </button>
-
-              {/* Login Link */}
               <p className="text-center mt-4 text-gray-600">
                 Already have an account?{" "}
                 <a href="/login" className="text-orange-500 hover:underline">

@@ -26,12 +26,11 @@ export const createVendor = async (userData: CreateVenderData) => {
   try {
     const response = await api.post("/create_vendor", userData);
     return response.data;
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
+  } 
+    catch (error:any) {
       throw error.response?.data?.message || "Failed to create account";
     }
-    throw "Your Signup Failed";
-  }
+
 };
 
 export const LoginVendor = async()=>{

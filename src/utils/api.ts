@@ -8,7 +8,18 @@ export const api = axios.create({
   },
 });
 
-
+// Add this function in your API file or wherever you're managing API calls
+export const fetchUserProfile = async (token: string) => {
+  try {
+    const response = await api.get("/get-one-use", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("Profile Fetch Error:", error.response?.data || error);
+    throw error.response?.data?.message || "Failed to fetch user profile";
+  }
+};
 export const createUser = async (userData: any) => {
   try {
     const response = await api.post("/create_user", userData);
@@ -41,11 +52,11 @@ export const resendOtp = async (userId: string) => {
   }
 };
 
-export const LoginUser = async(userData:any)=>{
+export const LoginUser = async (userData: any) => {
   try {
-   const response = await api.post("/login-user", userData)
-   return response.data 
-  } catch (error:any) {
+    const response = await api.post("/login-user", userData);
+    return response.data;
+  } catch (error: any) {
     throw error.response?.data?.message || "Failed to Login account";
   }
-}
+};
