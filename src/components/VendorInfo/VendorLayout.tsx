@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import DashboardSidebar from "./DashboardSidebar";
 import VendorHeader from "./VendorHeader";
 import { Outlet } from "react-router-dom";
+import { useDarkMode } from "../Context/DarkModeContext";
+ // Import dark mode context
 
-const App: React.FC = () => {
-  const [darkMode, setDarkMode] = useState(false);
+const VendorLayout: React.FC = () => {
+  const { darkMode } = useDarkMode(); // Use context instead of local state
 
   return (
     <div className={darkMode ? "dark" : ""}>
@@ -15,7 +17,7 @@ const App: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col">
           {/* Header */}
-          <VendorHeader darkMode={darkMode} setDarkMode={setDarkMode} />
+          <VendorHeader /> {/* No need to pass darkMode here, since it can use the context */}
 
           {/* Scrollable Outlet */}
           <main className="flex-1 overflow-y-auto p-4">
@@ -27,4 +29,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default VendorLayout;
