@@ -99,7 +99,7 @@ const AllProduct = () => {
       </div>
 
       <div className="flex items-center gap-3 mb-5">
-        <select
+        <motion.select
           className="border p-2 rounded outline-orange-500 border-orange-500"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
@@ -107,8 +107,8 @@ const AllProduct = () => {
           <option value="">Category</option>
           <option value="Fashion">Fashion</option>
           <option value="Electronics">Electronics</option>
-        </select>
-        <select
+        </motion.select>
+        <motion.select
           className="border p-2 rounded border-orange-500 outline-orange-500"
           value={status}
           onChange={(e) => setStatus(e.target.value)}
@@ -116,7 +116,7 @@ const AllProduct = () => {
           <option value="">Status</option>
           <option value="Stock">Stock</option>
           <option value="Out-Of-Stock">Out-Of-Stock</option>
-        </select>
+        </motion.select>
         <button
           className="bg-orange-500 text-white px-4 py-2 rounded-lg "
           onClick={handleFilter}

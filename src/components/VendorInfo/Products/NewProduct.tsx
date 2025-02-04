@@ -9,7 +9,7 @@ const NewProduct = () => {
   const [productDescription, setProductDescription] = useState("");
   const [category, setCategory] = useState("Fashion");
   const [subCategory, setSubCategory] = useState("Men's Wears");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState("0");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
   const [comparePrice, setComparePrice] = useState("");
