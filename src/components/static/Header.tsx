@@ -6,7 +6,8 @@ import { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png"
 
 const Header: React.FC = () => {
-  const userName = useSelector((state:RootState)=>state.user.name)
+
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false); // State to toggle search input on mobile
   const cartItems = useSelector((state:RootState)=>state.cart.items)
@@ -26,7 +27,7 @@ const Header: React.FC = () => {
     <header className="w-full shadow-md bg-white">
       {/* Top Bar */}
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces {userName?.user?.email|| "Guess"} </p>
+        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces </p>
         <div className="flex gap-6">
           <NavLink to="/shop" className="hover:underline">Shop Now</NavLink>
           <NavLink to="/language" className="hover:underline">English</NavLink>

@@ -17,8 +17,8 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, {payload}) => {
-      state.name= payload
-      state.email = payload;
+      state.name= payload.user.name
+      state.email = payload.user.email;
       state.token = payload
     },
     logout: (state) => {
