@@ -9,10 +9,11 @@ import storage from "redux-persist/lib/storage";
 const persistConfig = {
   key: "root",
   storage,
+  whitelist:["cart", "wishlist", "user"]
 };
 
 const rootReducer = combineReducers({
-  cart: cartReducer, // Use the persisted reducer
+  cart: cartReducer,
   wishlist: wishlistReducer,
   user: userReducer,
 });

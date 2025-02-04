@@ -29,16 +29,20 @@ const Signin: React.FC = () => {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsLoading(true);
+    setIsLoading(true); 
     try {
-      const response = await LoginUser(data); // Your existing login function
+      const response = await LoginUser(data); 
       console.log("Login Response:", response);
-      dispatch(setUser(response));
-
-      toast.success(response.message || "Login successful");
-      navigate("/");
+  
+      if (response.user && response.token) {
+        dispatch(setUser({ user: response.user, token: response.token })); 
+        toast.success(response.message || "Login successful"); 
+        navigate("/"); 
+      } else {
+        throw new Error("Invalid response format from server");
+      }
     } catch (error: unknown) {
-      toast.error((error as Error)?.message || "Failed to Login account", {
+      toast.error((error as Error)?.message || "Failed to log in", {
         position: "top-right",
         autoClose: 4000,
       });

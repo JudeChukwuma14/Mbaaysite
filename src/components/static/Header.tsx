@@ -6,8 +6,8 @@ import { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png"
 
 const Header: React.FC = () => {
-
-  
+  const user = useSelector((state:RootState)=>state.user.user)
+  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase():""
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false); // State to toggle search input on mobile
   const cartItems = useSelector((state:RootState)=>state.cart.items)
@@ -63,12 +63,17 @@ const Header: React.FC = () => {
           <button onClick={toggleSearch} className="sm:hidden text-gray-700 hover:text-orange-500">
             <FaSearch size={20} />
           </button>
-
-          {/* User & Cart Icons */}
-          <NavLink to="/selectpath" className="text-gray-700 hover:text-orange-500">
-            <FaUser size={20} />
-          </NavLink>
-
+          <div>
+            {
+              firstLetter?(
+                <h1 className=" text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-white">{firstLetter}</h1>
+              ):(
+                <NavLink to="/selectpath" className="text-gray-700 hover:text-orange-500">
+                <FaUser size={20} />
+              </NavLink>
+              )
+            }
+          </div>
           <NavLink to="dashboard/wishlist" className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in">
             <FaHeart size={20} />
             <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
