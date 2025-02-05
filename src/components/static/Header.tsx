@@ -115,8 +115,8 @@ const Header: React.FC = () => {
           <nav className="flex flex-col space-y-4">
             <NavLink to="/recently-viewed" className="hover:text-orange-500" onClick={toggleMenu}>Recently Viewed</NavLink>
             <NavLink to="/become-vendor" className="hover:text-orange-500" onClick={toggleMenu}>Become a Vendor</NavLink>
-            <NavLink to="/vendors-auction" className="hover:text-orange-500" onClick={toggleMenu}>Vendors Auction</NavLink>
-            <NavLink to="/sell" className="hover:text-orange-500" onClick={toggleMenu}>Sell on Mbacy</NavLink>
+            <NavLink to="/vendors-auction" className="hover:text-orange-500" onClick={toggleMenu}>Auction</NavLink>
+            <NavLink to="/sell" className="hover:text-orange-500" onClick={toggleMenu}>Sell on Mbaay</NavLink>
           </nav>
         </div>
       )}
