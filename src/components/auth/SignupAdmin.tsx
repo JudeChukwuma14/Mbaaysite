@@ -34,7 +34,7 @@ const SignupAdmin: React.FC = () => {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/")
+      navigate("/app")
     } catch (error: unknown) {
       console.log(error);
       toast.error((error as Error)?.message || "An unexpected error occurred", {
