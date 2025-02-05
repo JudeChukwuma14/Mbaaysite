@@ -65,8 +65,8 @@ const DashboardSidebar:React.FC<DashboardSidebarProps> = ({darkMode})=> {
         />
         <div>
           <p className="text-sm font-semibold">Finbarr</p>
-          <div className="flex">
-          <div className="w-[15px] h-[15px] bg-green-500 rounded-full"></div>
+          <div className="flex mt-2 items-center justify-center">
+          <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
           <span className="text-green-500 text-xs rounded ml-[3px]">Online</span>
           </div>
         </div>
