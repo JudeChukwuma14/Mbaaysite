@@ -40,6 +40,9 @@ const NewProduct = lazy(()=>import("@/components/VendorInfo/Products/NewProduct"
 const Customer = lazy(()=>import("@/components/VendorInfo/Customers/Customer"))
 const Payments = lazy(()=>import("@/components/VendorInfo/Payments/Payments"))
 const PreviewInvoice = lazy(()=>import("@/components/VendorInfo/Payments/PreviewInvoice"))
+const EditVendorProfile = lazy(()=>import("@/components/VendorInfo/Setting/EditVendorProfile"))
+const KycVerification = lazy(()=>import("@/components/VendorInfo/Setting/KycVerification"))
+const Inbox  = lazy(()=>import("@/components/VendorInfo/Inbox"))
 
 
 const withSuspense=(Component:React.ComponentType)=>(
@@ -87,6 +90,9 @@ const routesConfig:RouteObject[]=[
     {path:"customers", element:withSuspense(Customer)},
     {path:"Payments", element:withSuspense(Payments)},
     {path:"preview-invoice", element:withSuspense(PreviewInvoice)},
+    {path:"edit-vendor-profile", element:withSuspense(EditVendorProfile)},
+    {path:"kyc-verification", element:withSuspense(KycVerification)},
+    {path:"inbox", element:withSuspense(Inbox)},
   ]
 },
 {path:"signin", element:withSuspense(Login)},
