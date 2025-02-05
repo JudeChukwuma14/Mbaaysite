@@ -5,8 +5,10 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+
 import Sliding from "../Reuseable/Sliding";
+import { LoginVendorAPI } from "@/utils/vendorApi";
+import { useNavigate } from "react-router-dom";
 
 interface FormData {
   email: string;
@@ -22,6 +24,7 @@ interface ApiError {
 }
 
 const LoginVendor: React.FC = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -43,13 +46,13 @@ const LoginVendor: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/signin", data);
-      if (response.status === 200) {
-        toast.success("Logged in successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
+      const response = await LoginVendorAPI(data);
+      console.log("Vender logs", response);
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate("/login-vendor");
     } catch (error) {
       if (isApiError(error)) {
         toast.error(
@@ -71,18 +74,16 @@ const LoginVendor: React.FC = () => {
     }
   };
 
-
   const bg = {
     backgroundImage: `url(${background})`,
   };
 
   return (
     <div className="w-full h-screen">
-      {/* ToastContainer for displaying notifications */}
       <ToastContainer />
 
       <div className="flex flex-col md:flex-row">
-        <Sliding/>
+        <Sliding />
         <div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4"

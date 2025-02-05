@@ -14,6 +14,7 @@ interface FormData {
   email: string;
   userName: string;
   address1: string;
+  address2:string
   country: string;
   city: string;
   state: string;
@@ -164,6 +165,23 @@ const Registration: React.FC = () => {
                   {errors.address1 && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.address1.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Address2
+                  </label>
+                  <input
+                    type="text"
+                    {...register("address2", {
+                      required: "Address is required",
+                    })}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.address2 && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.address2.message}
                     </p>
                   )}
                 </div>
