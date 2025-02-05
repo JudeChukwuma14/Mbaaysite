@@ -43,7 +43,7 @@ const Header: React.FC = () => {
         <nav className="hidden lg:flex items-center space-x-4 lg:space-x-6">
           <NavLink to="/recently-viewed" className="hover:text-orange-500 text-sm md:text-base">Recently Viewed</NavLink>
           <NavLink to="/become-vendor" className="hover:text-orange-500 text-sm md:text-base">Become a Vendor</NavLink>
-          <NavLink to="/vendors-auction" className="hover:text-orange-500 text-sm md:text-base">Vendors Auction</NavLink>
+          <NavLink to="/vendors-auction" className="hover:text-orange-500 text-sm md:text-base">Auction</NavLink>
           <NavLink to="/sell" className="hover:text-orange-500 text-sm md:text-base">Sell on Mbaay</NavLink>
         </nav>
 
