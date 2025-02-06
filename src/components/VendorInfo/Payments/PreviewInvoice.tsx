@@ -61,7 +61,7 @@ export default function InvoicePreview() {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Invoice ID</label>
-              <motion.input type="text" value={invoiceData.id} readOnly className="w-full p-2 border rounded-md bg-gray-50" />
+              <motion.input type="text" value={invoiceData.id} readOnly className="w-full p-2 border rounded-md bg-gray-50  outline-orange-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
@@ -69,7 +69,7 @@ export default function InvoicePreview() {
                 type="text"
                 value={invoiceData.dueDate}
                 readOnly
-                className="w-full p-2 border rounded-md bg-gray-50"
+                className="w-full p-2 border rounded-md bg-gray-50 outline-orange-500"
               />
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function InvoicePreview() {
           <div className="mb-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">Product Detail</label>
             <textarea
-              className="w-full p-2 border rounded-md bg-gray-50"
+              className="w-full p-2 border rounded-md bg-gray-50 outline-orange-500"
               rows={3}
               placeholder="Enter product details..."
             />
@@ -106,13 +106,13 @@ export default function InvoicePreview() {
                     type="number"
                     value={item.quantity}
                     readOnly
-                    className="w-16 p-1 border rounded-md text-center"
+                    className="w-16 p-1 border rounded-md text-center outline-orange-500"
                   />
                   <motion.input
                     type="text"
                     value={`$${item.price.toLocaleString()}`}
                     readOnly
-                    className="w-24 p-1 border rounded-md text-right"
+                    className="w-24 p-1 border rounded-md text-right outline-orange-500"
                   />
                 </div>
               </div>
@@ -126,7 +126,7 @@ export default function InvoicePreview() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Notes / Terms</label>
             <textarea
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md outline-orange-500"
               rows={4}
               placeholder="Enter notes or terms of service..."
             />

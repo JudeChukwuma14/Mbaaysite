@@ -175,7 +175,7 @@ const CustomersPage: React.FC = () => {
         <motion.select
           value={filter}
           onChange={(e) => setFilter(e.target.value as "All" | "Active" | "Inactive")}
-          className="border border-gray-300 p-2 rounded shadow-sm focus:ring-2 focus:ring-blue-500"
+          className="border border-orange-500 p-2 rounded shadow-sm focus:ring-2 focus:ring-orange-500 outline-orange-500"
           whileFocus={{ scale: 1.05 }}
         >
           <option value="All">All</option>
@@ -250,7 +250,7 @@ const CustomersPage: React.FC = () => {
           <motion.button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="px-3 py-1 border border-gray-300 rounded shadow-sm bg-white text-gray-600 disabled:opacity-50"
+            className="px-3 py-1 border border-orange-500 rounded shadow-sm bg-white text-gray-600 disabled:opacity-50"
             whileHover={{ scale: 1.05 }}
           >
             Prev
@@ -272,7 +272,7 @@ const CustomersPage: React.FC = () => {
           <motion.button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 border border-gray-300 rounded shadow-sm bg-white text-gray-600 disabled:opacity-50"
+            className="px-3 py-1 border border-orange-500 rounded shadow-sm bg-white text-gray-600 disabled:opacity-50"
             whileHover={{ scale: 1.05 }}
           >
             Next

@@ -181,7 +181,7 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.companyName}
                   onChange={(e) => setProfile({ ...profile, companyName: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
               <div>
@@ -190,7 +190,7 @@ export default function EditVendorProfile() {
                   type="email"
                   value={profile.email}
                   onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
               <div>
@@ -199,7 +199,7 @@ export default function EditVendorProfile() {
                   type="tel"
                   value={profile.phone}
                   onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
               <div>
@@ -208,7 +208,7 @@ export default function EditVendorProfile() {
                   <motion.input
                     type={showPassword ? "text" : "password"}
                     value="••••••••••••"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                     readOnly
                   />
                   <button
@@ -252,7 +252,7 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.accountName}
                   onChange={(e) => setProfile({ ...profile, accountName: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
               <div>
@@ -261,7 +261,7 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.accountNumber}
                   onChange={(e) => setProfile({ ...profile, accountNumber: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
               <div>
@@ -270,7 +270,7 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.bankName}
                   onChange={(e) => setProfile({ ...profile, bankName: e.target.value })}
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                 />
               </div>
             </div>
@@ -281,14 +281,14 @@ export default function EditVendorProfile() {
             <h2 className="font-semibold mb-4">Return Policy</h2>
             <div className="border rounded-lg">
               <div className="border-b p-2 flex gap-2">
-                <motion.button className="p-1.5 hover:bg-gray-100 rounded">
+                <motion.button className="p-1.5 hover:bg-orange-100 rounded">
                   <Edit2 className="w-4 h-4" />
                 </motion.button>
               </div>
               <textarea
                 value={profile.returnPolicy}
                 onChange={(e) => setProfile({ ...profile, returnPolicy: e.target.value })}
-                className="w-full p-4 min-h-[200px] focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-lg"
+                className="w-full p-4 min-h-[200px] focus:outline-none focus:ring-2 focus:ring-orange-500 rounded-lg "
                 placeholder="Write your return policy here..."
               />
             </div>
@@ -297,7 +297,7 @@ export default function EditVendorProfile() {
           {/* Logo & Branding */}
           <motion.div variants={itemVariants} className="bg-white p-6 rounded-lg shadow-sm">
             <h2 className="font-semibold mb-4">Logo & Branding</h2>
-            <div className="border-2 border-dashed rounded-lg p-8 text-center">
+            <div className="border-2 border-dashed rounded-lg p-8 text-center border-orange-500">
               {logoImage ? (
                 <img src={logoImage || "/placeholder.svg"} alt="Logo" className="max-w-[200px] mx-auto" />
               ) : (
@@ -328,7 +328,7 @@ export default function EditVendorProfile() {
 
           {/* Action Buttons */}
           <motion.div variants={itemVariants} className="flex justify-end gap-4">
-            <button className="px-6 py-2 border rounded-lg hover:bg-gray-50">Discard Changes</button>
+            <button className="px-6 py-2 border rounded-lg hover:bg-orange-50 border-orange-500">Discard Changes</button>
             <button className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Save Changes</button>
           </motion.div>
         </div>

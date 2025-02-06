@@ -1,6 +1,6 @@
 import  { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight, CreditCard, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import {CreditCard, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 
 const PaymentsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -77,7 +77,7 @@ const PaymentsPage = () => {
           <input
             type="text"
             placeholder="Search Product..."
-            className="border px-3 py-2 rounded-lg w-64"
+            className="border px-3 py-2 rounded-lg w-64 outline-orange-500"
           />
         </div>
       </div>
@@ -133,7 +133,7 @@ const PaymentsPage = () => {
             disabled={currentPage === 1}
             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
           >
-            <ChevronLeft /> Prev
+           Prev
           </button>
           <span>
             Page {currentPage} of {totalPages}
@@ -143,7 +143,7 @@ const PaymentsPage = () => {
             disabled={currentPage === totalPages}
             className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
           >
-            Next <ChevronRight />
+            Next 
           </button>
         </div>
       </div>
