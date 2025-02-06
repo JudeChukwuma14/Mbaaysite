@@ -62,7 +62,7 @@ const KYCVerification: React.FC = () => {
               id="country"
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
             >
               <option value="">Select Your Country</option>
               {countries.map((c) => (
@@ -80,7 +80,7 @@ const KYCVerification: React.FC = () => {
               id="documentType"
               value={documentType}
               onChange={(e) => setDocumentType(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
             >
               <option value="">Select a document type</option>
               {documentTypes.map((type) => (
