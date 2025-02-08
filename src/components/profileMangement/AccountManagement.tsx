@@ -9,10 +9,9 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
-import image from "@/assets/image/bg1.jpg";
 import { Outlet, Link } from "react-router-dom";
-import Header from "../static/Header";
 import Footer from "../static/Footer";
+import UserHeader from "../static/UserHeader";
 
 interface SidebarItemProps {
   icon?: JSX.Element;
@@ -68,23 +67,9 @@ const AccountManagement: React.FC = () => {
 
   return (
     <div>
-      <Header />
-      <div className="flex flex-col md:flex-row bg-gray-100 w-full">
-        {/* Left Sidebar */}
+      <UserHeader />
+      <div className=" hidden lg:flex flex-col md:flex-row bg-gray-100 w-full">
         <div className="w-full md:w-72 lg:w-96 bg-white shadow-md">
-          <div className="p-6 border-b">
-            <div className="flex items-center space-x-4">
-              <img
-                src={image}
-                alt="Profile"
-                className="w-16 h-16 rounded-full object-cover"
-              />
-              <div>
-                <h2 className="text-lg font-semibold">John Doe</h2>
-                <p className="text-gray-500">john.doe@example.com</p>
-              </div>
-            </div>
-          </div>
           <nav className="p-4">
             {sidebarItems.map((item) => (
               <div key={item.section}>
@@ -92,7 +77,9 @@ const AccountManagement: React.FC = () => {
                   to={item.link || "#"}
                   onClick={() => {
                     setActiveSection(item.section);
-                    setOrdersDropdownOpen(item.section === "orders" ? !ordersDropdownOpen : false);
+                    setOrdersDropdownOpen(
+                      item.section === "orders" ? !ordersDropdownOpen : false
+                    );
                   }}
                   className={`flex items-center justify-between w-full p-3 rounded-lg mb-2 ${
                     activeSection === item.section
@@ -107,19 +94,21 @@ const AccountManagement: React.FC = () => {
                   {item.hasDropdown &&
                     (ordersDropdownOpen ? <FaChevronUp /> : <FaChevronDown />)}
                 </Link>
-                {item.hasDropdown && ordersDropdownOpen && activeSection === "orders" && (
-                  <div className="ml-6 mt-1">
-                    {item.items?.map((subItem) => (
-                      <Link
-                        key={subItem.title}
-                        to={subItem.link}
-                        className="block p-2 text-gray-700 hover:text-orange-500"
-                      >
-                        {subItem.title}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {item.hasDropdown &&
+                  ordersDropdownOpen &&
+                  activeSection === "orders" && (
+                    <div className="ml-6 mt-1">
+                      {item.items?.map((subItem) => (
+                        <Link
+                          key={subItem.title}
+                          to={subItem.link}
+                          className="block p-2 text-gray-700 hover:text-orange-500"
+                        >
+                          {subItem.title}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
               </div>
             ))}
             <button className="flex items-center w-full p-3 rounded-lg text-red-500 hover:bg-gray-100">

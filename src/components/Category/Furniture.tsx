@@ -1,19 +1,18 @@
 import React from "react";
-import image from "../../assets/image/Group 14.png";
-import card from "../../assets/image/card1.png";
+import image from "@/assets/image/Group 14.png";
+import card from "@/assets/image/card1.png";
 import ProductCard2 from "../Cards/ProductCard2";
 
-
-const Layouts: React.FC = () => {
+const Furniture: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Women's Fashion" },
-    { image: image, text: "Men Fashion" },
-    { image: image, text: "Kid’s Fashion" },
-    { image: image, text: "Accessories (Hats, Belts)" },
-    { image: image, text: "Fashion Jewelry" },
-    { image: image, text: "Sports wear" },
-    { image: image, text: "Ethnic Wear" },
-    { image: image, text: "Footwear" },
+    { image: image, text: "Chairs & Stools" },
+    { image: image, text: "Dresser" },
+    { image: image, text: "Tables & Desks" },
+    { image: image, text: "Sofas & Couches" },
+    { image: image, text: "Office Furniture" },
+    { image: image, text: "Living Room Furniture" },
+    { image: image, text: "Outdoor Furniture" },
+    { image: image, text: "Bedroom Furniture" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -30,10 +29,10 @@ const Layouts: React.FC = () => {
   return (
     <div>
       <div className=" pl-10 py-3 mb-6">
-        <h3 className=" font-semibold text-xl">Fashion</h3>
+        <h3 className=" font-semibold text-xl">Furniture</h3>
       </div>
       <div className="mb-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4">
           {ImagePart.map((item, index) => (
             <div
               key={index}
@@ -46,23 +45,21 @@ const Layouts: React.FC = () => {
         </div>
       </div>
       <div>
-        <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4 items-center">
-          {
-            ProductCard.map((item, index) => (
-              <ProductCard2
-                key={index}
-                image={item.image}
-                name={item.name}
-                price={item.price}
-                rating={item.rating}
-                label={item.label}
-              />
-            ))
-          }
+        <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4 py-8 items-center">
+          {ProductCard.map((item, index) => (
+            <ProductCard2
+              key={index}
+              image={item.image}
+              name={item.name}
+              price={item.price}
+              rating={item.rating}
+              label={item.label}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default Layouts;
+export default Furniture;

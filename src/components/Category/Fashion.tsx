@@ -1,10 +1,9 @@
 import React from "react";
-import image from "../../assets/image/Group 14.png";
-import card from "../../assets/image/card1.png";
+import image from "@/assets/image/Group 14.png";
+import card from "@/assets/image/card1.png";
 import ProductCard2 from "../Cards/ProductCard2";
 
-
-const Layouts: React.FC = () => {
+const Fashion: React.FC = () => {
   const ImagePart = [
     { image: image, text: "Women's Fashion" },
     { image: image, text: "Men Fashion" },
@@ -33,7 +32,7 @@ const Layouts: React.FC = () => {
         <h3 className=" font-semibold text-xl">Fashion</h3>
       </div>
       <div className="mb-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4">
           {ImagePart.map((item, index) => (
             <div
               key={index}
@@ -45,10 +44,10 @@ const Layouts: React.FC = () => {
           ))}
         </div>
       </div>
-      <div>
-        <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4 items-center">
-          {
-            ProductCard.map((item, index) => (
+      <section className=" py-10">
+        <div>
+          <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-8 py-8 items-center">
+            {ProductCard.map((item, index) => (
               <ProductCard2
                 key={index}
                 image={item.image}
@@ -57,12 +56,12 @@ const Layouts: React.FC = () => {
                 rating={item.rating}
                 label={item.label}
               />
-            ))
-          }
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };
 
-export default Layouts;
+export default Fashion;

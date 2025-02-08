@@ -3,6 +3,7 @@ import Fashion from "../assets/image/Fashion.jpeg";
 import Jewelry from "../assets/image/Jeal.jpeg";
 import Art from "../assets/image/Art.jpeg";
 import wellness from "../assets/image/Wellness.jpg";
+import BookPoetry from "../assets/image/Bookspoetry.jpg";
 import pro1 from "../assets/image/pro1.jpg";
 import pro2 from "../assets/image/pro2.jpg";
 import pro3 from "../assets/image/pro3.jpg";
@@ -18,10 +19,8 @@ import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import Gear from "@/assets/image/Gear.jpg";
 import Slider from "@/components/Slider";
-// import headset from "../assets/image/headset.jpg";
-// import watch from "../assets/image/watch.jpg";
-// import bluetooth from "../assets/image/Bluetooth.jpg";
-// import game from "../assets/image/game.jpg";
+import Furniture from "@/assets/image/Furniture.jpg";
+
 interface Product {
   id: number;
   title: string;
@@ -32,40 +31,17 @@ interface Product {
   reviews: number;
 }
 const HomeArea: React.FC = () => {
-  // const products = [
-  //     {
-  //       id: 1,
-  //       name: "Wireless Headphones",
-  //       price: "$99.99",
-  //       image: headset,
-  //     },
-  //     {
-  //       id: 2,
-  //       name: "Smartwatch",
-  //       price: "$199.99",
-  //       image: watch,
-  //     },
-  //     {
-  //       id: 3,
-  //       name: "Bluetooth Speaker",
-  //       price: "$49.99",
-  //       image: bluetooth,
-  //     },
-  //     {
-  //       id: 4,
-  //       name: "Gaming Keyboard",
-  //       price: "$79.99",
-  //       image: game,
-  //     },
-  //   ];
-
   const categoriesData = [
-    { imageSrc: Fashion, title: "Fashion" },
-    { imageSrc: Jewelry, title: "Jewelry" },
-    { imageSrc: Art, title: "Art" },
-    { imageSrc: Fashion, title: "Fragrances" },
-    { imageSrc: wellness, title: "Wellness products" },
-    { imageSrc: Art, title: "Skin Care" },
+    { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
+    { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
+    { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
+    { imageSrc: Furniture, title: "Furniture", link: "/furniture" },
+    {
+      imageSrc: wellness,
+      title: "Beauty and wellness",
+      link: "/wellness-product",
+    },
+    { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
   ];
   const ProductData: Product[] = [
     {
@@ -302,21 +278,22 @@ const HomeArea: React.FC = () => {
 
   return (
     <>
-    <section className=" mb-10">
-    <Slider/>
-    </section>
+      <section className=" mb-10">
+        <Slider />
+      </section>
       <section className="mb-10 px-8">
         <div className=" flex items-center pl-6 mb-2">
           <div className="h-4 w-3 bg-orange-500"></div>
           <span className="text-orange-500  pl-2">Category</span>
         </div>
         <h2 className="text-2xl font-bold pl-6 mb-6">Browse By Category</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4  lg:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
           {categoriesData.map((category, index) => (
             <CategoryCard
               key={index}
               imageSrc={category.imageSrc}
               title={category.title}
+              link={category.link}
             />
           ))}
         </div>
