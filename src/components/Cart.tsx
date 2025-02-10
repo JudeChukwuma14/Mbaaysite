@@ -10,11 +10,11 @@ const Cart: React.FC = () => {
   const [couponCode, setCouponCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
 
-  const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
   };
 
-  const handleRemoveItem = (itemId: number) => {
+  const handleRemoveItem = (itemId: string) => {
     dispatch(removeItem(itemId));
   };
 
