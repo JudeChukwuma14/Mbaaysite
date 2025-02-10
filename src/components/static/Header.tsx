@@ -11,6 +11,8 @@ import {
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
+import Dropdown from "./Dropdrop";
+
 
 const Header: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -38,7 +40,6 @@ const Header: React.FC = () => {
 
   return (
     <header className="w-full shadow-md bg-white">
-      {/* Top Bar */}
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
         <p className="hidden md:block">Welcome to Mbaay Global Marketplaces </p>
         <div className="flex gap-6">
@@ -51,7 +52,7 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-4 md:px-10 bg-white">
+      <div className="flex items-center justify-between p-4 md:px-10 bg-black">
         <NavLink to="/" className="flex items-center">
           <img src={Logo} alt="Logo" className=" w-16 md:w-20" />
         </NavLink>
@@ -59,25 +60,25 @@ const Header: React.FC = () => {
         <nav className="hidden lg:flex items-center space-x-4 lg:space-x-6">
           <NavLink
             to="/recently-viewed"
-            className="hover:text-orange-500 text-sm md:text-base"
+            className="hover:text-orange-500 text-white text-sm md:text-base"
           >
             Recently Viewed
           </NavLink>
           <NavLink
             to="/become-vendor"
-            className="hover:text-orange-500 text-sm md:text-base"
+            className="hover:text-orange-500 text-white text-sm md:text-base"
           >
             Become a Vendor
           </NavLink>
           <NavLink
             to="/vendors-auction"
-            className="hover:text-orange-500 text-sm md:text-base"
+            className="hover:text-orange-500 text-white text-sm md:text-base"
           >
             Auction
           </NavLink>
           <NavLink
             to="/sell"
-            className="hover:text-orange-500 text-sm md:text-base"
+            className="hover:text-orange-500 text-white text-sm md:text-base"
           >
             Sell on Mbaay
           </NavLink>
@@ -95,21 +96,21 @@ const Header: React.FC = () => {
 
           <button
             onClick={toggleSearch}
-            className="sm:hidden text-gray-700 hover:text-orange-500"
+            className="sm:hidden text-white hover:text-orange-500"
           >
             <FaSearch size={20} />
           </button>
           <div>
             {firstLetter ? (
               <NavLink to="/dashboard">
-                <h1 className=" text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-white">
+                <h1 className=" text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-gray-600">
                   {firstLetter}
                 </h1>
               </NavLink>
             ) : (
               <NavLink
                 to="/selectpath"
-                className="text-gray-700 hover:text-orange-500"
+                className="text-white hover:text-orange-500"
               >
                 <FaUser size={20} />
               </NavLink>
@@ -117,10 +118,10 @@ const Header: React.FC = () => {
           </div>
           <NavLink
             to="dashboard/wishlist"
-            className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in"
+            className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in hidden md:block"
           >
-            <FaHeart size={20} />
-            <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
+            <FaHeart size={20}  className=" text-white"/>
+            <span className="absolute -top-2 -right-2 text-xs text-white  bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalWishlistQuantity}
             </span>
           </NavLink>
@@ -129,7 +130,7 @@ const Header: React.FC = () => {
             to="/cart"
             className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in"
           >
-            <FaShoppingCart size={20} className=" text-gray-700 " />
+            <FaShoppingCart size={20} className=" text-white" />
             <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalQuantity}
             </span>
@@ -138,9 +139,9 @@ const Header: React.FC = () => {
           {/* Mobile Menu Button */}
           <button onClick={toggleMenu} className="md:hidden">
             {menuOpen ? (
-              <FaTimes size={24} className="text-gray-700" />
+              <FaTimes size={24} className="text-white" />
             ) : (
-              <FaBars size={24} className="text-gray-700" />
+              <FaBars size={24} className="text-white" />
             )}
           </button>
         </div>
@@ -195,6 +196,7 @@ const Header: React.FC = () => {
           </nav>
         </div>
       )}
+      <Dropdown/>
     </header>
   );
 };
