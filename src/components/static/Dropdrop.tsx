@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import wellness from "@/assets/image/Wellness.jpg"
+import jewelry from "@/assets/image/Jewelry.jpg"
 
 const categories = [
   {
     name: "Beauty and Wellness",
-    image: "/beauty.jpg",
+    image: wellness,
     subcategories: [
       {
         title: "Skin Care",
@@ -99,7 +101,7 @@ const categories = [
   },
   {
     name: "Jewelry and Gemstones",
-    image: "/jewelry.jpg",
+    image: jewelry,
     subcategories: [
       {
         title: "Handmade Jewelry",
@@ -1125,20 +1127,40 @@ const categories = [
 ];
 
 export default function Dropdown() {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+    const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  
+    // Function to set active category
+    const handleMouseEnter = (category: string) => {
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+      setActiveCategory(category);
+    };
+  
+    // Function to remove active category with delay
+    const handleMouseLeave = () => {
+      const timeout = setTimeout(() => setActiveCategory(null), 200);
+      setHoverTimeout(timeout);
+    };
+  
+    // Cleanup timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+      };
+    }, [hoverTimeout]);
 
   return (
     <div className="">
       <nav>
-        <div className="flex gap-6 bg-white font-medium h-8 w-full items-center justify-center relative z-10">
+        <div className="flex gap-4 bg-white font-medium h-8 w-full items-center justify-center relative z-10">
           {categories.map((category) => (
             <div
               key={category.name}
               className=""
-              onMouseEnter={() => setActiveCategory(category.name)}
-              onMouseLeave={() => setActiveCategory(null)}
+              onMouseEnter={() => handleMouseEnter(category.name)}
+              onMouseLeave={handleMouseLeave}
             >
-              <p className="cursor-pointer text-[10px]">{category.name}</p>
+              <p className="cursor-pointer text-[12px]">{category.name}</p>
 
               {/* Dropdown Menu */}
               {activeCategory === category.name && (
@@ -1146,10 +1168,10 @@ export default function Dropdown() {
                   <div className="grid grid-cols-8 gap-6">
                     {category.subcategories.map((sub) => (
                       <div key={sub.title}>
-                        <span className="font-semibold text-[10px] mb-2 underline">
+                        <span className="font-semibold text-[12px] cursor-pointer mb-2 underline">
                           {sub.title}
                         </span>
-                        <ul className="text-[8px] text-gray-600">
+                        <ul className="text-[10px] text-gray-600">
                           {sub.items.map((item) => (
                             <li
                               key={item}

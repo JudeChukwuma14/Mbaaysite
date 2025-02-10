@@ -4,32 +4,23 @@ import Jewelry from "../assets/image/Jeal.jpeg";
 import Art from "../assets/image/Art.jpeg";
 import wellness from "../assets/image/Wellness.jpg";
 import BookPoetry from "../assets/image/Bookspoetry.jpg";
-import pro1 from "../assets/image/pro1.jpg";
-import pro2 from "../assets/image/pro2.jpg";
-import pro3 from "../assets/image/pro3.jpg";
-import pro4 from "../assets/image/pro4.jpg";
 import CategoryCard from "@/components/categorycardprops/CategoryCard";
 import VendorCard from "@/components/VendorCard";
-import vendorbg from "../assets/image/vendorbg.png";
-import vendorpr from "../assets/image/vendorpr.png";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
-import Gear from "@/assets/image/Gear.jpg";
+
 import Slider from "@/components/Slider";
 import Furniture from "@/assets/image/Furniture.jpg";
+import {
+  categories,
+  flashSale,
+  ProductData,
+  profilesData,
+} from "@/components/mockdata/data";
 
-interface Product {
-  id: number;
-  title: string;
-  currentPrice: string;
-  originalPrice: string;
-  image: string;
-  rating: number;
-  reviews: number;
-}
 const HomeArea: React.FC = () => {
   const categoriesData = [
     { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
@@ -42,238 +33,6 @@ const HomeArea: React.FC = () => {
       link: "/wellness-product",
     },
     { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
-  ];
-  const ProductData: Product[] = [
-    {
-      id: 1,
-      image: pro1,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Fashion",
-    },
-    {
-      id: 2,
-      image: pro2,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Jewelry",
-    },
-    {
-      id: 3,
-      image: pro3,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Art",
-    },
-    {
-      id: 4,
-      image: pro4,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Fragrances",
-    },
-    {
-      id: 5,
-      image: pro1,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Wellness products",
-    },
-    {
-      id: 6,
-      image: pro3,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Skin Care",
-    },
-  ];
-
-  const profilesData = [
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-    {
-      backgroundImage: vendorbg,
-      avatar: vendorpr,
-      name: "Johnathan Grandy",
-      profession: "Photographer",
-      location: "Lagos, Nigeria",
-    },
-  ];
-
-  const flashSale = [
-    {
-      id: 1,
-      name: "AK-900 Wired Keyboard",
-      price: "$960",
-      originalPrice: "$1160",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 75,
-    },
-    {
-      id: 2,
-      name: "Wireless Headphones",
-      price: "$99.99",
-      originalPrice: "$129.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 5,
-      reviews: 120,
-    },
-    {
-      id: 3,
-      name: "Smartwatch",
-      price: "$199.99",
-      originalPrice: "$249.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 90,
-    },
-    {
-      id: 4,
-      name: "Bluetooth Speaker",
-      price: "$49.99",
-      originalPrice: "$69.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 3,
-      reviews: 50,
-    },
-    {
-      id: 5,
-      name: "Gaming Keyboard",
-      price: "$79.99",
-      originalPrice: "$99.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 80,
-    },
-    {
-      id: 6,
-      name: "Gaming Keyboard",
-      price: "$79.99",
-      originalPrice: "$99.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 80,
-    },
-    {
-      id: 7,
-      name: "Gaming Keyboard",
-      price: "$79.99",
-      originalPrice: "$99.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 80,
-    },
-    {
-      id: 8,
-      name: "Gaming Keyboard",
-      price: "$79.99",
-      originalPrice: "$99.99",
-      image:
-        "https://i.pinimg.com/736x/74/f1/3b/74f13b8705ddf22f9dee9848004491d4.jpg",
-      rating: 4,
-      reviews: 80,
-    },
-  ];
-
-  const categories = [
-    {
-      title: "Professional Camera Zoom",
-      image: Gear, // Replace with actual image
-      bgColor: "bg-purple-300",
-      link: "#",
-    },
-    {
-      title: "Gear 360°",
-      image: Gear,
-      bgColor: "bg-gray-200",
-      link: "#",
-    },
-    {
-      title: "Black Friday Deals",
-      image: Gear,
-      bgColor: "bg-black text-white",
-      link: "#",
-    },
-    {
-      title: "Apple Macbook Air 15.6”",
-      image: Gear,
-      bgColor: "bg-white",
-      link: "#",
-    },
-    {
-      title: "Headphone XL Stereo",
-      image: Gear,
-      bgColor: "bg-blue-200",
-      link: "#",
-    },
   ];
 
   return (

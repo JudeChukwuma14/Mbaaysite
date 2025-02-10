@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
+import { ProductData } from "./mockdata/data";
 
 const ProductDetail: React.FC = () => {
   // State for quantity and selected size
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<string>("M");
+  const {id}=useParams<{id:string}>()
+  const product = ProductData.find((value)=>value.id ===id)
 
   // Handle size selection
   const handleSizeChange = (size: string) => setSelectedSize(size);
@@ -17,7 +21,6 @@ const ProductDetail: React.FC = () => {
     });
   };
 
-  // Handle buy now action
   const handleBuyNow = () => {
     alert(`Buying ${quantity} item(s) in size ${selectedSize}`);
   };
@@ -30,8 +33,8 @@ const ProductDetail: React.FC = () => {
         <div>
           <div className="mb-4">
             <img
-              src="https://img.freepik.com/free-photo/colorful-knitted-fabric_58702-1828.jpg?t=st=1737721644~exp=1737725244~hmac=99dfe62a7bd740d415d61e05cf6cd447d34e6b1602e0da3a729caf4ed1ac8c02&w=996" // Replace with your image URL
-              alt="Product"
+              src={product?.image} // Replace with your image URL
+              alt={product?.title}
               className="rounded-lg shadow-md"
             />
           </div>
@@ -39,7 +42,7 @@ const ProductDetail: React.FC = () => {
             {[...Array(4)].map((_, idx) => (
               <img
                 key={idx}
-                src="https://img.freepik.com/free-photo/colorful-knitted-fabric_58702-1828.jpg?t=st=1737721644~exp=1737725244~hmac=99dfe62a7bd740d415d61e05cf6cd447d34e6b1602e0da3a729caf4ed1ac8c02&w=996" // Replace with thumbnail URLs
+                src={product?.image} // Replace with thumbnail URLs
                 alt={`Thumbnail ${idx + 1}`}
                 className="w-16 h-16 object-cover rounded-lg border hover:ring-2 ring-orange-500 cursor-pointer"
               />
@@ -47,13 +50,13 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
 
-        {/* Product Info */}
         <div>
-          <h1 className="text-2xl font-bold">T-shirt</h1>
-          <p className="text-gray-600 mt-2">$192.00</p>
+        <h1 className="text-2xl font-bold">{product?.title}</h1>
+          <p className="text-gray-600 mt-2">${product?.originalPrice}</p>
 
           <p className="text-sm text-gray-500 mt-4">
-            High-quality vinyl with easy bubble-free install & mess-free removal. Pressure sensitive.
+            High-quality vinyl with easy bubble-free install & mess-free
+            removal. Pressure sensitive.
           </p>
 
           {/* Colors Section */}

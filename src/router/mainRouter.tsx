@@ -9,6 +9,7 @@ const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
 const Cart = lazy(() => import("@/components/Cart"));
+const ProductDetail = lazy(() => import("@/components/ProductDetail"))
 const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
   () => import("@/components/profileMangement/EditProfile")
@@ -93,6 +94,7 @@ const routesConfig: RouteObject[] = [
       { path: "/cart", element: withSuspense(Cart) },
       { path: "/fashion", element: withSuspense(Fashion) },
       { path: "/furniture", element: withSuspense(Furniture) },
+      { path: "/product-details/:id", element: withSuspense(ProductDetail) },
     ],
   },
   {
