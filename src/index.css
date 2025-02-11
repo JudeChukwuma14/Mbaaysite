@@ -6,7 +6,15 @@
 *{
  font-family: "Jost", serif;
   font-weight: 400;
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
 }
+/* Hide scrollbar for all elements */
+::-webkit-scrollbar {
+  display: none;
+}
+
+
 #slider-boxes{
     display: flex !important;
     margin: 10px;

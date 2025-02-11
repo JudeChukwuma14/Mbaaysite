@@ -61,15 +61,6 @@ export const ProductData: Product[] = [
       reviews: 3,
       title: "Wellness products",
     },
-    {
-      id: "6",
-      image: pro3,
-      currentPrice: "250",
-      originalPrice: "400",
-      rating: 4,
-      reviews: 3,
-      title: "Skin Care",
-    },
   ];
 
   export   const profilesData = [
@@ -223,29 +214,27 @@ export const ProductData: Product[] = [
       image: Gear, // Replace with actual image
       bgColor: "bg-purple-300",
       link: "#",
+       para: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
     },
     {
       title: "Gear 360°",
       image: Gear,
       bgColor: "bg-gray-200",
       link: "#",
+       para: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
     },
     {
       title: "Black Friday Deals",
       image: Gear,
       bgColor: "bg-black text-white",
       link: "#",
+       para: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
     },
     {
       title: "Apple Macbook Air 15.6”",
       image: Gear,
       bgColor: "bg-white",
       link: "#",
-    },
-    {
-      title: "Headphone XL Stereo",
-      image: Gear,
-      bgColor: "bg-blue-200",
-      link: "#",
+       para: "Lorem ipsum dolor sit amet consectetur adipisicing elit.",
     },
   ];

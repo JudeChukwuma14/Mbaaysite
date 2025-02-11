@@ -9,7 +9,7 @@ const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
 const Cart = lazy(() => import("@/components/Cart"));
-const ProductDetail = lazy(() => import("@/components/ProductDetail"))
+const ProductDetail = lazy(() => import("@/components/ProductDetail"));
 const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
   () => import("@/components/profileMangement/EditProfile")
@@ -23,8 +23,8 @@ const OrderDetail = lazy(
   () => import("@/components/profileMangement/OrderDetail")
 );
 const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
-const Fashion = lazy(() => import("@/components/Category/Fashion"));
-const Furniture = lazy(() => import("@/components/Category/Furniture"));
+const Fashion = lazy(() => import("@/components/SubCategory/Fashion"));
+const Furniture = lazy(() => import("@/components/SubCategory/Furniture"));
 
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));

@@ -1,11 +1,8 @@
-import wellness from "@/assets/image/Wellness.jpg"
-import jewelry from "@/assets/image/Jewelry.jpg"
-import book from "@/assets/image/book.jpg"
-import Homedecor from "@/assets/image/Home Décor.jpg"
-import Vintage from "@/assets/image/Vintage Furniture.jpg"
-
-
-
+import wellness from "@/assets/image/Wellness.jpg";
+import jewelry from "@/assets/image/Jewelry.jpg";
+import book from "@/assets/image/book.jpg";
+import Homedecor from "@/assets/image/Home Décor.jpg";
+import Vintage from "@/assets/image/Vintage Furniture.jpg";
 
 export const categories = [
   {

@@ -20,6 +20,7 @@ import {
   ProductData,
   profilesData,
 } from "@/components/mockdata/data";
+import CardList from "@/components/categorycardprops/CardList";
 
 const HomeArea: React.FC = () => {
   const categoriesData = [
@@ -71,28 +72,17 @@ const HomeArea: React.FC = () => {
       </section>
 
       <section className=" mb-10 px-8">
-        <div className="p-4 ">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {categories.map((product, index) => (
-              <div
+        <div className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ">
+            {categories.map((category, index) => (
+              <CardList
                 key={index}
-                className={`p-4 shadow-md ${product.bgColor} flex items-center`}
-              >
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-[200px] h-[200px] object-contain mr-4"
-                />
-                <div>
-                  <h3 className="text-lg font-semibold">{product.title}</h3>
-                  <a
-                    href={product.link}
-                    className="mt-2 inline-block text-sm text-blue-600 font-semibold"
-                  >
-                    Shop Now →
-                  </a>
-                </div>
-              </div>
+                title={category.title}
+                image={category.image}
+                bgColor={category.bgColor}
+                link={category.link}
+                para={category.para}
+              />
             ))}
           </div>
         </div>
@@ -111,34 +101,23 @@ const HomeArea: React.FC = () => {
         </div>
       </section>
       <section className=" mb-10 px-8">
-        <div className="p-4 ">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {categories.map((product, index) => (
-              <div
+        <div className="p-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ">
+            {categories.map((category, index) => (
+              <CardList
                 key={index}
-                className={`p-4 shadow-md ${product.bgColor} flex items-center`}
-              >
-                <img
-                  src={product.image}
-                  alt={product.title}
-                  className="w-[200px] h-[200px] object-contain mr-4"
-                />
-                <div>
-                  <h3 className="text-lg font-semibold">{product.title}</h3>
-                  <a
-                    href={product.link}
-                    className="mt-2 inline-block text-sm text-blue-600 font-semibold"
-                  >
-                    Shop Now →
-                  </a>
-                </div>
-              </div>
+                title={category.title}
+                image={category.image}
+                bgColor={category.bgColor}
+                link={category.link}
+                para={category.para}
+              />
             ))}
           </div>
         </div>
       </section>
 
-      <section className="mb-10">
+      <section className="mb-10 px-8">
         <div className=" flex items-center pl-6 mb-2">
           <div className="h-4 w-3 bg-orange-500"></div>
           <span className="text-orange-500  pl-2">Today's</span>
