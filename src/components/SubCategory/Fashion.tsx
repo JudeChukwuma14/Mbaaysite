@@ -39,7 +39,7 @@ const Fashion: React.FC = () => {
               className="flex flex-col items-center justify-center"
             >
               <img src={item.image} alt="" width={300} height={300} />
-              <p>{item.text}</p>
+              <p className=" text-center">{item.text}</p>
             </div>
           ))}
         </div>

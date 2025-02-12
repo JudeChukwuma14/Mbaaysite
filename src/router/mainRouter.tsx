@@ -25,7 +25,19 @@ const OrderDetail = lazy(
 const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
 const Fashion = lazy(() => import("@/components/SubCategory/Fashion"));
 const Furniture = lazy(() => import("@/components/SubCategory/Furniture"));
-
+const BeautyWellness = lazy(
+  () => import("@/components/SubCategory/BeautyWellness")
+);
+const BookPoetry = lazy(() => import("@/components/SubCategory/BookPoetry"));
+const HomeDecor = lazy(() => import("@/components/SubCategory/HomeDecor"));
+const LocalFood = lazy(() => import("@/components/SubCategory/LocalFood"));
+const PlantSeed = lazy(() => import("@/components/SubCategory/PlantSeed"));
+const Spices = lazy(() => import("@/components/SubCategory/Spices"));
+const Jewelry = lazy(() => import("@/components/SubCategory/Jewelry"));
+const TranditionalFabrics = lazy(
+  () => import("@/components/SubCategory/TranditionalFabrics")
+);
+const Vintage = lazy(() => import("@/components/SubCategory/Vintage"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -94,6 +106,18 @@ const routesConfig: RouteObject[] = [
       { path: "/cart", element: withSuspense(Cart) },
       { path: "/fashion", element: withSuspense(Fashion) },
       { path: "/furniture", element: withSuspense(Furniture) },
+      { path: "/beautywellness", element: withSuspense(BeautyWellness) },
+      { path: "/bookpoetry", element: withSuspense(BookPoetry) },
+      { path: "/homedecor", element: withSuspense(HomeDecor) },
+      { path: "/localfood", element: withSuspense(LocalFood) },
+      { path: "/plantseed", element: withSuspense(PlantSeed) },
+      { path: "/spices", element: withSuspense(Spices) },
+      { path: "/jewelry", element: withSuspense(Jewelry) },
+      {
+        path: "/tranditionalFabrics",
+        element: withSuspense(TranditionalFabrics),
+      },
+      { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/product-details/:id", element: withSuspense(ProductDetail) },
     ],
   },

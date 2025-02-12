@@ -5,14 +5,14 @@ import ProductCard2 from "../Cards/ProductCard2";
 
 const Jewelry: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Women's Fashion" },
-    { image: image, text: "Men Fashion" },
-    { image: image, text: "Kid’s Fashion" },
-    { image: image, text: "Accessories (Hats, Belts)" },
-    { image: image, text: "Fashion Jewelry" },
-    { image: image, text: "Sports wear" },
-    { image: image, text: "Ethnic Wear" },
-    { image: image, text: "Footwear" },
+    { image: image, text: "Handmade Jewelry" },
+    { image: image, text: "Gemstones" },
+    { image: image, text: "Jewelry Materials" },
+    { image: image, text: "Men’s Jewelry" },
+    { image: image, text: "Children’s Jewelry" },
+    { image: image, text: "Bridal & Special Occasion Jewelry" },
+    { image: image, text: "Cultural & Traditional Jewelry" },
+    { image: image, text: "Gemstone Jewelry by Birthstone" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -39,7 +39,7 @@ const Jewelry: React.FC = () => {
               className="flex flex-col items-center justify-center"
             >
               <img src={item.image} alt="" width={300} height={300} />
-              <p>{item.text}</p>
+              <p className=" text-center">{item.text}</p>
             </div>
           ))}
         </div>

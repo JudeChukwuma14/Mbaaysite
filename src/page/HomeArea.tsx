@@ -21,6 +21,7 @@ import {
   profilesData,
 } from "@/components/mockdata/data";
 import CardList from "@/components/categorycardprops/CardList";
+import NewCard from "@/components/Cards/NewCard";
 
 const HomeArea: React.FC = () => {
   const categoriesData = [
@@ -73,18 +74,7 @@ const HomeArea: React.FC = () => {
 
       <section className=" mb-10 px-8">
         <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ">
-            {categories.map((category, index) => (
-              <CardList
-                key={index}
-                title={category.title}
-                image={category.image}
-                bgColor={category.bgColor}
-                link={category.link}
-                para={category.para}
-              />
-            ))}
-          </div>
+         <NewCard/>
         </div>
       </section>
 
@@ -102,18 +92,7 @@ const HomeArea: React.FC = () => {
       </section>
       <section className=" mb-10 px-8">
         <div className="p-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ">
-            {categories.map((category, index) => (
-              <CardList
-                key={index}
-                title={category.title}
-                image={category.image}
-                bgColor={category.bgColor}
-                link={category.link}
-                para={category.para}
-              />
-            ))}
-          </div>
+        <NewCard/>
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { categories } from "../mockdata/categoryData";
+import { Link } from "react-router-dom";
 
 
 export default function Dropdown() {
@@ -37,17 +38,20 @@ export default function Dropdown() {
               onMouseEnter={() => handleMouseEnter(category.name)}
               onMouseLeave={handleMouseLeave}
             >
-              <p className="cursor-pointer text-[12px]">{category.name}</p>
-
+            <Link to={category.link}>
+            <p className="cursor-pointer text-[12px]">{category.name}</p>
+            </Link>
               {/* Dropdown Menu */}
               {activeCategory === category.name && (
                 <div className="absolute left-0 top-full w-full bg-white shadow-lg px-6 py-3">
                   <div className="grid grid-cols-8 gap-6">
                     {category.subcategories.map((sub) => (
                       <div key={sub.title}>
+                        <Link to={sub.link}>
                         <span className="font-semibold text-[12px] cursor-pointer mb-2 underline">
                           {sub.title}
                         </span>
+                        </Link>
                         <ul className="text-[10px] text-gray-600">
                           {sub.items.map((item) => (
                             <li
