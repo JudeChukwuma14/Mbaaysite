@@ -15,12 +15,11 @@ import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import Slider from "@/components/Slider";
 import Furniture from "@/assets/image/Furniture.jpg";
 import {
-  categories,
   flashSale,
   ProductData,
   profilesData,
 } from "@/components/mockdata/data";
-import CardList from "@/components/categorycardprops/CardList";
+
 import NewCard from "@/components/Cards/NewCard";
 
 const HomeArea: React.FC = () => {
