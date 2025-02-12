@@ -77,6 +77,8 @@ const KycVerification = lazy(
 );
 const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
 
+const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost"))
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -128,6 +130,7 @@ const routesConfig: RouteObject[] = [
       { path: "edit-vendor-profile", element: withSuspense(EditVendorProfile) },
       { path: "kyc-verification", element: withSuspense(KycVerification) },
       { path: "inbox", element: withSuspense(Inbox) },
+      { path: "all-post", element: withSuspense(AllPost) },
     ],
   },
   { path: "signin", element: withSuspense(Login) },
