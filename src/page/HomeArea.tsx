@@ -15,6 +15,7 @@ import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import Slider from "@/components/Slider";
 import Furniture from "@/assets/image/Furniture.jpg";
 import {
+  Auction,
   ExploreData,
   flashSale,
   ProductData,
@@ -23,6 +24,7 @@ import {
 
 import NewCard from "@/components/Cards/NewCard";
 import ExploreCard from "@/components/Cards/ExploreCard";
+import AuctionCard from "@/components/Cards/AuctionCard";
 
 const HomeArea: React.FC = () => {
   const categoriesData = [
@@ -145,6 +147,19 @@ const HomeArea: React.FC = () => {
           </button>
         </div>
       </section>
+      <section className="mb-10 px-8">
+        <div className=" flex items-center pl-6 mb-2">
+          <div className="h-4 w-3 bg-orange-500"></div>
+        </div>
+        <h2 className="text-2xl text-orange-500  font-bold pl-6 mb-6">Auction</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {Auction.map((item, index) => (
+            <AuctionCard key={index} {...item} />
+          ))}
+        </div>
+        
+      </section>
+
       <section className=" mb-10">
         <div>
           <div className="flex justify-center gap-4 py-8 px-5 md:px-0 flex-col  md:flex-row">

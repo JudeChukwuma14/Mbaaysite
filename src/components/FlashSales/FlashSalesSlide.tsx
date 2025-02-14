@@ -1,6 +1,6 @@
 import FlashSale from "./FlashSales";
 import Slider from "react-slick";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
