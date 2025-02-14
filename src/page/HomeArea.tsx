@@ -15,12 +15,14 @@ import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import Slider from "@/components/Slider";
 import Furniture from "@/assets/image/Furniture.jpg";
 import {
+  ExploreData,
   flashSale,
   ProductData,
   profilesData,
 } from "@/components/mockdata/data";
 
 import NewCard from "@/components/Cards/NewCard";
+import ExploreCard from "@/components/Cards/ExploreCard";
 
 const HomeArea: React.FC = () => {
   const categoriesData = [
@@ -63,7 +65,15 @@ const HomeArea: React.FC = () => {
           <div className="h-4 w-3 bg-orange-500"></div>
           <span className="text-orange-500  pl-2">This Month</span>
         </div>
-        <h2 className="text-2xl font-bold pl-6 mb-6">Best Selling Products</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold pl-6">Best Selling Products</h2>
+          <button
+            type="submit"
+            className=" bg-orange-500 text-white py-2  px-3 hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+          >
+            View All
+          </button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
           {ProductData.map((item) => (
             <FirstCartCard key={item.id} product={item} />
@@ -73,7 +83,7 @@ const HomeArea: React.FC = () => {
 
       <section className=" mb-10 px-8">
         <div className="p-5">
-         <NewCard/>
+          <NewCard />
         </div>
       </section>
 
@@ -89,9 +99,29 @@ const HomeArea: React.FC = () => {
           ))}
         </div>
       </section>
+      <section className="mb-10 px-8">
+        <div className=" flex items-center pl-6 mb-2">
+          <div className="h-4 w-3 bg-orange-500"></div>
+          <span className="text-orange-500  pl-2">Our Products</span>
+        </div>
+        <h2 className="text-2xl font-bold pl-6 mb-6">Explore Our Products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          {ExploreData.map((item, index) => (
+            <ExploreCard key={index} {...item} />
+          ))}
+        </div>
+        <div className=" flex justify-center">
+          <button
+            type="submit"
+            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+          >
+            View All Products
+          </button>
+        </div>
+      </section>
       <section className=" mb-10 px-8">
         <div className="p-5">
-        <NewCard/>
+          <NewCard />
         </div>
       </section>
 
@@ -105,6 +135,14 @@ const HomeArea: React.FC = () => {
         </div>
         <div>
           <ProductSlider products={flashSale} />
+        </div>
+        <div className=" flex justify-center">
+          <button
+            type="submit"
+            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+          >
+            View All Products
+          </button>
         </div>
       </section>
       <section className=" mb-10">

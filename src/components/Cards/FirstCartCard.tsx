@@ -51,7 +51,7 @@ const FirstCartCard: React.FC<FirstCartCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="max-w-sm bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="max-w-sm bg-white shadow-md overflow-hidden">
       <div className="relative">
         <img
           src={product.image}
