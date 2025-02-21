@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { FiShoppingCart, FiHeart } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 interface AuctionCardProps {
+  id: string;
   image: string;
   title: string;
   currentBid: number;
@@ -12,6 +14,7 @@ interface AuctionCardProps {
 }
 
 const AuctionCard: React.FC<AuctionCardProps> = ({
+  id,
   image,
   title,
   currentBid,
@@ -108,7 +111,9 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
           />
           <span className="text-sm font-medium">{seller}</span>
         </div>
-        <button className="bg-gray-400 text-sm text-white px-3 py-2 hover:bg-orange-500 ">Bid Now</button>
+    <Link to={`/auctiondetail/${id}`}>
+    <button className="bg-gray-400 text-sm text-white px-3 py-2 hover:bg-orange-500 ">Bid Now</button>
+    </Link>
       </div>
     </div>
   );

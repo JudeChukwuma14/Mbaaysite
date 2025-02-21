@@ -24,7 +24,8 @@ import {
 
 import NewCard from "@/components/Cards/NewCard";
 import ExploreCard from "@/components/Cards/ExploreCard";
-import AuctionCard from "@/components/Cards/AuctionCard";
+import AuctionCard from "@/components/AuctionPage/AuctionCard";
+import { NavLink } from "react-router-dom";
 
 const HomeArea: React.FC = () => {
   const categoriesData = [
@@ -155,9 +156,16 @@ const HomeArea: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
           {Auction.map((item, index) => (
             <AuctionCard key={index} {...item} />
-          ))}
+          )).slice(0, 8)}
         </div>
-        
+        <div className=" flex justify-center">
+          <NavLink
+            to="/auctionview"
+            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+          >
+            View All Auction
+          </NavLink>
+        </div>
       </section>
 
       <section className=" mb-10">

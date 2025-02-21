@@ -48,7 +48,7 @@ const Registration: React.FC = () => {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/login-vendor");
+      navigate("/welcomepage");
     } catch (error: unknown) {
       console.log(error);
       toast.error((error as Error)?.message || "An unexpected error occurred", {

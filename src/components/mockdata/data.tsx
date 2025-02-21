@@ -312,80 +312,100 @@ export const ExploreData = [
   },
 ];
 
-
-
-export const Auction=[
+export const Auction = [
   {
-    image:"https://i.pinimg.com/736x/69/53/5d/69535dee69e1ca455e53b3eb8567e259.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
-    
+    id:"1",
+    image:
+      "https://i.pinimg.com/736x/69/53/5d/69535dee69e1ca455e53b3eb8567e259.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/14/2c/98/142c983bb5dbbec6c4e4d4fdfcddcea8.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"2",
+    image:
+      "https://i.pinimg.com/736x/14/2c/98/142c983bb5dbbec6c4e4d4fdfcddcea8.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/20/88/e8/2088e821dc6a0fba484d5ad205bad21b.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"3",
+    image:
+      "https://i.pinimg.com/736x/20/88/e8/2088e821dc6a0fba484d5ad205bad21b.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/46/79/27/46792783195b9eed0ef3f485b004472a.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"4",
+    image:
+      "https://i.pinimg.com/736x/46/79/27/46792783195b9eed0ef3f485b004472a.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/0d/33/f0/0d33f0a4f3f66b4974ce9239ddd88ef7.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"5",
+    image:
+      "https://i.pinimg.com/736x/0d/33/f0/0d33f0a4f3f66b4974ce9239ddd88ef7.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/a0/81/67/a08167ac02bfdc381ab3954aba838796.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"6",
+    image:
+      "https://i.pinimg.com/736x/a0/81/67/a08167ac02bfdc381ab3954aba838796.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/6b/37/e2/6b37e21a27863f35ecfd44b5e7930942.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
+    id:"7",
+    image:
+      "https://i.pinimg.com/736x/6b/37/e2/6b37e21a27863f35ecfd44b5e7930942.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
   },
   {
-    image:"https://i.pinimg.com/736x/1c/76/cf/1c76cfca7dd1d4553828f7cd68c85307.jpg",
-    title:"T-shirt from mbaay",
-    currentBid:2500,
-    lotNumber:"23423454",
-    seller:"Johnny",
-    sellerImage:"https://randomuser.me/api/portraits/men/1.jpg",
-    endTime:"2025-02-20T23:59:59",
-  },
-]
+    id:"8",
+    image:
+      "https://i.pinimg.com/736x/1c/76/cf/1c76cfca7dd1d4553828f7cd68c85307.jpg",
+    title: "T-shirt from mbaay",
+    currentBid: 2500,
+    lotNumber: "23423454",
+    seller: "Johnny",
+    sellerImage: "https://randomuser.me/api/portraits/men/1.jpg",
+    endTime: "2025-02-20T23:59:59",
+    description:"i think this"
+  }];
