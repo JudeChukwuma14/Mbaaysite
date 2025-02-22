@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   Home,
@@ -10,18 +10,26 @@ import {
   MessageSquare,
   LogOutIcon,
   ChevronDown,
-  Inbox
+  Inbox,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { MdOutlineReviews } from "react-icons/md";
-// import { useDarkMode } from "../Context/DarkModeContext";
+import { useDispatch } from "react-redux";
+import { logoutVendor } from "@/redux/slices/vendorSlice";
 
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
 
-const DashboardSidebar:React.FC<DashboardSidebarProps> = ({darkMode})=> {
-  // const { darkMode } = useDarkMode();
+const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logoutVendor());
+    navigate("/login-vendor");
+  };
+
   return (
     <aside
       className={`w-64 p-5 h-screen flex flex-col justify-between overflow-y-auto transition-colors ${
@@ -33,43 +41,25 @@ const DashboardSidebar:React.FC<DashboardSidebarProps> = ({darkMode})=> {
         <nav>
           <NavItem title="Dashboard" to="/app" Icon={Home} />
           <NavItem title="Orders" to="orders" Icon={ShoppingCart} />
-          <NavItem
-            title="Products"
-            subItems={["All Products", "New Product"]}
-            Icon={Box}
-          />
+          <NavItem title="Products" subItems={["All Products", "New Product"]} Icon={Box} />
           <NavItem title="Customers" to="customers" Icon={Users} />
           <NavItem title="Inbox" to="inbox" Icon={Inbox} />
-          <NavItem
-            title="Payment"
-            subItems={["Payments", "Preview Invoice"]}
-            Icon={DollarSign}
-          />
-          <NavItem
-            title="Settings"
-            subItems={["Edit Vendor Profile", "KYC Verification"]}
-            Icon={Settings}
-          />
+          <NavItem title="Payment" subItems={["Payments", "Preview Invoice"]} Icon={DollarSign} />
+          <NavItem title="Settings" subItems={["Edit Vendor Profile", "KYC Verification"]} Icon={Settings} />
           <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
-          <NavItem
-            title="Community"
-            subItems={[ "All Post", "Profile",]}
-            Icon={MessageSquare}
-          />
-          <NavItem title="LogOut" to="logout" Icon={LogOutIcon} />
+          <NavItem title="Community" subItems={["All Post", "Profile"]} Icon={MessageSquare} />
+          {/* Logout Button */}
+          <NavItem title="LogOut" Icon={LogOutIcon} onClick={handleLogout} />
         </nav>
       </div>
+      {/* Vendor Profile Section */}
       <div className="flex items-center gap-3 p-3 bg-gray-200 dark:bg-gray-700 rounded-lg">
-        <img
-          src="/vendor-avatar.png"
-          alt="Vendor"
-          className="w-12 h-12 rounded-full"
-        />
+        <img src="/vendor-avatar.png" alt="Vendor" className="w-12 h-12 rounded-full" />
         <div>
           <p className="text-sm font-semibold">Finbarr</p>
           <div className="flex mt-2 items-center justify-center">
-          <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
-          <span className="text-green-500 text-xs rounded ml-[3px]">Online</span>
+            <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
+            <span className="text-green-500 text-xs rounded ml-[3px]">Online</span>
           </div>
         </div>
       </div>
@@ -82,13 +72,23 @@ const NavItem = ({
   to,
   subItems,
   Icon,
+  onClick,
 }: {
   title: string;
   to?: string;
   subItems?: string[];
   Icon?: React.ComponentType<{ className?: string }>;
+  onClick?: () => void;
 }) => {
   const [open, setOpen] = useState(false);
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick(); // Execute the function if it's provided
+    } else if (subItems) {
+      setOpen(!open);
+    }
+  };
 
   return (
     <div>
@@ -96,7 +96,7 @@ const NavItem = ({
         className={`p-2 flex items-center justify-between gap-3 cursor-pointer hover:bg-orange-400 rounded ${
           open ? "bg-orange-400 text-white" : ""
         }`}
-        onClick={() => (subItems ? setOpen(!open) : null)}
+        onClick={handleClick}
       >
         <div className="flex items-center gap-3">
           {Icon && <Icon className="w-5 h-5" />}
@@ -144,6 +144,5 @@ const NavItem = ({
     </div>
   );
 };
-
 
 export default DashboardSidebar;

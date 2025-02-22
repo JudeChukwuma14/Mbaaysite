@@ -1,6 +1,8 @@
-// Sidebar.tsx
 import { useState } from "react";
-import LogoImage from "@/assets/image/mbbaylogo.png"
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+
+import LogoImage from "@/assets/image/mbbaylogo.png";
 import {
   FaBars,
   FaUser,
@@ -11,7 +13,8 @@ import {
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { IoIosLogOut } from "react-icons/io";
+import { logout } from "@/redux/slices/userSlice";
 
 const Sidebar = ({
   isOpen,
@@ -21,10 +24,17 @@ const Sidebar = ({
   toggleSidebar: () => void;
 }) => {
   const [ordersDropdownOpen, setOrdersDropdownOpen] = useState(false);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/signin"); // Redirect after logout
+  };
 
   return (
     <div
-      className={`h-screen bg-gray-100  transition-all ${
+      className={`h-screen bg-gray-100 transition-all ${
         isOpen ? "w-56" : "w-20"
       }`}
     >
@@ -33,36 +43,14 @@ const Sidebar = ({
         onClick={toggleSidebar}
       >
         <FaBars size={24} />
-        {isOpen && (
-          <img
-            src={LogoImage}
-            alt="Mbbay Logo"
-            className="h-8"
-          />
-        )}
+        {isOpen && <img src={LogoImage} alt="Mbbay Logo" className="h-8" />}
       </div>
       <nav className="mt-4">
         {[
-          {
-            icon: <FaUser size={24} />,
-            label: "My Profile",
-            link: "/dashboard",
-          },
-          {
-            icon: <FaHeart size={24} />,
-            label: "My Wishlist",
-            link: "/dashboard/wishlist",
-          },
-          {
-            icon: <FaAddressBook size={24} />,
-            label: "Addresses",
-            link: "/dashboard/addresses",
-          },
-          {
-            icon: <FaCreditCard size={24} />,
-            label: "Payment Methods",
-            link: "/dashboard/checkout",
-          },
+          { icon: <FaUser size={24} />, label: "My Profile", link: "/dashboard" },
+          { icon: <FaHeart size={24} />, label: "My Wishlist", link: "/dashboard/wishlist" },
+          { icon: <FaAddressBook size={24} />, label: "Addresses", link: "/dashboard/addresses" },
+          { icon: <FaCreditCard size={24} />, label: "Payment Methods", link: "/dashboard/checkout" },
         ].map(({ icon, label, link }) => (
           <Link
             key={label}
@@ -82,8 +70,7 @@ const Sidebar = ({
           >
             <FaShoppingCart size={24} />
             {isOpen && <span>My Orders</span>}
-            {isOpen &&
-              (ordersDropdownOpen ? <FaChevronUp /> : <FaChevronDown />)}
+            {isOpen && (ordersDropdownOpen ? <FaChevronUp /> : <FaChevronDown />)}
           </div>
           {ordersDropdownOpen && isOpen && (
             <div className="ml-6">
@@ -103,6 +90,15 @@ const Sidebar = ({
               ))}
             </div>
           )}
+        </div>
+
+        {/* Logout Button */}
+        <div
+          className="flex items-center gap-4 p-4 cursor-pointer hover:bg-red-500 hover:text-white mt-4"
+          onClick={handleLogout}
+        >
+          <IoIosLogOut size={24} />
+          {isOpen && <span>Logout</span>}
         </div>
       </nav>
     </div>
