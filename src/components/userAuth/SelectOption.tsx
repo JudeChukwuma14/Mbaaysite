@@ -46,7 +46,7 @@ const SelectOption: React.FC = () => {
                 </div>
               </div>
             </NavLink>
-            <NavLink to={"/signup-vendor"}>
+            <NavLink to={"/login-vendor"}>
             <div className="w-full md:w-[636px] bg-orange-300 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
               <div className="flex flex-col gap-2">
                 <span className="text-xl md:text-3xl font-bold text-white">
