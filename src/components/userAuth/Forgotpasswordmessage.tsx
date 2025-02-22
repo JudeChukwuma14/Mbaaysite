@@ -5,6 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 const Forgotpasswordmessage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -44,7 +45,7 @@ const Forgotpasswordmessage: React.FC = () => {
         {/* Left Section */}
         <Sliding />
         {/* Right Section */}
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -80,7 +81,7 @@ const Forgotpasswordmessage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

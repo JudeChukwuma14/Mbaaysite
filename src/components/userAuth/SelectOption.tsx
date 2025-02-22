@@ -5,6 +5,7 @@ import vendorImage from "../../assets/image/vendor.png";
 import logo from "../../assets/image/mbbaylogo.png";
 import { NavLink } from "react-router-dom";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 const SelectOption: React.FC = () => {
   const bg = {
     backgroundImage: `url(${background})`,
@@ -13,7 +14,7 @@ const SelectOption: React.FC = () => {
     <div className="w-full h-screen">
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
@@ -45,7 +46,7 @@ const SelectOption: React.FC = () => {
                 </div>
               </div>
             </NavLink>
-            <NavLink to={"/signup-vendor"}>
+            <NavLink to={"/login-vendor"}>
             <div className="w-full md:w-[636px] bg-orange-300 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
               <div className="flex flex-col gap-2">
                 <span className="text-xl md:text-3xl font-bold text-white">
@@ -70,7 +71,7 @@ const SelectOption: React.FC = () => {
               Click to visit homepage
             </a>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

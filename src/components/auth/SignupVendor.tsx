@@ -6,8 +6,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { createVendor } from "@/utils/vendorApi";
+import { motion } from "framer-motion";
 
 interface FormData {
   storeName: string;
@@ -70,7 +71,7 @@ const Registration: React.FC = () => {
 
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
@@ -80,9 +81,9 @@ const Registration: React.FC = () => {
             </div>
             <div className="w-full hidden text-end lg:block">
               <span className="text-gray-600">Already have an account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
-                Sign in
-              </a>
+              <NavLink to={"/login-vendor"} className="text-blue-500 hover:underline" >
+              <p> Sign in</p>
+              </NavLink>
             </div>
           </div>
           <div className="flex items-center justify-center px-4">
@@ -381,7 +382,7 @@ const Registration: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

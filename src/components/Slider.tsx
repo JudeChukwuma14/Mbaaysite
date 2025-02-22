@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import image1 from "@/assets/image/fashion 1.png"; 
+import { motion } from "framer-motion";
 
 const slides = [
   {
@@ -38,7 +39,7 @@ const Slider: React.FC = () => {
   return (
     <div className="relative w-full h-48 md:h-56 lg:h-80 overflow-hidden">
       {slides.map((slide, index) => (
-        <div
+        <motion.div
           key={index}
           className={`absolute w-full h-full flex items-center transition-opacity duration-700 ${
             index === currentIndex ? "opacity-100" : "opacity-0"
@@ -62,22 +63,22 @@ const Slider: React.FC = () => {
               </a>
             </div>
           </div>
-        </div>
+        </motion.div>
       ))}
 
       {/* Navigation Buttons */}
-      <button
+      <motion.button
         className="absolute left-2 md:left-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full"
         onClick={prevSlide}
       >
         <FaChevronLeft className=" hidden md:block" />
-      </button>
-      <button
+      </motion.button>
+      <motion.button
         className="absolute right-2 md:right-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full"
         onClick={nextSlide}
       >
         <FaChevronRight className=" hidden md:block"/>
-      </button>
+      </motion.button>
     </div>
   );
 };

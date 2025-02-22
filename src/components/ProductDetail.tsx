@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ProductData } from "./mockdata/data";
+import { motion } from "framer-motion";
 
 const ProductDetail: React.FC = () => {
   // State for quantity and selected size
@@ -63,8 +64,8 @@ const ProductDetail: React.FC = () => {
           <div className="mt-6">
             <h3 className="text-sm font-semibold mb-2">Colours:</h3>
             <div className="flex gap-2">
-              <button className="w-6 h-6 bg-gray-700 rounded-full border border-gray-300"></button>
-              <button className="w-6 h-6 bg-orange-500 rounded-full border border-gray-300"></button>
+              <motion.button className="w-6 h-6 bg-gray-700 rounded-full border border-gray-300"></motion.button>
+              <motion.button className="w-6 h-6 bg-orange-500 rounded-full border border-gray-300"></motion.button>
             </div>
           </div>
 
