@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI } from "@/utils/vendorApi";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface FormData {
   email: string;
@@ -84,7 +85,7 @@ const LoginVendor: React.FC = () => {
 
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4"
         >
@@ -193,7 +194,7 @@ const LoginVendor: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

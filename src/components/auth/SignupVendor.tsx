@@ -8,6 +8,7 @@ import Sliding from "../Reuseable/Sliding";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { createVendor } from "@/utils/vendorApi";
+import { motion } from "framer-motion";
 
 interface FormData {
   storeName: string;
@@ -70,7 +71,7 @@ const Registration: React.FC = () => {
 
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
@@ -381,7 +382,7 @@ const Registration: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
