@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { setUser } from "@/redux/slices/userSlice";
 import { useDispatch } from "react-redux";
 import { LoginUser } from "@/utils/api";
+import { motion } from "framer-motion";
 
 interface FormData {
   emailOrPhone: string;
@@ -60,7 +61,7 @@ const Signin: React.FC = () => {
       <ToastContainer />
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
@@ -173,7 +174,7 @@ const Signin: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

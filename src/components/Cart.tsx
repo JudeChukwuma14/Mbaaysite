@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { removeItem, updateQuantity } from "@/redux/slices/cartSlice";
+import { motion } from "framer-motion";
 
 const Cart: React.FC = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -72,7 +73,7 @@ const Cart: React.FC = () => {
                 </td>
                 <td className="py-2 px-4">${item.price}</td>
                 <td className="py-2 px-4">
-                  <input
+                  <motion.input
                     type="number"
                     min="1"
                     value={item.quantity}

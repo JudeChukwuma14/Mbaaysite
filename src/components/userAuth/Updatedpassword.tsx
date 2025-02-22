@@ -2,6 +2,7 @@ import React from "react";
 import background from "../../assets/image/bg2.jpeg";
 import logo from "../../assets/image/mbbaylogo.png";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 const Updatedpassword: React.FC = () => {
   const bg = {
@@ -15,7 +16,7 @@ const Updatedpassword: React.FC = () => {
         {/* Left Section */}
         <Sliding />
         {/* Right Section */}
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -41,7 +42,7 @@ const Updatedpassword: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
