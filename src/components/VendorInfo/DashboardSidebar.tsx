@@ -13,6 +13,7 @@ import {
   Inbox
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { MdOutlineReviews } from "react-icons/md";
 // import { useDarkMode } from "../Context/DarkModeContext";
 
 interface DashboardSidebarProps {
@@ -49,9 +50,10 @@ const DashboardSidebar:React.FC<DashboardSidebarProps> = ({darkMode})=> {
             subItems={["Edit Vendor Profile", "KYC Verification"]}
             Icon={Settings}
           />
+          <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
           <NavItem
             title="Community"
-            subItems={["Create Post", "All Post", "Profile", "Reviews"]}
+            subItems={[ "All Post", "Profile",]}
             Icon={MessageSquare}
           />
           <NavItem title="LogOut" to="logout" Icon={LogOutIcon} />

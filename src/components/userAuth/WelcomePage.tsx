@@ -10,16 +10,16 @@ const WelcomePage = () => {
 
         {/* Message */}
         <h2 className="text-lg sm:text-xl font-semibold mt-4">
-          Your Documents Have Been Uploaded Successfully
+        Congratulations! Your account has been successfully registered on <Link to="/" className=" text-orange-500">Mbaay.com</Link>
         </h2>
         <p className="text-gray-500 text-sm mt-2 leading-5  text-justify">
-          Congratulations! Your account has been successfully registered on{" "}
-          <Link to="/" className=" text-orange-500">Mbaay.com</Link>. Our admin team is currently reviewing
+          {" "}
+          . Our admin team is currently reviewing
           your account for verification. Once approved, you will receive a
           confirmation email, and you can start selling on our platform. Please
           be patient as this process may take some time. If you have any
           questions, feel free to contact our support team. Thank you
-          for joining Mbaay!
+          for joining Mbaay!
         </p>
       </div>
     </div>
