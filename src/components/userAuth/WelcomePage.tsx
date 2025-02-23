@@ -14,7 +14,7 @@ const WelcomePage = () => {
         </h2>
         <p className="text-gray-500 text-sm mt-2 leading-5  text-justify">
           {" "}
-          . Our admin team is currently reviewing
+          Our admin team is currently reviewing
           your account for verification. Once approved, you will receive a
           confirmation email, and you can start selling on our platform. Please
           be patient as this process may take some time. If you have any

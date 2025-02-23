@@ -10,8 +10,6 @@ import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI } from "@/utils/vendorApi";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useDispatch } from "react-redux";
-import { setUser } from "@/redux/slices/userSlice";
 
 interface FormData {
   email: string;
@@ -27,6 +25,7 @@ interface ApiError {
 }
 
 const LoginVendor: React.FC = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -51,17 +50,13 @@ const LoginVendor: React.FC = () => {
     setIsLoading(true);
     console.log(data)
     try {
-      const response = await LoginVendorAPI({
-        emailOrPhone:data.email,
-        password:data.password
-      });
+      const response = await LoginVendorAPI(data);
       console.log("Vender logs", response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      dispatch(setUser({ user: response.data.user, token: response.data.token }))
-      navigate("/app");
+      navigate("/login-vendor");
     } catch (error) {
       if (isApiError(error)) {
         toast.error(
@@ -104,8 +99,11 @@ const LoginVendor: React.FC = () => {
 
             <div className="w-full  hidden text-end lg:block">
               <span className="text-gray-600">Don't have an account? </span>
-              <NavLink to={"/signup-vendor"} className="text-blue-500 hover:underline">
-              Sign up now!
+              <NavLink
+                to={"/signup-vendor"}
+                className="text-blue-500 hover:underline"
+              >
+                Sign up now!
               </NavLink>
             </div>
           </div>
