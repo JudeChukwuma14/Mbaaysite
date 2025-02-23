@@ -8,6 +8,8 @@ import CreatePostModal from "./CreatePostModal"
 import SocialList from "./SocailPost"
 import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
+import { get_posts_feed } from "@/utils/communityApi"
+import moment from "moment"
 
 
 interface Recommendation {
@@ -201,8 +203,10 @@ export default function SocialFeed() {
   const [showEmojiPicker, setShowEmojiPicker] = useState<Record<string, boolean>>({})
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  const user = useSelector((state:any)=> state.user)
-  const [post,setPost] = useState<any>({})
+  const user = useSelector((state:any)=> state.vendor)
+  const [vendor,setVendor] = useState<any>([])
+  const [my_posts,setMyposts] = useState<any>([])
+
 
 
    useEffect(()=>{
@@ -210,7 +214,7 @@ export default function SocialFeed() {
         if (!user?.token) return;
         try {
           const vendordata = await get_single_vendor(user.token);
-          setPost(vendordata);
+          setVendor(vendordata);
         } catch (error) {
           console.error("Error fetching admin:", error);
         }
@@ -218,6 +222,22 @@ export default function SocialFeed() {
       fetchAdmin()
     })
 
+   useEffect(()=>{
+    const fetchPosts = async () => {
+        if (!user?.token) return;
+        try {
+          const vendorposts = await get_posts_feed(user.token);
+          setMyposts(vendorposts);
+        } catch (error) {
+          console.error("Error fetching admin:", error);
+        }
+      };
+      fetchPosts()
+    })
+
+    console.log(my_posts)
+   
+    
   const handleLike = (postId: string) => {
     setPosts(posts.map((post) => (post.id === postId ? { ...post, likes: post.likes + 1 } : post)))
   }
@@ -299,18 +319,7 @@ export default function SocialFeed() {
     }
   }
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-      setShowEmojiPicker({})
-    }
-  }
 
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [showEmojiPicker, emojiPickerRef, handleClickOutside]) // Added handleClickOutside to dependencies
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -392,9 +401,9 @@ export default function SocialFeed() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {posts?.map((post, index) => (
+          {my_posts?.data?.data?.feedPosts?.map((post:any, index:any) => (
             <motion.div
-              key={post.id}
+              key={my_posts.id}
               className="bg-white rounded-lg shadow p-4"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -402,11 +411,11 @@ export default function SocialFeed() {
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3">
-                  <Avatar src={post.author.avatar} alt={post.author.name} />
+                  <Avatar src={post?.author?.avatar} alt={post?.author?.name} />
                   <div>
-                    <h3 className="font-semibold">{post.author.name}</h3>
+                    <h3 className="font-semibold">{post?.poster?.userName}</h3>
                     <p className="text-sm text-gray-500">
-                      {post.author.category} • {post.timestamp}
+                      {post?.poster?.craftCategories[0]} • {moment(post?.createdTime).fromNow()}
                     </p>
                   </div>
                 </div>
@@ -426,25 +435,25 @@ export default function SocialFeed() {
                 </motion.button>
               </div>
 
-              <p className="text-sm mb-4">{post.content}</p>
+              <p className="text-sm mb-4">{post?.content}</p>
 
               <div className="flex flex-wrap gap-2 mb-4">
-                {post.hashtags.map((tag) => (
+                {/* {post.hashtags.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     #{tag}
                   </Badge>
-                ))}
+                ))} */}
               </div>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <motion.button
-                  onClick={() => handleLike(post.id)}
+                  onClick={() => handleLike(post._id)}
                   className="flex items-center gap-1 hover:text-red-500"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <svg
-                    className={`w-4 h-4 ${post.likes > 0 ? "fill-red-500 stroke-red-500" : ""}`}
+                    className={`w-4 h-4 ${post?.likes === 0 ? "fill-red-500 stroke-red-500" : ""}`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -456,14 +465,14 @@ export default function SocialFeed() {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
-                  <span>{post.likes.toLocaleString()}</span>
+                  <span>{post?.likes?.length || 0} Likes</span>
                 </motion.button>
-                <span>{post?.comments?.length} Comments</span>
+                <span>{post?.comments?.length || 0} Comments</span>
               </div>
 
               {/* Comments Section */}
               <AnimatePresence>
-                {post?.comments.map((comment) => (
+                {post?.comments?.map((comment:any) => (
                   <motion.div
                     key={comment.id}
                     className="mt-4 bg-gray-50 p-3 rounded-lg"
@@ -488,7 +497,7 @@ export default function SocialFeed() {
                         </div>
                         {/* Comment Reactions */}
                         <div className="flex items-center gap-1 mt-1">
-                          {comment.reactions.map((reaction) => (
+                          {comment?.reactions?.map((reaction:any) => (
                             <motion.button
                               key={reaction.emoji}
                               className="text-sm hover:bg-gray-200 rounded-full px-2 py-1"
@@ -520,7 +529,7 @@ export default function SocialFeed() {
                         )}
                         {/* Replies */}
                         <AnimatePresence>
-                          {comment.replies.map((reply) => (
+                          {comment?.replies?.map((reply) => (
                             <motion.div
                               key={reply.id}
                               className="ml-6 mt-2 bg-white p-2 rounded-lg"
@@ -588,24 +597,27 @@ export default function SocialFeed() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-4 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
-            <img src="/placeholder.svg?height=60&width=60" alt="Profile" className="w-12 h-12 rounded-full" />
+            {/* <img src="/placeholder.svg?height=60&width=60" alt="Profile" className="w-12 h-12 rounded-full" /> */}
+            <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                       <p>{vendor?.userName?.charAt()}</p>
+                       </div>
             <div>
-              <h2 className="font-semibold">Ogbonna Friskart</h2>
+              <h2 className="font-semibold">{vendor?.userName}</h2>
             </div>
           </div>
         </div>
 
         <div className="flex justify-between mb-4 text-sm">
           <div className="text-center">
-            <div className="font-bold">201</div>
+            <div className="font-bold">{vendor?.communityPosts?.length || 0}</div>
             <div className="text-gray-600">Posts</div>
           </div>
           <div className="text-center">
-            <div className="font-bold">12</div>
+            <div className="font-bold">{vendor?.followers?.length || 0}</div>
             <div className="text-gray-600">Followers</div>
           </div>
           <div className="text-center">
-            <div className="font-bold">17</div>
+            <div className="font-bold">{vendor?.following?.length || 0}</div>
             <div className="text-gray-600">Following</div>
           </div>
         </div>

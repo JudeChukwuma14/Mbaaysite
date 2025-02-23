@@ -4,9 +4,6 @@ const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 
@@ -25,6 +22,7 @@ export const createVendor = async (userData: any) => {
 export const LoginVendorAPI = async(userData:any)=>{
   try {
     const response = await api.post("/login_vendor", userData);
+    console.log(response)
     return response.data;
   } catch (error: any) {
     console.error("Signup Error:", error.response?.data || error);

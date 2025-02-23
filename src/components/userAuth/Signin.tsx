@@ -6,7 +6,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { setUser } from "@/redux/slices/userSlice";
 import { useDispatch } from "react-redux";
 import { LoginUser } from "@/utils/api";
@@ -161,16 +161,16 @@ const Signin: React.FC = () => {
               </button>
 
               <div className="text-left mt-4">
-                <a href="#" className="text-orange-500 hover:underline">
-                  Become a Vendor/Seller?
-                </a>
+                <Link to={"/signup-vendor"} className="text-orange-500 hover:underline">
+                Become a Vendor/Seller?
+                </Link>
               </div>
 
               <div className=" block lg:hidden text-left my-2 ">
                 <span className="text-gray-600">Don't have an account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
+                  <Link to={"/signup"} className="text-blue-500 hover:underline">
                   Sign up
-                </a>
+                  </Link>
               </div>
             </div>
           </div>

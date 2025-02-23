@@ -6,7 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { createVendor } from "@/utils/vendorApi";
 import { motion } from "framer-motion";
 
@@ -376,9 +376,9 @@ const Registration: React.FC = () => {
               </button>
               <p className="text-center mt-4 text-gray-600">
                 Already have an account?{" "}
-                <a href="/login" className="text-orange-500 hover:underline">
+                <Link to="/login-vendor" className="text-orange-500 hover:underline">
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

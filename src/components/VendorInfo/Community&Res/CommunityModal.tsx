@@ -80,13 +80,13 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-[#FF6B00] rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-[#00B33C] rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-orange-300 rounded-lg transition-colors"
                 >
                   create
                 </button>

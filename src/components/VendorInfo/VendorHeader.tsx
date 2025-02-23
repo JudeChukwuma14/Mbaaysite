@@ -10,7 +10,7 @@ const VendorHeader: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [showNotifications, setShowNotifications] = useState(false);
   
-  const user = useSelector((state:any)=> state.user)
+  const user = useSelector((state:any)=> state.vendor)
 
   const notifications= [
     {
@@ -69,7 +69,7 @@ const VendorHeader: React.FC = () => {
       }`}
     >
       <h1 className="text-xl font-semibold">
-        Good Morning, <span className="text-orange-500">{user.user.name.charAt(0).toUpperCase() + user.user.name.slice("1")}</span>
+        Good Morning, <span className="text-orange-500">{user?.vendor?.name.charAt(0).toUpperCase() + user?.vendor?.name.slice("1")}</span>
       </h1>
       <div className="flex items-center gap-4">
         {/* Search Box */}
@@ -172,7 +172,7 @@ const VendorHeader: React.FC = () => {
           </AnimatePresence>
         </div>
         {
-          !user.name ? <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+          !user.vendor?.name ? <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
             {user.user.name.charAt(0).toUpperCase()}
           </div>:<img
           src="/vendor-avatar.png"

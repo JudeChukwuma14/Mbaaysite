@@ -8,6 +8,7 @@ import CommunityModal from "./CommunityModal"
 import mbayy from "../../../assets/image/MBLogo.png"
 import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
+import moment from "moment"
 
 interface Post {
   id: number
@@ -24,7 +25,7 @@ interface Post {
 export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false)
-  const user = useSelector((state:any)=> state.user)
+  const user = useSelector((state:any)=> state.vendor)
   const [posts,setPosts] = useState<any>({})
 
 
@@ -70,15 +71,15 @@ export default function ProfilePage() {
       {/* Profile Info */}
       <div className="px-6 pt-8">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold">{posts.userName
+          <h2 className="text-xl font-semibold">{posts?.userName
           }</h2>
           <div className="flex items-center gap-1 text-sm text-gray-600">
-            <span>{posts.craftCategories
+            <span>{posts?.craftCategories
             }</span>
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              {posts.state},
-              {posts.country}
+              {posts?.state},
+              {posts?.country}
             </span>
           </div>
         </div>
@@ -147,33 +148,65 @@ export default function ProfilePage() {
         </div>
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-2 gap-4 mt-[50px] ">
-        {posts?.communityPosts?.length > 0 ? (
-  [...posts.communityPosts].reverse().map((props: any) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-[50px] auto-rows-auto">
+  {posts?.communityPosts?.length > 0 ? (
+    [...posts.communityPosts].reverse().map((props: any, index: number) => (
       <motion.div
         key={props.id}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="bg-white rounded-xl overflow-hidden border"
+        className={`bg-white rounded-xl overflow-hidden border ${
+          props.posts_Images?.length > 0 ? "p-2" : "p-3"
+        } ${!props.posts_Images?.length && index % 2 === 0 ? "md:col-span-2" : ""}`}
       >
-        <img
-          src={"https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-19%20040101-Lr9Y3NS9z1VF51t4pz7IPXfHtwCstK.png"}
-          alt={`Post ${props.id}`}
-          className="w-full aspect-[16/9] object-cover"
-        />
+        {/* IMAGE CONTAINER */}
+        {props.posts_Images?.length > 0 && (
+          <div
+            className={`grid gap-1 w-full ${
+              props.posts_Images.length === 1
+                ? "grid-cols-1 h-60"
+                : props.posts_Images.length === 2
+                ? "grid-cols-2 h-60"
+                : "grid-cols-2 grid-rows-2 h-80"
+            }`}
+          >
+            {props.posts_Images.slice(0, 3).map((image: string, index: number) => (
+              <div
+                key={index}
+                className={`overflow-hidden ${
+                  props.posts_Images.length === 1
+                    ? "rounded-lg"
+                    : props.posts_Images.length === 2
+                    ? "rounded-md"
+                    : index === 0
+                    ? "row-span-2 rounded-lg"
+                    : "rounded-md"
+                }`}
+              >
+                <img
+                  src={image}
+                  alt={`Post ${props.id} - Image ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* TEXT & DETAILS */}
         <div className="p-3">
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <div className="flex items-center gap-1">
               <FileText className="w-4 h-4" />
-              {props.updatedAt.split("T")[0]}
+              {props.createdTime.split("T")[0]}
             </div>
             <div className="flex items-center gap-1">
               <span>•</span>
-              {props.updatedAt.split("T")[1]}
+              {moment(props.createdTime).fromNow()}
             </div>
           </div>
-          <p className="text-sm text-black-600 mt-2 line-clamp-2">{props.content}</p>
+          <p className="text-sm text-gray-700 mt-2 line-clamp-2">{props.content}</p>
           <div className="flex items-center gap-4 mt-3">
             <div className="flex items-center gap-1">
               <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-gray-500">
@@ -188,11 +221,12 @@ export default function ProfilePage() {
           </div>
         </div>
       </motion.div>
-  ))
-) : (
-  <p className="text-gray-500 text-center mt-6">No community posts available.</p>
-)}
-        </div>
+    ))
+  ) : (
+    <p className="text-gray-500 text-center mt-6">No community posts available.</p>
+  )}
+</div>
+
         
         
 

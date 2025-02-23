@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
 
@@ -218,15 +218,15 @@ const Signup: React.FC = () => {
 
               {/* Vendor/Seller Link */}
               <div className="text-left mt-4">
-                <a href="#" className="text-orange-500 hover:underline">
-                  Become a Vendor/Seller?
-                </a>
+              <Link to={"/signup-vendor"} className="text-orange-500 hover:underline">
+                Become a Vendor/Seller?
+                </Link>
               </div>
               <div className="block lg:hidden text-left my-2">
                 <span className="text-gray-600">Already have an Account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
-                  Sign in
-                </a>
+                 <Link to={"/signin"} className="text-blue-500 hover:underline">
+                                  Sign in
+                  </Link>
               </div>
             </div>
           </div>
