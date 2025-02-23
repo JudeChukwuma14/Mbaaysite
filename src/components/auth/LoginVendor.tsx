@@ -8,13 +8,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI } from "@/utils/vendorApi";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useDispatch } from "react-redux";
 import { setVendor } from "@/redux/slices/vendorSlice";
+import { useDispatch } from "react-redux";
 
 interface FormData {
-  email: string;
+  emailOrPhone: string;
   password: string;
 }
 
@@ -27,10 +27,10 @@ interface ApiError {
 }
 
 const LoginVendor: React.FC = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useDispatch()
 
   const {
     register,
@@ -49,17 +49,19 @@ const LoginVendor: React.FC = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
+    console.log(data)
     try {
-      const response = await LoginVendorAPI(data);
-      if (response?.data?.vendor && response?.data?.token) {
-        dispatch(
-          setVendor({ vendor: response.data?.vendor, token: response.data })
-        );
-        toast.success(response.message || "Login successful");
-        navigate("/app");
-      } else {
-        throw new Error("Invalid response format from server");
-      }
+      const response = await LoginVendorAPI({
+        emailOrPhone:data.emailOrPhone,
+        password:data.password
+      });
+      console.log("Vender logs", response);
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      dispatch(setVendor({vendor:response?.data?.user,token:response?.data?.token}))
+      navigate("/app");
     } catch (error) {
       if (isApiError(error)) {
         toast.error(
@@ -126,7 +128,7 @@ const LoginVendor: React.FC = () => {
                     type="email"
                     placeholder="Enter email address"
                     className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
-                    {...register("email", {
+                    {...register("emailOrPhone", {
                       required: "Email is required",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -135,9 +137,9 @@ const LoginVendor: React.FC = () => {
                     })}
                   />
 
-                  {errors.email && (
+                  {errors.emailOrPhone && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.email.message}
+                      {errors.emailOrPhone.message}
                     </p>
                   )}
                 </div>
@@ -191,15 +193,17 @@ const LoginVendor: React.FC = () => {
 
               <div className="text-left mt-4">
                 <a href="#" className="text-orange-500 hover:underline">
+                  <Link to={"/signin"}>
                   Login as a user?
+                  </Link>
                 </a>
               </div>
 
               <div className=" block lg:hidden text-left my-2 ">
                 <span className="text-gray-600">Don't have an account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
+                  <Link to={"/signup-vendor"} className="text-blue-500 hover:underline">
                   Sign up now!
-                </a>
+                  </Link>
               </div>
             </div>
           </div>
