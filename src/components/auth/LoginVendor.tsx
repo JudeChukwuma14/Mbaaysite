@@ -10,6 +10,8 @@ import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI } from "@/utils/vendorApi";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useDispatch } from "react-redux";
+import { setUser } from "@/redux/slices/userSlice";
 
 interface FormData {
   email: string;
@@ -28,6 +30,7 @@ const LoginVendor: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useDispatch()
 
   const {
     register,
@@ -46,14 +49,19 @@ const LoginVendor: React.FC = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
+    console.log(data)
     try {
-      const response = await LoginVendorAPI(data);
+      const response = await LoginVendorAPI({
+        emailOrPhone:data.email,
+        password:data.password
+      });
       console.log("Vender logs", response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/login-vendor");
+      dispatch(setUser({ user: response.data.user, token: response.data.token }))
+      navigate("/app");
     } catch (error) {
       if (isApiError(error)) {
         toast.error(
