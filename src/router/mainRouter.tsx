@@ -89,8 +89,10 @@ const KycVerification = lazy(
 const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
 
 const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost"))
+const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Proflie"))
 const AuctionView = lazy(()=>import("@/components/AuctionPage/AuctionView"))
 const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -157,6 +159,7 @@ const routesConfig: RouteObject[] = [
       { path: "kyc-verification", element: withSuspense(KycVerification) },
       { path: "inbox", element: withSuspense(Inbox) },
       { path: "all-post", element: withSuspense(AllPost) },
+      { path: "profile", element: withSuspense(ProfilePage) },
     ],
   },
   { path: "signin", element: withSuspense(Login) },
