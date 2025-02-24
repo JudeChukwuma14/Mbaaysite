@@ -83,6 +83,51 @@ export const get_posts_feed = async (token: string | null) => {
                 },
             }
         );
+        // console.log(response);
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const like_posts = async (token: string | null,postId:string | null) => {
+    try {
+        const response = await api.patch(`/like_post/${postId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response);
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const unlike_posts = async (token: string | null,postId:string | null) => {
+    try {
+        const response = await api.patch(`/unlike_post/${postId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+        console.log(response);
+        return response;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+export const comment_on_posts = async (token: string | null,postId:string | null,data:any) => {
+    try {
+        const response = await api.patch(`/comment_on_post/${postId}`, data, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
         console.log(response);
         return response;
     } catch (error) {

@@ -98,7 +98,7 @@ const NavItem = ({
 }: {
   title: string;
   to?: string;
-  onClick?:any;
+  onClick?:()=> void;
   subItems?: string[];
   Icon?: React.ComponentType<{ className?: string }>;
 }) => {

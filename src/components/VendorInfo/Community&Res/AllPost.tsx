@@ -8,7 +8,7 @@ import CreatePostModal from "./CreatePostModal"
 import SocialList from "./SocailPost"
 import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
-import { get_posts_feed } from "@/utils/communityApi"
+import { comment_on_posts, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
 import moment from "moment"
 
 
@@ -139,73 +139,13 @@ function Badge({ children, variant = "default" }: BadgeProps) {
 
 export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [vendors] = useState<User[]>([
-    {
-      id: "1",
-      name: "Taiwo Abdulazeezz",
-      category: "Beauty and SkinCare",
-      avatar:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-11%20155402-wwKdVWRsVk3GSf9hj0qFBrLAejWRnq.png",
-      following: true,
-    },
-    {
-      id: "2",
-      name: "James Charlton",
-      category: "Fashion",
-      avatar:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-11%20155402-wwKdVWRsVk3GSf9hj0qFBrLAejWRnq.png",
-      following: false,
-    },
-    {
-      id: "3",
-      name: "Anya Gerald",
-      category: "Arts and Culture",
-      avatar:
-        "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-11%20155402-wwKdVWRsVk3GSf9hj0qFBrLAejWRnq.png",
-      following: false,
-    },
-    ...Array(10)
-      .fill(null)
-      .map((_, index) => ({
-        id: `${index + 4}`,
-        name: `Vendor ${index + 4}`,
-        category: "Various",
-        avatar:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-11%20155402-wwKdVWRsVk3GSf9hj0qFBrLAejWRnq.png",
-        following: false,
-      })),
-  ])
-
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: "1",
-      author: vendors[0],
-      content:
-        "Lorem ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries.",
-      timestamp: "3 hours ago",
-      likes: 3134,
-      comments: [],
-      hashtags: ["Tips", "BeautyandSkincare", "Productivity"],
-    },
-    ...Array(10)
-      .fill(null)
-      .map((_, index) => ({
-        id: `${index + 2}`,
-        author: vendors[Math.floor(Math.random() * vendors.length)],
-        content: "This is a sample post content. It can be longer or shorter depending on the user's input.",
-        timestamp: `${index + 1} hours ago`,
-        likes: Math.floor(Math.random() * 1000),
-        comments: [],
-        hashtags: ["Sample", "Post", `Tag${index + 1}`],
-      })),
-  ])
-
   const [showEmojiPicker, setShowEmojiPicker] = useState<Record<string, boolean>>({})
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
   const user = useSelector((state:any)=> state.vendor)
   const [vendor,setVendor] = useState<any>([])
   const [my_posts,setMyposts] = useState<any>([])
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
 
 
@@ -235,163 +175,35 @@ export default function SocialFeed() {
       fetchPosts()
     })
 
-    console.log(my_posts)
+    // console.log(my_posts)
    
+     
+
+    const handleLike = async (postId: string) => {
+      try {
+        const isLiked = likedPosts[postId]; // Check if the post is already liked
     
-  const handleLike = (postId: string) => {
-    setPosts(posts.map((post) => (post.id === postId ? { ...post, likes: post.likes + 1 } : post)))
-  }
-
-  const handleComment = (postId: string, content: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: [
-                ...post.comments,
-                {
-                  id: Date.now().toString(),
-                  author: vendors[0], // Assuming the current user is the first vendor
-                  content,
-                  timestamp: "Just now",
-                  reactions: [],
-                  replies: [],
-                },
-              ],
-            }
-          : post,
-      ),
-    )
-  }
-
-
-  const handleReaction = (postId: string, commentId: string, emoji: string) => {
-    setPosts(
-      posts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              comments: post.comments.map((comment) =>
-                comment.id === commentId
-                  ? {
-                      ...comment,
-                      reactions: updateReactions(comment.reactions, emoji, vendors[0].id),
-                    }
-                  : comment,
-              ),
-            }
-          : post,
-      ),
-    )
-  }
-
-  const updateReactions = (reactions: Reaction[], emoji: string, userId: string): Reaction[] => {
-    const existingReaction = reactions.find((r) => r.emoji === emoji)
-    if (existingReaction) {
-      if (existingReaction.users.includes(userId)) {
-        // Remove user's reaction
-        return reactions
-          .map((r) =>
-            r.emoji === emoji ? { ...r, count: r.count - 1, users: r.users.filter((u) => u !== userId) } : r,
-          )
-          .filter((r) => r.count > 0)
-      } else {
-        // Add user's reaction to existing emoji
-        return reactions.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1, users: [...r.users, userId] } : r))
+        if (isLiked) {
+          await unlike_posts(user?.token, postId);
+        } else {
+          await like_posts(user?.token, postId);
+        }
+    
+        setLikedPosts((prev) => ({
+          ...prev,
+          [postId]: !isLiked, // Toggle like state
+        }));
+      } catch (error) {
+        console.error("Error toggling like:", error);
       }
-    } else {
-      // Add new reaction
-      return [...reactions, { emoji, count: 1, users: [userId] }]
-    }
-  }
-
-  const handleEmojiSelect = (emojiData: EmojiClickData, postId: string) => {
-    const input = document.querySelector(`input[data-post-id="${postId}"]`) as HTMLInputElement
-    if (input) {
-      const start = input.selectionStart || 0
-      const end = input.selectionEnd || 0
-      const text = input.value
-      const newText = text.substring(0, start) + emojiData.emoji + text.substring(end)
-      input.value = newText
-      input.focus()
-      input.setSelectionRange(start + emojiData.emoji.length, start + emojiData.emoji.length)
-    }
-  }
-
+    };
 
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr_280px] gap-6 p-4 h-screen">
         {/* Left Sidebar */}
-        {/* <motion.div
-          className="space-y-6 overflow-y-auto max-h-[calc(100vh-2rem)]"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="sticky top-0 bg-gray-50 z-10 pb-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search People or Group"
-                className="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
-              <svg
-                className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </div>
-          </div>
 
-          <div className="space-y-4">
-            <h2 className="text-sm font-medium text-gray-500">VENDORS</h2>
-            <motion.div className="space-y-3">
-              {vendors.map((vendor, index) => (
-                <motion.div
-                  key={vendor.id}
-                  className="flex items-center justify-between"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <div className="flex items-center gap-3">
-                    <Avatar src={vendor.avatar} alt={vendor.name} />
-                    <div>
-                      <p className="text-sm font-medium">{vendor.name}</p>
-                      <p className="text-xs text-gray-500">{vendor.category}</p>
-                    </div>
-                  </div>
-                  <motion.button className="focus:outline-none" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <svg
-                      className={`w-4 h-4 ${vendor.following ? "fill-red-500 stroke-red-500" : "stroke-gray-400"}`}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                      />
-                    </svg>
-                  </motion.button>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
-        </motion.div> */}
         <SocialList/>
 
         {/* Main Content */}
@@ -417,7 +229,9 @@ export default function SocialFeed() {
                     <p className="text-sm text-gray-500">
                       {post?.poster?.craftCategories[0]} • {moment(post?.createdTime).fromNow()}
                     </p>
+                   
                   </div>
+                  
                 </div>
                 <motion.button
                   className="p-1 hover:bg-gray-100 rounded-full"
@@ -436,6 +250,10 @@ export default function SocialFeed() {
               </div>
 
               <p className="text-sm mb-4">{post?.content}</p>
+              
+              <div className="w-full h-[200px] object-cover border">
+              <img src={post?.posts_Images[0]} alt="image" className="w-full h-full object-cover border" />
+              </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {/* {post.hashtags.map((tag) => (
@@ -453,7 +271,9 @@ export default function SocialFeed() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <svg
-                    className={`w-4 h-4 ${post?.likes === 0 ? "fill-red-500 stroke-red-500" : ""}`}
+                   className={`w-4 h-4 ${
+                    likedPosts[post._id] ? "fill-red-500 stroke-red-500" : "stroke-gray-500"
+                  }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -481,12 +301,12 @@ export default function SocialFeed() {
                     exit={{ opacity: 0, y: -20 }}
                   >
                     <div className="flex items-start gap-2">
-                      <Avatar src={comment.author.avatar} alt={comment.author.name} size="sm" />
+                      <Avatar src={comment?.author?.avatar} alt={comment?.author?.name} size="sm" />
                       <div className="flex-grow">
-                        <p className="text-sm font-medium">{comment.author.name}</p>
-                        <p className="text-sm">{comment.content}</p>
+                        <p className="text-sm font-medium">{comment?.name}</p>
+                        <p className="text-sm">{comment?.text}</p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                          <span>{comment.timestamp}</span>
+                          <span>{comment?.timestamp}</span>
                           <motion.button
                             className="hover:text-gray-700"
                             whileHover={{ scale: 1.05 }}
@@ -499,13 +319,13 @@ export default function SocialFeed() {
                         <div className="flex items-center gap-1 mt-1">
                           {comment?.reactions?.map((reaction:any) => (
                             <motion.button
-                              key={reaction.emoji}
+                              key={reaction?.emoji}
                               className="text-sm hover:bg-gray-200 rounded-full px-2 py-1"
-                              onClick={() => handleReaction(post.id, comment.id, reaction.emoji)}
+                              // onClick={() => handleReaction(post.id, comment.id, reaction.emoji)}
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
                             >
-                              {reaction.emoji} {reaction.count}
+                              {reaction?.emoji} {reaction?.count}
                             </motion.button>
                           ))}
                           <motion.button
@@ -521,7 +341,7 @@ export default function SocialFeed() {
                           <div ref={emojiPickerRef} className="absolute z-10">
                             <EmojiPicker
                               onEmojiClick={(emojiData) => {
-                                handleReaction(post.id, comment.id, emojiData.emoji)
+                                // handleReaction(post.id, comment.id, emojiData.emoji)
                                 setShowEmojiPicker((prev) => ({ ...prev, [comment.id]: false }))
                               }}
                             />
@@ -538,12 +358,12 @@ export default function SocialFeed() {
                               exit={{ opacity: 0, y: -20 }}
                             >
                               <div className="flex items-start gap-2">
-                                <Avatar src={reply.author.avatar} alt={reply.author.name} size="sm" />
+                                <Avatar src={reply?.author?.avatar} alt={reply?.author?.name} size="sm" />
                                 <div>
-                                  <p className="text-sm font-medium">{reply.author.name}</p>
-                                  <p className="text-sm">{reply.content}</p>
+                                  <p className="text-sm font-medium">{reply?.author?.name}</p>
+                                  <p className="text-sm">{reply?.content}</p>
                                   <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                                    <span>{reply.timestamp}</span>
+                                    <span>{reply?.timestamp}</span>
                                   </div>
                                 </div>
                               </div>
@@ -558,7 +378,7 @@ export default function SocialFeed() {
 
               {/* Add Comment Input */}
               <div className="mt-4 flex items-center gap-2">
-                <Avatar src={vendors[0].avatar} alt={vendors[0].name} size="sm" />
+                {/* <Avatar src={vendors[0].avatar} alt={vendors[0].name} size="sm" /> */}
                 <div className="relative flex-grow">
                   <input
                     type="text"
@@ -567,8 +387,7 @@ export default function SocialFeed() {
                     className="w-full p-2 pr-8 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
-                        handleComment(post.id, e.currentTarget.value)
-                        e.currentTarget.value = ""
+                        comment_on_posts(user?.token,post._id, {text:e.currentTarget.value,userType:"vendors"})
                         setShowEmojiPicker((prev) => ({ ...prev, [post.id]: false }))
                       }
                     }}
@@ -584,7 +403,7 @@ export default function SocialFeed() {
                 </div>
                 {showEmojiPicker[post.id] && (
                   <div ref={emojiPickerRef} className="absolute z-10 bottom-full right-0">
-                    <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} />
+                    {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
                   </div>
                 )}
               </div>

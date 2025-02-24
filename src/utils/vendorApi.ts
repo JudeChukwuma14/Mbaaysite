@@ -38,7 +38,7 @@ export const get_single_vendor = async(token:string | null)=>{
         Authorization:`Bearer ${token}`
       }
     })
-    console.log(response.data.data)
+    // console.log(response.data.data)
     return response.data.data
   } catch (error) {
     console.log(error)
