@@ -28,7 +28,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
   const handleLogout = () => {
     dispatch(logoutVendor());
     navigate("/login-vendor");
-  };
+  };  
 
   return (
     <aside

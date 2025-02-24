@@ -94,7 +94,7 @@ const Sidebar = ({
 
         {/* Logout Button */}
         <div
-          className="flex items-center gap-4 p-4 cursor-pointer hover:bg-red-500 hover:text-white mt-4"
+          className="flex items-center gap-4 p-4 cursor-pointer hover:bg-orange-500 hover:text-white mt-4"
           onClick={handleLogout}
         >
           <IoIosLogOut size={24} />
