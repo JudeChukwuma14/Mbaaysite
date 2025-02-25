@@ -17,13 +17,13 @@ interface CreatePostModalProps {
   onClose: () => void
 }
 
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string
-    }
-  }
-}
+// interface ApiError {
+//   response?: {
+//     data?: {
+//       message?: string
+//     }
+//   }
+// }
 
 interface TaggedUser {
   id: string
@@ -80,14 +80,14 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
     }
   }, [])
 
-  const isApiError = (error: unknown): error is ApiError => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "response" in error &&
-      typeof (error as ApiError).response === "object"
-    )
-  }
+  // const isApiError = (error: unknown): error is ApiError => {
+  //   return (
+  //     typeof error === "object" &&
+  //     error !== null &&
+  //     "response" in error &&
+  //     typeof (error as ApiError).response === "object"
+  //   )
+  // }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files

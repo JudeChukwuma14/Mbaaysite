@@ -56,19 +56,19 @@ const topics: Topic[] = [
   { id: "4", name: "Marketing" },
 ]
 
-interface User {
-  id: string
-  name: string
-  category: string
-  avatar: string
-  following?: boolean
-}
+// interface User {
+//   id: string
+//   name: string
+//   category: string
+//   avatar: string
+//   following?: boolean
+// }
 
-interface Reaction {
-  emoji: string
-  count: number
-  users: string[]
-}
+// interface Reaction {
+//   emoji: string
+//   count: number
+//   users: string[]
+// }
 
 interface Reply {
   id: string;
@@ -91,26 +91,26 @@ interface Reply {
 // }
 
 
-interface Comment {
-  id: string
-  author: User
-  content: string
-  timestamp: string
-  reactions: Reaction[]
-  replies: Comment[] 
-  repliess: Reply[]; 
+// interface Comment {
+//   id: string
+//   author: User
+//   content: string
+//   timestamp: string
+//   reactions: Reaction[]
+//   replies: Comment[] 
+//   repliess: Reply[]; 
   
-}
+// }
 
-interface Post {
-  id: string
-  author: User
-  content: string
-  timestamp: string
-  likes: number
-  comments: Comment[]
-  hashtags: string[]
-}
+// interface Post {
+//   id: string
+//   author: User
+//   content: string
+//   timestamp: string
+//   likes: number
+//   comments: Comment[]
+//   hashtags: string[]
+// }
 
 
 interface AvatarProps {

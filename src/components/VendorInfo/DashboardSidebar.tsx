@@ -15,7 +15,7 @@ import {
 import { motion } from "framer-motion";
 import { MdOutlineReviews } from "react-icons/md";
 import { useDispatch } from "react-redux";
-import { logoutVendor, setVendor } from "@/redux/slices/vendorSlice";
+import { logoutVendor } from "@/redux/slices/vendorSlice";
 // import { useDarkMode } from "../Context/DarkModeContext";
 
 interface DashboardSidebarProps {
