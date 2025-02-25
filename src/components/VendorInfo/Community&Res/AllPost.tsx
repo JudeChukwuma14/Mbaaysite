@@ -1,8 +1,6 @@
-"use client"
-
-import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
+// import EmojiPicker from "emoji-picker-react"
 import { motion, AnimatePresence } from "framer-motion"
 import CreatePostModal from "./CreatePostModal"
 import SocialList from "./SocailPost"
@@ -72,13 +70,36 @@ interface Reaction {
   users: string[]
 }
 
+interface Reply {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+  };
+  content: string;
+  timestamp: string;
+}
+
+// interface Comment {
+//   id: string;
+//   content: string;
+//   author: {
+//     name: string;
+//     avatar: string;
+//   };
+//   replies: Reply[];  // 👈 This ensures TypeScript knows replies is an array of Reply objects
+// }
+
+
 interface Comment {
   id: string
   author: User
   content: string
   timestamp: string
   reactions: Reaction[]
-  replies: Comment[]
+  replies: Comment[] 
+  repliess: Reply[]; 
+  
 }
 
 interface Post {
@@ -90,6 +111,7 @@ interface Post {
   comments: Comment[]
   hashtags: string[]
 }
+
 
 interface AvatarProps {
   src: string
@@ -115,27 +137,27 @@ function Avatar({ src, alt, size = "sm" }: AvatarProps) {
   )
 }
 
-interface BadgeProps {
-  children: React.ReactNode
-  variant?: "default" | "secondary"
-}
+// interface BadgeProps {
+//   children: React.ReactNode
+//   variant?: "default" | "secondary"
+// }
 
-function Badge({ children, variant = "default" }: BadgeProps) {
-  const variantClasses = {
-    default: "bg-orange-100 text-orange-600",
-    secondary: "bg-gray-100 text-gray-600",
-  }
+// function Badge({ children, variant = "default" }: BadgeProps) {
+//   const variantClasses = {
+//     default: "bg-orange-100 text-orange-600",
+//     secondary: "bg-gray-100 text-gray-600",
+//   }
 
-  return (
-    <motion.span
-      className={`${variantClasses[variant]} text-xs px-2.5 py-0.5 rounded-full font-medium`}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      {children}
-    </motion.span>
-  )
-}
+//   return (
+//     <motion.span
+//       className={`${variantClasses[variant]} text-xs px-2.5 py-0.5 rounded-full font-medium`}
+//       whileHover={{ scale: 1.05 }}
+//       whileTap={{ scale: 0.95 }}
+//     >
+//       {children}
+//     </motion.span>
+//   )
+// }
 
 export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -340,16 +362,17 @@ export default function SocialFeed() {
                         {showEmojiPicker[comment.id] && (
                           <div ref={emojiPickerRef} className="absolute z-10">
                             <EmojiPicker
-                              onEmojiClick={(emojiData) => {
+                              onEmojiClick={(emojiData: EmojiClickData) => {
                                 // handleReaction(post.id, comment.id, emojiData.emoji)
                                 setShowEmojiPicker((prev) => ({ ...prev, [comment.id]: false }))
+                                console.log(emojiData)
                               }}
                             />
                           </div>
                         )}
                         {/* Replies */}
                         <AnimatePresence>
-                          {comment?.replies?.map((reply) => (
+                          {comment?.replies?.map((reply: Reply) => (
                             <motion.div
                               key={reply.id}
                               className="ml-6 mt-2 bg-white p-2 rounded-lg"
