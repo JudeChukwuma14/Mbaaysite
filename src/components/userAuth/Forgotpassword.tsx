@@ -80,7 +80,7 @@ const Forgotpassword: React.FC = () => {
                   })}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-[10px] mt-1">
                     {errors.email.message}
                   </p>
                 )}
