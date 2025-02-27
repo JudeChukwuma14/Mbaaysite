@@ -56,62 +56,38 @@ const topics: Topic[] = [
   { id: "4", name: "Marketing" },
 ]
 
-interface User {
-  id: string
-  name: string
-  category: string
-  avatar: string
-  following?: boolean
-}
-
-interface Reaction {
-  emoji: string
-  count: number
-  users: string[]
-}
-
-interface Reply {
-  id: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
-  content: string;
-  timestamp: string;
-}
-
-// interface Comment {
-//   id: string;
-//   content: string;
-//   author: {
-//     name: string;
-//     avatar: string;
-//   };
-//   replies: Reply[];  // 👈 This ensures TypeScript knows replies is an array of Reply objects
+// interface User {
+//   id: string
+//   name: string
+//   category: string
+//   avatar: string
+//   following?: boolean
 // }
 
+// interface Reaction {
+//   emoji: string
+//   count: number
+//   users: string[]
+// }
 
-interface Comment {
-  id: string
-  author: User
-  content: string
-  timestamp: string
-  reactions: Reaction[]
-  replies: Comment[] 
-  repliess: Reply[]; 
-  
-}
+// interface Comment {
+//   id: string
+//   author: User
+//   content: string
+//   timestamp: string
+//   reactions: Reaction[]
+//   replies: Comment[]
+// }
 
-interface Post {
-  id: string
-  author: User
-  content: string
-  timestamp: string
-  likes: number
-  comments: Comment[]
-  hashtags: string[]
-}
-
+// interface Post {
+//   id: string
+//   author: User
+//   content: string
+//   timestamp: string
+//   likes: number
+//   comments: Comment[]
+//   hashtags: string[]
+// }
 
 interface AvatarProps {
   src: string
@@ -372,7 +348,7 @@ export default function SocialFeed() {
                         )}
                         {/* Replies */}
                         <AnimatePresence>
-                          {comment?.replies?.map((reply: Reply) => (
+                          {comment?.replies?.map((reply) => (
                             <motion.div
                               key={reply.id}
                               className="ml-6 mt-2 bg-white p-2 rounded-lg"
