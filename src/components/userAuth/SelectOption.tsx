@@ -3,9 +3,9 @@ import background from "../../assets/image/bg2.jpeg";
 import userImage from "../../assets/image/user.png";
 import vendorImage from "../../assets/image/vendor.png";
 import logo from "../../assets/image/mbbaylogo.png";
-import { NavLink } from "react-router-dom";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 const SelectOption: React.FC = () => {
   const bg = {
     backgroundImage: `url(${background})`,
@@ -16,7 +16,7 @@ const SelectOption: React.FC = () => {
         <Sliding />
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[350px] pb-10"
         >
            <div className="flex justify-between items-center px-4 my-6">
             <div className="lg:hidden">
@@ -27,8 +27,8 @@ const SelectOption: React.FC = () => {
             Please select account type to get started
           </h1>
           <div className="space-y-4 md:space-y-7 lg:ml-[200px]">
-            <NavLink to="/signup">
-              <div className="w-full md:w-[636px] bg-orange-500 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
+            <Link to="/signup">
+              <div className="w-full md:w-[636px] bg-orange-500 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start mb-5">
                 <div className="flex flex-col gap-2">
                   <span className="text-xl md:text-3xl font-bold text-white">
                     Login as a User
@@ -45,8 +45,8 @@ const SelectOption: React.FC = () => {
                   />
                 </div>
               </div>
-            </NavLink>
-            <NavLink to={"/login-vendor"}>
+            </Link>
+            <Link to={"/login-vendor"}>
             <div className="w-full md:w-[636px] bg-orange-300 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
               <div className="flex flex-col gap-2">
                 <span className="text-xl md:text-3xl font-bold text-white">
@@ -64,7 +64,7 @@ const SelectOption: React.FC = () => {
                 />
               </div>
             </div>
-            </NavLink>
+            </Link>
           </div>
           <div className="mt-8 lg:ml-[200px]">
             <a href="/" className="text-orange-500 text-sm md:text-lg">

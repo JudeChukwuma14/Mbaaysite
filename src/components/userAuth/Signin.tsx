@@ -107,7 +107,7 @@ const Signin: React.FC = () => {
                     })}
                   />
                   {errors.emailOrPhone && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.emailOrPhone.message}
                     </p>
                   )}
@@ -131,7 +131,7 @@ const Signin: React.FC = () => {
                   </span>
 
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.password.message}
                     </p>
                   )}

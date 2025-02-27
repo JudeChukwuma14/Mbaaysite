@@ -10,15 +10,15 @@ import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
 import moment from "moment"
 
-interface Post {
-  id: number
-  image: string
-  date: string
-  time: string
-  likes: string
-  comments: []
-  description: string
-}
+// interface Post {
+//   id: number
+//   image: string
+//   date: string
+//   time: string
+//   likes: string
+//   comments: []
+//   description: string
+// }
 
 
 

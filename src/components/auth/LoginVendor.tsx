@@ -30,7 +30,7 @@ const LoginVendor: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -49,18 +49,23 @@ const LoginVendor: React.FC = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
-    console.log(data)
+    console.log(data);
     try {
       const response = await LoginVendorAPI({
-        emailOrPhone:data.emailOrPhone,
-        password:data.password
+        emailOrPhone: data.emailOrPhone,
+        password: data.password,
       });
       console.log("Vender logs", response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      dispatch(setVendor({vendor:response?.data?.user,token:response?.data?.token}))
+      dispatch(
+        setVendor({
+          vendor: response?.data?.user,
+          token: response?.data?.token,
+        })
+      );
       navigate("/app");
     } catch (error) {
       if (isApiError(error)) {
@@ -95,7 +100,7 @@ const LoginVendor: React.FC = () => {
         <Sliding />
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[400px]"
         >
           <div className=" flex justify-between items-center px-4 my-6 ">
             <div className="lg:hidden">
@@ -138,7 +143,7 @@ const LoginVendor: React.FC = () => {
                   />
 
                   {errors.emailOrPhone && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.emailOrPhone.message}
                     </p>
                   )}
@@ -162,7 +167,7 @@ const LoginVendor: React.FC = () => {
                   </span>
 
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.password.message}
                     </p>
                   )}
@@ -193,17 +198,18 @@ const LoginVendor: React.FC = () => {
 
               <div className="text-left mt-4">
                 <a href="#" className="text-orange-500 hover:underline">
-                  <Link to={"/signin"}>
-                  Login as a user?
-                  </Link>
+                  <Link to={"/signin"}>Login as a user?</Link>
                 </a>
               </div>
 
               <div className=" block lg:hidden text-left my-2 ">
                 <span className="text-gray-600">Don't have an account? </span>
-                  <Link to={"/signup-vendor"} className="text-blue-500 hover:underline">
+                <Link
+                  to={"/signup-vendor"}
+                  className="text-blue-500 hover:underline"
+                >
                   Sign up now!
-                  </Link>
+                </Link>
               </div>
             </div>
           </div>

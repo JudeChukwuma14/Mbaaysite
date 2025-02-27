@@ -97,7 +97,7 @@ const ResetPassword: React.FC = () => {
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.newPassword && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.newPassword.message}
                     </p>
                   )}
@@ -121,7 +121,7 @@ const ResetPassword: React.FC = () => {
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.confirmPassword.message}
                     </p>
                   )}

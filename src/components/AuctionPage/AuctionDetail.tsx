@@ -15,7 +15,7 @@ const AuctionDetail: React.FC = () => {
 
   const [selectedImage, setSelectedImage] = useState(auction.image);
   const [bidAmount, setBidAmount] = useState(auction.currentBid + 100);
-  const [activeTab, setActiveTab] = useState("Description");
+  // const [activeTab, setActiveTab] = useState("Description");
 
   useEffect(() => {
     setSelectedImage(auction.image);

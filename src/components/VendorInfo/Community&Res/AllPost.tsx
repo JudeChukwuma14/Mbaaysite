@@ -64,30 +64,54 @@ const topics: Topic[] = [
 //   following?: boolean
 // }
 
-// interface Reaction {
-//   emoji: string
-//   count: number
-//   users: string[]
-// }
+interface Reaction {
+  emoji: string
+  count: number
+  users: string[]
+}
+
+interface Reply {
+  id: string;
+  author: {
+    name: string;
+    avatar: string;
+  };
+  content: string;
+  timestamp: string;
+}
 
 // interface Comment {
-//   id: string
-//   author: User
-//   content: string
-//   timestamp: string
-//   reactions: Reaction[]
-//   replies: Comment[]
+//   id: string;
+//   content: string;
+//   author: {
+//     name: string;
+//     avatar: string;
+//   };
+//   replies: Reply[];  // 👈 This ensures TypeScript knows replies is an array of Reply objects
 // }
 
-// interface Post {
-//   id: string
-//   author: User
-//   content: string
-//   timestamp: string
-//   likes: number
-//   comments: Comment[]
-//   hashtags: string[]
-// }
+
+interface Comment {
+  id: string
+  author: User
+  content: string
+  timestamp: string
+  reactions: Reaction[]
+  replies: Comment[] 
+  repliess: Reply[]; 
+  
+}
+
+interface Post {
+  id: string
+  author: User
+  content: string
+  timestamp: string
+  likes: number
+  comments: Comment[]
+  hashtags: string[]
+}
+
 
 interface AvatarProps {
   src: string

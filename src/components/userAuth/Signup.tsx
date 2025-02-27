@@ -10,7 +10,6 @@ import { createUser } from "@/utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-
 interface FormData {
   name: string;
   email: string;
@@ -38,7 +37,7 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await createUser(data);
-      console.log(response)
+      console.log(response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
@@ -218,15 +217,18 @@ const Signup: React.FC = () => {
 
               {/* Vendor/Seller Link */}
               <div className="text-left mt-4">
-              <Link to={"/signup-vendor"} className="text-orange-500 hover:underline">
-                Become a Vendor/Seller?
+                <Link
+                  to={"/signup-vendor"}
+                  className="text-orange-500 hover:underline"
+                >
+                  Become a Vendor/Seller?
                 </Link>
               </div>
               <div className="block lg:hidden text-left my-2">
                 <span className="text-gray-600">Already have an Account? </span>
-                 <Link to={"/signin"} className="text-blue-500 hover:underline">
-                                  Sign in
-                  </Link>
+                <Link to={"/signin"} className="text-blue-500 hover:underline">
+                  Sign in
+                </Link>
               </div>
             </div>
           </div>
