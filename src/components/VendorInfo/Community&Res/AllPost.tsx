@@ -8,6 +8,9 @@ import { useSelector } from "react-redux"
 import { comment_on_posts, get_communities, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
 import moment from "moment"
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "react-toastify"
+import { CiHeart } from "react-icons/ci";
+import { FaHeart } from "react-icons/fa";
 
 interface Recommendation {
   id: string
@@ -123,7 +126,7 @@ export default function SocialFeed() {
     })
 
 
-  const { data: comm_posts } = useQuery({
+  const { data: comm_posts,isLoading  } = useQuery({
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
   });
@@ -222,7 +225,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {comm_posts?.map((post:any, index:any) => (
+          {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => (
             <motion.div
               key={post?.id}
               className="bg-white rounded-lg shadow p-4"
@@ -232,13 +235,15 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3">
-                  <Avatar src={post?.author?.avatar} alt={post?.author?.name} />
+                 {
+                  post?.posterType === "vendors" ? <div className = "w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white"><p>{post?.poster?.userName?.charAt(0)}</p></div> :  <Avatar src={post?.poster?.community_Images} alt={post?.author?.name} />
+                 }
                   <div>
                     {
-                      post?.posterType === "vendor" ?<h3 className="font-semibold">{post?.poster?.userName}</h3>:<h3 className="font-semibold">{post?.poster?.userName}</h3>
+                      post?.posterType === "vendors" ?<h3 className="font-semibold">{post?.poster?.userName}</h3>:<h3 className="font-semibold">{post?.poster?.name}</h3>
                     }
                     <p className="text-sm text-gray-500">
-                      {post?.poster?.craftCategories[0]} • {moment(post?.createdTime).fromNow()}
+                     {post?.posterType === "vendors"  ?  post?.poster?.craftCategories[0] : 'COMMUNITY'}• {moment(post?.createdTime).fromNow()}
                     </p>
                    
                   </div>
@@ -281,21 +286,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
   whileHover={{ scale: 1.05 }}
   whileTap={{ scale: 0.95 }}
 >
-  <svg
-    className={`w-4 h-4 ${
-      post.likes.includes(user._id) ? 'fill-red-500 stroke-red-500' : 'stroke-gray-500'
-    }`}
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-    />
-  </svg>
+ {post.likes.includes(user._id) ?  <CiHeart /> :  <FaHeart className="text-red-700"/>}
   <span>{post.likes.length} Likes</span>
 </motion.button>
                 <span>{post?.comments?.length || 0} Comments</span>
@@ -401,6 +392,10 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                       if (e.key === "Enter") {
                         comment_on_posts(user?.token,post._id, {text:e.currentTarget.value,userType:"vendors"})
                         setShowEmojiPicker((prev) => ({ ...prev, [post.id]: false }))
+                         toast.success("Comment created successfully", {
+                              position: "top-right",
+                              autoClose: 4000,
+                            })
                         setTimeout(() => {
                           window.location.reload();
                         }, 1000); 
