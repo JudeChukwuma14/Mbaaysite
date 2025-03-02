@@ -66,7 +66,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
           <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
           <NavItem
             title="Community"
-            subItems={["All Post", "Profile"]}
+            subItems={["All Post", "Profile", "My Community"]}
             Icon={MessageSquare}
           />
           <NavItem title="LogOut" onClick={handle_logOut} Icon={LogOutIcon} />
