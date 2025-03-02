@@ -10,6 +10,7 @@ import moment from "moment"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FaHeart } from "react-icons/fa"
 import { toast } from "react-toastify"
+import loading from "../../../assets/loading.gif"
 import { CiHeart } from "react-icons/ci"
 
 interface Recommendation {
@@ -160,6 +161,8 @@ export default function SocialFeed() {
     }));
   };
 
+
+
   const likeMutation = useMutation({
     mutationFn: (postId: string) => like_posts(user?.token, postId),
     onMutate: async (postId) => {
@@ -230,7 +233,10 @@ export default function SocialFeed() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => {
+          {isLoading? <div className= "flex justify-center items-center flex-col h-[100vh] relativ">
+            <img src = {loading} alt="loading_image" />
+            <p className="m-0 absolute top-[70%]">Loading...</p>
+            </div> : comm_posts?.map((post:any, index:any) => {
             const isLiked = likedPosts[post._id] || post.likes.includes(user._id);
             return (<motion.div
               key={post?.id}
@@ -292,7 +298,7 @@ export default function SocialFeed() {
   whileHover={{ scale: 1.05 }}
   whileTap={{ scale: 0.95 }}
 >
- {isLiked ? <FaHeart  size={20} className="text-red-700"/> : <CiHeart size={20}/>}
+ {isLiked ? <FaHeart  size={16} className="text-red-500"/> : <CiHeart size={16}/>}
   <span>{post.likes.length} Likes</span>
 </motion.button>
                 <span>{post?.comments?.length || 0} Comments</span>

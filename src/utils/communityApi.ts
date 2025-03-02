@@ -201,6 +201,22 @@ export const leave_community = async(token:string | null,communityid:any)=>{
         console.log(error);
     }
 }
+export const search_vendor_community = async(token:string | null, query:string | null)=>{
+    try{
+        const response = await api.get(`/search_vendor_community`,{
+            headers:{
+                Authorization: `Bearer ${token}`,
+            },
+            params: {
+                query: query
+            }
+        });
+        console.log(response);
+    return response
+    }catch(error){
+        console.log(error);
+    }
+}
 
 export const get_one_community = async(communityid:any)=>{
     try{

@@ -10,6 +10,7 @@ import {
   get_all_communities,
   leave_community,
   join_community,
+  search_vendor_community,
 } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -46,6 +47,14 @@ export default function SocialList() {
     queryKey: ["all_comm"],
     queryFn: () => get_all_communities(),
   });
+
+//   const { data: searchResults, error } = useQuery({
+//     queryKey: ["search_res", searchQuery], 
+//     queryFn: () => search_vendor_community(user?.token, searchQuery), 
+//     enabled: !!searchQuery, 
+// })
+
+
 
   const handleFollowToggle = async (vendorId: string) => {
     try {
