@@ -279,9 +279,9 @@ export default function SocialFeed() {
 
               <p className="mb-4 text-sm">{post?.content}</p>
               
-              <div className="w-full h-[200px] object-cover border">
+              {post?.posts_Images.length > 0 ? <div className="w-full h-[200px] object-cover border">
               <img src={post?.posts_Images[0]} alt="image" className="object-cover w-full h-full border" />
-              </div>
+              </div>:null}
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {/* {post.hashtags.map((tag) => (
