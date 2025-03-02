@@ -3,13 +3,19 @@ import DashboardSidebar from "./DashboardSidebar";
 import VendorHeader from "./VendorHeader";
 import { Outlet } from "react-router-dom";
 import { useDarkMode } from "../Context/DarkModeContext";
+import { QueryClient, QueryClientProvider} from "@tanstack/react-query"
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
  // Import dark mode context
 
 const VendorLayout: React.FC = () => {
   const { darkMode } = useDarkMode(); // Use context instead of local state
 
+
+  const queryClient = new QueryClient()
+
   return (
-    <div className={darkMode ? "dark" : ""}>
+   <QueryClientProvider client={queryClient}>
+     <div className={darkMode ? "dark" : ""}>
       <div className="flex h-screen">
         {/* Sidebar */}
         <DashboardSidebar darkMode={darkMode} />
@@ -26,6 +32,8 @@ const VendorLayout: React.FC = () => {
         </div>
       </div>
     </div>
+    <ReactQueryDevtools initialIsOpen={true} />
+   </QueryClientProvider>
   );
 };
 

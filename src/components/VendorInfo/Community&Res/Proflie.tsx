@@ -2,13 +2,14 @@
 
 import { motion } from "framer-motion"
 import { MapPin, PenSquare, MessageSquare, Users, FileText, User } from "lucide-react"
-import { useEffect, useState } from "react"
+import {  useState } from "react"
 import CreatePostModal from "./CreatePostModal"
 import CommunityModal from "./CommunityModal"
 import mbayy from "../../../assets/image/MBLogo.png"
 import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
 import moment from "moment"
+import { useQuery } from "@tanstack/react-query"
 
 // interface Post {
 //   id: number
@@ -26,23 +27,11 @@ export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false)
   const user = useSelector((state:any)=> state.vendor)
-  const [posts,setPosts] = useState<any>({})
 
 
-   useEffect(()=>{
-    const fetchAdmin = async () => {
-        if (!user?.token) return;
-        try {
-          const vendordata = await get_single_vendor(user.token);
-          setPosts(vendordata);
-        } catch (error) {
-          console.error("Error fetching admin:", error);
-        }
-      };
-      fetchAdmin()
-    })
 
-  
+  const posts = useQuery({ queryKey: ['posts'], queryFn: () => get_single_vendor(user.token) })
+ 
   const handlecreateCommunity = (name: string, description: string) => {
     // Handle the create community logic here
     console.log("Sending message:", { name, description })
@@ -71,15 +60,15 @@ export default function ProfilePage() {
       {/* Profile Info */}
       <div className="px-6 pt-8">
         <div className="space-y-1">
-          <h2 className="text-xl font-semibold">{posts?.userName
+          <h2 className="text-xl font-semibold">{posts?.data?.userName
           }</h2>
           <div className="flex items-center gap-1 text-sm text-gray-600">
-            <span>{posts?.craftCategories
+            <span>{posts?.data?.craftCategories
             }</span>
             <span className="flex items-center gap-1">
               <MapPin className="w-4 h-4" />
-              {posts?.state},
-              {posts?.country}
+              {posts?.data?.state},
+              {posts?.data?.country}
             </span>
           </div>
         </div>
@@ -90,7 +79,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-gray-400" />
               <div>
-                <div className="font-semibold">{posts?.followers?.length || <p>0</p>}</div>
+                <div className="font-semibold">{posts?.data?.followers?.length || <p>0</p>}</div>
                 <div className="text-xs text-gray-500">Followers</div>
               </div>
             </div>
@@ -99,7 +88,7 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-gray-400" />
               <div>
-                <div className="font-semibold">{posts?.following?.length || <p>0</p>}</div>
+                <div className="font-semibold">{posts?.data?.following?.length || <p>0</p>}</div>
                 <div className="text-xs text-gray-500">Following</div>
               </div>
             </div>
@@ -108,8 +97,17 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-400" />
               <div>
-                <div className="font-semibold">{posts?.communityPosts?.length || <p>0</p>}</div>
+                <div className="font-semibold">{posts?.data?.communityPosts?.length || <p>0</p>}</div>
                 <div className="text-xs text-gray-500">Posts</div>
+              </div>
+            </div>
+          </motion.div>
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-gray-400" />
+              <div>
+                <div className="font-semibold">{posts?.data?.communities?.length || <p>0</p>}</div>
+                <div className="text-xs text-gray-500">Communities</div>
               </div>
             </div>
           </motion.div>
@@ -149,8 +147,8 @@ export default function ProfilePage() {
 
         {/* Posts Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-[50px] auto-rows-auto">
-  {posts?.communityPosts?.length > 0 ? (
-    [...posts.communityPosts].reverse().map((props: any, index: number) => (
+  {posts?.data?.communityPosts?.length > 0 ? (
+    [...posts?.data?.communityPosts].reverse().map((props: any, index: number) => (
       <motion.div
         key={props.id}
         initial={{ opacity: 0, y: 20 }}
@@ -210,9 +208,8 @@ export default function ProfilePage() {
           <div className="flex items-center gap-4 mt-3">
             <div className="flex items-center gap-1">
               <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-gray-500">
-                {props.likes.length || 0}
               </motion.button>
-              <span className="text-sm text-gray-500">{props.likes} Likes</span>
+              <span className="text-sm text-gray-500">{props?.likes?.length ||0} Likes</span>
             </div>
             <div className="flex items-center gap-1">
               <MessageSquare className="w-4 h-4 text-gray-500" />

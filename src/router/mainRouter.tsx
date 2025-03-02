@@ -1,6 +1,8 @@
 import Spinner from "@/components/Common/Spinner";
 import WebLayout from "@/components/Layout/WebLayout";
 import AccountManagement from "@/components/profileMangement/AccountManagement";
+import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
+import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter, RouteObject } from "react-router-dom";
@@ -87,6 +89,9 @@ const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
 );
 const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
+// const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
+const CommunitySection = lazy(() => import("../components/VendorInfo/Community&Res/CommunitySection"))
+const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"))
 
 const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost"))
 const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Proflie"))
@@ -160,6 +165,10 @@ const routesConfig: RouteObject[] = [
       { path: "inbox", element: withSuspense(Inbox) },
       { path: "all-post", element: withSuspense(AllPost) },
       { path: "profile", element: withSuspense(ProfilePage) },
+      { path: "my-community", element: withSuspense(CommunitySection) },
+      { path: "reviews", element: withSuspense(Reviews) },
+      { path: "community", element: withSuspense(CommunityPage) },
+      { path: "comunity-detail/:communityid", element: withSuspense(CommunityDetailPage) },
     ],
   },
   { path: "signin", element: withSuspense(Login) },
