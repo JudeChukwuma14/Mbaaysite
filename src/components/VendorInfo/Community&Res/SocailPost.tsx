@@ -205,7 +205,7 @@ export default function SocialList() {
           {isLoading ? (
             <p>Loading communities...</p>
           ) : (
-            all_communities.slice(0,3).map((vendor:any) => {
+            all_communities.slice(0, 3).map((vendor: any) => {
               return (
                 <motion.div key={vendor._id} layout className="space-y-4">
                   <AnimatePresence>

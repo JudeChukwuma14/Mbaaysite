@@ -1,5 +1,5 @@
-import React, { useState, useRef, type ChangeEvent, Suspense } from "react"
-import { motion } from "framer-motion"
+import React, { useState, useRef, type ChangeEvent, Suspense } from "react";
+import { motion } from "framer-motion";
 import {
   Globe,
   Users,
@@ -12,37 +12,37 @@ import {
   PlusCircle,
   Heart,
   Camera,
-} from "lucide-react"
+} from "lucide-react";
 
 // Use React.lazy for dynamic import
-const EmojiPicker = React.lazy(() => import("emoji-picker-react"))
+const EmojiPicker = React.lazy(() => import("emoji-picker-react"));
 
 interface User {
-  id: string
-  name: string
-  avatar: string
-  isOwner: boolean
+  id: string;
+  name: string;
+  avatar: string;
+  isOwner: boolean;
 }
 
 interface Comment {
-  id: string
-  author: User
-  content: string
-  timestamp: string
-  likes: number
-  isLiked: boolean
-  replies: Comment[]
+  id: string;
+  author: User;
+  content: string;
+  timestamp: string;
+  likes: number;
+  isLiked: boolean;
+  replies: Comment[];
 }
 
 interface Post {
-  id: string
-  author: User
-  content: string
-  image?: string
-  timestamp: string
-  likes: number
-  isLiked: boolean
-  comments: Comment[]
+  id: string;
+  author: User;
+  content: string;
+  image?: string;
+  timestamp: string;
+  likes: number;
+  isLiked: boolean;
+  comments: Comment[];
 }
 
 const currentUser: User = {
@@ -50,7 +50,7 @@ const currentUser: User = {
   name: "Current User",
   avatar: "/placeholder.svg?height=32&width=32",
   isOwner: true, // Set this based on your authentication logic
-}
+};
 
 const initialPosts: Post[] = [
   {
@@ -61,7 +61,8 @@ const initialPosts: Post[] = [
       avatar: "/placeholder.svg?height=40&width=40",
       isOwner: false,
     },
-    content: "how many apples are there 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍏\nthe winner takes $3000",
+    content:
+      "how many apples are there 🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍎🍏\nthe winner takes $3000",
     image:
       "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-27%20045302-iI3UnZITwPhrJYIQj2dZUilhmUG828.png",
     timestamp: "2h",
@@ -84,21 +85,24 @@ const initialPosts: Post[] = [
       },
     ],
   },
-]
+];
 
 export const CommunityPage: React.FC = () => {
-  const [isJoined, setIsJoined] = useState(false)
-  const [posts, setPosts] = useState(initialPosts)
-  const [newComment, setNewComment] = useState("")
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [replyingTo, setReplyingTo] = useState<{ postId: string; commentId: string } | null>(null)
-  const [bannerImage, setBannerImage] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const bannerInputRef = useRef<HTMLInputElement>(null)
+  const [isJoined, setIsJoined] = useState(false);
+  const [posts, setPosts] = useState(initialPosts);
+  const [newComment, setNewComment] = useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<{
+    postId: string;
+    commentId: string;
+  } | null>(null);
+  const [bannerImage, setBannerImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
 
   const handleJoinLeave = () => {
-    setIsJoined(!isJoined)
-  }
+    setIsJoined(!isJoined);
+  };
 
   const handleLike = (postId: string) => {
     setPosts(
@@ -109,10 +113,10 @@ export const CommunityPage: React.FC = () => {
               likes: post.isLiked ? post.likes - 1 : post.likes + 1,
               isLiked: !post.isLiked,
             }
-          : post,
-      ),
-    )
-  }
+          : post
+      )
+    );
+  };
 
   const handleCommentLike = (postId: string, commentId: string) => {
     setPosts(
@@ -124,16 +128,18 @@ export const CommunityPage: React.FC = () => {
                 comment.id === commentId
                   ? {
                       ...comment,
-                      likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+                      likes: comment.isLiked
+                        ? comment.likes - 1
+                        : comment.likes + 1,
                       isLiked: !comment.isLiked,
                     }
-                  : comment,
+                  : comment
               ),
             }
-          : post,
-      ),
-    )
-  }
+          : post
+      )
+    );
+  };
 
   const handleCommentSubmit = (postId: string, parentCommentId?: string) => {
     if (newComment.trim()) {
@@ -160,7 +166,7 @@ export const CommunityPage: React.FC = () => {
                               },
                             ],
                           }
-                        : comment,
+                        : comment
                     )
                   : [
                       ...post.comments,
@@ -175,42 +181,46 @@ export const CommunityPage: React.FC = () => {
                       },
                     ],
               }
-            : post,
-        ),
-      )
-      setNewComment("")
-      setReplyingTo(null)
+            : post
+        )
+      );
+      setNewComment("");
+      setReplyingTo(null);
     }
-  }
+  };
 
   const handleEmojiClick = (emojiObject: { emoji: string }) => {
-    setNewComment(newComment + emojiObject.emoji)
-    setShowEmojiPicker(false)
-  }
+    setNewComment(newComment + emojiObject.emoji);
+    setShowEmojiPicker(false);
+  };
 
   const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
       // Here you would typically upload the image to your server
       // and get back a URL to add to the comment
-      console.log("Image selected:", file.name)
+      console.log("Image selected:", file.name);
       // For now, we'll just add a placeholder text
-      setNewComment(newComment + " [Image Uploaded] ")
+      setNewComment(newComment + " [Image Uploaded] ");
     }
-  }
+  };
 
   const handleBannerUpload = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setBannerImage(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setBannerImage(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
-  const renderComments = (comments: Comment[], postId: string, isReply = false) => {
+  const renderComments = (
+    comments: Comment[],
+    postId: string,
+    isReply = false
+  ) => {
     return comments.map((comment) => (
       <motion.div
         key={comment.id}
@@ -218,7 +228,11 @@ export const CommunityPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className={`flex gap-3 ${isReply ? "ml-8 mt-2" : "mt-4"}`}
       >
-        <img src={comment.author.avatar || "/placeholder.svg"} alt="" className="w-8 h-8 rounded-full" />
+        <img
+          src={comment.author.avatar || "/placeholder.svg"}
+          alt=""
+          className="w-8 h-8 rounded-full"
+        />
         <div className="flex-1">
           <div className="px-4 py-2 bg-gray-100 rounded-2xl">
             <h4 className="text-sm font-semibold">{comment.author.name}</h4>
@@ -236,7 +250,10 @@ export const CommunityPage: React.FC = () => {
               )}
               {comment.likes > 0 && <span>{comment.likes}</span>}
             </button>
-            <button onClick={() => setReplyingTo({ postId, commentId: comment.id })} className="hover:underline">
+            <button
+              onClick={() => setReplyingTo({ postId, commentId: comment.id })}
+              className="hover:underline"
+            >
               Reply
             </button>
             <span>{comment.timestamp}</span>
@@ -261,8 +278,8 @@ export const CommunityPage: React.FC = () => {
           )}
         </div>
       </motion.div>
-    ))
-  }
+    ));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -272,13 +289,23 @@ export const CommunityPage: React.FC = () => {
         onClick={() => bannerInputRef.current?.click()}
       >
         {bannerImage ? (
-          <img src={bannerImage || "/placeholder.svg"} alt="Community Banner" className="object-cover w-full h-full" />
+          <img
+            src={bannerImage || "/placeholder.svg"}
+            alt="Community Banner"
+            className="object-cover w-full h-full"
+          />
         ) : (
           <div className="flex items-center justify-center w-full h-full">
             <Camera className="w-12 h-12 text-white" />
           </div>
         )}
-        <motion.input type="file" ref={bannerInputRef} onChange={handleBannerUpload} accept="image/*" className="hidden" />
+        <motion.input
+          type="file"
+          ref={bannerInputRef}
+          onChange={handleBannerUpload}
+          accept="image/*"
+          className="hidden"
+        />
       </div>
 
       {/* Community Info */}
@@ -286,7 +313,9 @@ export const CommunityPage: React.FC = () => {
         <div className="p-6 mb-6 bg-white shadow-lg rounded-xl">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h1 className="mb-2 text-3xl font-bold">Tech Enthusiasts Community</h1>
+              <h1 className="mb-2 text-3xl font-bold">
+                Tech Enthusiasts Community
+              </h1>
               <div className="flex items-center gap-4 mb-4 text-gray-600">
                 <div className="flex items-center gap-1">
                   <Globe className="w-5 h-5" />
@@ -303,7 +332,9 @@ export const CommunityPage: React.FC = () => {
               <button
                 onClick={handleJoinLeave}
                 className={`px-4 py-2 rounded-lg font-medium ${
-                  isJoined ? "bg-gray-100 text-gray-700 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700"
+                  isJoined
+                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-blue-600 text-white hover:bg-blue-700"
                 }`}
               >
                 {isJoined ? "Leave Group" : "Join Group"}
@@ -328,12 +359,18 @@ export const CommunityPage: React.FC = () => {
               className="p-4 bg-white shadow rounded-xl"
             >
               <div className="flex items-center gap-3 mb-4">
-                <img src={post.author.avatar || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-full" />
+                <img
+                  src={post.author.avatar || "/placeholder.svg"}
+                  alt=""
+                  className="w-10 h-10 rounded-full"
+                />
                 <div className="flex-1">
                   <h3 className="font-semibold">{post.author.name}</h3>
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-500">{post.timestamp}</p>
-                    {post.isLiked && <Heart className="w-4 h-4 text-red-500 fill-red-500" />}
+                    {post.isLiked && (
+                      <Heart className="w-4 h-4 text-red-500 fill-red-500" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -341,7 +378,11 @@ export const CommunityPage: React.FC = () => {
               <p className="mb-4 whitespace-pre-line">{post.content}</p>
 
               {post.image && (
-                <img src={post.image || "/placeholder.svg"} alt="Post content" className="w-full mb-4 rounded-lg" />
+                <img
+                  src={post.image || "/placeholder.svg"}
+                  alt="Post content"
+                  className="w-full mb-4 rounded-lg"
+                />
               )}
 
               <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
@@ -352,7 +393,9 @@ export const CommunityPage: React.FC = () => {
                   <span>{post.likes}</span>
                 </div>
                 <div className="flex items-center gap-4">
-                  <button className="hover:underline">{post.comments.length} comments</button>
+                  <button className="hover:underline">
+                    {post.comments.length} comments
+                  </button>
                   <button className="hover:underline">2 shares</button>
                 </div>
               </div>
@@ -362,7 +405,9 @@ export const CommunityPage: React.FC = () => {
                   onClick={() => handleLike(post.id)}
                   className="flex items-center justify-center flex-1 gap-2 py-2 transition-colors rounded-lg hover:bg-gray-100"
                 >
-                  <ThumbsUp className={`w-5 h-5 ${post.isLiked ? "text-blue-500" : ""}`} />
+                  <ThumbsUp
+                    className={`w-5 h-5 ${post.isLiked ? "text-blue-500" : ""}`}
+                  />
                   <span>{post.isLiked ? "Liked" : "Like"}</span>
                 </button>
                 <button className="flex items-center justify-center flex-1 gap-2 py-2 transition-colors rounded-lg hover:bg-gray-100">
@@ -381,11 +426,17 @@ export const CommunityPage: React.FC = () => {
 
                 {/* Comment Input */}
                 <div className="flex gap-3 mt-4">
-                  <img src={currentUser.avatar || "/placeholder.svg"} alt="" className="w-8 h-8 rounded-full" />
+                  <img
+                    src={currentUser.avatar || "/placeholder.svg"}
+                    alt=""
+                    className="w-8 h-8 rounded-full"
+                  />
                   <div className="relative flex-1">
                     <input
                       type="text"
-                      placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
+                      placeholder={
+                        replyingTo ? "Write a reply..." : "Write a comment..."
+                      }
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                       className="w-full px-4 py-2 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -404,7 +455,9 @@ export const CommunityPage: React.FC = () => {
                         <ImageIcon className="w-5 h-5" />
                       </button>
                       <button
-                        onClick={() => handleCommentSubmit(post.id, replyingTo?.commentId)}
+                        onClick={() =>
+                          handleCommentSubmit(post.id, replyingTo?.commentId)
+                        }
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <Send className="w-5 h-5" />
@@ -432,8 +485,7 @@ export const CommunityPage: React.FC = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CommunityPage
-
+export default CommunityPage;
