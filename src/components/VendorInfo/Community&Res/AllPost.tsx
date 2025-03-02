@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
 import { motion, AnimatePresence } from "framer-motion"
 import CreatePostModal from "./CreatePostModal"
@@ -113,6 +113,15 @@ export default function SocialFeed() {
   const user = useSelector((state: RootState) => state.vendor)
   // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>(() => {
+    const savedLikes = localStorage.getItem("likedPosts");
+    return savedLikes ? JSON.parse(savedLikes) : {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+  }, [likedPosts]);
+
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
@@ -139,76 +148,72 @@ export default function SocialFeed() {
   // console.log(comments)
 
   const queryClient = useQueryClient();
-const likeMutation = useMutation({
-  mutationFn: (postId: string) => like_posts(user?.token, postId),
-  onMutate: async (postId: string) => {
-    // Optimistic Update: Update cache immediately before the request
-    await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+  const handleLikeToggle = (postId: string, isLiked: boolean) => {
+    if (isLiked) {
+      unlikeMutation.mutate(postId);
+    } else {
+      likeMutation.mutate(postId);
+    }
+    setLikedPosts(prev => ({
+      ...prev,
+      [postId]: !isLiked,
+    }));
+  };
 
-    const previousPosts = queryClient.getQueryData(['comm_posts']);
-
-    queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
-      return oldPosts.map((post: any) => {
-        if (post._id === postId) {
-          return {
-            ...post,
-            likes: [...post.likes, user._id] // Add current user to likes
-          };
-        }
-        return post;
+  const likeMutation = useMutation({
+    mutationFn: (postId: string) => like_posts(user?.token, postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+      const previousPosts = queryClient.getQueryData(['comm_posts']);
+      queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
+        return oldPosts.map((post: any) => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              likes: post.likes.includes(user._id)
+                ? post.likes
+                : [...post.likes, user._id],
+            };
+          }
+          return post;
+        });
       });
-    });
+      return { previousPosts };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(['comm_posts'], context?.previousPosts);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
+    },
+  });
 
-    return { previousPosts };
-  },
-  onError: (_, __, context) => {
-    // Revert to previous state if mutation fails
-    queryClient.setQueryData(['comm_posts'], context?.previousPosts);
-  },
-  onSettled: () => {
-    // Always refetch posts after mutation (ensure data consistency)
-    queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
-  },
-});
-
-// Unlike Post Mutation
-const unlikeMutation = useMutation({
-  mutationFn: (postId: string) => unlike_posts(user?.token, postId),
-  onMutate: async (postId: string) => {
-    await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
-
-    const previousPosts = queryClient.getQueryData(['comm_posts']);
-
-    queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
-      return oldPosts.map((post: any) => {
-        if (post._id === postId) {
-          return {
-            ...post,
-            likes: post.likes.filter((like: string) => like !== user._id) // Remove current user from likes
-          };
-        }
-        return post;
+  const unlikeMutation = useMutation({
+    mutationFn: (postId: string) => unlike_posts(user?.token, postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+      const previousPosts = queryClient.getQueryData(['comm_posts']);
+      queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
+        return oldPosts.map((post: any) => {
+          if (post._id === postId) {
+            return {
+              ...post,
+              likes: post.likes.filter((like: string) => like !== user._id),
+            };
+          }
+          return post;
+        });
       });
-    });
-
-    return { previousPosts };
-  },
-  onError: (_, __, context) => {
-    queryClient.setQueryData(['comm_posts'], context?.previousPosts);
-  },
-  onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
-  },
-});
-
-// Handle Like/Unlike Action
-const handleLikeToggle = (postId: string, isLiked: boolean) => {
-  if (isLiked) {
-    unlikeMutation.mutate(postId);
-  } else {
-    likeMutation.mutate(postId);
-  }
-};
+      return { previousPosts };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(['comm_posts'], context?.previousPosts);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
+    },
+  });
+  
 
 
   return (
@@ -225,8 +230,9 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => (
-            <motion.div
+          {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => {
+            const isLiked = likedPosts[post._id] || post.likes.includes(user._id);
+            return (<motion.div
               key={post?.id}
               className="p-4 bg-white rounded-lg shadow"
               initial={{ opacity: 0, y: 50 }}
@@ -281,12 +287,12 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <motion.button
-  onClick={() => handleLikeToggle(post._id, post.likes.includes(user._id))}
+  onClick={() => handleLikeToggle(post._id, isLiked)}
   className="flex items-center gap-1 hover:text-red-500"
   whileHover={{ scale: 1.05 }}
   whileTap={{ scale: 0.95 }}
 >
- {post.likes.includes(user._id) ?  <FaHeart  size={20} className="text-red-700"/> : <CiHeart size={20}/>}
+ {isLiked ? <FaHeart  size={20} className="text-red-700"/> : <CiHeart size={20}/>}
   <span>{post.likes.length} Likes</span>
 </motion.button>
                 <span>{post?.comments?.length || 0} Comments</span>
@@ -417,8 +423,8 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                   </div>
                 )}
               </div>
-            </motion.div>
-          ))}
+            </motion.div>)
+})}
         </motion.div>
 
         {/* Right Sidebar */}
@@ -493,7 +499,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
       <div className="p-4 mt-4 bg-white shadow-sm">
         <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
         {
-          communities?.slice(0, 4).map((communities:any)=>(
+          communities?.slice(0, 4)?.map((communities:any)=>(
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 mb-[20px]">
           <div className="flex flex-col items-center justify-between gap-3">
           <div className="flex items-center justify-between">
