@@ -1,91 +1,96 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useRef } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { X, ArrowLeft, ImageIcon } from "lucide-react"
-import { create_community } from "@/utils/communityApi"
-import { useSelector } from "react-redux"
+import { useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, ArrowLeft, ImageIcon } from "lucide-react";
+import { create_community } from "@/utils/communityApi";
+import { useSelector } from "react-redux";
 
 interface CommunityModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSend: (name: string, description: string, image: any) => void}
+  isOpen: boolean;
+  onClose: () => void;
+  onSend: (name: string, description: string, image: any) => void;
+}
 
-export default function CommunityModal({ isOpen, onClose, onSend }: CommunityModalProps) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [step, setStep] = useState(1)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const user = useSelector((state: any) => state.vendor)
+export default function CommunityModal({
+  isOpen,
+  onClose,
+  onSend,
+}: CommunityModalProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const user = useSelector((state: any) => state.vendor);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-  
+    e.preventDefault();
+
     if (!image) {
-      alert("Please upload an image before submitting.")
-      return
+      alert("Please upload an image before submitting.");
+      return;
     }
-  
-    const formData = new FormData()
-    formData.append("name", name)
-    formData.append("description", description)
-  
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description);
+
     if (image) {
-      formData.append("community_Images", image)  // Ensure image is not null
+      formData.append("community_Images", image); // Ensure image is not null
     }
-  
-    const token = user?.token || null
-  
+
+    const token = user?.token || null;
+
     try {
-      await create_community(token, formData)
-      onSend(name, description, image)
-      resetForm()
-      onClose()
+      await create_community(token, formData);
+      onSend(name, description, image);
+      resetForm();
+      onClose();
     } catch (error) {
-      console.error("Failed to create community:", error)
-      alert("Failed to create community. Please try again.")
+      console.error("Failed to create community:", error);
+      alert("Failed to create community. Please try again.");
     }
-  }
-  
+  };
+
   const resetForm = () => {
-    setName("")
-    setDescription("")
-    setImage(null)
-    setImagePreview(null)
-    setStep(1)
-  }
+    setName("");
+    setDescription("");
+    setImage(null);
+    setImagePreview(null);
+    setStep(1);
+  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setImage(file)
-      const reader = new FileReader()
+      setImage(file);
+      const reader = new FileReader();
       reader.onload = () => {
-        setImagePreview(reader.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleNextStep = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (name.trim() === "" || description.trim() === "") {
-      return // Don't proceed if required fields are empty
+      return; // Don't proceed if required fields are empty
     }
-    setStep(2)
-  }
+    setStep(2);
+  };
 
   const handlePreviousStep = () => {
-    setStep(1)
-  }
+    setStep(1);
+  };
 
   const triggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
+    fileInputRef.current?.click();
+  };
 
   return (
     <AnimatePresence>
@@ -108,7 +113,10 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
             transition={{ type: "spring", duration: 0.3 }}
             className="fixed z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 left-1/3 top-1/4"
           >
-            <form onSubmit={step === 1 ? handleNextStep : handleSubmit} className="bg-white rounded-lg shadow-xl">
+            <form
+              onSubmit={step === 1 ? handleNextStep : handleSubmit}
+              className="bg-white rounded-lg shadow-xl"
+            >
               <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center">
                   {step === 2 && (
@@ -161,7 +169,9 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                   </>
                 ) : (
                   <div className="space-y-4">
-                    <h1 className="mb-3 font-bold text-bold">Community Image:</h1>
+                    <h1 className="mb-3 font-bold text-bold">
+                      Community Image:
+                    </h1>
                     <div
                       onClick={triggerFileInput}
                       className="flex flex-col items-center justify-center p-6 transition-colors border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-orange-500"
@@ -173,13 +183,19 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                             alt="Community preview"
                             className="object-cover w-32 h-32 mb-2 rounded-lg"
                           />
-                          <p className="text-sm text-gray-500">Click to change image</p>
+                          <p className="text-sm text-gray-500">
+                            Click to change image
+                          </p>
                         </div>
                       ) : (
                         <>
                           <ImageIcon className="w-12 h-12 mb-2 text-gray-400" />
-                          <p className="text-sm font-medium text-gray-700">Click to upload image</p>
-                          <p className="mt-1 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                          <p className="text-sm font-medium text-gray-700">
+                            Click to upload image
+                          </p>
+                          <p className="mt-1 text-xs text-gray-500">
+                            PNG, JPG, GIF up to 10MB
+                          </p>
                         </>
                       )}
                       <motion.input
@@ -227,6 +243,5 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
         </>
       )}
     </AnimatePresence>
-  )
+  );
 }
-
