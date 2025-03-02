@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { createPost, get_one_community } from "@/utils/communityApi"
-import { motion, AnimatePresence } from "framer-motion"
-import { X, Smile, ImageIcon, MapPin, User, XCircle } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
-import { toast } from "react-toastify"
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
-import { useQuery } from "@tanstack/react-query"
-import { useParams } from "react-router-dom"
-import { useSelector } from "react-redux"
+import { createPost, get_one_community } from "@/utils/communityApi";
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Smile, ImageIcon, MapPin, User, XCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { toast } from "react-toastify";
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
+import { useQuery } from "@tanstack/react-query";
+import { useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 // import { LoadScript } from "@react-google-maps/api"
 // import GooglePlacesAutocomplete from "react-google-autocomplete"
 
 interface CreatePostModalProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 // interface ApiError {
@@ -29,67 +29,80 @@ interface CreatePostModalProps {
 // }
 
 interface TaggedUser {
-  id: string
-  name: string
+  id: string;
+  name: string;
 }
 
 const userSuggestions = [
   { id: "1", name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "2", name: "Jane Smith", avatar: "/placeholder.svg?height=32&width=32" },
-  { id: "3", name: "Mike Johnson", avatar: "/placeholder.svg?height=32&width=32" },
-]
+  {
+    id: "2",
+    name: "Jane Smith",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+  {
+    id: "3",
+    name: "Mike Johnson",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
+];
 
 // const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
 
-export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModalProps) {
-  const [content, setContent] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [images, setImages] = useState<File[]>([])
-  const [imagesPreviews, setImagesPreviews] = useState<string[]>([])
-  const [showTagInput, setShowTagInput] = useState(false)
-  const [tagInput, setTagInput] = useState("")
-  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([])
-  const [showSuggestions, setShowSuggestions] = useState(false)
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
-  const [showLocationPicker, setShowLocationPicker] = useState(false)
-  const [location, setLocation] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const modalContentRef = useRef<HTMLDivElement>(null)
-  const emojiPickerRef = useRef<HTMLDivElement>(null)
+export default function CreatePostcommModal({
+  isOpen,
+  onClose,
+}: CreatePostModalProps) {
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [imagesPreviews, setImagesPreviews] = useState<string[]>([]);
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [tagInput, setTagInput] = useState("");
+  const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
+  const [location, setLocation] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  const {communityid} = useParams()
+  const { communityid } = useParams();
 
-  const user = useSelector((state: any) => state.vendor)
+  const user = useSelector((state: any) => state.vendor);
 
-
-  const {data:one_community} = useQuery({
-    queryKey: ['one_community'],
-    queryFn: () => get_one_community(communityid)
-  })
+  const { data: one_community } = useQuery({
+    queryKey: ["one_community"],
+    queryFn: () => get_one_community(communityid),
+  });
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden"
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset"
+      document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = "unset"
-    }
-  }, [isOpen])
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
-        setShowEmojiPicker(false)
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target as Node)
+      ) {
+        setShowEmojiPicker(false);
       }
-    }
+    };
 
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // const isApiError = (error: unknown): error is ApiError => {
   //   return (
@@ -101,36 +114,36 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
   // }
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const files = e.target.files;
     if (files) {
-      const newImages = Array.from(files)
-      setImages((prev) => [...prev, ...newImages])
-      const newPreviews = newImages.map((file) => URL.createObjectURL(file))
-      setImagesPreviews((prev) => [...prev, ...newPreviews])
+      const newImages = Array.from(files);
+      setImages((prev) => [...prev, ...newImages]);
+      const newPreviews = newImages.map((file) => URL.createObjectURL(file));
+      setImagesPreviews((prev) => [...prev, ...newPreviews]);
     }
-  }
+  };
 
   const removeImage = (index: number) => {
-    URL.revokeObjectURL(imagesPreviews[index])
-    setImages((prev) => prev.filter((_, i) => i !== index))
-    setImagesPreviews((prev) => prev.filter((_, i) => i !== index))
-  }
+    URL.revokeObjectURL(imagesPreviews[index]);
+    setImages((prev) => prev.filter((_, i) => i !== index));
+    setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleTagUser = (user: { id: string; name: string }) => {
     if (!taggedUsers.find((tagged) => tagged.id === user.id)) {
-      setTaggedUsers([...taggedUsers, user])
+      setTaggedUsers([...taggedUsers, user]);
     }
-    setTagInput("")
-    setShowSuggestions(false)
-  }
+    setTagInput("");
+    setShowSuggestions(false);
+  };
 
   const removeTag = (userId: string) => {
-    setTaggedUsers(taggedUsers.filter((user) => user.id !== userId))
-  }
+    setTaggedUsers(taggedUsers.filter((user) => user.id !== userId));
+  };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
-    setContent((prev) => prev + emojiData.emoji)
-  }
+    setContent((prev) => prev + emojiData.emoji);
+  };
 
   // const handleLocationSelect = (place: google.maps.places.PlaceResult) => {
   //   if (place.formatted_address) {
@@ -139,63 +152,62 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
   //   setShowLocationPicker(false)
   // }
   const handlePost = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!content.trim()) {
       toast.error("Post content cannot be empty.", {
         position: "top-right",
         autoClose: 4000,
-      })
-      return
+      });
+      return;
     }
-  
-    setLoading(true)
-  
+
+    setLoading(true);
+
     try {
-      const formData = new FormData()
-      formData.append("content", content)
-      formData.append("userType", "community")
-      formData.append("posterId", one_community._id)
-      formData.append("communityId", one_community._id)
-      
+      const formData = new FormData();
+      formData.append("content", content);
+      formData.append("userType", "community");
+      formData.append("posterId", one_community._id);
+      formData.append("communityId", one_community._id);
+
       images.forEach((image) => {
-        formData.append("posts_Images", image) 
-      })
-  
+        formData.append("posts_Images", image);
+      });
+
       taggedUsers.forEach((user) => {
-        formData.append("tags", user.id)
-      })
-  
+        formData.append("tags", user.id);
+      });
+
       if (location) {
-        formData.append("location", location)
+        formData.append("location", location);
       }
-  
-      const token = user?.token || null
-      await createPost(formData, token)
-  
+
+      const token = user?.token || null;
+      await createPost(formData, token);
+
       toast.success("Post created successfully", {
         position: "top-right",
         autoClose: 4000,
-      })
+      });
 
+      window.location.reload();
 
-      window.location.reload()
-  
-      setContent("")
-      setImages([])
-      setImagesPreviews([])
-      setTaggedUsers([])
-      setLocation("")
-      onClose()
+      setContent("");
+      setImages([]);
+      setImagesPreviews([]);
+      setTaggedUsers([]);
+      setLocation("");
+      onClose();
     } catch (error) {
       toast.error("Failed to post. Please try again.", {
         position: "top-right",
         autoClose: 4000,
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-  
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -227,7 +239,11 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
             <div ref={modalContentRef} className="flex-1 p-4 overflow-y-auto">
               <form onSubmit={handlePost}>
                 <div className="flex items-center mb-4 space-x-3">
-                  <img src={one_community?.community_Images} alt="Profile" className="w-12 h-12 rounded-full" />
+                  <img
+                    src={one_community?.community_Images}
+                    alt="Profile"
+                    className="w-12 h-12 rounded-full"
+                  />
                   <div>
                     <h3 className="font-semibold">{one_community?.name}</h3>
                     <p className="text-sm text-gray-600">COMMUNITY</p>
@@ -250,7 +266,10 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                         className="inline-flex items-center gap-1 px-2 py-1 text-sm text-orange-700 bg-orange-100 rounded-full"
                       >
                         @{user.name}
-                        <motion.button type="button" onClick={() => removeTag(user.id)}>
+                        <motion.button
+                          type="button"
+                          onClick={() => removeTag(user.id)}
+                        >
                           <XCircle className="w-4 h-4" />
                         </motion.button>
                       </span>
@@ -285,8 +304,8 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                       type="text"
                       value={tagInput}
                       onChange={(e) => {
-                        setTagInput(e.target.value)
-                        setShowSuggestions(true)
+                        setTagInput(e.target.value);
+                        setShowSuggestions(true);
                       }}
                       placeholder="Tag someone..."
                       className="w-full p-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -294,7 +313,11 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                     {showSuggestions && tagInput && (
                       <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
                         {userSuggestions
-                          .filter((user) => user.name.toLowerCase().includes(tagInput.toLowerCase()))
+                          .filter((user) =>
+                            user.name
+                              .toLowerCase()
+                              .includes(tagInput.toLowerCase())
+                          )
                           .map((user) => (
                             <button
                               key={user.id}
@@ -419,6 +442,5 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
         </>
       )}
     </AnimatePresence>
-  )
+  );
 }
-
