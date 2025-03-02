@@ -1,8 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Define the Vendor type
 interface Vendor {
-  id: string; // Assuming each vendor has a unique ID
+  id: string;
   storeName: string;
   email: string;
   userName: string;
@@ -31,7 +30,10 @@ const vendorSlice = createSlice({
   name: "vendor",
   initialState,
   reducers: {
-    setVendor: (state, action: PayloadAction<{ vendor: Vendor; token: string }>) => {
+    setVendor: (
+      state,
+      action: PayloadAction<{ vendor: Vendor; token: string }>
+    ) => {
       state.vendor = action.payload.vendor;
       state.token = action.payload.token;
     },

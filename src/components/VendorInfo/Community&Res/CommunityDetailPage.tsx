@@ -45,9 +45,9 @@ export default function ProfilePage() {
   })
 
   return (
-    <div className="max-w-4xl mx-auto bg-white min-h-screen">
+    <div className="max-w-4xl min-h-screen mx-auto bg-white">
       {/* Banner with Logo */}
-      <div className="relative h-32 border rounded-xl bg-black overflow-hidden">
+      <div className="relative h-32 overflow-hidden bg-black border rounded-xl">
         <img src={one_community?.community_Images} alt="banner" className="w-[100%] h-[100%] object-cover"/>
       </div>
 
@@ -81,7 +81,7 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="flex gap-3 mt-4">
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-gray-400" />
               <div>
@@ -90,7 +90,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-400" />
               <div>
@@ -145,7 +145,7 @@ export default function ProfilePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-xl overflow-hidden border"
+              className="overflow-hidden bg-white border rounded-xl"
             >
              {props.posts_Images?.length > 0 && (
           <div
@@ -173,7 +173,7 @@ export default function ProfilePage() {
                 <img
                   src={image}
                   alt={`Post ${props.id} - Image ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
             ))}
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                     {moment(props?.createdTime).fromNow()}
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mt-2 line-clamp-2">{props?.content}</p>
+                <p className="mt-2 text-sm text-gray-600 line-clamp-2">{props?.content}</p>
                 <div className="flex items-center gap-4 mt-3">
                   <div className="flex items-center gap-1">
                     <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-gray-500">

@@ -8,9 +8,6 @@ import { useSelector } from "react-redux"
 import { comment_on_posts, get_communities, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
 import moment from "moment"
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "react-toastify"
-import { CiHeart } from "react-icons/ci";
-import { FaHeart } from "react-icons/fa";
 
 interface Recommendation {
   id: string
@@ -68,7 +65,7 @@ function Avatar({ src, alt, size = "sm" }: AvatarProps) {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
     >
-      <img src={src || "/placeholder.svg"} alt={alt} className="w-full h-full object-cover" />
+      <img src={src || "/placeholder.svg"} alt={alt} className="object-cover w-full h-full" />
     </motion.div>
   )
 }
@@ -161,7 +158,7 @@ const likeMutation = useMutation({
 
     return { previousPosts };
   },
-  onError: (err, postId, context) => {
+  onError: (_, __, context) => {
     // Revert to previous state if mutation fails
     queryClient.setQueryData(['comm_posts'], context?.previousPosts);
   },
@@ -193,8 +190,8 @@ const unlikeMutation = useMutation({
 
     return { previousPosts };
   },
-  onError: (err, postId, context) => {
-    QueryClient.setQueryData(['comm_posts'], context?.previousPosts);
+  onError: (_, __, context) => {
+    queryClient.setQueryData(['comm_posts'], context?.previousPosts);
   },
   onSettled: () => {
     queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
@@ -228,12 +225,12 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
           {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => (
             <motion.div
               key={post?.id}
-              className="bg-white rounded-lg shadow p-4"
+              className="p-4 bg-white rounded-lg shadow"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <div className="flex justify-between items-start mb-4">
+              <div className="flex items-start justify-between mb-4">
                 <div className="flex gap-3">
                  {
                   post?.posterType === "vendors" ? <div className = "w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white"><p>{post?.poster?.userName?.charAt(0)}</p></div> :  <Avatar src={post?.poster?.community_Images} alt={post?.author?.name} />
@@ -250,7 +247,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                   
                 </div>
                 <motion.button
-                  className="p-1 hover:bg-gray-100 rounded-full"
+                  className="p-1 rounded-full hover:bg-gray-100"
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
@@ -265,10 +262,10 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                 </motion.button>
               </div>
 
-              <p className="text-sm mb-4">{post?.content}</p>
+              <p className="mb-4 text-sm">{post?.content}</p>
               
               <div className="w-full h-[200px] object-cover border">
-              <img src={post?.posts_Images[0]} alt="image" className="w-full h-full object-cover border" />
+              <img src={post?.posts_Images[0]} alt="image" className="object-cover w-full h-full border" />
               </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
@@ -297,7 +294,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                 {post?.comments?.map((comment:any) => (
                   <motion.div
                     key={comment.id}
-                    className="mt-4 bg-gray-50 p-3 rounded-lg"
+                    className="p-3 mt-4 rounded-lg bg-gray-50"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -322,7 +319,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                           {comment?.reactions?.map((reaction:any) => (
                             <motion.button
                               key={reaction?.emoji}
-                              className="text-sm hover:bg-gray-200 rounded-full px-2 py-1"
+                              className="px-2 py-1 text-sm rounded-full hover:bg-gray-200"
                               // onClick={() => handleReaction(post.id, comment.id, reaction.emoji)}
                               whileHover={{ scale: 1.05 }}
                               whileTap={{ scale: 0.95 }}
@@ -331,7 +328,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                             </motion.button>
                           ))}
                           <motion.button
-                            className="text-sm hover:bg-gray-200 rounded-full px-2 py-1"
+                            className="px-2 py-1 text-sm rounded-full hover:bg-gray-200"
                             onClick={() => setShowEmojiPicker((prev) => ({ ...prev, [comment.id]: !prev[comment.id] }))}
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -352,10 +349,10 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                         )}
                         {/* Replies */}
                         <AnimatePresence>
-                          {comment?.replies?.map((reply) => (
+                          {comment?.replies?.map((reply:any) => (
                             <motion.div
                               key={reply.id}
-                              className="ml-6 mt-2 bg-white p-2 rounded-lg"
+                              className="p-2 mt-2 ml-6 bg-white rounded-lg"
                               initial={{ opacity: 0, y: 20 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -20 }}
@@ -380,7 +377,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
               </AnimatePresence>
 
               {/* Add Comment Input */}
-              <div className="mt-4 flex items-center gap-2">
+              <div className="flex items-center gap-2 mt-4">
                 {/* <Avatar src={vendors[0].avatar} alt={vendors[0].name} size="sm" /> */}
                 <div className="relative flex-grow">
                   <input
@@ -403,7 +400,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                     }}
                   />
                   <motion.button
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute text-gray-500 transform -translate-y-1/2 right-2 top-1/2 hover:text-gray-700"
                     onClick={() => setShowEmojiPicker((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -412,7 +409,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
                   </motion.button>
                 </div>
                 {showEmojiPicker[post.id] && (
-                  <div ref={emojiPickerRef} className="absolute z-10 bottom-full right-0">
+                  <div ref={emojiPickerRef} className="absolute right-0 z-10 bottom-full">
                     {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
                   </div>
                 )}
@@ -422,8 +419,8 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
         </motion.div>
 
         {/* Right Sidebar */}
-        <div className="max-w-md mx-auto bg-gray-100 min-h-screen">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white p-4 shadow-sm">
+        <div className="max-w-md min-h-screen mx-auto bg-gray-100">
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-white shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             {/* <img src="/placeholder.svg?height=60&width=60" alt="Profile" className="w-12 h-12 rounded-full" /> */}
@@ -455,14 +452,14 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setIsModalOpen(true)}
-          className="w-full bg-orange-500 text-white py-2 rounded-md font-medium"
+          className="w-full py-2 font-medium text-white bg-orange-500 rounded-md"
         >
           Create Post
         </motion.button>
       </motion.div>
 
-      <div className="mt-4 bg-white p-4 shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">RECOMMENDATION</h3>
+      <div className="p-4 mt-4 bg-white shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold">RECOMMENDATION</h3>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -490,14 +487,14 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
         </motion.div>
       </div>
 
-      <div className="mt-4 bg-white p-4 shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">MY COMMUNITIES</h3>
+      <div className="p-4 mt-4 bg-white shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
         {
           communities.slice(0, 4).map((communities:any)=>(
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 mb-[20px]">
-          <div className="flex items-center justify-between flex-col gap-3">
+          <div className="flex flex-col items-center justify-between gap-3">
           <div className="flex items-center justify-between">
-          <h4 className="font-semibold text-sm text-orange-800 mb-1">{communities.name}</h4>
+          <h4 className="mb-1 text-sm font-semibold text-orange-800">{communities.name}</h4>
           <motion.span 
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
@@ -515,7 +512,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
       // Handle what you want to do when user clicks 'See More'
       console.log("See More Clicked")
     }}
-    className="mt-2 text-orange-600 font-semibold cursor-pointer"
+    className="mt-2 font-semibold text-orange-600 cursor-pointer"
   >
     See More
   </button>

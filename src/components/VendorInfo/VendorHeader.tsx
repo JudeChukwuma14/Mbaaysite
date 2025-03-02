@@ -4,15 +4,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { useSelector } from "react-redux";
 
-
-
 const VendorHeader: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [showNotifications, setShowNotifications] = useState(false);
-  
-  const user = useSelector((state:any)=> state.vendor)
 
-  const notifications= [
+  interface RootState {
+    vendor: {
+      vendor: {
+        name: string;
+      };
+      user: {
+        name: string;
+      };
+    };
+  }
+
+  const user = useSelector((state: RootState) => state.vendor);
+
+  const notifications = [
     {
       id: 1,
       message: "Giovanni Kamper commented on your post",
@@ -69,7 +78,11 @@ const VendorHeader: React.FC = () => {
       }`}
     >
       <h1 className="text-xl font-semibold">
-        Good Morning, <span className="text-orange-500">{user?.vendor?.name.charAt(0).toUpperCase() + user?.vendor?.name.slice("1")}</span>
+        Good Morning,{" "}
+        <span className="text-orange-500">
+          {user?.vendor?.name.charAt(0).toUpperCase() +
+            user?.vendor?.name.slice(1)}
+        </span>
       </h1>
       <div className="flex items-center gap-4">
         {/* Search Box */}
@@ -78,10 +91,12 @@ const VendorHeader: React.FC = () => {
             type="text"
             placeholder="Search..."
             className={`p-2 pr-10 rounded border outline-orange-500 ${
-              darkMode ? "bg-gray-800 border-gray-700 text-white" : "bg-white border-orange-500 text-gray-900"
+              darkMode
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-white border-orange-500 text-gray-900"
             }`}
           />
-          <Search className="absolute right-2 top-2 text-orange-500" />
+          <Search className="absolute text-orange-500 right-2 top-2" />
         </div>
 
         {/* Light/Dark Mode Button */}
@@ -101,7 +116,7 @@ const VendorHeader: React.FC = () => {
           >
             <Bell className="text-gray-500" />
             {notifications.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full -top-1 -right-1">
                 {notifications.length}
               </span>
             )}
@@ -119,7 +134,7 @@ const VendorHeader: React.FC = () => {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="p-4 border-b flex justify-between items-center">
+                <div className="flex items-center justify-between p-4 border-b">
                   <h2 className="text-lg font-semibold">Notifications</h2>
                   <button
                     onClick={() => setShowNotifications(false)}
@@ -128,12 +143,14 @@ const VendorHeader: React.FC = () => {
                     <X className="text-gray-500" />
                   </button>
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="overflow-y-auto max-h-64">
                   {notifications.map((notification) => (
                     <div
                       key={notification.id}
                       className={`flex items-start gap-3 p-4 border-b ${
-                        darkMode ? "border-gray-700 hover:bg-gray-700" : "hover:bg-gray-100"
+                        darkMode
+                          ? "border-gray-700 hover:bg-gray-700"
+                          : "hover:bg-gray-100"
                       }`}
                     >
                       {notification.avatar ? (
@@ -143,27 +160,35 @@ const VendorHeader: React.FC = () => {
                           className="w-10 h-10 rounded-full"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
+                        <div className="flex items-center justify-center w-10 h-10 font-bold text-white bg-orange-500 rounded-full">
                           {notification.message[0]}
                         </div>
                       )}
                       <div className="flex-1">
                         <p className="font-medium">{notification.message}</p>
                         {notification.detail && (
-                          <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                          <p
+                            className={`text-sm ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
                             {notification.detail}
                           </p>
                         )}
-                        <span className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                        <span
+                          className={`text-xs ${
+                            darkMode ? "text-gray-500" : "text-gray-400"
+                          }`}
+                        >
                           {notification.time} - {notification.date}
                         </span>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div className="p-4 flex justify-between items-center">
+                <div className="flex items-center justify-between p-4">
                   <button className="text-orange-500">Mark as read</button>
-                  <button className="bg-orange-500 text-white px-4 py-2 rounded">
+                  <button className="px-4 py-2 text-white bg-orange-500 rounded">
                     View All Notifications
                   </button>
                 </div>
@@ -171,16 +196,17 @@ const VendorHeader: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        {
-          !user.vendor?.name ? <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+        {!user.vendor?.name ? (
+          <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
             {user.user.name.charAt(0).toUpperCase()}
-          </div>:<img
-          src="/vendor-avatar.png"
-          alt="Vendor"
-          className="w-10 h-10 rounded-full"
-        />
-        }
-        
+          </div>
+        ) : (
+          <img
+            src="/vendor-avatar.png"
+            alt="Vendor"
+            className="w-10 h-10 rounded-full"
+          />
+        )}
       </div>
     </header>
   );

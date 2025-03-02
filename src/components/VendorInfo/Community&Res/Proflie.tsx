@@ -37,17 +37,17 @@ export default function ProfilePage() {
     console.log("Sending message:", { name, description })
   }
   return (
-    <div className="max-w-4xl mx-auto bg-white min-h-screen">
+    <div className="max-w-4xl min-h-screen mx-auto bg-white">
       {/* Banner with Logo */}
       <div className="relative h-32 border rounded-xl">
         <div className="absolute -bottom-6 left-4">
           <img
             src="/placeholder.svg?height=48&width=48"
             alt="Profile"
-            className="w-12 h-12 rounded-lg border-2 border-white"
+            className="w-12 h-12 border-2 border-white rounded-lg"
           />
         </div>
-        {/* <div className="h-full flex items-center justify-center">
+        {/* <div className="flex items-center justify-center h-full">
           <h1 className="text-5xl font-bold tracking-wider">
             <span className="text-[#00FF00]">m</span>
             <span className="text-[#FFFF00]">oo</span>
@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
         {/* Stats */}
         <div className="flex gap-3 mt-4">
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-gray-400" />
               <div>
@@ -84,7 +84,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <User className="w-5 h-5 text-gray-400" />
               <div>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <FileText className="w-5 h-5 text-gray-400" />
               <div>
@@ -102,7 +102,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 bg-white rounded-xl shadow-sm border p-2">
+          <motion.div whileHover={{ scale: 1.02 }} className="flex-1 p-2 bg-white border shadow-sm rounded-xl">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-gray-400" />
               <div>
@@ -185,7 +185,7 @@ export default function ProfilePage() {
                 <img
                   src={image}
                   alt={`Post ${props.id} - Image ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className="object-cover w-full h-full"
                 />
               </div>
             ))}
@@ -204,7 +204,7 @@ export default function ProfilePage() {
               {moment(props.createdTime).fromNow()}
             </div>
           </div>
-          <p className="text-sm text-gray-700 mt-2 line-clamp-2">{props.content}</p>
+          <p className="mt-2 text-sm text-gray-700 line-clamp-2">{props.content}</p>
           <div className="flex items-center gap-4 mt-3">
             <div className="flex items-center gap-1">
               <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="text-gray-500">
@@ -220,7 +220,7 @@ export default function ProfilePage() {
       </motion.div>
     ))
   ) : (
-    <p className="text-gray-500 text-center mt-6">No community posts available.</p>
+    <p className="mt-6 text-center text-gray-500">No community posts available.</p>
   )}
 </div>
 

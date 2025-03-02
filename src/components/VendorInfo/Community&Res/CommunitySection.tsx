@@ -48,9 +48,9 @@ const CommunitySection: React.FC = () => {
   )
 
   return (
-    <div className="mt-4 bg-white p-4 shadow-sm rounded-lg">
+    <div className="p-4 mt-4 bg-white rounded-lg shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold mb-1 mr-3">COMMUNITIES</h3>
+        <h3 className="mb-1 mr-3 text-sm font-semibold">COMMUNITIES</h3>
         <motion.select
           name="communityFilter"
           value={filter}
@@ -58,7 +58,7 @@ const CommunitySection: React.FC = () => {
             setFilter(e.target.value as "all" | "owner" | "member")
             setCurrentPage(1)  // Reset page when filter changes
           }}
-          className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
         >
           <option value="all">All</option>
           <option value="owner">Owner</option>
@@ -66,16 +66,16 @@ const CommunitySection: React.FC = () => {
         </motion.select>
       </div>
 
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 gap-3 relative">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative grid grid-cols-2 gap-3">
         {paginatedCommunities.map((community: Community) => (
           <Link to={`/app/comunity-detail/${community._id}`} key={community._id}>
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             whileHover={{ scale: 1.03 }}
-            className="bg-orange-50 p-3 rounded-lg relative"
+            className="relative p-3 rounded-lg bg-orange-50"
           >
-            <h4 className="font-semibold text-sm text-orange-800 mb-1">{community.name}</h4>
+            <h4 className="mb-1 text-sm font-semibold text-orange-800">{community.name}</h4>
             <p className="text-xs text-orange-600">{community.members?.length || 0} members</p>
             <span
               className={`text-xs px-2 py-1 rounded-full mt-2 inline-block ${
@@ -85,7 +85,7 @@ const CommunitySection: React.FC = () => {
               {community.admin === user?.vendor?.id ? "Owner" : "Member"}
             </span>
             <div className="w-[50px] h-[50px] bg-red-900 absolute right-[10px] top-[10px] rounded-full overflow-hidden">
-              <img src={community.community_Images} alt="" className="w-full h-full object-cover" />
+              <img src={community.community_Images} alt="" className="object-cover w-full h-full" />
             </div>
           </motion.div>
           </Link>
@@ -94,7 +94,7 @@ const CommunitySection: React.FC = () => {
 
       {/* Pagination Controls */}
       {totalPages > 1 && (
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex items-center justify-between mt-4">
           <motion.button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
