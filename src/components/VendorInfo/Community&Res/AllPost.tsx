@@ -10,6 +10,7 @@ import moment from "moment"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { FaHeart } from "react-icons/fa"
 import { toast } from "react-toastify"
+import { CiHeart } from "react-icons/ci"
 
 interface Recommendation {
   id: string
@@ -285,7 +286,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
   whileHover={{ scale: 1.05 }}
   whileTap={{ scale: 0.95 }}
 >
- {post.likes.includes(user._id) ?  <CiHeart /> :  <FaHeart className="text-red-700"/>}
+ {post.likes.includes(user._id) ?  <FaHeart  size={20} className="text-red-700"/> : <CiHeart size={20}/>}
   <span>{post.likes.length} Likes</span>
 </motion.button>
                 <span>{post?.comments?.length || 0} Comments</span>
@@ -492,7 +493,7 @@ const handleLikeToggle = (postId: string, isLiked: boolean) => {
       <div className="p-4 mt-4 bg-white shadow-sm">
         <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
         {
-          communities.slice(0, 4).map((communities:any)=>(
+          communities?.slice(0, 4).map((communities:any)=>(
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 mb-[20px]">
           <div className="flex flex-col items-center justify-between gap-3">
           <div className="flex items-center justify-between">
