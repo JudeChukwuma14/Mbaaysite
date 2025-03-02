@@ -97,6 +97,7 @@ const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost
 const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Proflie"))
 const AuctionView = lazy(()=>import("@/components/AuctionPage/AuctionView"))
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
+const Error = lazy(()=>import("@/components/Error/Error"))
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -188,5 +189,7 @@ const routesConfig: RouteObject[] = [
 
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
+ 
+ { path: "*", element: withSuspense(Error)}, // 404 page not found 
 ];
 export const mainRouter = createBrowserRouter(routesConfig);
