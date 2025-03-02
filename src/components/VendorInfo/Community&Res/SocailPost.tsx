@@ -10,7 +10,7 @@ import {
   get_all_communities,
   leave_community,
   join_community,
-  // search_vendor_community,
+  search_vendor_community,
 } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -19,42 +19,42 @@ interface Vendor {
   _id: string;
   storeName: string;
   craftCategories: string[];
-  followers: string[]; // To check follow status
-  following: string[]; // In case you need this elsewhere
+  followers: string[];
 }
 
 export default function SocialList() {
   const [searchQuery, setSearchQuery] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const user = useSelector((state: any) => state.vendor); // Ensure this shape is correct for your app
+  const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
 
-  // Helper to get current user ID
   const getUserId = () => user.vendor.id;
 
-  // Fetch vendors list
-  const {
-    data: vendors = [],
-    isLoading,
-    // refetch,
-  } = useQuery<Vendor[]>({
+  const { data: vendors = [], isLoading } = useQuery<Vendor[]>({
     queryKey: ["vendors"],
     queryFn: () => get_vendors_community(user.token),
   });
 
-  const { data: all_communities } = useQuery({
+  const { data: all_communities = [] } = useQuery({
     queryKey: ["all_comm"],
     queryFn: () => get_all_communities(),
   });
 
-//   const { data: searchResults, error } = useQuery({
-//     queryKey: ["search_res", searchQuery], 
-//     queryFn: () => search_vendor_community(user?.token, searchQuery), 
-//     enabled: !!searchQuery, 
-// })
+  const { data: searchResults, isFetching: isSearching } = useQuery({
+    queryKey: ["search_res", searchQuery],
+    queryFn: () => search_vendor_community(user?.token, searchQuery),
+    enabled: !!searchQuery,
+  });
 
+  const searchVendors = searchResults?.vendors || [];
+  const searchCommunities = searchResults?.communities || [];
 
+  const isSearchActive = !!searchQuery;
+
+  const displayVendors = isSearchActive ? searchVendors : vendors?.slice(0, 3);
+  const displayCommunities = isSearchActive
+    ? searchCommunities
+    : all_communities?.slice(0, 3);
 
   const handleFollowToggle = async (vendorId: string) => {
     try {
@@ -62,60 +62,39 @@ export default function SocialList() {
       if (!vendor) return;
 
       const isFollowing = vendor.followers.includes(getUserId());
-      console.log(`Is following before toggle: ${isFollowing}`);
 
       if (isFollowing) {
         await unfollow_vendor(user.token, vendorId);
-        console.log(`Unfollowed vendor ${vendorId}`);
       } else {
         await follow_vendor(user.token, vendorId);
-        console.log(`Followed vendor ${vendorId}`);
       }
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      // Force refresh vendor list after follow/unfollow
+      setTimeout(() => window.location.reload(), 1000);
       await queryClient.invalidateQueries({ queryKey: ["vendors"] });
     } catch (error) {
       console.error("Follow/Unfollow failed:", error);
     }
   };
 
-  const handlecommunityToggle = async (communityId: string) => {
+  const handleCommunityToggle = async (communityId: string) => {
     try {
-      const communities = all_communities.find(
-        (v: any) => v._id === communityId
-      );
-      if (!communities) return;
+      const community = all_communities.find((v: any) => v._id === communityId);
+      if (!community) return;
 
-      const isFollowing = communities.members.includes(getUserId());
-      console.log(`Is following before toggle: ${isFollowing}`);
+      const isMember = community.members.includes(getUserId());
 
-      if (isFollowing) {
+      if (isMember) {
         await leave_community(user.token, communityId);
-        console.log(`left community ${communityId}`);
       } else {
         await join_community(user.token, communityId);
-        console.log(`joined community${communityId}`);
       }
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      // Force refresh vendor list after follow/unfollow
+      setTimeout(() => window.location.reload(), 1000);
       await queryClient.invalidateQueries({ queryKey: ["all_comm"] });
     } catch (error) {
-      console.error("Follow/Unfollow failed:", error);
+      console.error("Join/Leave failed:", error);
     }
   };
-
-  // const filteredVendors = vendors.filter((vendor) =>
-  //   vendor.storeName.toLowerCase().includes(searchQuery.toLowerCase())
-  // )
-  // const filteredcommunites = all_communities.filter((all_comm) =>
-  //   all_comm.nane.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-white">
@@ -133,11 +112,17 @@ export default function SocialList() {
         </div>
       </div>
 
-      {/* Vendors List */}
+      {/* Search Loading Indicator */}
+      {isSearching && (
+        <div className="text-center text-sm text-gray-500 mb-3">Searching...</div>
+      )}
+
+      {/* Vendors & Communities List */}
       <div
         ref={scrollContainerRef}
         className="flex-1 px-4 pb-4 space-y-6 overflow-y-auto transition-shadow duration-300"
       >
+        {/* Vendors Section */}
         <div>
           <h2 className="sticky top-0 py-2 mb-3 text-xs font-semibold text-gray-500 bg-white">
             VENDORS
@@ -145,67 +130,63 @@ export default function SocialList() {
 
           {isLoading ? (
             <p>Loading vendors...</p>
+          ) : displayVendors.length === 0 ? (
+            <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
-            vendors.slice(0, 3).map((vendor) => {
-              const isFollowing = vendor.followers.includes(getUserId());
-
-              return (
-                <motion.div key={vendor._id} layout className="space-y-4">
-                  <AnimatePresence>
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between"
-                    >
-                      {/* Vendor Info */}
-                      <div className="flex items-center space-x-3 mb-[10px]">
-                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                          <p>{vendor?.storeName?.charAt(0)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {vendor.storeName}
-                          </p>
-                          {vendor?.craftCategories[0] && (
-                            <p className="text-xs text-gray-500">
-                              {vendor.craftCategories[0]}
-                            </p>
-                          )}
-                        </div>
+            displayVendors.map((vendor:any) => (
+              <motion.div key={vendor._id} layout className="space-y-4">
+                <AnimatePresence>
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-3 mb-[10px]">
+                      <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                        <p>{vendor?.storeName?.charAt(0)}</p>
                       </div>
-
-                      {/* Follow/Unfollow Button */}
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleFollowToggle(vendor._id)}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] ${
-                          isFollowing
-                            ? "bg-gray-100 text-gray-700"
-                            : "bg-blue-500 text-white"
-                        }`}
-                      >
-                        {isFollowing ? (
-                          <>
-                            <Check className="w-3 h-3" />
-                            <span>Following</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus className="w-3 h-3" />
-                            <span>Follow</span>
-                          </>
+                      <div>
+                        <p className="text-sm font-medium">{vendor.storeName}</p>
+                        {vendor?.craftCategories[0] && (
+                          <p className="text-xs text-gray-500">
+                            {vendor.craftCategories[0]}
+                          </p>
                         )}
-                      </motion.button>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })
+                      </div>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleFollowToggle(vendor._id)}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] ${
+                        vendor.followers.includes(getUserId())
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-blue-500 text-white"
+                      }`}
+                    >
+                      {vendor.followers.includes(getUserId()) ? (
+                        <>
+                          <Check className="w-3 h-3" />
+                          <span>Following</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3 h-3" />
+                          <span>Follow</span>
+                        </>
+                      )}
+                    </motion.button>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            ))
           )}
         </div>
+
+        {/* Communities Section */}
         <div>
           <h2 className="sticky top-0 py-2 mb-3 text-xs font-semibold text-gray-500 bg-white">
             COMMUNITIES
@@ -213,64 +194,52 @@ export default function SocialList() {
 
           {isLoading ? (
             <p>Loading communities...</p>
+          ) : displayCommunities.length === 0 ? (
+            <p className="text-sm text-gray-500">No communities found.</p>
           ) : (
-            all_communities.slice(0, 3).map((vendor: any) => {
-              return (
-                <motion.div key={vendor._id} layout className="space-y-4">
-                  <AnimatePresence>
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between"
-                    >
-                      {/* Vendor Info */}
-                      <div className="flex items-center space-x-3 mb-[10px]">
-                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                          {vendor?.community_Images ? (
-                            <img
-                              src={vendor?.community_Images}
-                              alt="community"
-                              className="object-cover w-full h-full rounded-full"
-                            />
-                          ) : (
-                            <p>{vendor?.name?.charAt(0)}</p>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">{vendor?.name}</p>
-                        </div>
-                      </div>
-
-                      {/* Follow/Unfollow Button */}
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handlecommunityToggle(vendor._id)}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] ${
-                          vendor?.members?.includes(user?.vendor?.id)
-                            ? "bg-gray-100 text-gray-700"
-                            : "bg-blue-500 text-white"
-                        }`}
-                      >
-                        {vendor?.members?.includes(user?.vendor?.id) ? (
-                          <>
-                            <Check className="w-3 h-3" />
-                            <span>Joined</span>
-                          </>
+            displayCommunities.map((community: any) => (
+              <motion.div key={community._id} layout className="space-y-4">
+                <AnimatePresence>
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center space-x-3 mb-[10px]">
+                      <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                        {community?.community_Images ? (
+                          <img
+                            src={community?.community_Images}
+                            alt="community"
+                            className="object-cover w-full h-full rounded-full"
+                          />
                         ) : (
-                          <>
-                            <UserPlus className="w-3 h-3" />
-                            <span>Join</span>
-                          </>
+                          <p>{community?.name?.charAt(0)}</p>
                         )}
-                      </motion.button>
-                    </motion.div>
-                  </AnimatePresence>
-                </motion.div>
-              );
-            })
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{community.name}</p>
+                      </div>
+                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleCommunityToggle(community._id)}
+                      className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] ${
+                        community.members.includes(user?.vendor?.id)
+                          ? "bg-gray-100 text-gray-700"
+                          : "bg-blue-500 text-white"
+                      }`}
+                    >
+                      {community.members.includes(user?.vendor?.id) ? "Joined" : "Join"}
+                    </motion.button>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
+            ))
           )}
         </div>
       </div>
