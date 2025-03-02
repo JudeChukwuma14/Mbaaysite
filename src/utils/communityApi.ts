@@ -203,16 +203,13 @@ export const leave_community = async(token:string | null,communityid:any)=>{
 }
 export const search_vendor_community = async(token:string | null, query:string | null)=>{
     try{
-        const response = await api.get(`/search_vendor_community`,{
+        const response = await api.get(`/search_vendor_community?query=${query}`,{
             headers:{
                 Authorization: `Bearer ${token}`,
             },
-            params: {
-                query: query
-            }
         });
-        console.log(response);
-    return response
+        // console.log(response.data);
+    return response.data
     }catch(error){
         console.log(error);
     }

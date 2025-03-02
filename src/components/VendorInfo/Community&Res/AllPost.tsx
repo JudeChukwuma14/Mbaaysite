@@ -111,6 +111,48 @@ export default function SocialFeed() {
     };
   }
 
+
+  interface PostImagesProps {
+    images: string[];
+  }
+  
+  function PostImages({ images }: PostImagesProps) {
+    const gridStyles = () => {
+      if (images.length === 2) {
+        return "grid-cols-2 grid-rows-1 gap-2";
+      } else if (images.length === 3) {
+        return "grid-cols-2 grid-rows-2 gap-2";
+      } else if (images.length >= 4) {
+        return "grid-cols-2 grid-rows-2 gap-2";
+      } else {
+        return ""; // fallback for 1 image (handled directly)
+      }
+    };
+  
+    return (
+      <div className={`grid ${gridStyles()} w-full h-[300px]`}>
+        {images.slice(0, 4).map((image, index) => {
+          const isBigImage = images.length === 3 && index === 0;
+  
+          return (
+            <div
+              key={index}
+              className={`relative overflow-hidden ${
+                isBigImage ? "col-span-2 row-span-1 h-[150px]" : "h-[150px]"
+              }`}
+            >
+              <img
+                src={image}
+                alt={`Post image ${index + 1}`}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  
   const user = useSelector((state: RootState) => state.vendor)
   // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
