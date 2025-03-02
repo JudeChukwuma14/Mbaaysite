@@ -133,7 +133,7 @@ export default function SocialList() {
           ) : displayVendors.length === 0 ? (
             <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
-            displayVendors.map((vendor) => (
+            displayVendors.map((vendor:any) => (
               <motion.div key={vendor._id} layout className="space-y-4">
                 <AnimatePresence>
                   <motion.div
