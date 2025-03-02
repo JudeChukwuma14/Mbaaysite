@@ -2,15 +2,16 @@
 
 import type React from "react"
 
-import { createPost } from "@/utils/communityApi"
+import { createPost, get_one_community } from "@/utils/communityApi"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, Smile, ImageIcon, MapPin, User, XCircle } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { useSelector } from "react-redux"
 import { toast } from "react-toastify"
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
 import { useQuery } from "@tanstack/react-query"
-import { get_single_vendor } from "@/utils/vendorApi"
+import { useParams } from "react-router-dom"
+import { useSelector } from "react-redux"
+
 // import { LoadScript } from "@react-google-maps/api"
 // import GooglePlacesAutocomplete from "react-google-autocomplete"
 
@@ -40,7 +41,7 @@ const userSuggestions = [
 
 // const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
 
-export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
+export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModalProps) {
   const [content, setContent] = useState("")
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState<File[]>([])
@@ -56,17 +57,15 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
   const modalContentRef = useRef<HTMLDivElement>(null)
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  interface RootState {
-    vendor: {
-      token: string;
-      // add other properties if needed
-    };
-  }
+  const {communityid} = useParams()
 
-  const user = useSelector((state: RootState) => state.vendor)
+  const user = useSelector((state: any) => state.vendor)
 
 
-  const posts = useQuery({ queryKey: ['posts'], queryFn: () => get_single_vendor(user.token) })
+  const {data:one_community} = useQuery({
+    queryKey: ['one_community'],
+    queryFn: () => get_one_community(communityid)
+  })
 
   useEffect(() => {
     if (isOpen) {
@@ -154,7 +153,8 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
     try {
       const formData = new FormData()
       formData.append("content", content)
-      formData.append("userType", "vendors")
+      formData.append("userType", "community")
+      formData.append("posterId", one_community._id)
       
       images.forEach((image) => {
         formData.append("posts_Images", image) 
@@ -175,6 +175,9 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
         position: "top-right",
         autoClose: 4000,
       })
+
+
+      window.location.reload()
   
       setContent("")
       setImages([])
@@ -182,7 +185,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       setTaggedUsers([])
       setLocation("")
       onClose()
-    } catch {
+    } catch (error) {
       toast.error("Failed to post. Please try again.", {
         position: "top-right",
         autoClose: 4000,
@@ -223,13 +226,10 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
             <div ref={modalContentRef} className="flex-1 overflow-y-auto p-4">
               <form onSubmit={handlePost}>
                 <div className="mb-4 flex items-center space-x-3">
-                  {/* <img src="/placeholder.svg?height=48&width=48" alt="Profile" className="w-12 h-12 rounded-full" /> */}
-                  <div className="w-[50px] h-[50px] bg-orange-500 rounded-full text-white flex items-center justify-center">
-                  <p>{posts?.data?.storeName?.charAt(0)}</p>
-                  </div>
+                  <img src={one_community?.community_Images} alt="Profile" className="w-12 h-12 rounded-full" />
                   <div>
-                    <h3 className="font-semibold">{posts?.data?.storeName}</h3>
-                    <p className="text-sm text-gray-600">{posts?.data?.craftCategories[0]}</p>
+                    <h3 className="font-semibold">{one_community?.name}</h3>
+                    <p className="text-sm text-gray-600">COMMUNITY</p>
                   </div>
                 </div>
 

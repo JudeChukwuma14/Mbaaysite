@@ -31,7 +31,7 @@ export const get_vendors_community = async(token:string | null)=>{
             }
         }) 
         // console.log(response)
-          return response
+          return response.data?.vendors
     } catch (error) {
         console.log(error)
     }
@@ -84,7 +84,7 @@ export const get_posts_feed = async (token: string | null) => {
             }
         );
         // console.log(response);
-        return response;
+        return response.data.data.feedPosts;
     } catch (error) {
         console.log(error);
     }
@@ -128,9 +128,96 @@ export const comment_on_posts = async (token: string | null,postId:string | null
                 },
             }
         );
-        console.log(response);
+        // console.log(response);
         return response;
     } catch (error) {
         console.log(error);
     }
 };
+
+export const get_posts_comments = async(postId:string | null)=>{
+    try{
+        const response = await api.get(`/post/ ${postId}/comments`);
+    // console.log(response);
+    return response;
+    }catch(error){
+        console.log(error);
+    }
+}
+
+
+export const create_community = async(token:string | null,data:any)=>{
+    try{
+        const response = await api.post(`/create_community`,data,{
+            headers:{
+                Authorization: `Bearer ${token}`,
+                "Content-Type" : "multipart/formdata"
+            }
+        });
+        console.log(response);
+    return response;
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export const get_communities = async(token:string | null)=>{
+    try{
+        const response = await api.get(`/total-communities`,{
+            headers:{
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        // console.log(response.data.totalCommunities.communities);
+    return response.data.totalCommunities.communities;
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export const join_community = async(token:string | null,communityid:any)=>{
+    try{
+        const response = await api.patch(`/join_community/${communityid}`,{},{
+            headers:{
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        // console.log(response.data.totalCommunities.communities);
+    return response.data.totalCommunities.communities;
+    }catch(error){
+        console.log(error);
+    }
+}
+export const leave_community = async(token:string | null,communityid:any)=>{
+    try{
+        const response = await api.patch(`/leave_community/${communityid}`,{},{
+            headers:{
+                Authorization: `Bearer ${token}`,
+            }
+        });
+        // console.log(response.data.totalCommunities.communities);
+    return response.data.totalCommunities.communities;
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export const get_one_community = async(communityid:any)=>{
+    try{
+        const response = await api.get(`/one_community/${communityid}`);
+    return response.data.data
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export const get_all_communities = async()=>{
+    try{
+        const response = await api.get(`/all_communities`);
+        console.log(response);
+    return response.data.data
+    }catch(error){
+        console.log(error);
+    }
+}
+

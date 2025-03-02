@@ -1,63 +1,46 @@
-"use client"
-
 import type React from "react"
-
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ArrowLeft, ImageIcon } from "lucide-react"
-import { create_community } from "@/utils/communityApi"
-import { useSelector } from "react-redux"
+import { X, ImageIcon, ArrowLeft } from "lucide-react"
 
-interface CommunityModalProps {
+interface EditCommunityModalProps {
   isOpen: boolean
   onClose: () => void
-  onSend: (name: string, description: string, image: any) => void
+  onSave: (name: string, description: string, image: File | null) => void
+  initialName: string
+  initialDescription: string
+  initialImage: string
 }
 
-export default function CommunityModal({ isOpen, onClose, onSend }: CommunityModalProps) {
-  const [name, setName] = useState("")
-  const [description, setDescription] = useState("")
-  const [image, setImage] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
+export default function EditCommunityModal({
+  isOpen,
+  onClose,
+  onSave,
+  initialName,
+  initialDescription,
+  initialImage,
+}: EditCommunityModalProps) {
   const [step, setStep] = useState(1)
+  const [name, setName] = useState(initialName)
+  const [description, setDescription] = useState(initialDescription)
+  const [image, setImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string>(initialImage)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const user = useSelector((state: any) => state.vendor)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (isOpen) {
+      setName(initialName)
+      setDescription(initialDescription)
+      setImagePreview(initialImage)
+      setImage(null)
+      setStep(1)
+    }
+  }, [isOpen, initialName, initialDescription, initialImage])
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-  
-    if (!image) {
-      alert("Please upload an image before submitting.")
-      return
-    }
-  
-    const formData = new FormData()
-    formData.append("name", name)
-    formData.append("description", description)
-  
-    if (image) {
-      formData.append("community_Images", image)  // Ensure image is not null
-    }
-  
-    const token = user?.token || null
-  
-    try {
-      const response = await create_community(token, formData)
-      onSend(name, description, image)
-      resetForm()
-      onClose()
-    } catch (error) {
-      console.error("Failed to create community:", error)
-      alert("Failed to create community. Please try again.")
-    }
-  }
-  
-  const resetForm = () => {
-    setName("")
-    setDescription("")
-    setImage(null)
-    setImagePreview(null)
-    setStep(1)
+    onSave(name, description, image)
+    onClose()
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,6 +55,10 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
     }
   }
 
+  const triggerFileInput = () => {
+    fileInputRef.current?.click()
+  }
+
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault()
     if (name.trim() === "" || description.trim() === "") {
@@ -84,15 +71,10 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
     setStep(1)
   }
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click()
-  }
-
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -100,14 +82,12 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
             onClick={onClose}
             className="fixed inset-0 bg-black/50 z-50"
           />
-
-          {/* Modal */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed left-1/3 top-1/4 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
+            className="fixed left-1/3 top-[100px] -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
           >
             <form onSubmit={step === 1 ? handleNextStep : handleSubmit} className="bg-white rounded-lg shadow-xl">
               <div className="flex items-center justify-between p-4 border-b">
@@ -122,26 +102,20 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                     </motion.button>
                   )}
                   <h2 className="text-lg font-semibold">
-                    {step === 1 ? "Create Community" : "Upload Community Image"}
+                    {step === 1 ? "Edit Community Details" : "Edit Community Image"}
                   </h2>
                 </div>
-                <motion.button
-                  type="button"
-                  onClick={onClose}
-                  className="text-gray-400 hover:text-gray-500 transition-colors"
-                >
+                <motion.button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500 transition-colors">
                   <X className="w-5 h-5" />
                 </motion.button>
               </div>
-
               <div className="p-4 space-y-4">
                 {step === 1 ? (
                   <>
                     <div>
                       <h1 className="text-bold font-bold mb-3">Name:</h1>
-                      <input
+                      <motion.input
                         type="text"
-                        placeholder="Community Name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         className="w-full px-3 py-2 bg-gray-50 rounded-lg text-sm focus:outline-none border"
@@ -150,8 +124,7 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                     </div>
                     <div>
                       <h1 className="text-bold font-bold mb-3">Description:</h1>
-                      <textarea
-                        placeholder="Type your description here..."
+                      <motion.textarea
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                         rows={6}
@@ -161,7 +134,7 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                     </div>
                   </>
                 ) : (
-                  <div className="space-y-4">
+                  <div>
                     <h1 className="text-bold font-bold mb-3">Community Image:</h1>
                     <div
                       onClick={triggerFileInput}
@@ -189,18 +162,16 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                         onChange={handleImageChange}
                         accept="image/*"
                         className="hidden"
-                        required
                       />
                     </div>
                   </div>
                 )}
               </div>
-
               <div className="flex items-center justify-end gap-2 p-4 border-t">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-[#FF6B00] rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-gray-500 hover:bg-gray-600 rounded-lg transition-colors"
                 >
                   Cancel
                 </button>
@@ -214,12 +185,9 @@ export default function CommunityModal({ isOpen, onClose, onSend }: CommunityMod
                 ) : (
                   <button
                     type="submit"
-                    disabled={!image}
-                    className={`px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-orange-300 rounded-lg transition-colors ${
-                      !image ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
+                    className="px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-orange-300 rounded-lg transition-colors"
                   >
-                    Create
+                    Save Changes
                   </button>
                 )}
               </div>

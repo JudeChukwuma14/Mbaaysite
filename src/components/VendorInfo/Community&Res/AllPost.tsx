@@ -1,14 +1,13 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
-// import EmojiPicker from "emoji-picker-react"
 import { motion, AnimatePresence } from "framer-motion"
 import CreatePostModal from "./CreatePostModal"
 import SocialList from "./SocailPost"
 import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
-import { comment_on_posts, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
+import { comment_on_posts, get_communities, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
 import moment from "moment"
-
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 interface Recommendation {
   id: string
@@ -17,10 +16,6 @@ interface Recommendation {
   avatar: string
 }
 
-interface Topic {
-  id: string
-  name: string
-}
 
 const recommendations: Recommendation[] = [
   {
@@ -49,68 +44,6 @@ const recommendations: Recommendation[] = [
   },
 ]
 
-const topics: Topic[] = [
-  { id: "1", name: "Design" },
-  { id: "2", name: "Beauty & Skincare" },
-  { id: "3", name: "Photography" },
-  { id: "4", name: "Marketing" },
-]
-
-// interface User {
-//   id: string
-//   name: string
-//   category: string
-//   avatar: string
-//   following?: boolean
-// }
-
-// interface Reaction {
-//   emoji: string
-//   count: number
-//   users: string[]
-// }
-
-interface Reply {
-  id: string;
-  author: {
-    name: string;
-    avatar: string;
-  };
-  content: string;
-  timestamp: string;
-}
-
-// interface Comment {
-//   id: string;
-//   content: string;
-//   author: {
-//     name: string;
-//     avatar: string;
-//   };
-//   replies: Reply[];  // 👈 This ensures TypeScript knows replies is an array of Reply objects
-// }
-
-
-// interface Comment {
-//   id: string
-//   author: User
-//   content: string
-//   timestamp: string
-//   reactions: Reaction[]
-//   replies: Comment[] 
-//   repliess: Reply[]; 
-  
-// }
-
-// interface Post {
-//   id: string
-//   author: User
-//   content: string
-//   timestamp: string
-//   likes: number
-//   comments: Comment[]
-//   hashtags: string[]
-// }
 
 
 interface AvatarProps {
@@ -164,61 +97,115 @@ export default function SocialFeed() {
   const [showEmojiPicker, setShowEmojiPicker] = useState<Record<string, boolean>>({})
   const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  const user = useSelector((state:any)=> state.vendor)
-  const [vendor,setVendor] = useState<any>([])
-  const [my_posts,setMyposts] = useState<any>([])
-  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
-
-
-
-   useEffect(()=>{
-    const fetchAdmin = async () => {
-        if (!user?.token) return;
-        try {
-          const vendordata = await get_single_vendor(user.token);
-          setVendor(vendordata);
-        } catch (error) {
-          console.error("Error fetching admin:", error);
-        }
+  interface RootState {
+    vendor: {
+      token: string;
+      _id: string;
+      vendor: {
+        id: string;
       };
-      fetchAdmin()
-    })
-
-   useEffect(()=>{
-    const fetchPosts = async () => {
-        if (!user?.token) return;
-        try {
-          const vendorposts = await get_posts_feed(user.token);
-          setMyposts(vendorposts);
-        } catch (error) {
-          console.error("Error fetching admin:", error);
-        }
-      };
-      fetchPosts()
-    })
-
-    // console.log(my_posts)
-   
-     
-
-    const handleLike = async (postId: string) => {
-      try {
-        const isLiked = likedPosts[postId]; // Check if the post is already liked
-    
-        if (isLiked) {
-          await unlike_posts(user?.token, postId);
-        } else {
-          await like_posts(user?.token, postId);
-        }
-    
-        setLikedPosts((prev) => ({
-          ...prev,
-          [postId]: !isLiked, // Toggle like state
-        }));
-      } catch (error) {
-        console.error("Error toggling like:", error);
-      }
     };
+  }
+
+  const user = useSelector((state: RootState) => state.vendor)
+  // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
+  
+    const { data: communities = [] } = useQuery({
+      queryKey: ["communities"],
+      queryFn: () => get_communities(user?.token),
+      enabled: !!user?.token,  // Only fetch if token exists
+    })
+
+
+  const { data: comm_posts } = useQuery({
+    queryKey: ["comm_posts"],
+    queryFn: () => get_posts_feed(user.token),
+  });
+
+  // const { data: comments } = useQuery({
+  //   queryKey: ["comments"],
+  //   queryFn: () => get_posts_comments("67bb54180851001aa027c1bb"),
+  // });
+
+  // console.log(comments)
+
+  const queryClient = useQueryClient();
+const likeMutation = useMutation({
+  mutationFn: (postId: string) => like_posts(user?.token, postId),
+  onMutate: async (postId: string) => {
+    // Optimistic Update: Update cache immediately before the request
+    await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+
+    const previousPosts = queryClient.getQueryData(['comm_posts']);
+
+    queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
+      return oldPosts.map((post: any) => {
+        if (post._id === postId) {
+          return {
+            ...post,
+            likes: [...post.likes, user._id] // Add current user to likes
+          };
+        }
+        return post;
+      });
+    });
+
+    return { previousPosts };
+  },
+  onError: (err, postId, context) => {
+    // Revert to previous state if mutation fails
+    queryClient.setQueryData(['comm_posts'], context?.previousPosts);
+  },
+  onSettled: () => {
+    // Always refetch posts after mutation (ensure data consistency)
+    queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
+  },
+});
+
+// Unlike Post Mutation
+const unlikeMutation = useMutation({
+  mutationFn: (postId: string) => unlike_posts(user?.token, postId),
+  onMutate: async (postId: string) => {
+    await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+
+    const previousPosts = queryClient.getQueryData(['comm_posts']);
+
+    queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
+      return oldPosts.map((post: any) => {
+        if (post._id === postId) {
+          return {
+            ...post,
+            likes: post.likes.filter((like: string) => like !== user._id) // Remove current user from likes
+          };
+        }
+        return post;
+      });
+    });
+
+    return { previousPosts };
+  },
+  onError: (err, postId, context) => {
+    QueryClient.setQueryData(['comm_posts'], context?.previousPosts);
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
+  },
+});
+
+// Handle Like/Unlike Action
+const handleLikeToggle = (postId: string, isLiked: boolean) => {
+  if (isLiked) {
+    unlikeMutation.mutate(postId);
+  } else {
+    likeMutation.mutate(postId);
+  }
+};
 
 
   return (
@@ -235,9 +222,9 @@ export default function SocialFeed() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {my_posts?.data?.data?.feedPosts?.map((post:any, index:any) => (
+          {comm_posts?.map((post:any, index:any) => (
             <motion.div
-              key={my_posts.id}
+              key={post?.id}
               className="bg-white rounded-lg shadow p-4"
               initial={{ opacity: 0, y: 50 }}
               animate={{ opacity: 1, y: 0 }}
@@ -247,7 +234,9 @@ export default function SocialFeed() {
                 <div className="flex gap-3">
                   <Avatar src={post?.author?.avatar} alt={post?.author?.name} />
                   <div>
-                    <h3 className="font-semibold">{post?.poster?.userName}</h3>
+                    {
+                      post?.posterType === "vendor" ?<h3 className="font-semibold">{post?.poster?.userName}</h3>:<h3 className="font-semibold">{post?.poster?.userName}</h3>
+                    }
                     <p className="text-sm text-gray-500">
                       {post?.poster?.craftCategories[0]} • {moment(post?.createdTime).fromNow()}
                     </p>
@@ -287,28 +276,28 @@ export default function SocialFeed() {
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <motion.button
-                  onClick={() => handleLike(post._id)}
-                  className="flex items-center gap-1 hover:text-red-500"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <svg
-                   className={`w-4 h-4 ${
-                    likedPosts[post._id] ? "fill-red-500 stroke-red-500" : "stroke-gray-500"
-                  }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                    />
-                  </svg>
-                  <span>{post?.likes?.length || 0} Likes</span>
-                </motion.button>
+  onClick={() => handleLikeToggle(post._id, post.likes.includes(user._id))}
+  className="flex items-center gap-1 hover:text-red-500"
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+>
+  <svg
+    className={`w-4 h-4 ${
+      post.likes.includes(user._id) ? 'fill-red-500 stroke-red-500' : 'stroke-gray-500'
+    }`}
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+    />
+  </svg>
+  <span>{post.likes.length} Likes</span>
+</motion.button>
                 <span>{post?.comments?.length || 0} Comments</span>
               </div>
 
@@ -325,7 +314,7 @@ export default function SocialFeed() {
                     <div className="flex items-start gap-2">
                       <Avatar src={comment?.author?.avatar} alt={comment?.author?.name} size="sm" />
                       <div className="flex-grow">
-                        <p className="text-sm font-medium">{comment?.name}</p>
+                        <p className="text-sm font-medium">{comment?.comment_poster}</p>
                         <p className="text-sm">{comment?.text}</p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                           <span>{comment?.timestamp}</span>
@@ -372,7 +361,7 @@ export default function SocialFeed() {
                         )}
                         {/* Replies */}
                         <AnimatePresence>
-                          {comment?.replies?.map((reply: Reply) => (
+                          {comment?.replies?.map((reply) => (
                             <motion.div
                               key={reply.id}
                               className="ml-6 mt-2 bg-white p-2 rounded-lg"
@@ -412,6 +401,9 @@ export default function SocialFeed() {
                       if (e.key === "Enter") {
                         comment_on_posts(user?.token,post._id, {text:e.currentTarget.value,userType:"vendors"})
                         setShowEmojiPicker((prev) => ({ ...prev, [post.id]: false }))
+                        setTimeout(() => {
+                          window.location.reload();
+                        }, 1000); 
                       }
                     }}
                   />
@@ -441,25 +433,25 @@ export default function SocialFeed() {
           <div className="flex items-center space-x-4">
             {/* <img src="/placeholder.svg?height=60&width=60" alt="Profile" className="w-12 h-12 rounded-full" /> */}
             <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                       <p>{vendor?.userName?.charAt()}</p>
+                       <p>{vendors?.userName?.charAt()}</p>
                        </div>
             <div>
-              <h2 className="font-semibold">{vendor?.userName}</h2>
+              <h2 className="font-semibold">{vendors?.userName}</h2>
             </div>
           </div>
         </div>
 
         <div className="flex justify-between mb-4 text-sm">
           <div className="text-center">
-            <div className="font-bold">{vendor?.communityPosts?.length || 0}</div>
+            <div className="font-bold">{vendors?.communityPosts?.length || 0}</div>
             <div className="text-gray-600">Posts</div>
           </div>
           <div className="text-center">
-            <div className="font-bold">{vendor?.followers?.length || 0}</div>
+            <div className="font-bold">{vendors?.followers?.length || 0}</div>
             <div className="text-gray-600">Followers</div>
           </div>
           <div className="text-center">
-            <div className="font-bold">{vendor?.following?.length || 0}</div>
+            <div className="font-bold">{vendors?.following?.length || 0}</div>
             <div className="text-gray-600">Following</div>
           </div>
         </div>
@@ -504,20 +496,35 @@ export default function SocialFeed() {
       </div>
 
       <div className="mt-4 bg-white p-4 shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">TOPICS YOU FOLLOW</h3>
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2">
-          {topics.map((topic) => (
-            <motion.span
-              key={topic.id}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              whileHover={{ scale: 1.05 }}
-              className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm"
-            >
-              {topic.name}
-            </motion.span>
-          ))}
+        <h3 className="text-sm font-semibold mb-3">MY COMMUNITIES</h3>
+        {
+          communities.slice(0, 4).map((communities:any)=>(
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 mb-[20px]">
+          <div className="flex items-center justify-between flex-col gap-3">
+          <div className="flex items-center justify-between">
+          <h4 className="font-semibold text-sm text-orange-800 mb-1">{communities.name}</h4>
+          <motion.span 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          className={`px-3 py-2 rounded-full ${communities.admin === user?.vendor?.id ? "bg-orange-200 text-orange-800" : "bg-blue-200 text-blue-800"} text-sm ml-4 cursor-pointer`}>
+             {communities.admin === user?.vendor?.id ? "Owner" : "Member"}</motion.span>
+          </div>
+            </div>  
         </motion.div>
+          ))
+        }
+        {communities.length > 4 && (
+  <button
+    onClick={() => {
+      // Handle what you want to do when user clicks 'See More'
+      console.log("See More Clicked")
+    }}
+    className="mt-2 text-orange-600 font-semibold cursor-pointer"
+  >
+    See More
+  </button>
+)}
       </div>
 
       <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
