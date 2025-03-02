@@ -1,22 +1,17 @@
-import { useState, useRef } from "react";
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
-import { motion, AnimatePresence } from "framer-motion";
-import CreatePostModal from "./CreatePostModal";
-import SocialList from "./SocailPost";
-import { get_single_vendor } from "@/utils/vendorApi";
-import { useSelector } from "react-redux";
-import {
-  comment_on_posts,
-  get_communities,
-  get_posts_feed,
-  like_posts,
-  unlike_posts,
-} from "@/utils/communityApi";
-import moment from "moment";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaHeart } from "react-icons/fa";
-import { toast } from "react-toastify";
-import { CiHeart } from "react-icons/ci";
+import { useState, useRef, useEffect } from "react"
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
+import { motion, AnimatePresence } from "framer-motion"
+import CreatePostModal from "./CreatePostModal"
+import SocialList from "./SocailPost"
+import { get_single_vendor } from "@/utils/vendorApi"
+import { useSelector } from "react-redux"
+import { comment_on_posts, get_communities, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
+import moment from "moment"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { FaHeart } from "react-icons/fa"
+import { toast } from "react-toastify"
+import { CiHeart } from "react-icons/ci"
+
 
 interface Recommendation {
   id: string;
@@ -122,6 +117,15 @@ export default function SocialFeed() {
   const user = useSelector((state: RootState) => state.vendor);
   // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>(() => {
+    const savedLikes = localStorage.getItem("likedPosts");
+    return savedLikes ? JSON.parse(savedLikes) : {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+  }, [likedPosts]);
+
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
@@ -146,20 +150,33 @@ export default function SocialFeed() {
   // console.log(comments)
 
   const queryClient = useQueryClient();
+
+  const handleLikeToggle = (postId: string, isLiked: boolean) => {
+    if (isLiked) {
+      unlikeMutation.mutate(postId);
+    } else {
+      likeMutation.mutate(postId);
+    }
+    setLikedPosts(prev => ({
+      ...prev,
+      [postId]: !isLiked,
+    }));
+  };
+
   const likeMutation = useMutation({
     mutationFn: (postId: string) => like_posts(user?.token, postId),
-    onMutate: async (postId: string) => {
-      // Optimistic Update: Update cache immediately before the request
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
-
-      const previousPosts = queryClient.getQueryData(["comm_posts"]);
-
-      queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+      const previousPosts = queryClient.getQueryData(['comm_posts']);
+      queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
           if (post._id === postId) {
             return {
               ...post,
-              likes: [...post.likes, user._id], // Add current user to likes
+              likes: post.likes.includes(user._id)
+                ? post.likes
+                : [...post.likes, user._id],
+
             };
           }
           return post;
@@ -169,29 +186,25 @@ export default function SocialFeed() {
       return { previousPosts };
     },
     onError: (_, __, context) => {
-      // Revert to previous state if mutation fails
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      queryClient.setQueryData(['comm_posts'], context?.previousPosts);
     },
     onSettled: () => {
-      // Always refetch posts after mutation (ensure data consistency)
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
+      queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
     },
   });
 
-  // Unlike Post Mutation
   const unlikeMutation = useMutation({
     mutationFn: (postId: string) => unlike_posts(user?.token, postId),
-    onMutate: async (postId: string) => {
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
-
-      const previousPosts = queryClient.getQueryData(["comm_posts"]);
-
-      queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ['comm_posts'] });
+      const previousPosts = queryClient.getQueryData(['comm_posts']);
+      queryClient.setQueryData(['comm_posts'], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
           if (post._id === postId) {
             return {
               ...post,
-              likes: post.likes.filter((like: string) => like !== user._id), // Remove current user from likes
+              likes: post.likes.filter((like: string) => like !== user._id),
+
             };
           }
           return post;
@@ -201,12 +214,13 @@ export default function SocialFeed() {
       return { previousPosts };
     },
     onError: (_, __, context) => {
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      queryClient.setQueryData(['comm_posts'], context?.previousPosts);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
+      queryClient.invalidateQueries({ queryKey: ['comm_posts'] });
     },
   });
+  
 
   // Handle Like/Unlike Action
   const handleLikeToggle = (postId: string, isLiked: boolean) => {
@@ -231,44 +245,29 @@ export default function SocialFeed() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          {isLoading ? (
-            <p>Loading...</p>
-          ) : (
-            comm_posts?.map((post: any, index: any) => (
-              <motion.div
-                key={post?.id}
-                className="p-4 bg-white rounded-lg shadow"
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex gap-3">
-                    {post?.posterType === "vendors" ? (
-                      <div className="w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white">
-                        <p>{post?.poster?.userName?.charAt(0)}</p>
-                      </div>
-                    ) : (
-                      <Avatar
-                        src={post?.poster?.community_Images}
-                        alt={post?.author?.name}
-                      />
-                    )}
-                    <div>
-                      {post?.posterType === "vendors" ? (
-                        <h3 className="font-semibold">
-                          {post?.poster?.userName}
-                        </h3>
-                      ) : (
-                        <h3 className="font-semibold">{post?.poster?.name}</h3>
-                      )}
-                      <p className="text-sm text-gray-500">
-                        {post?.posterType === "vendors"
-                          ? post?.poster?.craftCategories[0]
-                          : "COMMUNITY"}
-                        • {moment(post?.createdTime).fromNow()}
-                      </p>
-                    </div>
+
+          {isLoading? <p>Loading...</p> : comm_posts?.map((post:any, index:any) => {
+            const isLiked = likedPosts[post._id] || post.likes.includes(user._id);
+            return (<motion.div
+              key={post?.id}
+              className="p-4 bg-white rounded-lg shadow"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex gap-3">
+                 {
+                  post?.posterType === "vendors" ? <div className = "w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white"><p>{post?.poster?.userName?.charAt(0)}</p></div> :  <Avatar src={post?.poster?.community_Images} alt={post?.author?.name} />
+                 }
+                  <div>
+                    {
+                      post?.posterType === "vendors" ?<h3 className="font-semibold">{post?.poster?.userName}</h3>:<h3 className="font-semibold">{post?.poster?.name}</h3>
+                    }
+                    <p className="text-sm text-gray-500">
+                     {post?.posterType === "vendors"  ?  post?.poster?.craftCategories[0] : 'COMMUNITY'}• {moment(post?.createdTime).fromNow()}
+                    </p>
+              
                   </div>
                   <motion.button
                     className="p-1 rounded-full hover:bg-gray-100"
@@ -307,7 +306,22 @@ export default function SocialFeed() {
                     #{tag}
                   </Badge>
                 ))} */}
-                </div>
+
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <motion.button
+  onClick={() => handleLikeToggle(post._id, isLiked)}
+  className="flex items-center gap-1 hover:text-red-500"
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+>
+ {isLiked ? <FaHeart  size={20} className="text-red-700"/> : <CiHeart size={20}/>}
+  <span>{post.likes.length} Likes</span>
+</motion.button>
+                <span>{post?.comments?.length || 0} Comments</span>
+              </div>
+
 
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <motion.button
@@ -478,18 +492,12 @@ export default function SocialFeed() {
                       😊
                     </motion.button>
                   </div>
-                  {showEmojiPicker[post.id] && (
-                    <div
-                      ref={emojiPickerRef}
-                      className="absolute right-0 z-10 bottom-full"
-                    >
-                      {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))
-          )}
+
+                )}
+              </div>
+            </motion.div>)
+})}
+
         </motion.div>
 
         {/* Right Sidebar */}
@@ -573,48 +581,22 @@ export default function SocialFeed() {
             </motion.div>
           </div>
 
-          <div className="p-4 mt-4 bg-white shadow-sm">
-            <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
-            {communities?.slice(0, 4).map((communities: any) => (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-wrap gap-2 mb-[20px]"
-              >
-                <div className="flex flex-col items-center justify-between gap-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="mb-1 text-sm font-semibold text-orange-800">
-                      {communities.name}
-                    </h4>
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      whileHover={{ scale: 1.05 }}
-                      className={`px-3 py-2 rounded-full ${
-                        communities.admin === user?.vendor?.id
-                          ? "bg-orange-200 text-orange-800"
-                          : "bg-blue-200 text-blue-800"
-                      } text-sm ml-4 cursor-pointer`}
-                    >
-                      {communities.admin === user?.vendor?.id
-                        ? "Owner"
-                        : "Member"}
-                    </motion.span>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-            {communities.length > 4 && (
-              <button
-                onClick={() => {
-                  // Handle what you want to do when user clicks 'See More'
-                  console.log("See More Clicked");
-                }}
-                className="mt-2 font-semibold text-orange-600 cursor-pointer"
-              >
-                See More
-              </button>
-            )}
+
+      <div className="p-4 mt-4 bg-white shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
+        {
+          communities?.slice(0, 4)?.map((communities:any)=>(
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap gap-2 mb-[20px]">
+          <div className="flex flex-col items-center justify-between gap-3">
+          <div className="flex items-center justify-between">
+          <h4 className="mb-1 text-sm font-semibold text-orange-800">{communities.name}</h4>
+          <motion.span 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          whileHover={{ scale: 1.05 }}
+          className={`px-3 py-2 rounded-full ${communities.admin === user?.vendor?.id ? "bg-orange-200 text-orange-800" : "bg-blue-200 text-blue-800"} text-sm ml-4 cursor-pointer`}>
+             {communities.admin === user?.vendor?.id ? "Owner" : "Member"}</motion.span>
+
           </div>
 
           <CreatePostModal
