@@ -183,7 +183,7 @@ export const CommunityPage: React.FC = () => {
     }
   }
 
-  const handleEmojiClick = (emojiObject: any) => {
+  const handleEmojiClick = (emojiObject: { emoji: string }) => {
     setNewComment(newComment + emojiObject.emoji)
     setShowEmojiPicker(false)
   }
@@ -220,17 +220,17 @@ export const CommunityPage: React.FC = () => {
       >
         <img src={comment.author.avatar || "/placeholder.svg"} alt="" className="w-8 h-8 rounded-full" />
         <div className="flex-1">
-          <div className="bg-gray-100 rounded-2xl px-4 py-2">
-            <h4 className="font-semibold text-sm">{comment.author.name}</h4>
+          <div className="px-4 py-2 bg-gray-100 rounded-2xl">
+            <h4 className="text-sm font-semibold">{comment.author.name}</h4>
             <p className="text-sm">{comment.content}</p>
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
             <button
               onClick={() => handleCommentLike(postId, comment.id)}
-              className="hover:text-blue-500 transition-colors flex items-center gap-1"
+              className="flex items-center gap-1 transition-colors hover:text-blue-500"
             >
               {comment.isLiked ? (
-                <Heart className="w-4 h-4 fill-blue-500 text-blue-500" />
+                <Heart className="w-4 h-4 text-blue-500 fill-blue-500" />
               ) : (
                 <Heart className="w-4 h-4" />
               )}
@@ -249,7 +249,7 @@ export const CommunityPage: React.FC = () => {
                 placeholder="Write a reply..."
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="w-full px-3 py-1 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-1 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
                 onClick={() => handleCommentSubmit(postId, comment.id)}
@@ -268,13 +268,13 @@ export const CommunityPage: React.FC = () => {
     <div className="min-h-screen bg-gray-100">
       {/* Banner */}
       <div
-        className="relative h-64 bg-gradient-to-r from-blue-500 to-purple-600 cursor-pointer"
+        className="relative h-64 cursor-pointer bg-gradient-to-r from-blue-500 to-purple-600"
         onClick={() => bannerInputRef.current?.click()}
       >
         {bannerImage ? (
-          <img src={bannerImage || "/placeholder.svg"} alt="Community Banner" className="w-full h-full object-cover" />
+          <img src={bannerImage || "/placeholder.svg"} alt="Community Banner" className="object-cover w-full h-full" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="flex items-center justify-center w-full h-full">
             <Camera className="w-12 h-12 text-white" />
           </div>
         )}
@@ -282,12 +282,12 @@ export const CommunityPage: React.FC = () => {
       </div>
 
       {/* Community Info */}
-      <div className="max-w-4xl mx-auto -mt-16 px-4">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+      <div className="max-w-4xl px-4 mx-auto -mt-16">
+        <div className="p-6 mb-6 bg-white shadow-lg rounded-xl">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">Tech Enthusiasts Community</h1>
-              <div className="flex items-center gap-4 text-gray-600 mb-4">
+              <h1 className="mb-2 text-3xl font-bold">Tech Enthusiasts Community</h1>
+              <div className="flex items-center gap-4 mb-4 text-gray-600">
                 <div className="flex items-center gap-1">
                   <Globe className="w-5 h-5" />
                   <span>Public Group</span>
@@ -309,8 +309,8 @@ export const CommunityPage: React.FC = () => {
                 {isJoined ? "Leave Group" : "Join Group"}
               </button>
               {currentUser.isOwner && (
-                <button className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200">
-                  <PlusCircle className="w-5 h-5 inline-block mr-2" />
+                <button className="px-4 py-2 font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200">
+                  <PlusCircle className="inline-block w-5 h-5 mr-2" />
                   Create Post
                 </button>
               )}
@@ -325,7 +325,7 @@ export const CommunityPage: React.FC = () => {
               key={post.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl shadow p-4"
+              className="p-4 bg-white shadow rounded-xl"
             >
               <div className="flex items-center gap-3 mb-4">
                 <img src={post.author.avatar || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-full" />
@@ -333,20 +333,20 @@ export const CommunityPage: React.FC = () => {
                   <h3 className="font-semibold">{post.author.name}</h3>
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-500">{post.timestamp}</p>
-                    {post.isLiked && <Heart className="w-4 h-4 fill-red-500 text-red-500" />}
+                    {post.isLiked && <Heart className="w-4 h-4 text-red-500 fill-red-500" />}
                   </div>
                 </div>
               </div>
 
-              <p className="whitespace-pre-line mb-4">{post.content}</p>
+              <p className="mb-4 whitespace-pre-line">{post.content}</p>
 
               {post.image && (
-                <img src={post.image || "/placeholder.svg"} alt="Post content" className="w-full rounded-lg mb-4" />
+                <img src={post.image || "/placeholder.svg"} alt="Post content" className="w-full mb-4 rounded-lg" />
               )}
 
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+              <div className="flex items-center justify-between mb-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
-                  <div className="bg-blue-500 text-white rounded-full p-1">
+                  <div className="p-1 text-white bg-blue-500 rounded-full">
                     <ThumbsUp className="w-3 h-3" />
                   </div>
                   <span>{post.likes}</span>
@@ -360,16 +360,16 @@ export const CommunityPage: React.FC = () => {
               <div className="flex items-center gap-4 py-2 border-y">
                 <button
                   onClick={() => handleLike(post.id)}
-                  className="flex items-center gap-2 flex-1 justify-center py-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="flex items-center justify-center flex-1 gap-2 py-2 transition-colors rounded-lg hover:bg-gray-100"
                 >
                   <ThumbsUp className={`w-5 h-5 ${post.isLiked ? "text-blue-500" : ""}`} />
                   <span>{post.isLiked ? "Liked" : "Like"}</span>
                 </button>
-                <button className="flex items-center gap-2 flex-1 justify-center py-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <button className="flex items-center justify-center flex-1 gap-2 py-2 transition-colors rounded-lg hover:bg-gray-100">
                   <MessageCircle className="w-5 h-5" />
                   <span>Comment</span>
                 </button>
-                <button className="flex items-center gap-2 flex-1 justify-center py-2 hover:bg-gray-100 rounded-lg transition-colors">
+                <button className="flex items-center justify-center flex-1 gap-2 py-2 transition-colors rounded-lg hover:bg-gray-100">
                   <Share2 className="w-5 h-5" />
                   <span>Share</span>
                 </button>
@@ -382,15 +382,15 @@ export const CommunityPage: React.FC = () => {
                 {/* Comment Input */}
                 <div className="flex gap-3 mt-4">
                   <img src={currentUser.avatar || "/placeholder.svg"} alt="" className="w-8 h-8 rounded-full" />
-                  <div className="flex-1 relative">
+                  <div className="relative flex-1">
                     <input
                       type="text"
                       placeholder={replyingTo ? "Write a reply..." : "Write a comment..."}
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                    <div className="absolute flex items-center gap-2 -translate-y-1/2 right-3 top-1/2">
                       <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         className="text-gray-500 hover:text-gray-700"
@@ -411,7 +411,7 @@ export const CommunityPage: React.FC = () => {
                       </button>
                     </div>
                     {showEmojiPicker && (
-                      <div className="absolute bottom-full right-0 mb-2">
+                      <div className="absolute right-0 mb-2 bottom-full">
                         <Suspense fallback={<div>Loading...</div>}>
                           <EmojiPicker onEmojiClick={handleEmojiClick} />
                         </Suspense>

@@ -203,7 +203,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-40"
+            className="fixed inset-0 z-40 bg-black"
             onClick={onClose}
           />
           <motion.div
@@ -216,16 +216,16 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
               <motion.button
                 type="button"
                 onClick={onClose}
-                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700"
+                className="absolute text-gray-500 top-4 left-4 hover:text-gray-700"
               >
                 <X className="w-6 h-6" />
               </motion.button>
               <h2 className="text-lg font-semibold text-center">Create Post</h2>
             </div>
 
-            <div ref={modalContentRef} className="flex-1 overflow-y-auto p-4">
+            <div ref={modalContentRef} className="flex-1 p-4 overflow-y-auto">
               <form onSubmit={handlePost}>
-                <div className="mb-4 flex items-center space-x-3">
+                <div className="flex items-center mb-4 space-x-3">
                   <img src={one_community?.community_Images} alt="Profile" className="w-12 h-12 rounded-full" />
                   <div>
                     <h3 className="font-semibold">{one_community?.name}</h3>
@@ -242,11 +242,11 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                 />
 
                 {taggedUsers.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     {taggedUsers.map((user) => (
                       <span
                         key={user.id}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-sm"
+                        className="inline-flex items-center gap-1 px-2 py-1 text-sm text-orange-700 bg-orange-100 rounded-full"
                       >
                         @{user.name}
                         <motion.button type="button" onClick={() => removeTag(user.id)}>
@@ -258,18 +258,18 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                 )}
 
                 {imagesPreviews.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 mt-4">
                     {imagesPreviews.map((preview, index) => (
                       <div key={index} className="relative">
                         <img
                           src={preview || "/placeholder.svg"}
                           alt={`Upload ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className="object-cover w-full h-32 rounded-lg"
                         />
                         <motion.button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-1 right-1 p-1 bg-black/50 rounded-full text-white hover:bg-black/70"
+                          className="absolute p-1 text-white rounded-full top-1 right-1 bg-black/50 hover:bg-black/70"
                         >
                           <X className="w-4 h-4" />
                         </motion.button>
@@ -279,7 +279,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                 )}
 
                 {showTagInput && (
-                  <div className="mt-2 relative">
+                  <div className="relative mt-2">
                     <input
                       type="text"
                       value={tagInput}
@@ -291,7 +291,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                       className="w-full p-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                     {showSuggestions && tagInput && (
-                      <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border">
+                      <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
                         {userSuggestions
                           .filter((user) => user.name.toLowerCase().includes(tagInput.toLowerCase()))
                           .map((user) => (
@@ -299,7 +299,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                               key={user.id}
                               type="button"
                               onClick={() => handleTagUser(user)}
-                              className="flex items-center gap-2 w-full p-2 hover:bg-gray-100 text-left"
+                              className="flex items-center w-full gap-2 p-2 text-left hover:bg-gray-100"
                             >
                               <img
                                 src={user.avatar || "/placeholder.svg"}
@@ -315,7 +315,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                 )}
 
                 {location && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-gray-600">
+                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
                     <MapPin className="w-4 h-4" />
                     <span>{location}</span>
                   </div>
@@ -352,19 +352,19 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
               </form>
             </div>
 
-            <div className="p-4 border-t bg-white">
+            <div className="p-4 bg-white border-t">
               <div className="flex items-center justify-between">
                 <div className="flex space-x-4">
                   <div ref={emojiPickerRef} className="relative">
                     <motion.button
                       type="button"
                       onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                      className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                     >
                       <Smile className="w-6 h-6" />
                     </motion.button>
                     {showEmojiPicker && (
-                      <div className="absolute bottom-full left-0 mb-2">
+                      <div className="absolute left-0 mb-2 bottom-full">
                         <EmojiPicker onEmojiClick={handleEmojiClick} />
                       </div>
                     )}
@@ -372,21 +372,21 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
                   <motion.button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                    className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                   >
                     <ImageIcon className="w-6 h-6" />
                   </motion.button>
                   <motion.button
                     type="button"
                     onClick={() => setShowTagInput(!showTagInput)}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                    className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                   >
                     <User className="w-6 h-6" />
                   </motion.button>
                   <motion.button
                     type="button"
                     onClick={() => setShowLocationPicker(!showLocationPicker)}
-                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                    className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                   >
                     <MapPin className="w-6 h-6" />
                   </motion.button>

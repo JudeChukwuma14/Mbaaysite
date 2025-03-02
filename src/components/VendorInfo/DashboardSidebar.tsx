@@ -40,7 +40,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
       <div>
         <div className="mb-5 text-2xl font-bold text-orange-500">
           <Link to="/">
-            <img src={Logo} alt="MbaayLogo" />
+            <img src={Logo} alt="MbaayLogo" className=" w-14" />
           </Link>
         </div>
         <nav>
