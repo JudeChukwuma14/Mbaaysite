@@ -10,7 +10,7 @@ import {
   get_all_communities,
   leave_community,
   join_community,
-  search_vendor_community,
+  // search_vendor_community,
 } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
