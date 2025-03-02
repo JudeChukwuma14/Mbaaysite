@@ -7,7 +7,9 @@ import { get_single_vendor } from "@/utils/vendorApi"
 import { useSelector } from "react-redux"
 import { comment_on_posts, get_communities, get_posts_feed, like_posts, unlike_posts } from "@/utils/communityApi"
 import moment from "moment"
-import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { FaHeart } from "react-icons/fa"
+import { toast } from "react-toastify"
 
 interface Recommendation {
   id: string
