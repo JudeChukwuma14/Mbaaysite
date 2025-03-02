@@ -155,6 +155,7 @@ export default function CreatePostcommModal({ isOpen, onClose }: CreatePostModal
       formData.append("content", content)
       formData.append("userType", "community")
       formData.append("posterId", one_community._id)
+      formData.append("communityId", one_community._id)
       
       images.forEach((image) => {
         formData.append("posts_Images", image) 

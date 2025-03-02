@@ -59,7 +59,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
   interface RootState {
     vendor: {
       token: string;
-      // add other properties if needed
+      vendor:any;
     };
   }
 
@@ -155,6 +155,7 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
       const formData = new FormData()
       formData.append("content", content)
       formData.append("userType", "vendors")
+      formData.append("posterId", user.vendor.id)
       
       images.forEach((image) => {
         formData.append("posts_Images", image) 
@@ -175,6 +176,8 @@ export default function CreatePostModal({ isOpen, onClose }: CreatePostModalProp
         position: "top-right",
         autoClose: 4000,
       })
+
+      window.location.reload()
   
       setContent("")
       setImages([])

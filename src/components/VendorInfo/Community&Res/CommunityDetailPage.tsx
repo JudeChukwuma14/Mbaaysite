@@ -14,6 +14,8 @@ import { useSelector } from "react-redux";
 import moment from "moment";
 import EditCommunityModal from "./EditCommunityModal";
 import DeleteConfirmationModal from "./DeleteCommunityConfirmationModal";
+import { IoIosLogOut } from "react-icons/io";
+import { VscReport } from "react-icons/vsc";
 
 
 export default function ProfilePage() {
@@ -117,19 +119,19 @@ export default function ProfilePage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsModalOpen(true)}
-            className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm"
+            className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[red] text-white py-2  text-sm"
           >
-            <PenSquare className="w-4 h-4" />
-            Leave Group
+            <IoIosLogOut size={20} />
+            Leave Community
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsModalOpen(true)}
-            className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm"
+            className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2  text-sm"
           >
-            <PenSquare className="w-4 h-4" />
-           Report
+            <VscReport  size={20}/>
+           Report Community
           </motion.button>
         </div>
          }

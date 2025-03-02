@@ -1,5 +1,8 @@
+import { get_one_community } from "@/utils/communityApi"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
+import { useParams } from "react-router-dom"
+import { useQuery } from "@tanstack/react-query";
 
 interface DeleteConfirmationModalProps {
   isOpen: boolean
@@ -7,7 +10,18 @@ interface DeleteConfirmationModalProps {
   onConfirm: () => void
 }
 
+
+
 export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm }: DeleteConfirmationModalProps) {
+  
+  const {communityid} = useParams()
+
+
+  const {data:one_community} = useQuery({
+    queryKey: ['one_community'],
+    queryFn: () => get_one_community(communityid)
+  })
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -24,7 +38,7 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm }: 
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed left-1/3 top-1/3 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50"
+            className="fixed left-1/3 top-1/3 -translate-x-1/2 -translate-y-1/2 min-w-[530px] max-w-md z-50"
           >
             <div className="bg-white rounded-lg shadow-xl p-6">
               <div className="flex items-center justify-between mb-4">
@@ -33,8 +47,14 @@ export default function DeleteConfirmationModal({ isOpen, onClose, onConfirm }: 
                   <X className="w-5 h-5" />
                 </motion.button>
               </div>
-              <p className="mb-6">Are you sure you want to delete this community?</p>
-              <div className="flex justify-end gap-4">
+              <div className="flex items-center justify-center">
+              <span className="mr-3">Are you sure you want to delete</span>
+              <div className="flex items-center justify-center">
+              <h1 className="font-extrabold ">{one_community?.name}</h1>
+              <p className="ml-2">community?</p>
+              </div>
+              </div>
+              <div className="flex justify-end gap-4 mt-4">
                 <button
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors"
