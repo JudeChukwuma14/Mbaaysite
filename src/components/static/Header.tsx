@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   FaSearch,
   FaUser,
@@ -12,7 +12,6 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
 import Dropdown from "./Dropdrop";
-
 
 const Header: React.FC = () => {
   const user = useSelector((state: RootState) => state.user.user);
@@ -39,49 +38,49 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="w-full shadow-md bg-white">
+    <header className="w-full bg-white shadow-md">
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
         <p className="hidden md:block">Welcome to Mbaay Global Marketplaces </p>
         <div className="flex gap-6">
-          <NavLink to="/shop" className="hover:underline">
+          <Link to="/shop" className="hover:underline">
             Shop Now
-          </NavLink>
-          <NavLink to="/language" className="hover:underline">
+          </Link>
+          <Link to="/language" className="hover:underline">
             English
-          </NavLink>
+          </Link>
         </div>
       </div>
 
-      <div className="flex items-center justify-between p-4 md:px-10 bg-black">
-        <NavLink to="/" className="flex items-center">
-          <img src={Logo} alt="Logo" className=" w-16 md:w-20" />
-        </NavLink>
+      <div className="flex items-center justify-between p-4 bg-black md:px-10">
+        <Link to="/" className="flex items-center">
+          <img src={Logo} alt="Logo" className="w-16 md:w-20" />
+        </Link>
 
-        <nav className="hidden lg:flex items-center space-x-4 lg:space-x-6">
-          <NavLink
+        <nav className="items-center hidden space-x-4 lg:flex lg:space-x-6">
+          <Link
             to="/recently-viewed"
-            className="hover:text-orange-500 text-white text-sm md:text-base"
+            className="text-sm text-white hover:text-orange-500 md:text-base"
           >
             Recently Viewed
-          </NavLink>
-          <NavLink
+          </Link>
+          <Link
             to="/become-vendor"
-            className="hover:text-orange-500 text-white text-sm md:text-base"
+            className="text-sm text-white hover:text-orange-500 md:text-base"
           >
             Become a Vendor
-          </NavLink>
-          <NavLink
+          </Link>
+          <Link
             to="/vendors-auction"
-            className="hover:text-orange-500 text-white text-sm md:text-base"
+            className="text-sm text-white hover:text-orange-500 md:text-base"
           >
             Auction
-          </NavLink>
-          <NavLink
-            to="/sell"
-            className="hover:text-orange-500 text-white text-sm md:text-base"
+          </Link>
+          <Link
+            to="/app"
+            className="text-sm text-white hover:text-orange-500 md:text-base"
           >
-            Sell on Mbaay
-          </NavLink>
+            Vendor dashboard
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -89,52 +88,52 @@ const Header: React.FC = () => {
             <input
               type="text"
               placeholder="Search"
-              className="pl-10 pr-4 py-2 border rounded-full focus:outline-none w-full"
+              className="w-full py-2 pl-10 pr-4 border rounded-full focus:outline-none"
             />
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <FaSearch className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
           </div>
 
           <button
             onClick={toggleSearch}
-            className="sm:hidden text-white hover:text-orange-500"
+            className="text-white sm:hidden hover:text-orange-500"
           >
             <FaSearch size={20} />
           </button>
           <div>
             {firstLetter ? (
-              <NavLink to="/dashboard">
+              <Link to="/dashboard">
                 <h1 className=" text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-gray-600">
                   {firstLetter}
                 </h1>
-              </NavLink>
+              </Link>
             ) : (
-              <NavLink
+              <Link
                 to="/selectpath"
                 className="text-white hover:text-orange-500"
               >
                 <FaUser size={20} />
-              </NavLink>
+              </Link>
             )}
           </div>
-          <NavLink
+          <Link
             to="dashboard/wishlist"
-            className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in hidden md:block"
+            className="relative hidden transition-all duration-300 ease-in hover:bg-gray-40 hover:rounded-full md:block"
           >
-            <FaHeart size={20}  className=" text-white"/>
+            <FaHeart size={20} className="text-white " />
             <span className="absolute -top-2 -right-2 text-xs text-white  bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalWishlistQuantity}
             </span>
-          </NavLink>
+          </Link>
 
-          <NavLink
+          <Link
             to="/cart"
-            className=" relative hover:bg-gray-40 hover:rounded-full transition-all duration-300 ease-in"
+            className="relative transition-all duration-300 ease-in hover:bg-gray-40 hover:rounded-full"
           >
-            <FaShoppingCart size={20} className=" text-white" />
+            <FaShoppingCart size={20} className="text-white " />
             <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalQuantity}
             </span>
-          </NavLink>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button onClick={toggleMenu} className="md:hidden">
@@ -149,54 +148,54 @@ const Header: React.FC = () => {
 
       {/* Mobile Search Input - Visible when searchOpen is true */}
       {searchOpen && (
-        <div className="sm:hidden p-4 bg-white border-t">
+        <div className="p-4 bg-white border-t sm:hidden">
           <div className="relative">
             <input
               type="text"
               placeholder="Search"
-              className="pl-10 pr-4 py-2 border rounded-full focus:outline-none w-full"
+              className="w-full py-2 pl-10 pr-4 border rounded-full focus:outline-none"
             />
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <FaSearch className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
           </div>
         </div>
       )}
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="lg:hidden bg-white shadow-md p-4">
+        <div className="p-4 bg-white shadow-md lg:hidden">
           <nav className="flex flex-col space-y-4">
-            <NavLink
+            <Link
               to="/recently-viewed"
               className="hover:text-orange-500"
               onClick={toggleMenu}
             >
               Recently Viewed
-            </NavLink>
-            <NavLink
-              to="/become-vendor"
+            </Link>
+            <Link
+              to="/login-vendor"
               className="hover:text-orange-500"
               onClick={toggleMenu}
             >
               Become a Vendor
-            </NavLink>
-            <NavLink
+            </Link>
+            <Link
               to="/vendors-auction"
               className="hover:text-orange-500"
               onClick={toggleMenu}
             >
               Auction
-            </NavLink>
-            <NavLink
-              to="/sell"
+            </Link>
+            <Link
+              to="/app"
               className="hover:text-orange-500"
               onClick={toggleMenu}
             >
-              Sell on Mbaay
-            </NavLink>
+              Vendor dashboard
+            </Link>
           </nav>
         </div>
       )}
-      <Dropdown/>
+      <Dropdown />
     </header>
   );
 };

@@ -17,7 +17,8 @@ import { MdOutlineReviews } from "react-icons/md";
 import { useDispatch } from "react-redux";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
 // import { useDarkMode } from "../Context/DarkModeContext";
-
+import Logo from "@/assets/image/mbbaylogo.png";
+import { Link } from "react-router-dom";
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
@@ -37,7 +38,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
       }`}
     >
       <div>
-        <div className="text-2xl font-bold text-orange-500 mb-5">mbaay</div>
+        <div className="mb-5 text-2xl font-bold text-orange-500">
+          <Link to="/">
+            <img src={Logo} alt="MbaayLogo" />
+          </Link>
+        </div>
         <nav>
           <NavItem title="Dashboard" to="/app" Icon={Home} />
           <NavItem title="Orders" to="orders" Icon={ShoppingCart} />
@@ -67,7 +72,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
           <NavItem title="LogOut" onClick={handle_logOut} Icon={LogOutIcon} />
         </nav>
       </div>
-      <div className="flex items-center gap-3 p-3 bg-gray-200 dark:bg-gray-700 rounded-lg">
+      <div className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg dark:bg-gray-700">
         <img
           src="/vendor-avatar.png"
           alt="Vendor"
@@ -75,7 +80,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         />
         <div>
           <p className="text-sm font-semibold">Finbarr</p>
-          <div className="flex mt-2 items-center justify-center">
+          <div className="flex items-center justify-center mt-2">
             <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
             <span className="text-green-500 text-xs rounded ml-[3px]">
               Online

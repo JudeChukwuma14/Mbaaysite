@@ -91,7 +91,7 @@ const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
 const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost"))
 const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Proflie"))
 const AuctionView = lazy(()=>import("@/components/AuctionPage/AuctionView"))
-const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
+// const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -124,7 +124,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/product-details/:id", element: withSuspense(ProductDetail) },
       {path:"/auctionview",element:withSuspense(AuctionView)},
-      {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
+      // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
     ],
   },
   {
