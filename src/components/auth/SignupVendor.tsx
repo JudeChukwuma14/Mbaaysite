@@ -384,11 +384,6 @@ const Registration: React.FC = () => {
                           value: 6,
                           message: "Password must be at least 6 characters",
                         },
-                        validate: (value) =>
-                          /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/.test(
-                            value
-                          ) ||
-                          "Password must contain at least one uppercase letter",
                       })}
                     />
                     <span
