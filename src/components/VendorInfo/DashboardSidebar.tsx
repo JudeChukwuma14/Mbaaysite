@@ -14,16 +14,34 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { MdOutlineReviews } from "react-icons/md";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
 // import { useDarkMode } from "../Context/DarkModeContext";
 import Logo from "@/assets/image/mbbaylogo.png";
 import { Link } from "react-router-dom";
+import { get_single_vendor } from "@/utils/vendorApi";
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
 
 const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
+
+  interface RootState {
+    vendor: {
+      token: string;
+      _id: string;
+      vendor: {
+        id: string;
+      };
+    };
+  }
+  const user = useSelector((state: RootState) => state.vendor)
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
   // const { darkMode } = useDarkMode();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -73,13 +91,16 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         </nav>
       </div>
       <div className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg dark:bg-gray-700">
-        <img
+        {/* <img
           src="/vendor-avatar.png"
           alt="Vendor"
           className="w-12 h-12 rounded-full"
-        />
+        /> */}
+        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                  <p>{vendors?.userName?.charAt()}</p>
+                </div>
         <div>
-          <p className="text-sm font-semibold">Finbarr</p>
+          <p className="text-sm font-semibold text-orange-500">{vendors?.userName}</p>
           <div className="flex items-center justify-center mt-2">
             <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
             <span className="text-green-500 text-xs rounded ml-[3px]">
