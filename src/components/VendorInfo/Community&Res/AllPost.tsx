@@ -512,6 +512,11 @@ export default function SocialFeed() {
                               text: e.currentTarget.value,
                               userType: "vendors",
                             });
+                            queryClient.invalidateQueries({ queryKey: ['comm_posts'] })
+                            queryClient.invalidateQueries({ queryKey: ['communities'] })
+                            queryClient.invalidateQueries({ queryKey: ['vendors'] })
+                            queryClient.invalidateQueries({ queryKey: ['vendor'] })
+                            queryClient.invalidateQueries({ queryKey: ['all_comm'] })
                             setShowEmojiPicker((prev) => ({
                               ...prev,
                               [post.id]: false,
@@ -520,7 +525,7 @@ export default function SocialFeed() {
                               position: "top-right",
                               autoClose: 4000,
                             });
-                            setTimeout(() => {
+                             setTimeout(() => {
                               window.location.reload();
                             }, 1000);
                           }

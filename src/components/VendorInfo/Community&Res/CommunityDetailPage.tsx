@@ -16,11 +16,13 @@ import EditCommunityModal from "./EditCommunityModal";
 import DeleteConfirmationModal from "./DeleteCommunityConfirmationModal";
 import { IoIosLogOut } from "react-icons/io";
 import { VscReport } from "react-icons/vsc";
+import LeaveConfirmationModal from "./LeaveCommunityConfirmationModal";
 
 export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   const handleEditSave = (
     name: string,
@@ -75,7 +77,9 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center">
             <h2 className="text-xl font-semibold">{one_community?.name}</h2>
-            <div className="flex items-center justify-between gap-3 ml-7">
+            {
+              one_community?.admin._id === user.vendor.id ?
+                <div className="flex items-center justify-between gap-3 ml-7">
               <CiEdit
                 size={20}
                 className="text-blue-600 cursor-pointer"
@@ -87,6 +91,9 @@ export default function ProfilePage() {
                 onClick={() => setIsDeleteModalOpen(true)}
               />
             </div>
+               : null
+            }
+
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-600">
             <span className="w-[600px]">{one_community?.description}</span>
@@ -145,7 +152,7 @@ export default function ProfilePage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setIsLeaveModalOpen(true)}
                 className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[red] text-white py-2  text-sm"
               >
                 <IoIosLogOut size={20} />
@@ -264,6 +271,12 @@ export default function ProfilePage() {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDelete}
+        />
+
+        <LeaveConfirmationModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleDelete}
         />
       </div>
     </div>
