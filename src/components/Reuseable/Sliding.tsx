@@ -2,16 +2,16 @@ import React, { useState } from "react";
 import image1 from "../../assets/image/img1.jpg";
 import image2 from "../../assets/image/img2.jpg";
 import image3 from "../../assets/image/img3.jpg";
-import image4 from "@/assets/image/world.jpg"
-import image5 from "@/assets/image/kira hand.jpg"
-import image6 from "@/assets/image/china.jpg"
-import image7 from "@/assets/image/Hand.jpg"
+import image4 from "@/assets/image/world.jpg";
+import image5 from "@/assets/image/kira hand.jpg";
+import image6 from "@/assets/image/china.jpg";
+import image7 from "@/assets/image/Hand.jpg";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import logo from "../../assets/image/mbbaylogo.png";
 import "react-toastify/dist/ReactToastify.css";
-
+import { motion } from "framer-motion";
 const Sliding: React.FC = () => {
   const [slides] = useState([
     {
@@ -55,15 +55,13 @@ const Sliding: React.FC = () => {
   };
   return (
     <div className="">
-      <div className="hidden lg:block w-[500px] h-screen overflow-hidden fixed top-0 left-0">
+      <motion.div className="hidden lg:block w-[500px] h-screen overflow-hidden fixed top-0 left-0">
+        <div className="absolute z-10 flex left-7 w-full top-7 ">
+          <img src={logo} alt="Logo" />
+        </div>
         <Slider {...settings} className="w-full h-screen">
           {slides.map((slide, index) => (
             <div key={index} className="flex flex-col items-start relative">
-              {/* Logo */}
-              <div className="absolute z-10 flex left-7 w-full top-7 ">
-                <img src={logo} alt="Logo" />
-              </div>
-
               <img
                 src={slide.img}
                 alt=""
@@ -78,7 +76,7 @@ const Sliding: React.FC = () => {
             </div>
           ))}
         </Slider>
-      </div>
+      </motion.div>
     </div>
   );
 };

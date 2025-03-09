@@ -5,11 +5,16 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
+
 import Sliding from "../Reuseable/Sliding";
+import { LoginVendorAPI } from "@/utils/vendorApi";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { setVendor } from "@/redux/slices/vendorSlice";
+import { useDispatch } from "react-redux";
 
 interface FormData {
-  email: string;
+  emailOrPhone: string;
   password: string;
 }
 
@@ -22,8 +27,10 @@ interface ApiError {
 }
 
 const LoginVendor: React.FC = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -42,14 +49,24 @@ const LoginVendor: React.FC = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
+    console.log(data);
     try {
-      const response = await axios.post("/signin", data);
-      if (response.status === 200) {
-        toast.success("Logged in successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
+      const response = await LoginVendorAPI({
+        emailOrPhone: data.emailOrPhone,
+        password: data.password,
+      });
+      console.log("Vender logs", response);
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      dispatch(
+        setVendor({
+          vendor: response?.data?.user,
+          token: response?.data?.token,
+        })
+      );
+      navigate("/app");
     } catch (error) {
       if (isApiError(error)) {
         toast.error(
@@ -61,7 +78,8 @@ const LoginVendor: React.FC = () => {
           }
         );
       } else {
-        toast.error("An unexpected error occurred. Please try again.", {
+        const apiError = error as ApiError;
+        toast.error(apiError.response?.data?.message || "Invalid credentials", {
           position: "top-right",
           autoClose: 4000,
         });
@@ -71,40 +89,41 @@ const LoginVendor: React.FC = () => {
     }
   };
 
-
   const bg = {
     backgroundImage: `url(${background})`,
   };
 
   return (
     <div className="w-full h-screen">
-      {/* ToastContainer for displaying notifications */}
       <ToastContainer />
 
       <div className="flex flex-col md:flex-row">
-        <Sliding/>
-        <div
+        <Sliding />
+        <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[400px]"
         >
-          <div className=" flex justify-between items-center px-4 my-6 ">
+          <div className="flex items-center justify-between px-4 my-6 ">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
             </div>
 
-            <div className="w-full  hidden text-end lg:block">
+            <div className="hidden w-full text-end lg:block">
               <span className="text-gray-600">Don't have an account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
+              <NavLink
+                to={"/signup-vendor"}
+                className="text-blue-500 hover:underline"
+              >
                 Sign up now!
-              </a>
+              </NavLink>
             </div>
           </div>
 
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
               {/* Header */}
-              <h1 className="text-2xl font-bold mb-2">Log in to Mbaay.com</h1>
-              <p className="text-gray-600 mb-6">
+              <h1 className="mb-2 text-2xl font-bold">Log in to Mbaay.com</h1>
+              <p className="mb-6 text-gray-600">
                 Enter your valid email address and password to log in to your
                 account.
               </p>
@@ -115,7 +134,7 @@ const LoginVendor: React.FC = () => {
                     type="email"
                     placeholder="Enter email address"
                     className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
-                    {...register("email", {
+                    {...register("emailOrPhone", {
                       required: "Email is required",
                       pattern: {
                         value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -124,14 +143,14 @@ const LoginVendor: React.FC = () => {
                     })}
                   />
 
-                  {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.email.message}
+                  {errors.emailOrPhone && (
+                    <p className="text-red-500 text-[10px] mt-1">
+                      {errors.emailOrPhone.message}
                     </p>
                   )}
                 </div>
 
-                <div className="mb-4 relative">
+                <div className="relative mb-4">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter password"
@@ -142,14 +161,14 @@ const LoginVendor: React.FC = () => {
                   />
 
                   <span
-                    className="absolute right-5 top-5 text-gray-500 cursor-pointer"
+                    className="absolute text-gray-500 cursor-pointer right-5 top-5"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
 
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.password.message}
                     </p>
                   )}
@@ -157,11 +176,11 @@ const LoginVendor: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+                  className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin"></div>
                   ) : (
                     "Sign in"
                   )}
@@ -174,25 +193,28 @@ const LoginVendor: React.FC = () => {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <button className="w-full bg-black text-white p-3 font-semibold flex items-center justify-center hover:bg-gray-800 transition duration-300">
-                <i className="fab fa-google mr-2"></i> Sign in with Google
+              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
+                <i className="mr-2 fab fa-google"></i> Sign in with Google
               </button>
 
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <a href="#" className="text-orange-500 hover:underline">
-                  Login as a user?
+                  <Link to={"/signin"}>Login as a user?</Link>
                 </a>
               </div>
 
-              <div className=" block lg:hidden text-left my-2 ">
+              <div className="block my-2 text-left lg:hidden">
                 <span className="text-gray-600">Don't have an account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
+                <Link
+                  to={"/signup-vendor"}
+                  className="text-blue-500 hover:underline"
+                >
                   Sign up now!
-                </a>
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

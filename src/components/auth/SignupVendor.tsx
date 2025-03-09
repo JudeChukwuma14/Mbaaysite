@@ -1,19 +1,31 @@
 import React, { useState } from "react";
 import background from "@/assets/image/bg2.jpeg";
 import logo from "@/assets/image/mbbaylogo.png";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createVendor } from "@/utils/vendorApi";
+import { motion } from "framer-motion";
+import {
+  Country,
+  State,
+  City,
+  ICountry,
+  IState,
+  ICity,
+} from "country-state-city";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 
 interface FormData {
   storeName: string;
   email: string;
   userName: string;
   address1: string;
+  address2?: string; // Optional field
   country: string;
   city: string;
   state: string;
@@ -30,30 +42,57 @@ const Registration: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedCity, setSelectedCity] = useState<string>("");
+
+  const countries: ICountry[] = Country.getAllCountries();
+  const states: IState[] = selectedCountry
+    ? State.getStatesOfCountry(selectedCountry)
+    : [];
+  const cities: ICity[] = selectedState
+    ? City.getCitiesOfState(selectedCountry, selectedState)
+    : [];
 
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     watch,
+    reset,
   } = useForm<FormData>();
-
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await createVendor(data);
-      console.log("Vender logs", response)
+      const formData = {
+        ...data,
+        // storePhone: phoneNumber,
+        country: selectedCountry,
+        state: selectedState,
+        city: selectedCity,
+      };
+      const response = await createVendor(formData);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/login-vendor");
+      reset(); // Reset form fields
+      navigate("/welcomepage");
     } catch (error: unknown) {
-          toast.error((error as Error)?.message || "Failed to create account", {
-            position: "top-right",
-            autoClose: 4000,
-          });
+      console.error(error);
+      if (error instanceof Error) {
+        toast.error(error.message || "An unexpected error occurred", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+      } else {
+        toast.error("An unexpected error occurred", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -65,43 +104,37 @@ const Registration: React.FC = () => {
 
   return (
     <div className="w-full h-screen">
-      {/* ToastContainer for displaying notifications */}
       <ToastContainer />
-
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
-          {/* Logo for small screens */}
-          <div className="flex justify-between items-center px-4 my-6">
+          <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
             </div>
-            {/* Sign Up Link */}
-            <div className="w-full hidden text-end lg:block">
+            <div className="hidden w-full text-end lg:block">
               <span className="text-gray-600">Already have an account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
-                Sign in
-              </a>
+              <Link
+                to={"/login-vendor"}
+                className="text-blue-500 hover:underline"
+              >
+                <span> Sign in</span>
+              </Link>
             </div>
           </div>
-
-          {/* Form container */}
           <div className="flex items-center justify-center px-4">
-            <div className="w-max pb-10">
-              {/* Header */}
-              <h1 className="text-2xl font-bold mb-2">Welcome to Mbaay.com!</h1>
-              <p className="text-gray-600 mb-4">
+            <div className="pb-10 w-max">
+              <h1 className="mb-2 text-2xl font-bold">Welcome to Mbaay.com!</h1>
+              <p className="mb-4 text-gray-600">
                 We’re excited to have you onboard—start selling and growing your
                 business with us today!
               </p>
-
-              {/* Form */}
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                className="grid grid-cols-1 gap-6 md:grid-cols-2"
               >
                 {/* Username */}
                 <div>
@@ -113,10 +146,10 @@ const Registration: React.FC = () => {
                     {...register("userName", {
                       required: "Username is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.userName && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.userName.message}
                     </p>
                   )}
@@ -136,10 +169,10 @@ const Registration: React.FC = () => {
                         message: "Invalid email address",
                       },
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.email.message}
                     </p>
                   )}
@@ -155,16 +188,16 @@ const Registration: React.FC = () => {
                     {...register("storeName", {
                       required: "Store Name is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.storeName && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.storeName.message}
                     </p>
                   )}
                 </div>
 
-                {/* Address */}
+                {/* Address 1 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Address
@@ -174,13 +207,25 @@ const Registration: React.FC = () => {
                     {...register("address1", {
                       required: "Address is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.address1 && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.address1.message}
                     </p>
                   )}
+                </div>
+
+                {/* Address 2 (Optional) */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Address 2
+                  </label>
+                  <input
+                    type="text"
+                    {...register("address2")}
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  />
                 </div>
 
                 {/* Country */}
@@ -188,57 +233,78 @@ const Registration: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Country
                   </label>
-                  <input
-                    type="text"
+                  <select
                     {...register("country", {
                       required: "Country is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                  />
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                    onChange={(e) => setSelectedCountry(e.target.value)}
+                  >
+                    <option value="">Select Country</option>
+                    {countries.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
                   {errors.country && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.country.message}
                     </p>
                   )}
                 </div>
 
-                {/* City/Town */}
+                {/* State */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    City/Town
+                    State
                   </label>
-                  <input
-                    type="text"
-                    {...register("city", { required: "City/Town is required" })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                  />
-                  {errors.city && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.city.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* State/Country */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    State/Country
-                  </label>
-                  <input
-                    type="text"
-                    {...register("state", {
-                      required: "State/Country is required",
-                    })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                  />
+                  <select
+                    {...register("state", { required: "State is required" })}
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                    onChange={(e) => setSelectedState(e.target.value)}
+                    disabled={!selectedCountry}
+                  >
+                    <option value="">Select State</option>
+                    {states.map((state) => (
+                      <option key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </option>
+                    ))}
+                  </select>
                   {errors.state && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.state.message}
                     </p>
                   )}
                 </div>
 
-                {/* Post Code/Zip */}
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    City
+                  </label>
+                  <select
+                    {...register("city", { required: "City is required" })}
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={!selectedState}
+                  >
+                    <option value="">Select City</option>
+                    {cities.map((city) => (
+                      <option key={city.name} value={city.name}>
+                        {city.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.city && (
+                    <p className="text-red-500 text-[10px] mt-1">
+                      {errors.city.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Postcode */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Post Code/Zip
@@ -248,34 +314,43 @@ const Registration: React.FC = () => {
                     {...register("postcode", {
                       required: "Post Code/Zip is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.postcode && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.postcode.message}
                     </p>
                   )}
                 </div>
 
-                {/* Store Number */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">
+                  <label className="block mb-2 text-sm font-medium text-gray-700">
                     Store Number
                   </label>
-                  <input
-                    type="text"
-                    {...register("storePhone", {
-                      required: "Store Number is required",
-                    })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                  <Controller
+                    name="storePhone"
+                    control={control}
+                    defaultValue=""
+                    rules={{ required: "Store Number is required" }}
+                    render={({ field }) => (
+                      <PhoneInput
+                        country={"us"}
+                        value={field.value}
+                        onChange={(value) => field.onChange(value)}
+                        containerClass="w-full"
+                        inputClass="!w-full !pl-14 !border !border-gray-300 !p-4 !mt-1 focus:!border-orange-500 focus:!outline-none !rounded-none"
+                        buttonClass="!border-r !border-gray-300 !bg-white !rounded-none"
+                      />
+                    )}
                   />
                   {errors.storePhone && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.storePhone.message}
                     </p>
                   )}
                 </div>
 
+                {/* Craft Categories */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Craft Categories
@@ -283,25 +358,26 @@ const Registration: React.FC = () => {
                   <input
                     type="text"
                     {...register("craftCategories", {
-                      required: "Address is required",
+                      required: "Craft Categories is required",
                     })}
-                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                   />
                   {errors.craftCategories && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.craftCategories.message}
                     </p>
                   )}
                 </div>
 
+                {/* Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Enter Password
                   </label>
-                  <div className="mb-2 relative">
+                  <div className="relative mb-2">
                     <input
                       type={showPassword ? "text" : "password"}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                       {...register("password", {
                         required: "Password is required",
                         minLength: {
@@ -311,26 +387,28 @@ const Registration: React.FC = () => {
                       })}
                     />
                     <span
-                      className="absolute right-5 top-3 text-gray-500 cursor-pointer"
+                      className="absolute text-gray-500 cursor-pointer right-5 top-3"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <FaEyeSlash /> : <FaEye />}
                     </span>
                     {errors.password && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-[10px] mt-1">
                         {errors.password.message}
                       </p>
                     )}
                   </div>
                 </div>
+
+                {/* Confirm Password */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Comfirm Password
+                    Confirm Password
                   </label>
-                  <div className="mb-2 relative">
+                  <div className="relative mb-2">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                      className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
                       {...register("confirmPassword", {
                         required: "Confirm Password is required",
                         validate: (value) =>
@@ -339,7 +417,7 @@ const Registration: React.FC = () => {
                       })}
                     />
                     <span
-                      className="absolute right-5 top-3 text-gray-500 cursor-pointer"
+                      className="absolute text-gray-500 cursor-pointer right-5 top-3"
                       onClick={() =>
                         setShowConfirmPassword(!showConfirmPassword)
                       }
@@ -347,21 +425,22 @@ const Registration: React.FC = () => {
                       {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                     </span>
                     {errors.confirmPassword && (
-                      <p className="text-red-500 text-sm mt-1">
+                      <p className="text-red-500 text-[10px] mt-1">
                         {errors.confirmPassword.message}
                       </p>
                     )}
                   </div>
                 </div>
+
                 {/* Submit Button */}
                 <div className="md:col-span-2">
                   <button
                     type="submit"
-                    className="w-full bg-orange-500 text-white p-3 font-semibold rounded-md hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+                    className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 focus:border-orange-500 focus:outline-none hover:bg-orange-600"
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin"></div>
                     ) : (
                       "Sign up"
                     )}
@@ -376,8 +455,8 @@ const Registration: React.FC = () => {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              {/* Google Sign-Up Button */}
-              <button className="w-full bg-black text-white p-3 font-semibold rounded-md flex items-center justify-center hover:bg-gray-800 transition duration-300">
+              {/* Google Sign-Up */}
+              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black focus:border-orange-500 focus:outline-none hover:bg-gray-800">
                 <img
                   src="https://www.google.com/favicon.ico"
                   alt="Google"
@@ -387,15 +466,18 @@ const Registration: React.FC = () => {
               </button>
 
               {/* Login Link */}
-              <p className="text-center mt-4 text-gray-600">
+              <p className="mt-4 text-center text-gray-600">
                 Already have an account?{" "}
-                <a href="/login" className="text-orange-500 hover:underline">
+                <Link
+                  to="/login-vendor"
+                  className="text-orange-500 hover:underline"
+                >
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

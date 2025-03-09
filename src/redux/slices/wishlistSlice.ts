@@ -1,7 +1,7 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface WishlistItem {
-  id: number;
+  id: string;
   name: string;
   price: number;
   quantity: number;
@@ -17,23 +17,28 @@ const initialState: WishlistState = {
 };
 
 const wishlistSlice = createSlice({
-  name: 'wishlist',
+  name: "wishlist",
   initialState,
   reducers: {
     addWishlistItem: (state, action: PayloadAction<WishlistItem>) => {
-      console.log("wishlistitem...",action.payload)
-      const existingItem = state.items.find(item => item.id === action.payload.id);
+      console.log("wishlistitem...", action.payload);
+      const existingItem = state.items.find(
+        (item) => item.id === action.payload.id
+      );
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
         state.items.push({ ...action.payload, quantity: 1 });
       }
     },
-    removeWishlistItem: (state, action: PayloadAction<number>) => {
-      state.items = state.items.filter(item => item.id !== action.payload);
+    removeWishlistItem: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter((item) => item.id !== action.payload);
     },
-    updateWishlistQuantity: (state, action: PayloadAction<{ id: number; quantity: number }>) => {
-      const item = state.items.find(item => item.id === action.payload.id);
+    updateWishlistQuantity: (
+      state,
+      action: PayloadAction<{ id: string; quantity: number }>
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
       if (item) {
         item.quantity = action.payload.quantity;
       }
@@ -41,5 +46,6 @@ const wishlistSlice = createSlice({
   },
 });
 
-export const { addWishlistItem, removeWishlistItem, updateWishlistQuantity } = wishlistSlice.actions;
+export const { addWishlistItem, removeWishlistItem, updateWishlistQuantity } =
+  wishlistSlice.actions;
 export default wishlistSlice.reducer;

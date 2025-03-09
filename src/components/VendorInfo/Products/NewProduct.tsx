@@ -1,20 +1,28 @@
 import  { useState } from "react";
 import { motion } from "framer-motion";
-// import { FiUploadCloud, FiTrash2 } from "react-icons/fi";
 import { FiUploadCloud } from "react-icons/fi";
 import { CiVideoOn } from "react-icons/ci";
 import { FaYoutube } from "react-icons/fa";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 
 const NewProduct = () => {
   const [productName, setProductName] = useState("");
-  const [productDescription, setProductDescription] = useState("");
+  // const [productDescription, setProductDescription] = useState("");
   const [category, setCategory] = useState("Fashion");
   const [subCategory, setSubCategory] = useState("Men's Wears");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState("0");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
   const [comparePrice, setComparePrice] = useState("");
+  const [value, setValue] = useState("");
+  
+  
+  // const toolbarOptions = [['bold', 'italic'], ['link', 'image']];
 
+  const handleDiscard = () => {
+    console.log("Discard remove.");
+  };
   const handleSaveDraft = () => {
     console.log("Draft saved.");
   };
@@ -48,12 +56,13 @@ const NewProduct = () => {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
           />
-          <textarea
+          <ReactQuill theme="snow"  placeholder="Product Description"  value={value} onChange={setValue} className="border outline-orange-500 border-orange-500"/>
+          {/* <textarea
             placeholder="Product Description"
             className="w-full p-2 border rounded h-32 outline-orange-500 border-orange-500"
             value={productDescription}
             onChange={(e) => setProductDescription(e.target.value)}
-          />
+          /> */}
         </motion.div>
 
         {/* Product Images Section */}
@@ -78,22 +87,22 @@ const NewProduct = () => {
           transition={{ delay: 0.6 }}
         >
           <h2 className="text-lg font-semibold">Category</h2>
-          <select
+          <motion.select
             className="w-full p-2 border rounded outline-orange-500 border-orange-500"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           >
             <option value="Fashion">Fashion</option>
             <option value="Electronics">Electronics</option>
-          </select>
-          <select
+          </motion.select>
+          <motion.select
             className="w-full p-2 border rounded outline-orange-500 border-orange-500"
             value={subCategory}
             onChange={(e) => setSubCategory(e.target.value)}
           >
             <option value="Men's Wears">Men's Wears</option>
             <option value="Women's Wears">Women's Wears</option>
-          </select>
+          </motion.select>
         </motion.div>
 
           {/* Product Video Section */}
@@ -166,6 +175,12 @@ const NewProduct = () => {
       </div>
 
       <div className="flex justify-end space-x-4">
+        <button
+          className="border border-orange-500 text-red-500 px-4 py-2 rounded-lg"
+          onClick={handleDiscard}
+        >
+          Discard
+        </button>
         <button
           className="bg-red-500 text-white px-4 py-2 rounded-lg"
           onClick={handleSaveDraft}

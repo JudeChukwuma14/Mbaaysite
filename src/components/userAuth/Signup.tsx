@@ -7,7 +7,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface FormData {
   name: string;
@@ -19,6 +20,7 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -35,8 +37,8 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await createUser(data);
-      console.log("Signup Response:", response);
-      toast.success(response.message,{
+      console.log(response);
+      toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
@@ -49,7 +51,7 @@ const Signup: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -60,7 +62,7 @@ const Signup: React.FC = () => {
       <div className="flex flex-col md:flex-row ">
         <Sliding />
 
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
@@ -88,9 +90,7 @@ const Signup: React.FC = () => {
                 register your account.
               </p>
 
-              {/* Form */}
               <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Name Field */}
                 <div className="mb-2">
                   <input
                     type="text"
@@ -105,7 +105,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Email Field */}
                 <div className="mb-2">
                   <input
                     type="email"
@@ -141,7 +140,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Password Field */}
                 <div className="mb-2 relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -168,7 +166,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Confirm Password Field */}
                 <div className="mb-2 relative">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -193,7 +190,6 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center"
@@ -221,19 +217,22 @@ const Signup: React.FC = () => {
 
               {/* Vendor/Seller Link */}
               <div className="text-left mt-4">
-                <a href="#" className="text-orange-500 hover:underline">
+                <Link
+                  to={"/signup-vendor"}
+                  className="text-orange-500 hover:underline"
+                >
                   Become a Vendor/Seller?
-                </a>
+                </Link>
               </div>
               <div className="block lg:hidden text-left my-2">
                 <span className="text-gray-600">Already have an Account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
+                <Link to={"/signin"} className="text-blue-500 hover:underline">
                   Sign in
-                </a>
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

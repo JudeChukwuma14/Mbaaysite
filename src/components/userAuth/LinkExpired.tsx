@@ -4,6 +4,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import logo from "../../assets/image/mbbaylogo.png";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 const LinkExpired: React.FC = () => {
   const bg = {
@@ -17,7 +18,7 @@ const LinkExpired: React.FC = () => {
         {/* Left Section */}
         <Sliding />
         {/* Right Section */}
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -51,7 +52,7 @@ const LinkExpired: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

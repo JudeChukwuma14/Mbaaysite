@@ -2,6 +2,7 @@ import React from "react";
 import background from "../../assets/image/bg2.jpeg";
 import logo from "../../assets/image/mbbaylogo.png";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 const NumberForgotPassword: React.FC = () => {
   const bg = {
@@ -11,11 +12,11 @@ const NumberForgotPassword: React.FC = () => {
   return (
     <div className="w-full h-screen">
       {/* Container */}
-      <div className="flex flex-col md:flex-row">
+      <motion.div className="flex flex-col md:flex-row">
         {/* Left Section */}
         <Sliding />
         {/* Right Section */}
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -54,8 +55,8 @@ const NumberForgotPassword: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

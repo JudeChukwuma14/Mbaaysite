@@ -79,15 +79,15 @@ const UserDetail = () => {
           <h3 className="font-bold text-lg">{userDetails.name}</h3>
           <h4>Customer</h4>
           <div className="flex space-x-3 mt-3">
-            <button className="bg-orange-500 text-white p-2 rounded-full">
+            <motion.button className="bg-orange-500 text-white p-2 rounded-full">
               <Phone className="w-5 h-5" />
-            </button>
-            <button className="bg-orange-500 text-white p-2 rounded-full">
+            </motion.button>
+            <motion.button className="bg-orange-500 text-white p-2 rounded-full">
               <FaWhatsapp className="w-5 h-5" />
-            </button>
-            <button className="bg-orange-500 text-white p-2 rounded-full">
+            </motion.button>
+            <motion.button className="bg-orange-500 text-white p-2 rounded-full">
               <Mail className="w-5 h-5" />
-            </button>
+            </motion.button>
           </div>
         </motion.div>
 

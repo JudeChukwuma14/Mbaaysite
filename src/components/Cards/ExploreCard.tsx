@@ -1,98 +1,52 @@
-import React, { useState } from "react";
-import { FiHeart, FiPlus, FiX, FiChevronDown } from "react-icons/fi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { FiHeart, FiEye } from "react-icons/fi";
 
 interface ProductCardProps {
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-  };
-  showAddToCartButton?: boolean;
-  onAddToCart?: () => void;
-  onToggleFavorite?: () => void;
+  image: string;
+  title: string;
+  price: number;
+  rating: number;
+  reviews: number;
 }
 
 const ExploreCard: React.FC<ProductCardProps> = ({
-  product,
-  showAddToCartButton = true,
-  onAddToCart,
-  onToggleFavorite,
+  image,
+  title,
+  price,
+  rating,
+  reviews,
 }) => {
-  const [showAddToCart, setShowAddToCart] = useState(false);
-  // const dispatch = useDispatch();
-
-  const toggleAddToCart = () => {
-    setShowAddToCart((prev) => !prev);
-  };
-
-  // const handleAddToCartClick = () => {
-  //   toggleAddToCart();
-  //   dispatch(addItem({
-  //     id: product.id,
-  //     name: product.name,
-  //     price: parseFloat(product.price.replace('$', '')),
-  //     quantity: 1,
-  //     image: product.image,
-  //   }));
-  //   toast.success(`${product.name} added to cart!`, {
-  //     position: "bottom-right",
-  //     autoClose: 3000,
-  //   });
-  // };
-
-  const handleToggleFavoriteClick = () => {
-    onToggleFavorite?.();
-    toast.info(`${product.name} added to favorites!`, {
-      position: "bottom-right",
-      autoClose: 3000,
-    });
-  };
-
   return (
-    <div className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition relative">
-      <ToastContainer />
-      <div className="h-64 flex justify-center items-center bg-white">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="object-contain h-full"
-        />
-        <button
-          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition"
-          onClick={handleToggleFavoriteClick}
-        >
-          <FiHeart size={20} />
-        </button>
-      </div>
-      <div className="p-4 flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">{product.name}</h3>
-        <p className="text-sm font-bold">{product.price}</p>
-      </div>
-      {showAddToCartButton && (
-        <div
-          className={`transition-opacity duration-300 ${
-            showAddToCart ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <button
-            className="w-full py-2 bg-orange-400 text-white flex justify-center items-center gap-2 hover:bg-orange-500 transition"
-            onClick={onAddToCart}
-          >
-            <FiPlus size={18} />
-            <span>Add to Cart</span>
+    <div className=" p-4 h-[322px] bg-gray-100 group relative">
+      {/* Image Section */}
+      <div className="relative overflow-hidden">
+        <img src={image} alt={title} className="w-full h-48 object-cover" />
+      
+        {/* Hover Icons */}
+        <div className="absolute top-2 right-2 flex flex-col gap-2">
+          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <FiHeart className="text-gray-600 text-sm" />
+          </button>
+          <button className="p-2 bg-white rounded-full shadow-md hover:bg-gray-200">
+            <FiEye className="text-gray-600 text-sm" />
           </button>
         </div>
-      )}
-      <button
-        className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition"
-        onClick={toggleAddToCart}
-      >
-        {showAddToCart ? <FiX size={20} /> : <FiChevronDown size={20} />}
-      </button>
+
+        {/* Add to Cart Button (Hidden by Default) */}
+        <button className="absolute bottom-0 left-0 w-full bg-orange-500 text-white py-2 text-center opacity-0 translate-y-2 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+          Add To Cart
+        </button>
+      </div>
+
+      {/* Product Info */}
+      <h5 className="  mt-3">{title}</h5>
+      <div className="flex items-center gap-2">
+        <span className="text-red-500 font-bold">${price}</span>
+        <div className="flex text-yellow-400">
+          {"★".repeat(Math.floor(rating))}
+          {"☆".repeat(5 - Math.floor(rating))}
+        </div>
+        <span className="text-gray-500 text-sm">({reviews})</span>
+      </div>
     </div>
   );
 };

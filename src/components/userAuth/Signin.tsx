@@ -6,16 +6,20 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
+import { Link, useNavigate } from "react-router-dom";
+import { setUser } from "@/redux/slices/userSlice";
+import { useDispatch } from "react-redux";
 import { LoginUser } from "@/utils/api";
-import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface FormData {
-  email: string;
+  emailOrPhone: string;
   password: string;
 }
 
 const Signin: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -26,15 +30,20 @@ const Signin: React.FC = () => {
   } = useForm<FormData>();
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setIsLoading(true);
+    setIsLoading(true); 
     try {
-      const response = await LoginUser(data);
-      console.log("Signup Response:", response);
-      toast.success(response?.message || "Login successful");
-      navigate("/");
-    } catch (error: any) {
-      const errorMessage = typeof error === "string" ? error : error?.message || "Failed to Login";
-      toast.error(errorMessage, {
+      const response = await LoginUser(data); 
+      console.log("Login Response:", response);
+  
+      if (response.user && response.token) {
+        dispatch(setUser({ user: response.user, token: response.token })); 
+        toast.success(response.message || "Login successful"); 
+        navigate("/"); 
+      } else {
+        throw new Error("Invalid response format from server");
+      }
+    } catch (error: unknown) {
+      toast.error((error as Error)?.message || "Failed to log in", {
         position: "top-right",
         autoClose: 4000,
       });
@@ -42,7 +51,7 @@ const Signin: React.FC = () => {
       setIsLoading(false);
     }
   };
-  
+
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -52,11 +61,11 @@ const Signin: React.FC = () => {
       <ToastContainer />
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px]"
         >
-           <div className="flex justify-between items-center px-4 my-6">
+          <div className="flex justify-between items-center px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
             </div>
@@ -71,7 +80,7 @@ const Signin: React.FC = () => {
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
               {/* Header */}
-              <h1 className="text-2xl font-bold mb-2">Log in to Mbaay.com</h1>
+              <h1 className="text-2xl font-bold mb-2">Log in to Mbaay com</h1>
               <p className="text-gray-600 mb-6">
                 Enter your valid email address and password to log in to your
                 account.
@@ -80,21 +89,26 @@ const Signin: React.FC = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="mb-4">
                   <input
-                    type="email"
-                    placeholder="Enter email address"
+                    type="text"
+                    placeholder="Enter email address or phone number"
                     className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "Invalid email address",
+                    {...register("emailOrPhone", {
+                      required: "Email or phone number is required",
+                      validate: (value) => {
+                        const emailPattern =
+                          /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+                        const phonePattern = /^[0-9]{10,15}$/; // Adjust based on your phone format
+                        return (
+                          emailPattern.test(value) ||
+                          phonePattern.test(value) ||
+                          "Enter a valid email or phone number"
+                        );
                       },
                     })}
                   />
-
-                  {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.email.message}
+                  {errors.emailOrPhone && (
+                    <p className="text-red-500 text-[10px] mt-1">
+                      {errors.emailOrPhone.message}
                     </p>
                   )}
                 </div>
@@ -117,7 +131,7 @@ const Signin: React.FC = () => {
                   </span>
 
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.password.message}
                     </p>
                   )}
@@ -147,20 +161,20 @@ const Signin: React.FC = () => {
               </button>
 
               <div className="text-left mt-4">
-                <a href="#" className="text-orange-500 hover:underline">
-                  Become a Vendor/Seller?
-                </a>
+                <Link to={"/signup-vendor"} className="text-orange-500 hover:underline">
+                Become a Vendor/Seller?
+                </Link>
               </div>
 
               <div className=" block lg:hidden text-left my-2 ">
                 <span className="text-gray-600">Don't have an account? </span>
-                <a href="#" className="text-blue-500 hover:underline">
+                  <Link to={"/signup"} className="text-blue-500 hover:underline">
                   Sign up
-                </a>
+                  </Link>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

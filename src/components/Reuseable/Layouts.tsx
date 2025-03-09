@@ -2,18 +2,18 @@ import React from "react";
 import image from "../../assets/image/Group 14.png";
 import card from "../../assets/image/card1.png";
 import ProductCard2 from "../Cards/ProductCard2";
-import Footer from "../static/Footer";
 
-export const Layouts: React.FC = () => {
+
+const Layouts: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
-    { image: image, text: "Woman's Fashion" },
+    { image: image, text: "Women's Fashion" },
+    { image: image, text: "Men Fashion" },
+    { image: image, text: "Kid’s Fashion" },
+    { image: image, text: "Accessories (Hats, Belts)" },
+    { image: image, text: "Fashion Jewelry" },
+    { image: image, text: "Sports wear" },
+    { image: image, text: "Ethnic Wear" },
+    { image: image, text: "Footwear" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -29,7 +29,7 @@ export const Layouts: React.FC = () => {
   ];
   return (
     <div>
-      <div className=" pl-4 py-3 mb-6 shadow-md">
+      <div className=" pl-10 py-3 mb-6">
         <h3 className=" font-semibold text-xl">Fashion</h3>
       </div>
       <div className="mb-8">
@@ -61,7 +61,8 @@ export const Layouts: React.FC = () => {
           }
         </div>
       </div>
-      <Footer />
     </div>
   );
 };
+
+export default Layouts;

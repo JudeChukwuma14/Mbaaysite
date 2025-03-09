@@ -1,19 +1,22 @@
-import React from "react";
-import Slider from "react-slick";
 import FlashSale from "./FlashSales";
+import Slider from "react-slick";
+import React from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+
 // Adjust the import path as needed
 
 // Define the product interface
 interface Product {
   id: number;
-  name: string;
-  price: string;
-  originalPrice: string;
+  title: string;
+  price: number;
+  originalPrice: number;
   image: string;
   rating: number;
   reviews: number;
+  performance: string;
 }
 
 // Define the props interface
@@ -22,54 +25,62 @@ interface ProductSliderProps {
 }
 
 const ProductSlider: React.FC<ProductSliderProps> = ({ products }) => {
-  // Slider settings
+  const sliderRef = React.useRef<Slider | null>(null);
+
   const settings = {
-    dots: true, // Show dot indicators
-    infinite: true, // Infinite looping
-    speed: 2000, // Transition speed
-    slidesToShow: 4, // Number of slides to show at once
-    slidesToScroll: 2, // Number of slides to scroll
+    infinite: true,
+    speed: 1000,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    arrows: false,
     responsive: [
       {
-        breakpoint: 1024, // Adjust for large screens
-        settings: {
-          slidesToShow: 3,
-          slidesToScroll: 1,
-        },
+        breakpoint: 1024,
+        settings: { slidesToShow: 3, slidesToScroll: 1 },
       },
       {
-        breakpoint: 835, // Adjust for tablets
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-        },
+        breakpoint: 768,
+        settings: { slidesToShow: 2, slidesToScroll: 1 },
       },
       {
-        breakpoint: 480, // Adjust for mobile
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
+        breakpoint: 480,
+        settings: { slidesToShow: 1, slidesToScroll: 1 },
       },
     ],
   };
 
   return (
-    <div className="p-4">
-      <Slider {...settings}>
+    <div className="relative p-4">
+      <Slider ref={sliderRef} {...settings}>
         {products.map((product) => (
           <div key={product.id} className="px-2">
             <FlashSale
-              name={product.name}
+              title={product.title}
               price={product.price}
               originalPrice={product.originalPrice}
               image={product.image}
               rating={product.rating}
               reviews={product.reviews}
+              performance={product.performance}
             />
           </div>
         ))}
       </Slider>
+      {/* Custom Navigation Buttons */}
+      <button
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
+        onClick={() => sliderRef.current?.slickPrev()}
+      >
+        <FaChevronLeft />
+      </button>
+      <button
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
+        onClick={() => sliderRef.current?.slickNext()}
+      >
+        <FaChevronRight />
+      </button>
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 interface ResetPasswordFormData {
   newPassword: string;
@@ -62,7 +63,7 @@ const ResetPassword: React.FC = () => {
         {/* Left Section */}
         <Sliding />
         {/* Right Section */}
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -96,7 +97,7 @@ const ResetPassword: React.FC = () => {
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.newPassword && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.newPassword.message}
                     </p>
                   )}
@@ -120,7 +121,7 @@ const ResetPassword: React.FC = () => {
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-[10px] mt-1">
                       {errors.confirmPassword.message}
                     </p>
                   )}
@@ -144,7 +145,7 @@ const ResetPassword: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

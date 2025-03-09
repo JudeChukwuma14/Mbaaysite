@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, ShoppingCart, Package, BadgeDollarSign } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { motion } from "framer-motion";
+import { ChartOptions } from "chart.js";
 import {
   Chart as ChartJS,
   LineElement,
@@ -60,7 +61,9 @@ const Dashboard = () => {
     ],
   };
 
-  const chartOptions = {
+ 
+
+  const chartOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -72,6 +75,7 @@ const Dashboard = () => {
       y: { grid: { color: "rgba(200, 200, 200, 0.2)" } },
     },
   };
+  
 
   return (
     <main className="p-5 flex-1 overflow-auto">
@@ -94,9 +98,9 @@ const Dashboard = () => {
               <p className="text-2xl font-bold text-gray-800">{card.value}</p>
             </div>
             {card.icon && (
-              <button onClick={card.onClick}>
+              <motion.button onClick={card.onClick} >
                 <card.icon className="w-6 h-6 text-gray-600" />
-              </button>
+              </motion.button>
             )}
           </motion.div>
         ))}

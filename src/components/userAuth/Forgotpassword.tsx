@@ -6,6 +6,7 @@ import axios from "axios";
 import background from "../../assets/image/bg2.jpeg";
 import logo from "../../assets/image/mbbaylogo.png";
 import Sliding from "../Reuseable/Sliding";
+import { motion } from "framer-motion";
 
 // Define the shape of the form data
 interface ForgotPasswordFormData {
@@ -53,7 +54,7 @@ const Forgotpassword: React.FC = () => {
       <ToastContainer />
       <div className="flex flex-col md:flex-row">
         <Sliding />
-        <div
+        <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
         >
@@ -79,7 +80,7 @@ const Forgotpassword: React.FC = () => {
                   })}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">
+                  <p className="text-red-500 text-[10px] mt-1">
                     {errors.email.message}
                   </p>
                 )}
@@ -97,7 +98,7 @@ const Forgotpassword: React.FC = () => {
               </button>
             </form>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

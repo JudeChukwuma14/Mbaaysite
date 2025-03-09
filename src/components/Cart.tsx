@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { removeItem, updateQuantity } from "@/redux/slices/cartSlice";
+import { motion } from "framer-motion";
 
 const Cart: React.FC = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -10,11 +11,11 @@ const Cart: React.FC = () => {
   const [couponCode, setCouponCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
 
-  const handleUpdateQuantity = (itemId: number, newQuantity: number) => {
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
   };
 
-  const handleRemoveItem = (itemId: number) => {
+  const handleRemoveItem = (itemId: string) => {
     dispatch(removeItem(itemId));
   };
 
@@ -72,7 +73,7 @@ const Cart: React.FC = () => {
                 </td>
                 <td className="py-2 px-4">${item.price}</td>
                 <td className="py-2 px-4">
-                  <input
+                  <motion.input
                     type="number"
                     min="1"
                     value={item.quantity}

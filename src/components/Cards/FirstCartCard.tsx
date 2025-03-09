@@ -5,9 +5,10 @@ import { toast } from "react-toastify";
 import { IoCartOutline } from "react-icons/io5";
 import { AiFillStar, AiOutlineHeart, AiOutlineStar } from "react-icons/ai";
 import { addWishlistItem } from "@/redux/slices/wishlistSlice";
+import { Link } from "react-router-dom";
 
 interface Product {
-  id: number;
+  id: string;
   title: string;
   currentPrice: string;
   originalPrice: string;
@@ -50,7 +51,7 @@ const FirstCartCard: React.FC<FirstCartCardProps> = ({ product }) => {
   };
 
   return (
-    <div className="max-w-sm bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="max-w-sm bg-white shadow-md overflow-hidden">
       <div className="relative">
         <img
           src={product.image}
@@ -74,29 +75,33 @@ const FirstCartCard: React.FC<FirstCartCardProps> = ({ product }) => {
           </button>
         </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-gray-800">{product.title}</h3>
-        <div className="flex items-center space-x-3 mt-2">
-          <span className="text-red-500 font-semibold text-xl">
-            ${product.currentPrice}
-          </span>
-          <span className="text-gray-500 line-through">
-            ${product.originalPrice}
-          </span>
-        </div>
-        <div className="flex items-center mt-2">
-          <div className="flex text-yellow-400">
-            {Array.from({ length: 5 }).map((_, i) =>
-              i < product.rating ? (
-                <AiFillStar key={i} className="text-yellow-400 text-lg" />
-              ) : (
-                <AiOutlineStar key={i} className="text-gray-300 text-lg" />
-              )
-            )}
+      <Link to={`/product-details/${product.id}`}>
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {product.title}
+          </h3>
+          <div className="flex items-center space-x-3 mt-2">
+            <span className="text-red-500 font-semibold text-xl">
+              ${product.currentPrice}
+            </span>
+            <span className="text-gray-500 line-through">
+              ${product.originalPrice}
+            </span>
           </div>
-          <span className="text-gray-600 ml-2">({product.reviews})</span>
+          <div className="flex items-center mt-2">
+            <div className="flex text-yellow-400">
+              {Array.from({ length: 5 }).map((_, i) =>
+                i < product.rating ? (
+                  <AiFillStar key={i} className="text-yellow-400 text-lg" />
+                ) : (
+                  <AiOutlineStar key={i} className="text-gray-300 text-lg" />
+                )
+              )}
+            </div>
+            <span className="text-gray-600 ml-2">({product.reviews})</span>
+          </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };
