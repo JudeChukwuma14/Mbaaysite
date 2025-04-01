@@ -1,11 +1,9 @@
-"use client";
-
 import { motion } from "framer-motion";
 import { PenSquare, MessageSquare, FileText, Users } from "lucide-react";
 import { useState } from "react";
 import { RiCommunityLine } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdOutlineRateReview } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import { get_one_community } from "@/utils/communityApi";
 import { useParams } from "react-router-dom";
@@ -16,6 +14,7 @@ import EditCommunityModal from "./EditCommunityModal";
 import DeleteConfirmationModal from "./DeleteCommunityConfirmationModal";
 import { IoIosLogOut } from "react-icons/io";
 import { VscReport } from "react-icons/vsc";
+// import { ImBin } from "react-icons/im";
 import LeaveConfirmationModal from "./LeaveCommunityConfirmationModal";
 
 export default function ProfilePage() {
@@ -247,6 +246,12 @@ export default function ProfilePage() {
                     <span className="text-sm text-gray-500">
                       {props?.comments?.length || 0} Comments
                     </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MdOutlineRateReview  className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {/* <ImBin   className="w-4 h-4 text-gray-500" /> */}
                   </div>
                 </div>
               </div>

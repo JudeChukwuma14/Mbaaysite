@@ -21,12 +21,12 @@ import { logoutVendor } from "@/redux/slices/vendorSlice";
 import Logo from "@/assets/image/mbbaylogo.png";
 import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
+import { IoIosPricetag } from "react-icons/io";
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
 
 const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
-
   interface RootState {
     vendor: {
       token: string;
@@ -36,7 +36,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
       };
     };
   }
-  const user = useSelector((state: RootState) => state.vendor)
+  const user = useSelector((state: RootState) => state.vendor);
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
@@ -82,6 +82,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
             Icon={Settings}
           />
           <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
+          <NavItem title="Pricing" to="pricing" Icon={IoIosPricetag} />
           <NavItem
             title="Community"
             subItems={["All Post", "Profile", "My Community"]}
@@ -97,10 +98,12 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
           className="w-12 h-12 rounded-full"
         /> */}
         <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                  <p>{vendors?.userName?.charAt()}</p>
-                </div>
+          <p>{vendors?.userName?.charAt()}</p>
+        </div>
         <div>
-          <p className="text-sm font-semibold text-orange-500">{vendors?.userName}</p>
+          <p className="text-sm font-semibold text-orange-500">
+            {vendors?.userName}
+          </p>
           <div className="flex items-center justify-center mt-2">
             <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
             <span className="text-green-500 text-xs rounded ml-[3px]">

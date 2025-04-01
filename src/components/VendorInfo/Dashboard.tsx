@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Eye, EyeOff, ShoppingCart, Package, BadgeDollarSign } from "lucide-react";
+import { Eye, EyeOff, ShoppingCart, Package, Layers } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import { ChartOptions } from "chart.js";
@@ -13,7 +13,14 @@ import {
   Legend,
 } from "chart.js";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 const Dashboard = () => {
   const [balanceVisible, setBalanceVisible] = useState(false);
@@ -23,16 +30,43 @@ const Dashboard = () => {
 
   const totalOrders = 3234;
   const productsSold = 1455;
-  const accountType = "Counter";
+  const accountType = "Shelves";
 
   const orders = [
-    { id: "#12356", client: "Chukwuma Jude", product: "Wooden Pots (Clay)", qty: 10, price: "$50,000", category: "Arts and craft", status: "Pending" },
-    { id: "#12357", client: "Abbas Mohammed", product: "Ankara Dress", qty: 15, price: "$75,000", category: "Fashion", status: "Rejected" },
-    { id: "#12358", client: "Jane Doe", product: "Leather Bag", qty: 5, price: "$30,000", category: "Accessories", status: "Delivered" },
+    {
+      id: "#12356",
+      client: "Chukwuma Jude",
+      product: "Wooden Pots (Clay)",
+      qty: 10,
+      price: "$50,000",
+      category: "Arts and craft",
+      status: "Pending",
+    },
+    {
+      id: "#12357",
+      client: "Abbas Mohammed",
+      product: "Ankara Dress",
+      qty: 15,
+      price: "$75,000",
+      category: "Fashion",
+      status: "Rejected",
+    },
+    {
+      id: "#12358",
+      client: "Jane Doe",
+      product: "Leather Bag",
+      qty: 5,
+      price: "$30,000",
+      category: "Accessories",
+      status: "Delivered",
+    },
   ];
 
   const totalPages = Math.ceil(orders.length / rowsPerPage);
-  const paginatedOrders = orders.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+  const paginatedOrders = orders.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -61,8 +95,6 @@ const Dashboard = () => {
     ],
   };
 
- 
-
   const chartOptions: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
@@ -75,17 +107,29 @@ const Dashboard = () => {
       y: { grid: { color: "rgba(200, 200, 200, 0.2)" } },
     },
   };
-  
 
   return (
     <main className="p-5 flex-1 overflow-auto">
       {/* Cards Section */}
       <div className="grid grid-cols-4 gap-4 mb-5">
         {[
-          { title: "Wallet Balance", value: balanceVisible ? "$34,000" : "****", icon: balanceVisible ? EyeOff : Eye, onClick: toggleBalanceVisibility },
-          { title: "Total Orders", value: totalOrders.toString(), icon: ShoppingCart },
-          { title: "Products Sold", value: productsSold.toString(), icon: Package },
-          { title: "Account Type", value: accountType, icon: BadgeDollarSign },
+          {
+            title: "Wallet Balance",
+            value: balanceVisible ? "$34,000" : "****",
+            icon: balanceVisible ? EyeOff : Eye,
+            onClick: toggleBalanceVisibility,
+          },
+          {
+            title: "Total Orders",
+            value: totalOrders.toString(),
+            icon: ShoppingCart,
+          },
+          {
+            title: "Products Sold",
+            value: productsSold.toString(),
+            icon: Package,
+          },
+          { title: "Account Type", value: accountType, icon: Layers },
         ].map((card, index) => (
           <motion.div
             key={index}
@@ -98,7 +142,7 @@ const Dashboard = () => {
               <p className="text-2xl font-bold text-gray-800">{card.value}</p>
             </div>
             {card.icon && (
-              <motion.button onClick={card.onClick} >
+              <motion.button onClick={card.onClick}>
                 <card.icon className="w-6 h-6 text-gray-600" />
               </motion.button>
             )}
@@ -121,7 +165,9 @@ const Dashboard = () => {
                 key={month}
                 onClick={() => setSelectedMonths(month)}
                 className={`px-3 py-1 rounded ${
-                  selectedMonths === month ? "bg-orange-500 text-white" : "bg-gray-200"
+                  selectedMonths === month
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-200"
                 } mx-1`}
               >
                 {month} Month{month > 1 && "s"}
@@ -141,8 +187,14 @@ const Dashboard = () => {
         >
           <h2 className="font-bold mb-4">Recent Notifications</h2>
           <ul className="text-sm space-y-2">
-            {["Your account is logged in", "Payment successfully processed", "New product added to inventory"].map((notif, index) => (
-              <li key={index} className="p-2 bg-gray-100 rounded shadow">{notif}</li>
+            {[
+              "Your account is logged in",
+              "Payment successfully processed",
+              "New product added to inventory",
+            ].map((notif, index) => (
+              <li key={index} className="p-2 bg-gray-100 rounded shadow">
+                {notif}
+              </li>
             ))}
           </ul>
         </motion.div>
