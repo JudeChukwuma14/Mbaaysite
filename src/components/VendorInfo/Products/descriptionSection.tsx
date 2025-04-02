@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { FaUpload } from "react-icons/fa";
 
 interface DescriptionSectionProps {
   productName: string;
@@ -31,7 +32,7 @@ export default function DescriptionSection({
 
   return (
     <motion.div
-      className="bg-white p-5 rounded-lg shadow space-y-4 h-[500px] flex flex-col"
+      className="bg-white p-5 rounded-lg shadow space-y-4 h-[520px] flex flex-col"
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.2 }}
@@ -49,10 +50,11 @@ export default function DescriptionSection({
         <div className="flex justify-between items-center">
           <label className="text-sm text-gray-600">Product Description</label>
           <button
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
             onClick={() => descriptionFileRef.current?.click()}
           >
-            Upload .txt file
+            <FaUpload size={15} />
+            <span>Upload .txt file</span>
           </button>
           <motion.input
             type="file"
