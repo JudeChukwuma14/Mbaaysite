@@ -1,35 +1,218 @@
-import  { useState } from "react";
-import { motion } from "framer-motion";
-import { FiUploadCloud } from "react-icons/fi";
-import { CiVideoOn } from "react-icons/ci";
-import { FaYoutube } from "react-icons/fa";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { useState, useRef, type ChangeEvent } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import CategorySelector from "./CategorySelector";
+import DescriptionSection from "./descriptionSection";
+import CategorySpecificUI from "./categorySpecificUi";
+import ImageUploader from "./imageUploader";
+import VideoUploader from "./Video-Uploader";
+import ReturnPolicyPopup from "./returnPolicyPopup";
+
+// Import components
 
 const NewProduct = () => {
   const [productName, setProductName] = useState("");
-  // const [productDescription, setProductDescription] = useState("");
-  const [category, setCategory] = useState("Fashion");
-  const [subCategory, setSubCategory] = useState("Men's Wears");
+  const [value, setValue] = useState("");
+  // Removed unused returnPolicyText state
+  const [selectedCategories] = useState<string[]>([
+    "Beauty and Wellness",
+    "Jewelry and Gemstones",
+  ]); // Pre-selected categories from account creation
+  const [activeCategory, setActiveCategory] = useState("Beauty and Wellness"); // Default to first category
+  const [subCategory, setSubCategory] = useState("");
   const [quantity, setQuantity] = useState("0");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
   const [comparePrice, setComparePrice] = useState("");
-  const [value, setValue] = useState("");
-  
-  
-  // const toolbarOptions = [['bold', 'italic'], ['link', 'image']];
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [returnPolicy] = useState<File | null>(null);
+  // Removed unused returnPolicyName state
+  const [descriptionFileName, setDescriptionFileName] = useState("");
+  // Removed unused descriptionFile state
+  const [showYoutubeInput, setShowYoutubeInput] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [youtubeEmbedUrl, setYoutubeEmbedUrl] = useState("");
+  const [showReturnPolicyPopup, setShowReturnPolicyPopup] = useState(false);
+  const [vendorPlan] = useState<"Shelves" | "Counter" | "Shop" | "Premium">(
+    "Counter"
+  ); // Set to Counter or Shop to see the new UI
+
+  // References for file inputs
+  const returnPolicyRef = useRef<HTMLInputElement>(null);
+
+  // Category color themes
+  const categoryThemes: Record<
+    string,
+    { primary: string; secondary: string; accent: string }
+  > = {
+    "Beauty and Wellness": {
+      primary: "pink-500",
+      secondary: "pink-100",
+      accent: "pink-700",
+    },
+    "Jewelry and Gemstones": {
+      primary: "purple-500",
+      secondary: "purple-100",
+      accent: "purple-700",
+    },
+    "Books and Poetry": {
+      primary: "blue-500",
+      secondary: "blue-100",
+      accent: "blue-700",
+    },
+    "Home Décor and Accessories": {
+      primary: "yellow-500",
+      secondary: "yellow-100",
+      accent: "yellow-700",
+    },
+    "Vintage Stocks": {
+      primary: "red-500",
+      secondary: "red-100",
+      accent: "red-700",
+    },
+    "Plant and Seeds": {
+      primary: "green-500",
+      secondary: "green-100",
+      accent: "green-700",
+    },
+    "Spices, Condiments, and Seasonings": {
+      primary: "orange-500",
+      secondary: "orange-100",
+      accent: "orange-700",
+    },
+    "Local & Traditional Foods": {
+      primary: "amber-500",
+      secondary: "amber-100",
+      accent: "amber-700",
+    },
+    "Traditional Clothing & Fabrics": {
+      primary: "indigo-500",
+      secondary: "indigo-100",
+      accent: "indigo-700",
+    },
+  };
+
+  // Subcategories for each main category
+  const subCategories: {
+    "Beauty and Wellness": string[];
+    "Jewelry and Gemstones": string[];
+    "Books and Poetry": string[];
+    "Home Décor and Accessories": string[];
+    "Vintage Stocks": string[];
+    "Plant and Seeds": string[];
+    "Spices, Condiments, and Seasonings": string[];
+    "Local & Traditional Foods": string[];
+    "Traditional Clothing & Fabrics": string[];
+  } = {
+    "Beauty and Wellness": ["Skincare", "Haircare", "Makeup", "Fragrance"],
+    "Jewelry and Gemstones": ["Necklaces", "Rings", "Earrings", "Bracelets"],
+    "Books and Poetry": ["Fiction", "Non-fiction", "Poetry", "Academic"],
+    "Home Décor and Accessories": [
+      "Wall Art",
+      "Furniture",
+      "Lighting",
+      "Textiles",
+    ],
+    "Vintage Stocks": [
+      "Clothing",
+      "Accessories",
+      "Collectibles",
+      "Memorabilia",
+    ],
+    "Plant and Seeds": [
+      "Indoor Plants",
+      "Outdoor Plants",
+      "Seeds",
+      "Gardening Tools",
+    ],
+    "Spices, Condiments, and Seasonings": [
+      "Herbs",
+      "Spices",
+      "Condiments",
+      "Blends",
+    ],
+    "Local & Traditional Foods": [
+      "Snacks",
+      "Beverages",
+      "Preserves",
+      "Staples",
+    ],
+    "Traditional Clothing & Fabrics": [
+      "Men's Wear",
+      "Women's Wear",
+      "Fabrics",
+      "Accessories",
+    ],
+  };
+
+  // Handle category selection
+  const handleCategoryChange = (category: string) => {
+    if (category && selectedCategories.includes(category)) {
+      setActiveCategory(category);
+      setSubCategory("");
+    }
+  };
+
+  // Handle description file upload
+  const handleDescriptionFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      if (file.type === "text/plain") {
+        setDescriptionFileName(file.name);
+        setDescriptionFileName(file.name);
+
+        // Read the file content
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          if (event.target?.result) {
+            setValue(event.target.result as string);
+          }
+        };
+        reader.readAsText(file);
+      } else {
+        alert("Please upload a .txt file for description");
+      }
+    }
+  };
+
+  // Remove description file
+  const removeDescriptionFile = () => {
+    // Removed unused descriptionFile state
+    setDescriptionFileName("");
+  };
 
   const handleDiscard = () => {
     console.log("Discard remove.");
   };
+
   const handleSaveDraft = () => {
     console.log("Draft saved.");
   };
 
   const handleAddProduct = () => {
+    if (!returnPolicy) {
+      setShowReturnPolicyPopup(true);
+      return;
+    }
     console.log("Product added.");
   };
+
+  // Get current theme based on active category
+  const getCurrentTheme = () => {
+    if (!activeCategory)
+      return {
+        primary: "orange-500",
+        secondary: "orange-100",
+        accent: "orange-700",
+      };
+    return categoryThemes[activeCategory];
+  };
+
+  // Check if vendor has upgraded
+  const isUpgraded =
+    vendorPlan === "Counter" ||
+    vendorPlan === "Shop" ||
+    vendorPlan === "Premium";
 
   return (
     <motion.div
@@ -38,94 +221,108 @@ const NewProduct = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <h1 className="text-2xl font-bold">New Product</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">New Product</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Description Section */}
-        <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <h2 className="text-lg font-semibold">Description</h2>
-          <input
-            type="text"
-            placeholder="Product Name"
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
+        {selectedCategories.length > 0 && !isUpgraded && (
+          <CategorySelector
+            selectedCategories={selectedCategories}
+            activeCategory={activeCategory}
+            handleCategoryChange={handleCategoryChange}
+            vendorPlan={vendorPlan}
           />
-          <ReactQuill theme="snow"  placeholder="Product Description"  value={value} onChange={setValue} className="border outline-orange-500 border-orange-500"/>
-          {/* <textarea
-            placeholder="Product Description"
-            className="w-full p-2 border rounded h-32 outline-orange-500 border-orange-500"
-            value={productDescription}
-            onChange={(e) => setProductDescription(e.target.value)}
-          /> */}
-        </motion.div>
+        )}
+      </div>
 
-        {/* Product Images Section */}
-        <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <h2 className="text-lg font-semibold">Product Images</h2>
-          <div className="border-dashed border-2 border-orange-500 p-5 rounded-lg text-center space-y-2">
-            <FiUploadCloud size={40} className="mx-auto text-gray-400" />
-            <p>Click to upload or drag and drop</p>
-          </div>
-        </motion.div>
+      {/* Category-specific UI */}
+      {!isUpgraded && activeCategory && (
+        <CategorySpecificUI
+          activeCategory={activeCategory}
+          getCurrentTheme={getCurrentTheme}
+        />
+      )}
 
-        {/* Category Section */}
-        <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <h2 className="text-lg font-semibold">Category</h2>
-          <motion.select
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+      {/* Common product form fields */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* First Row - Description and Product Images */}
+        <DescriptionSection
+          productName={productName}
+          value={value}
+          descriptionFileName={descriptionFileName}
+          setProductName={setProductName}
+          setValue={setValue}
+          removeDescriptionFile={removeDescriptionFile}
+          handleDescriptionFileUpload={handleDescriptionFileUpload}
+        />
+
+        <ImageUploader
+          productImages={productImages}
+          imagePreviewUrls={imagePreviewUrls}
+          setProductImages={setProductImages}
+          setImagePreviewUrls={setImagePreviewUrls}
+        />
+
+        {/* Second Row - Category and Product Video */}
+        {isUpgraded ? (
+          <CategorySelector
+            selectedCategories={selectedCategories}
+            activeCategory={activeCategory}
+            handleCategoryChange={handleCategoryChange}
+            vendorPlan={vendorPlan}
+            categoryData={Object.entries(subCategories).map(
+              ([name, subCategories]) => ({
+                name,
+                subCategories: subCategories.map((subCategory) => ({
+                  name: subCategory,
+                  subSubCategories: [],
+                })),
+              })
+            )}
+          />
+        ) : (
+          <motion.div
+            className="bg-white p-5 rounded-lg shadow space-y-4"
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
           >
-            <option value="Fashion">Fashion</option>
-            <option value="Electronics">Electronics</option>
-          </motion.select>
-          <motion.select
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
-            value={subCategory}
-            onChange={(e) => setSubCategory(e.target.value)}
-          >
-            <option value="Men's Wears">Men's Wears</option>
-            <option value="Women's Wears">Women's Wears</option>
-          </motion.select>
-        </motion.div>
+            <h2 className="text-lg font-semibold">Subcategory</h2>
+            <motion.select
+              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              value={subCategory}
+              onChange={(e) => setSubCategory(e.target.value)}
+            >
+              <option value="">Select Subcategory</option>
+              {activeCategory &&
+                subCategories[
+                  activeCategory as keyof typeof subCategories
+                ]?.map((subCat) => (
+                  <option key={subCat} value={subCat}>
+                    {subCat}
+                  </option>
+                ))}
+            </motion.select>
+          </motion.div>
+        )}
 
-          {/* Product Video Section */}
-        <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
-          initial={{ x: 50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-         <div className="flex justify-between items-center space-x-2">
-           <h2 className="text-lg font-semibold">Product Video (Optional)</h2>
-          <div className="flex justify-between items-center cursor-pointer">
-            <FaYoutube size={30} className="mr-1 text-red-600" />
-            <h4 className="text-blue-600">Add youtube video</h4>
-          </div>
-         </div>
-          <div className="border-dashed border-2 border-orange-500 p-5 rounded-lg text-center space-y-2">
-            <CiVideoOn size={40} className="mx-auto text-gray-400" />
-            <p>Click to upload or drag and drop</p>
-          </div>
-        </motion.div>
+        <VideoUploader
+          youtubeUrl={youtubeUrl}
+          youtubeEmbedUrl={youtubeEmbedUrl}
+          showYoutubeInput={showYoutubeInput}
+          setYoutubeUrl={setYoutubeUrl}
+          setYoutubeEmbedUrl={setYoutubeEmbedUrl}
+          setShowYoutubeInput={setShowYoutubeInput}
+        />
 
-        {/* Inventory Section */}
+        {/* Third Row - Return Policy and Inventory */}
+        {/* <ReturnPolicyUploader
+          returnPolicy={returnPolicy}
+          returnPolicyName={returnPolicyName}
+          setReturnPolicy={setReturnPolicy}
+          setReturnPolicyName={setReturnPolicyName}
+          setReturnPolicyText={setReturnPolicyText}
+        /> */}
+
         <motion.div
           className="bg-white p-5 rounded-lg shadow space-y-4"
           initial={{ x: 50, opacity: 0 }}
@@ -149,28 +346,30 @@ const NewProduct = () => {
           />
         </motion.div>
 
-        {/* Pricing Section */}
+        {/* Fourth Row - Pricing */}
         <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
+          className="bg-white p-5 rounded-lg shadow space-y-4 md:col-span-2"
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 1 }}
         >
           <h2 className="text-lg font-semibold">Pricing</h2>
-          <input
-            type="text"
-            placeholder="Price"
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Compare at pricing (Optional)"
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
-            value={comparePrice}
-            onChange={(e) => setComparePrice(e.target.value)}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Price"
+              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Compare at pricing (Optional)"
+              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              value={comparePrice}
+              onChange={(e) => setComparePrice(e.target.value)}
+            />
+          </div>
         </motion.div>
       </div>
 
@@ -194,6 +393,17 @@ const NewProduct = () => {
           Add Product
         </button>
       </div>
+
+      {/* Return Policy Popup */}
+      <AnimatePresence>
+        {showReturnPolicyPopup && (
+          <ReturnPolicyPopup
+            showReturnPolicyPopup={showReturnPolicyPopup}
+            setShowReturnPolicyPopup={setShowReturnPolicyPopup}
+            returnPolicyRef={returnPolicyRef}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

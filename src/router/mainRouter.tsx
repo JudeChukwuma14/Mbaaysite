@@ -1,7 +1,7 @@
 import Spinner from "@/components/Common/Spinner";
 import WebLayout from "@/components/Layout/WebLayout";
 import AccountManagement from "@/components/profileMangement/AccountManagement";
-import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
+// import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
 import React, { lazy, Suspense } from "react";
@@ -90,14 +90,21 @@ const KycVerification = lazy(
 );
 const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
-const CommunitySection = lazy(() => import("../components/VendorInfo/Community&Res/CommunitySection"))
-const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"))
+const CommunitySection = lazy(
+  () => import("../components/VendorInfo/Community&Res/CommunitySection")
+);
+const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"));
 
-const AllPost = lazy(() => import("@/components/VendorInfo/Community&Res/AllPost"))
-const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Proflie"))
-const AuctionView = lazy(()=>import("@/components/AuctionPage/AuctionView"))
+const AllPost = lazy(
+  () => import("@/components/VendorInfo/Community&Res/AllPost")
+);
+const Pricing = lazy(() => import("@/components/VendorInfo/Pricing/Pricing"));
+const ProfilePage = lazy(
+  () => import("../components/VendorInfo/Community&Res/Proflie")
+);
+const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
-const Error = lazy(()=>import("@/components/Error/Error"))
+const Error = lazy(() => import("@/components/Error/Error"));
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -129,7 +136,7 @@ const routesConfig: RouteObject[] = [
       },
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/product-details/:id", element: withSuspense(ProductDetail) },
-      {path:"/auctionview",element:withSuspense(AuctionView)},
+      { path: "/auctionview", element: withSuspense(AuctionView) },
       // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
     ],
   },
@@ -168,8 +175,11 @@ const routesConfig: RouteObject[] = [
       { path: "profile", element: withSuspense(ProfilePage) },
       { path: "my-community", element: withSuspense(CommunitySection) },
       { path: "reviews", element: withSuspense(Reviews) },
-      { path: "community", element: withSuspense(CommunityPage) },
-      { path: "comunity-detail/:communityid", element: withSuspense(CommunityDetailPage) },
+      { path: "pricing", element: withSuspense(Pricing) },
+      {
+        path: "comunity-detail/:communityid",
+        element: withSuspense(CommunityDetailPage),
+      },
     ],
   },
   { path: "signin", element: withSuspense(Login) },
@@ -189,7 +199,7 @@ const routesConfig: RouteObject[] = [
 
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
- 
- { path: "*", element: withSuspense(Error)}, // 404 page not found 
+
+  { path: "*", element: withSuspense(Error) }, // 404 page not found
 ];
 export const mainRouter = createBrowserRouter(routesConfig);
