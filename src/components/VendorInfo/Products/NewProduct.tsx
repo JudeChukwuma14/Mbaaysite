@@ -5,7 +5,7 @@ import DescriptionSection from "./descriptionSection";
 import CategorySpecificUI from "./categorySpecificUi";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
-import ReturnPolicyPopup from "./returnPolicyPopup";
+import ReturnPolicyPopup from "./ReturnPolicyPopup";
 
 // Import components
 
@@ -313,15 +313,6 @@ const NewProduct = () => {
           setYoutubeEmbedUrl={setYoutubeEmbedUrl}
           setShowYoutubeInput={setShowYoutubeInput}
         />
-
-        {/* Third Row - Return Policy and Inventory */}
-        {/* <ReturnPolicyUploader
-          returnPolicy={returnPolicy}
-          returnPolicyName={returnPolicyName}
-          setReturnPolicy={setReturnPolicy}
-          setReturnPolicyName={setReturnPolicyName}
-          setReturnPolicyText={setReturnPolicyText}
-        /> */}
 
         <motion.div
           className="bg-white p-5 rounded-lg shadow space-y-4"
