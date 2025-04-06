@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
@@ -20,10 +18,11 @@ interface MainCategory {
 }
 
 interface CategorySelectorProps {
-  selectedCategories: string[]; // Array of selected category names
+  selectedCategories: string[];
   activeCategory: string;
   handleCategoryChange: (category: string) => void;
   vendorPlan?: "Shelves" | "Counter" | "Shop" | "Premium";
+  subCategories?: Record<string, string[]>;
   categoryData?: MainCategory[];
 }
 
@@ -32,7 +31,18 @@ export default function CategorySelector({
   activeCategory,
   handleCategoryChange,
   vendorPlan = "Shelves",
-  categoryData = [
+  subCategories,
+}: CategorySelectorProps) {
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
+  const [selectedSubSubCategory, setSelectedSubSubCategory] =
+    useState<string>("");
+  const isUpgraded =
+    vendorPlan === "Counter" ||
+    vendorPlan === "Shop" ||
+    vendorPlan === "Premium";
+
+  // This is the full category data structure from the file you shared
+  const categoryData = [
     {
       name: "Beauty and Wellness",
       subCategories: [
@@ -1527,15 +1537,7 @@ export default function CategorySelector({
         },
       ],
     },
-  ],
-}: CategorySelectorProps) {
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] =
-    useState<string>("");
-  const isUpgraded =
-    vendorPlan === "Counter" ||
-    vendorPlan === "Shop" ||
-    vendorPlan === "Premium";
+  ];
 
   // Find the active main category object
   const activeCategoryObj = categoryData.find(
@@ -1563,7 +1565,7 @@ export default function CategorySelector({
           onChange={(e) => handleCategoryChange(e.target.value)}
         >
           <option value="">Filter by Category</option>
-          {selectedCategories.map((cat: any) => (
+          {selectedCategories.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
             </option>
@@ -1587,6 +1589,7 @@ export default function CategorySelector({
     <div className="bg-white p-5 rounded-lg shadow w-full">
       <h2 className="text-2xl font-bold mb-4">Category</h2>
       <div className="border rounded-lg p-6 space-y-6">
+        {/* Main Category */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Product Category</label>
           <motion.input
@@ -1597,6 +1600,7 @@ export default function CategorySelector({
           />
         </div>
 
+        {/* Subcategory Selection */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">{activeCategory}</label>
           <div className="relative">
@@ -1618,6 +1622,7 @@ export default function CategorySelector({
           </div>
         </div>
 
+        {/* Sub-subcategory Selection */}
         {selectedSubCategory && (
           <div className="space-y-2">
             <label className="block text-sm font-medium">
