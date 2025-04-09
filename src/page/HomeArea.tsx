@@ -37,7 +37,7 @@ interface Product {
   id: string; // Optional id property
   name: string;
   price: number;
-  images: string;
+  images: string[]; // Updated to match the expected type
 }
 
 const HomeArea: React.FC = () => {
@@ -118,7 +118,14 @@ const HomeArea: React.FC = () => {
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products
             .map((product) => (
-              <NewArrival key={product._id} product={{ ...product, id: product._id, poster: product.images[0] || "" }} />
+              <NewArrival
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
             ))
             .slice(0, 4)}
         </div>
@@ -134,7 +141,7 @@ const HomeArea: React.FC = () => {
           <h2 className="text-xl font-bold md:text-2xl md:pl-6">
             Best Selling Products
           </h2>
-          
+
           <button
             type="submit"
             className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
