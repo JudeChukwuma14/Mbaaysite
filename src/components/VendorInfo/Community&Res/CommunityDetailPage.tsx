@@ -1,11 +1,9 @@
-"use client";
-
 import { motion } from "framer-motion";
 import { PenSquare, MessageSquare, FileText, Users } from "lucide-react";
 import { useState } from "react";
 import { RiCommunityLine } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdOutlineRateReview } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import { get_one_community } from "@/utils/communityApi";
 import { useParams } from "react-router-dom";
@@ -16,11 +14,14 @@ import EditCommunityModal from "./EditCommunityModal";
 import DeleteConfirmationModal from "./DeleteCommunityConfirmationModal";
 import { IoIosLogOut } from "react-icons/io";
 import { VscReport } from "react-icons/vsc";
+// import { ImBin } from "react-icons/im";
+import LeaveConfirmationModal from "./LeaveCommunityConfirmationModal";
 
 export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
 
   const handleEditSave = (
     name: string,
@@ -75,7 +76,9 @@ export default function ProfilePage() {
           </div>
           <div className="flex items-center">
             <h2 className="text-xl font-semibold">{one_community?.name}</h2>
-            <div className="flex items-center justify-between gap-3 ml-7">
+            {
+              one_community?.admin._id === user.vendor.id ?
+                <div className="flex items-center justify-between gap-3 ml-7">
               <CiEdit
                 size={20}
                 className="text-blue-600 cursor-pointer"
@@ -87,6 +90,9 @@ export default function ProfilePage() {
                 onClick={() => setIsDeleteModalOpen(true)}
               />
             </div>
+               : null
+            }
+
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-600">
             <span className="w-[600px]">{one_community?.description}</span>
@@ -145,7 +151,7 @@ export default function ProfilePage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setIsLeaveModalOpen(true)}
                 className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[red] text-white py-2  text-sm"
               >
                 <IoIosLogOut size={20} />
@@ -241,6 +247,12 @@ export default function ProfilePage() {
                       {props?.comments?.length || 0} Comments
                     </span>
                   </div>
+                  <div className="flex items-center gap-1">
+                    <MdOutlineRateReview  className="w-4 h-4 text-gray-500" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {/* <ImBin   className="w-4 h-4 text-gray-500" /> */}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -264,6 +276,12 @@ export default function ProfilePage() {
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDelete}
+        />
+
+        <LeaveConfirmationModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onConfirm={handleDelete}
         />
       </div>
     </div>

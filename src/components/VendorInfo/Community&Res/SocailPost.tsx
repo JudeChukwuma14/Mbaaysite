@@ -69,8 +69,12 @@ export default function SocialList() {
         await follow_vendor(user.token, vendorId);
       }
 
-      setTimeout(() => window.location.reload(), 1000);
-      await queryClient.invalidateQueries({ queryKey: ["vendors"] });
+      // setTimeout(() => window.location.reload(), 1000);
+      queryClient.invalidateQueries({ queryKey: ['vendors'] })
+        queryClient.invalidateQueries({ queryKey: ["all_comm"] });
+        queryClient.invalidateQueries({ queryKey: ['vendor'] })
+        queryClient.invalidateQueries({ queryKey: ["search_res"] })
+    queryClient.invalidateQueries({ queryKey: ['communities'] })
     } catch (error) {
       console.error("Follow/Unfollow failed:", error);
     }
@@ -89,8 +93,10 @@ export default function SocialList() {
         await join_community(user.token, communityId);
       }
 
-      setTimeout(() => window.location.reload(), 1000);
-      await queryClient.invalidateQueries({ queryKey: ["all_comm"] });
+      // setTimeout(() => window.location.reload(), 1000)
+       queryClient.invalidateQueries({ queryKey: ["all_comm"] });
+          queryClient.invalidateQueries({ queryKey: ['vendor'] })
+      queryClient.invalidateQueries({ queryKey: ['communities'] })
     } catch (error) {
       console.error("Join/Leave failed:", error);
     }
