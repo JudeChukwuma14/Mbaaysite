@@ -8,19 +8,17 @@ export default function Dropdown() {
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   
-    // Function to set active category
     const handleMouseEnter = (category: string) => {
       if (hoverTimeout) clearTimeout(hoverTimeout);
       setActiveCategory(category);
     };
-  
-    // Function to remove active category with delay
+
     const handleMouseLeave = () => {
       const timeout = setTimeout(() => setActiveCategory(null), 200);
       setHoverTimeout(timeout);
     };
   
-    // Cleanup timeout on unmount
+
     useEffect(() => {
       return () => {
         if (hoverTimeout) clearTimeout(hoverTimeout);
@@ -28,14 +26,14 @@ export default function Dropdown() {
     }, [hoverTimeout]);
 
   return (
-    <div className="">
+    <div className="hidden md:block">
       <nav>
-        <div className="flex gap-4 bg-white font-medium h-8 w-full items-center justify-center relative z-10">
+        <div className="relative z-10 flex items-center justify-center w-full h-8 gap-4 font-medium bg-white">
           {categories.map((category) => (
             <div
               key={category.name}
               className=""
-              onMouseEnter={() => handleMouseEnter(category.name)}
+              onClick={() => handleMouseEnter(category.name)}
               onMouseLeave={handleMouseLeave}
             >
             <Link to={category.link}>
@@ -43,7 +41,7 @@ export default function Dropdown() {
             </Link>
               {/* Dropdown Menu */}
               {activeCategory === category.name && (
-                <div className="absolute left-0 top-full w-full bg-white shadow-lg px-6 py-3">
+                <div className="absolute left-0 w-full px-6 py-3 bg-white shadow-lg top-full">
                   <div className="grid grid-cols-8 gap-6">
                     {category.subcategories.map((sub) => (
                       <div key={sub.title}>
@@ -56,7 +54,7 @@ export default function Dropdown() {
                           {sub.items.map((item) => (
                             <li
                               key={item}
-                              className="hover:text-black cursor-pointer"
+                              className="cursor-pointer hover:text-black"
                             >
                               {item}
                             </li>
@@ -65,11 +63,11 @@ export default function Dropdown() {
                       </div>
                     ))}
                     {/* Image at bottom right */}
-                    <div className="col-span-1 flex justify-end items-end">
+                    <div className="flex items-end justify-end col-span-1">
                       <img
                         src={category.image}
                         alt={category.name}
-                        className="w-32 h-32 object-cover"
+                        className="object-cover w-32 h-32"
                       />
                     </div>
                   </div>

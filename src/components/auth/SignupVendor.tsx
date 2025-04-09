@@ -237,7 +237,7 @@ const Registration: React.FC = () => {
                     {...register("country", {
                       required: "Country is required",
                     })}
-                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                    className="block w-full p-3 mt-2 text-gray-700 bg-white border border-gray-300 focus:border-orange-500 focus:ring-orange-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
                     onChange={(e) => setSelectedCountry(e.target.value)}
                   >
                     <option value="">Select Country</option>
@@ -261,7 +261,7 @@ const Registration: React.FC = () => {
                   </label>
                   <select
                     {...register("state", { required: "State is required" })}
-                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  className="block w-full p-3 mt-2 text-gray-700 bg-white border border-gray-300 focus:border-orange-500 focus:ring-orange-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
                     onChange={(e) => setSelectedState(e.target.value)}
                     disabled={!selectedCountry}
                   >
@@ -286,7 +286,7 @@ const Registration: React.FC = () => {
                   </label>
                   <select
                     {...register("city", { required: "City is required" })}
-                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                   className="block w-full p-3 mt-2 text-gray-700 bg-white border border-gray-300 focus:border-orange-500 focus:ring-orange-500 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400"
                     onChange={(e) => setSelectedCity(e.target.value)}
                     disabled={!selectedState}
                   >
@@ -330,16 +330,20 @@ const Registration: React.FC = () => {
                   <Controller
                     name="storePhone"
                     control={control}
-                    defaultValue=""
-                    rules={{ required: "Store Number is required" }}
+                    rules={{ required: "Phone number is required" }}
                     render={({ field }) => (
                       <PhoneInput
                         country={"us"}
                         value={field.value}
-                        onChange={(value) => field.onChange(value)}
+                        onChange={(storePhone) => field.onChange(storePhone)}
+                        inputProps={{
+                          name: "storePhone",
+                          required: true,
+                        }}
                         containerClass="w-full"
-                        inputClass="!w-full !pl-14 !border !border-gray-300 !p-4 !mt-1 focus:!border-orange-500 focus:!outline-none !rounded-none"
-                        buttonClass="!border-r !border-gray-300 !bg-white !rounded-none"
+                        inputClass="!w-full !h-[48px] !pl-14 !border !border-gray-300 !py-2 !px-4 focus:!border-orange-500 focus:!outline-none "
+                        buttonClass="!h-[48px] !border-r !border-gray-300 !bg-white "
+                        dropdownClass="!z-10"
                       />
                     )}
                   />
@@ -355,12 +359,48 @@ const Registration: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700">
                     Craft Categories
                   </label>
-                  <input
-                    type="text"
-                    {...register("craftCategories", {
-                      required: "Craft Categories is required",
-                    })}
-                    className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                  <Controller
+                    name="craftCategories"
+                    control={control}
+                    rules={{ required: "This field is required" }}
+                    render={({ field }) => (
+                      <select
+                        {...field}
+                        id="craftCategories"
+                        className="block w-full p-2 mt-1 border border-gray-300 focus:border-orange-500 focus:outline-none"
+                      >
+                        <option value="">select craft categories</option>
+                        <option value="Beauty and Wellness">
+                          Beauty and Wellness
+                        </option>
+                        <option value="Jewelry and Gemstones">
+                          Jewelry and Gemstones
+                        </option>
+                        <option value="Books and Poetry">
+                          Books and Poetry
+                        </option>
+                        <option value="Vintage and Antique Jewelry">
+                          Vintage and Antique Jewelry
+                        </option>
+                        <option value="Home Décor and Accessories">
+                          Home Décor and Accessories
+                        </option>
+                        <option value="Vintage Stocks">Vintage Stocks</option>
+                        <option value="Plant and Seeds">Plant and Seeds</option>
+                        <option value="Spices, Condiments and Seasonings">
+                          Spices, Condiments and Seasonings
+                        </option>
+                        <option value="Local & Traditional Foods">
+                          Local & Traditional Foods
+                        </option>
+                        <option value="Traditional Clothing and Fabrics">
+                          Traditional Clothing and Fabrics
+                        </option>
+                        <option value="Traditional and Religious Items">
+                          Traditional and Religious Items
+                        </option>
+                      </select>
+                    )}
                   />
                   {errors.craftCategories && (
                     <p className="text-red-500 text-[10px] mt-1">

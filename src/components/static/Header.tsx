@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   FaSearch,
@@ -12,12 +12,21 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
 import Dropdown from "./Dropdrop";
+import { searchProducts } from "@/utils/productApi";
 
+// Header component
 const Header: React.FC = () => {
+  const [word, setWord] = useState("");
+  const [items, setItems] = useState<
+    { _id: string; name: string; price: number }[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [problem, setProblem] = useState("");
+
   const user = useSelector((state: RootState) => state.user.user);
   const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false); // State to toggle search input on mobile
+  const [searchOpen, setSearchOpen] = useState(false);
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -29,18 +38,30 @@ const Header: React.FC = () => {
     0
   );
 
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
+  const toggleMenu = () => setMenuOpen(!menuOpen);
 
-  const toggleSearch = () => {
-    setSearchOpen(!searchOpen);
-  };
+  const toggleSearch = () => setSearchOpen(!searchOpen);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (word) {
+        setIsLoading(true);
+        searchProducts(word)
+          .then((result) => setItems(result.data || []))
+          .catch((err) => setProblem(err.message))
+          .finally(() => setIsLoading(false));
+      } else {
+        setItems([]);
+        setProblem("");
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [word]);
 
   return (
     <header className="w-full bg-white shadow-md">
       <div className="bg-[#ff710b] h-10 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces </p>
+        <p className="hidden md:block">Welcome to Mbaay Global Marketplaces</p>
         <div className="flex gap-6">
           <Link to="/shop" className="hover:underline">
             Shop Now
@@ -51,9 +72,10 @@ const Header: React.FC = () => {
         </div>
       </div>
 
+      {/* Main header with logo, nav, and icons */}
       <div className="flex items-center justify-between p-4 bg-black md:px-10">
         <Link to="/" className="flex items-center">
-          <img src={Logo} alt="Logo" className="w-16 md:w-20" />
+          <img src={Logo} alt="MBLogo" className="w-16 md:w-20" />
         </Link>
 
         <nav className="items-center hidden space-x-4 lg:flex lg:space-x-6">
@@ -84,25 +106,38 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <div className="relative hidden sm:flex md:w-64 lg:w-64">
+          <div className="relative hidden sm:flex md:w-64 lg:w-72">
             <input
               type="text"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
               placeholder="Search"
               className="w-full py-2 pl-10 pr-4 border rounded-full focus:outline-none"
             />
             <FaSearch className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
+            {items.length > 0 && (
+              <ul className="absolute z-10 w-64 mt-2 text-black bg-white shadow-lg">
+                {items.map((item) => (
+                  <li key={item._id} className="px-4 py-2 hover:bg-gray-100">
+                    {item.name} - ${item.price}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
+          {/* Mobile search button */}
           <button
             onClick={toggleSearch}
             className="text-white sm:hidden hover:text-orange-500"
           >
             <FaSearch size={20} />
           </button>
+
           <div>
             {firstLetter ? (
               <Link to="/dashboard">
-                <h1 className=" text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-gray-600">
+                <h1 className="text-xl font-extrabold h-[30px] w-[30px] flex justify-center items-center bg-orange-500 rounded-full text-gray-600">
                   {firstLetter}
                 </h1>
               </Link>
@@ -115,27 +150,30 @@ const Header: React.FC = () => {
               </Link>
             )}
           </div>
+
+          {/* Wishlist icon with count */}
           <Link
-            to="dashboard/wishlist"
+            to="/dashboard/wishlist"
             className="relative hidden transition-all duration-300 ease-in hover:bg-gray-40 hover:rounded-full md:block"
           >
-            <FaHeart size={20} className="text-white " />
-            <span className="absolute -top-2 -right-2 text-xs text-white  bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
+            <FaHeart size={20} className="text-white" />
+            <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalWishlistQuantity}
             </span>
           </Link>
 
+          {/* Cart icon with count */}
           <Link
             to="/cart"
             className="relative transition-all duration-300 ease-in hover:bg-gray-40 hover:rounded-full"
           >
-            <FaShoppingCart size={20} className="text-white " />
+            <FaShoppingCart size={20} className="text-white" />
             <span className="absolute -top-2 -right-2 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center">
               {totalQuantity}
             </span>
           </Link>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
           <button onClick={toggleMenu} className="md:hidden">
             {menuOpen ? (
               <FaTimes size={24} className="text-white" />
@@ -146,21 +184,34 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Search Input - Visible when searchOpen is true */}
+      {/* Mobile search input and results */}
       {searchOpen && (
         <div className="p-4 bg-white border-t sm:hidden">
           <div className="relative">
             <input
               type="text"
+              value={word}
+              onChange={(e) => setWord(e.target.value)} // Updates search term
               placeholder="Search"
               className="w-full py-2 pl-10 pr-4 border rounded-full focus:outline-none"
             />
             <FaSearch className="absolute text-gray-500 transform -translate-y-1/2 left-3 top-1/2" />
           </div>
+          {isLoading && <p className="mt-2 text-gray-700">Loading...</p>}
+          {problem && <p className="mt-2 text-red-700">Error: {problem}</p>}
+          {items.length > 0 && (
+            <ul className="mt-2 text-black">
+              {items.map((item) => (
+                <li key={item._id} className="py-1">
+                  {item.name} - ${item.price}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
-      {/* Mobile Menu */}
+
       {menuOpen && (
         <div className="p-4 bg-white shadow-md lg:hidden">
           <nav className="flex flex-col space-y-4">

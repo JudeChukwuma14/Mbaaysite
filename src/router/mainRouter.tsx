@@ -1,6 +1,7 @@
 import Spinner from "@/components/Common/Spinner";
 import WebLayout from "@/components/Layout/WebLayout";
-import AccountManagement from "@/components/profileMangement/AccountManagement";
+import Layout from "@/components/profileMangement/Layout";
+// import AccountManagement from "@/components/profileMangement/Layout";
 import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
@@ -98,7 +99,9 @@ const ProfilePage = lazy(() => import("../components/VendorInfo/Community&Res/Pr
 const AuctionView = lazy(()=>import("@/components/AuctionPage/AuctionView"))
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 const Error = lazy(()=>import("@/components/Error/Error"))
-
+const userIndex = lazy(()=>import("@/components/profileMangement/Index"))
+const Address = lazy(()=>import("@/components/profileMangement/Addresses"))
+const ProductInfo = lazy(()=>import("@/page/ProductInfo"))
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -129,13 +132,14 @@ const routesConfig: RouteObject[] = [
       },
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/product-details/:id", element: withSuspense(ProductDetail) },
+      { path: "/product/:id", element: withSuspense(ProductInfo) },
       {path:"/auctionview",element:withSuspense(AuctionView)},
       // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
     ],
   },
   {
     path: "/dashboard",
-    element: <AccountManagement />,
+    element: <Layout />,
     children: [
       { index: true, element: withSuspense(EditProfile) },
       { path: "/dashboard/orderlist", element: withSuspense(OrderList) },
@@ -147,6 +151,8 @@ const routesConfig: RouteObject[] = [
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
       { path: "/dashboard/checkout", element: withSuspense(CheckOut) },
+      { path: "/dashboard/addresses", element: withSuspense(Address) },
+      { path: "/dashboard/user-index", element: withSuspense(userIndex) },
     ],
   },
   {

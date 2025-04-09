@@ -26,8 +26,25 @@ import NewCard from "@/components/Cards/NewCard";
 import ExploreCard from "@/components/Cards/ExploreCard";
 import AuctionCard from "@/components/AuctionPage/AuctionCard";
 import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getAllProduct } from "@/utils/productApi";
+import Spinner from "@/components/Common/Spinner";
+import NewArrival from "@/components/Cards/NewArrival";
+// import FlashSale from "@/components/FlashSales/FlashSales";
+
+interface Product {
+  _id: string;
+  id: string; // Optional id property
+  name: string;
+  price: number;
+  images: string;
+}
 
 const HomeArea: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+
   const categoriesData = [
     { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
     { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
@@ -41,18 +58,41 @@ const HomeArea: React.FC = () => {
     { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
   ];
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const result = await getAllProduct();
+        const productsData = Array.isArray(result)
+          ? result
+          : result.products || [];
+        setProducts(productsData);
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        setError("Failed to fetch products. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) return <Spinner />;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
+
   return (
     <>
-      <section className=" mb-10">
+      <section className="mb-10 ">
         <Slider />
       </section>
-      <section className="mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
-          <span className="text-orange-500  pl-2">Category</span>
+      <section className="px-8 mb-10">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
+          <span className="pl-2 text-orange-500">Category</span>
         </div>
-        <h2 className="text-2xl font-bold pl-6 mb-6">Browse By Category</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
+        <h2 className="pl-6 mb-6 text-2xl font-bold">Browse By Category</h2>
+        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
           {categoriesData.map((category, index) => (
             <CategoryCard
               key={index}
@@ -63,75 +103,100 @@ const HomeArea: React.FC = () => {
           ))}
         </div>
       </section>
-      <section className="mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
-          <span className="text-orange-500  pl-2">This Month</span>
-        </div>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold pl-6">Best Selling Products</h2>
+
+      {/* New arrival */}
+      <section className="px-8 mb-10">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold md:text-2xl md:pl-6">New Arrival</h2>
           <button
             type="submit"
-            className=" bg-orange-500 text-white py-2  px-3 hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+            className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
           >
             View All
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {products
+            .map((product) => (
+              <NewArrival key={product._id} product={{ ...product, id: product._id, poster: product.images[0] || "" }} />
+            ))
+            .slice(0, 4)}
+        </div>
+      </section>
+
+      {/* Best selling */}
+      <section className="px-8 mb-10">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
+          <span className="pl-2 text-orange-500">This Month</span>
+        </div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold md:text-2xl md:pl-6">
+            Best Selling Products
+          </h2>
+          
+          <button
+            type="submit"
+            className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+          >
+            View All
+          </button>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-5">
           {ProductData.map((item) => (
             <FirstCartCard key={item.id} product={item} />
           ))}
         </div>
       </section>
 
-      <section className=" mb-10 px-8">
+      <section className="px-8 mb-10 ">
         <div className="p-5">
           <NewCard />
         </div>
       </section>
 
-      <section className=" mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
-          <span className="text-orange-500  pl-2">This Month</span>
+      <section className="px-8 mb-10 ">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
+          <span className="pl-2 text-orange-500">This Month</span>
         </div>
-        <h2 className="text-2xl font-bold pl-6 mb-6">Latest Vendors</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3  lg:grid-cols-4 gap-6">
+        <h2 className="pl-6 mb-6 text-2xl font-bold">Latest Vendors</h2>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
           {profilesData.map((profile, index) => (
             <VendorCard key={index} {...profile} />
           ))}
         </div>
       </section>
-      <section className="mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
-          <span className="text-orange-500  pl-2">Our Products</span>
+      <section className="px-8 mb-10">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
+          <span className="pl-2 text-orange-500">Our Products</span>
         </div>
-        <h2 className="text-2xl font-bold pl-6 mb-6">Explore Our Products</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+        <h2 className="pl-6 mb-6 text-2xl font-bold">Explore Our Products</h2>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-3 lg:grid-cols-4">
           {ExploreData.map((item, index) => (
             <ExploreCard key={index} {...item} />
           ))}
         </div>
-        <div className=" flex justify-center">
+        <div className="flex justify-center ">
           <button
             type="submit"
-            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
           >
             View All Products
           </button>
         </div>
       </section>
-      <section className=" mb-10 px-8">
+      <section className="px-8 mb-10 ">
         <div className="p-5">
           <NewCard />
         </div>
       </section>
 
-      <section className="mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
-          <span className="text-orange-500  pl-2">Today's</span>
+      <section className="px-8 mb-10">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
+          <span className="pl-2 text-orange-500">Today's</span>
         </div>
         <div className="pl-6 mb-6">
           <FlashSaleCountdown />
@@ -139,40 +204,42 @@ const HomeArea: React.FC = () => {
         <div>
           <ProductSlider products={flashSale} />
         </div>
-        <div className=" flex justify-center">
+        <div className="flex justify-center ">
           <button
             type="submit"
-            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
           >
             View All Products
           </button>
         </div>
       </section>
-      <section className="mb-10 px-8">
-        <div className=" flex items-center pl-6 mb-2">
-          <div className="h-4 w-3 bg-orange-500"></div>
+      <section className="px-8 mb-10">
+        <div className="flex items-center pl-6 mb-2 ">
+          <div className="w-3 h-4 bg-orange-500"></div>
         </div>
-        <h2 className="text-2xl text-orange-500  font-bold pl-6 mb-6">Auction</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+        <h2 className="pl-6 mb-6 text-2xl font-bold text-orange-500">
+          Auction
+        </h2>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-3 lg:grid-cols-4">
           {Auction.map((item, index) => (
             <AuctionCard key={index} {...item} />
           )).slice(0, 8)}
         </div>
-        <div className=" flex justify-center">
+        <div className="flex justify-center ">
           <NavLink
             to="/auctionview"
-            className=" bg-orange-500 text-white py-2 px-5  hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
           >
             View All Auction
           </NavLink>
         </div>
       </section>
 
-      <section className=" mb-10">
+      <section className="mb-10 ">
         <div>
-          <div className="flex justify-center gap-4 py-8 px-5 md:px-0 flex-col  md:flex-row">
-            <div className="flex flex-col items-center p-6  w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+          <div className="flex flex-col justify-center gap-4 px-5 py-8 md:px-0 md:flex-row">
+            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev1} alt="" />
               </div>
               <div className="text-xl font-semibold">
@@ -182,8 +249,8 @@ const HomeArea: React.FC = () => {
                 <p>Free delivery for all orders over $140</p>
               </div>
             </div>
-            <div className="flex flex-col items-center p-6  w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev2} alt="" />
               </div>
               <div className="text-xl font-semibold">
@@ -193,8 +260,8 @@ const HomeArea: React.FC = () => {
                 <p>Friendly 24/7 customer support</p>
               </div>
             </div>
-            <div className="flex flex-col items-center p-6  w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev3} alt="" />
               </div>
               <div className="text-xl font-semibold">
