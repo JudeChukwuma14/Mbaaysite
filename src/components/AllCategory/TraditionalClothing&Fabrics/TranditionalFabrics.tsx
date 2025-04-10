@@ -1,20 +1,29 @@
 import React from "react";
 import image from "@/assets/image/Group 14.png";
 import card from "@/assets/image/card1.png";
-import ProductCard2 from "../Cards/ProductCard2";
+import ProductCard2 from "@/components/Cards/ProductCard2";
 
-const BeautyWellness: React.FC = () => {
+
+const TranditionalFabrics: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Skin Care" },
-    { image: image, text: "Hair Care" },
-    { image: image, text: "Body Care" },
-    { image: image, text: "Makeup" },
-    { image: image, text: "Fragrances" },
-    { image: image, text: "Wellness Products" },
-    { image: image, text: "Men’s Grooming" },
-    { image: image, text: "Baby and Child Care" },
-    { image: image, text: "Health and Wellness Kits" },
-    { image: image, text: "Immunity Boost Kits" },
+    { image: image, text: "Men’s Traditional Wear" },
+    { image: image, text: "Women’s Traditional Wear" },
+    { image: image, text: "Children’s Traditional Wear" },
+    { image: image, text: "Unisex Traditional Clothing" },
+    { image: image, text: "Modern Clothing with Traditional Influence" },
+    { image: image, text: "Footwear & Shoes" },
+    { image: image, text: "Cultural Accessories & Adornments" },
+    { image: image, text: "Fabrics & Textiles" },
+    { image: image, text: "Cultural Footwear for Specific Occasions" },
+    { image: image, text: "Cultural & Festival Clothing" },
+    { image: image, text: "Bespoke & Tailored Clothing" },
+    { image: image, text: "Sustainable & Ethical Fashion" },
+    { image: image, text: "Traditional Embroidery & Design Work" },
+    { image: image, text: "Fashion for Specific Cultures & Regions" },
+    { image: image, text: "Seasonal & Special Occasion Fashion" },
+    { image: image, text: "Other Functional Categories" },
+    { image: image, text: "By Country or Region" },
+    { image: image, text: "By Fabric Type" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -30,24 +39,24 @@ const BeautyWellness: React.FC = () => {
   ];
   return (
     <div>
-      <div className=" pl-10 py-3 mb-6">
-        <h3 className=" font-semibold text-xl">Jewelry</h3>
+      <div className="py-3 pl-10 mb-6 ">
+        <h3 className="text-xl font-semibold ">Jewelry</h3>
       </div>
       <div className="mb-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4">
+        <div className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 lg:grid-cols-5">
           {ImagePart.map((item, index) => (
             <div
               key={index}
               className="flex flex-col items-center justify-center"
             >
               <img src={item.image} alt="" width={300} height={300} />
-              <p className=" text-center">{item.text}</p>
+              <p className="text-center ">{item.text}</p>
             </div>
           ))}
         </div>
       </div>
       <div>
-        <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4 py-8 items-center">
+        <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">
           {ProductCard.map((item, index) => (
             <ProductCard2
               key={index}
@@ -64,4 +73,4 @@ const BeautyWellness: React.FC = () => {
   );
 };
 
-export default BeautyWellness;
+export default TranditionalFabrics;

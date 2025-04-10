@@ -1,23 +1,22 @@
 import React from "react";
 import image from "@/assets/image/Group 14.png";
 import card from "@/assets/image/card1.png";
-import ProductCard2 from "../Cards/ProductCard2";
+import ProductCard2 from "@/components/Cards/ProductCard2";
 
-const Spices: React.FC = () => {
+
+const PlantSeed: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Spices" },
-    { image: image, text: "Condiments" },
-    { image: image, text: "Cultural & Regional Spices" },
-    { image: image, text: "Salt & Pepper Varieties" },
-    { image: image, text: "Marinades & Rubs" },
-    { image: image, text: "Health & Wellness Spices" },
-    { image: image, text: "Spice Kits & Gift Sets" },
-    { image: image, text: "Cooking Ingredients" },
-    { image: image, text: "Ethically Sourced & Organic Products" },
-    { image: image, text: "Packaging" },
-    { image: image, text: "Seasoning for Specific Cuisines" },
-    { image: image, text: "Special Dietary" },
-    { image: image, text: "Popular Uses" },
+    { image: image, text: "Plants" },
+    { image: image, text: "Fruit Plants" },
+    { image: image, text: "Vegetable Plants" },
+    { image: image, text: "Medicinal Plants" },
+    { image: image, text: "Seeds" },
+    { image: image, text: "Herb Seeds" },
+    { image: image, text: "Flower Seeds" },
+    { image: image, text: "Cultural and Traditional Seeds" },
+    { image: image, text: "Seedlings and Saplings" },
+    { image: image, text: "Planting Kits and Tools" },
+    { image: image, text: "Plant Care Products" }
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -33,24 +32,24 @@ const Spices: React.FC = () => {
   ];
   return (
     <div>
-      <div className=" pl-10 py-3 mb-6">
-        <h3 className=" font-semibold text-xl">Jewelry</h3>
+      <div className="py-3 pl-10 mb-6 ">
+        <h3 className="text-xl font-semibold ">Jewelry</h3>
       </div>
       <div className="mb-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4">
+        <div className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 lg:grid-cols-5">
           {ImagePart.map((item, index) => (
             <div
               key={index}
               className="flex flex-col items-center justify-center"
             >
               <img src={item.image} alt="" width={300} height={300} />
-              <p className=" text-center">{item.text}</p>
+              <p className="text-center ">{item.text}</p>
             </div>
           ))}
         </div>
       </div>
       <div>
-        <div className=" grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4 py-8 items-center">
+        <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">
           {ProductCard.map((item, index) => (
             <ProductCard2
               key={index}
@@ -67,4 +66,4 @@ const Spices: React.FC = () => {
   );
 };
 
-export default Spices;
+export default PlantSeed;

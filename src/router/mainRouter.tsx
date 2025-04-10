@@ -1,3 +1,5 @@
+import React, { lazy, Suspense } from "react";
+import { createBrowserRouter, RouteObject } from "react-router-dom";
 import Spinner from "@/components/Common/Spinner";
 import WebLayout from "@/components/Layout/WebLayout";
 import Layout from "@/components/profileMangement/Layout";
@@ -5,9 +7,6 @@ import Layout from "@/components/profileMangement/Layout";
 // import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
-import React, { lazy, Suspense } from "react";
-import { createBrowserRouter, RouteObject } from "react-router-dom";
-
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -26,21 +25,6 @@ const OrderDetail = lazy(
   () => import("@/components/profileMangement/OrderDetail")
 );
 const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
-const Fashion = lazy(() => import("@/components/SubCategory/Fashion"));
-const Furniture = lazy(() => import("@/components/SubCategory/Furniture"));
-const BeautyWellness = lazy(
-  () => import("@/components/SubCategory/BeautyWellness")
-);
-const BookPoetry = lazy(() => import("@/components/SubCategory/BookPoetry"));
-const HomeDecor = lazy(() => import("@/components/SubCategory/HomeDecor"));
-const LocalFood = lazy(() => import("@/components/SubCategory/LocalFood"));
-const PlantSeed = lazy(() => import("@/components/SubCategory/PlantSeed"));
-const Spices = lazy(() => import("@/components/SubCategory/Spices"));
-const Jewelry = lazy(() => import("@/components/SubCategory/Jewelry"));
-const TranditionalFabrics = lazy(
-  () => import("@/components/SubCategory/TranditionalFabrics")
-);
-const Vintage = lazy(() => import("@/components/SubCategory/Vintage"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -109,6 +93,51 @@ const Error = lazy(() => import("@/components/Error/Error"));
 const userIndex = lazy(() => import("@/components/profileMangement/Index"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
+
+
+
+
+// All Category Links
+const Fashion = lazy(() => import("@/components/AllCategory/Fashion/Fashion"));
+const Furniture = lazy(() => import("@/components/AllCategory/Furniture/Furniture"));
+const BeautyWellness = lazy(() => import("@/components/AllCategory/Beauty&Wellness/BeautyWellness"));
+const BookPoetry = lazy(() => import("@/components/AllCategory/Books&Poetry/BookPoetry"));
+const HomeDecor = lazy(() => import("@/components/AllCategory/HomeDécor&Accessories/HomeDecor"));
+const LocalFood = lazy(() => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood"));
+const PlantSeed = lazy(() => import("@/components/AllCategory/Plant&Seeds/PlantSeed"));
+const Spices = lazy(() => import("@/components/AllCategory/SpicesCondiments&Seasonings/Spices"));
+const Jewelry = lazy(() => import("@/components/AllCategory/Jewelry&Gemstones/Jewelry"));
+const TranditionalFabrics = lazy(() =>import("@/components/AllCategory/TraditionalClothing&Fabrics/TranditionalFabrics"));
+const Vintage = lazy(() => import("@/components/AllCategory/VintageStocks/Vintage"));
+
+
+
+
+// BeautyWellness Subcategory Page
+const Skincare = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Skincare"))
+const Haircare = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Haircare"))
+const Bodycare = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Bodycare"))
+const Makeup = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Makeup"))
+const Fragrances = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Fragrances"))
+const Wellnessproducts = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/Wellnessproducts"))
+const MenGrooming = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/MenGrooming"))
+const BadychildCare = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/BadychildCare"))
+const HealthWellness = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/HealthWellness"))
+const ImmuityBoost = lazy(()=>import("@/components/AllCategory/Beauty&Wellness/subcategory/ImmuityBoost"))
+
+
+
+//Jewelry and Gemstones Subcategory
+const HandmadeJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/HandmadeJewelry"))
+const Gemstones = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/Gemstones"))
+const JewelryMaterials = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/JewelryMaterials"))
+const SustainableJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/SustainableJewelry"))
+const ChildrenJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/ChildrenJewelry"))
+const MenJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/MenJewelry"))
+const OccasionJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/OccasionJewelry"))
+const TraditionalJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/TraditionalJewelry"))
+const GemstoneJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/GemstoneJewelry"))
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -124,24 +153,50 @@ const routesConfig: RouteObject[] = [
       { path: "/about", element: withSuspense(About) },
       { path: "/contact", element: withSuspense(Contact) },
       { path: "/cart", element: withSuspense(Cart) },
+      { path: "/product-details/:id", element: withSuspense(ProductDetail) },
+      { path: "/product/:id", element: withSuspense(ProductInfo) }, 
+      { path: "/auctionview", element: withSuspense(AuctionView) },
+      // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
+      
+      // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
       { path: "/furniture", element: withSuspense(Furniture) },
-      { path: "/beautywellness", element: withSuspense(BeautyWellness) },
-      { path: "/bookpoetry", element: withSuspense(BookPoetry) },
+      { path: "/bookpoetry", element: withSuspense(BookPoetry)},
       { path: "/homedecor", element: withSuspense(HomeDecor) },
       { path: "/localfood", element: withSuspense(LocalFood) },
       { path: "/plantseed", element: withSuspense(PlantSeed) },
       { path: "/spices", element: withSuspense(Spices) },
       { path: "/jewelry", element: withSuspense(Jewelry) },
-      {
-        path: "/tranditionalFabrics",
-        element: withSuspense(TranditionalFabrics),
-      },
       { path: "/vintage", element: withSuspense(Vintage) },
-      { path: "/product-details/:id", element: withSuspense(ProductDetail) },
-      { path: "/product/:id", element: withSuspense(ProductInfo) },
-      { path: "/auctionview", element: withSuspense(AuctionView) },
-      // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
+      { path: "/beautywellness", element: withSuspense(BeautyWellness) },
+      {path: "/tranditionalFabrics", element: withSuspense(TranditionalFabrics)},
+      
+// BeautyWellness Subcategory Page
+{ path: "/skincare", element: withSuspense(Skincare) },
+{ path: "/haircare", element: withSuspense(Haircare) },
+{ path: "/bodycare", element: withSuspense(Bodycare) },
+{ path: "/makeup", element: withSuspense(Makeup) },
+{ path: "/fragrances", element: withSuspense(Fragrances) },
+{ path: "/wellnessproduct", element: withSuspense(Wellnessproducts) },
+{ path: "/men-grooming", element: withSuspense(MenGrooming) },
+{ path: "/badychild-care", element: withSuspense(BadychildCare) },
+{ path: "/health-wellness", element: withSuspense(HealthWellness) },
+{ path: "/immuity-boost", element: withSuspense(ImmuityBoost) },
+
+
+//Jewelry and Gemstones Subcategory
+{ path: "/handmade-jewelry", element: withSuspense(HandmadeJewelry) },
+{ path: "/gemstones", element: withSuspense(Gemstones) },
+{ path: "/jewelry-materials", element: withSuspense(JewelryMaterials) },
+{ path: "/sustainable-jewelry", element: withSuspense(SustainableJewelry) },
+{ path: "/children-jewelry", element: withSuspense(ChildrenJewelry) },
+{ path: "/men-jewelry", element: withSuspense(MenJewelry) },
+{ path: "/occasion-jewelry", element: withSuspense(OccasionJewelry) },
+{ path: "/traditional-jewelry", element: withSuspense(TraditionalJewelry) },
+{ path: "/gemstone-jewelry", element: withSuspense(GemstoneJewelry) },
+
+
+
     ],
   },
   {

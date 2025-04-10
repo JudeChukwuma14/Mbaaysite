@@ -1,21 +1,18 @@
 import React from "react";
 import image from "@/assets/image/Group 14.png";
 import card from "@/assets/image/card1.png";
-import ProductCard2 from "../Cards/ProductCard2";
+import ProductCard2 from "../../Cards/ProductCard2";
 
-const PlantSeed: React.FC = () => {
+const Furniture: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Plants" },
-    { image: image, text: "Fruit Plants" },
-    { image: image, text: "Vegetable Plants" },
-    { image: image, text: "Medicinal Plants" },
-    { image: image, text: "Seeds" },
-    { image: image, text: "Herb Seeds" },
-    { image: image, text: "Flower Seeds" },
-    { image: image, text: "Cultural and Traditional Seeds" },
-    { image: image, text: "Seedlings and Saplings" },
-    { image: image, text: "Planting Kits and Tools" },
-    { image: image, text: "Plant Care Products" }
+    { image: image, text: "Chairs & Stools" },
+    { image: image, text: "Dresser" },
+    { image: image, text: "Tables & Desks" },
+    { image: image, text: "Sofas & Couches" },
+    { image: image, text: "Office Furniture" },
+    { image: image, text: "Living Room Furniture" },
+    { image: image, text: "Outdoor Furniture" },
+    { image: image, text: "Bedroom Furniture" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -32,7 +29,7 @@ const PlantSeed: React.FC = () => {
   return (
     <div>
       <div className=" pl-10 py-3 mb-6">
-        <h3 className=" font-semibold text-xl">Jewelry</h3>
+        <h3 className=" font-semibold text-xl">Furniture</h3>
       </div>
       <div className="mb-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 px-4">
@@ -65,4 +62,4 @@ const PlantSeed: React.FC = () => {
   );
 };
 
-export default PlantSeed;
+export default Furniture;

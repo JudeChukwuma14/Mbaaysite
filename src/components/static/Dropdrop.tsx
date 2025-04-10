@@ -33,7 +33,7 @@ export default function Dropdown() {
             <div
               key={category.name}
               className=""
-              onClick={() => handleMouseEnter(category.name)}
+              onMouseEnter={() => handleMouseEnter(category.name)}
               onMouseLeave={handleMouseLeave}
             >
             <Link to={category.link}>

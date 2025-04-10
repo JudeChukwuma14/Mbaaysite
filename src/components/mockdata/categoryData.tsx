@@ -12,7 +12,7 @@ export const categories = [
     link:"/beautywellness",
     subcategories: [
       {
-        link:"/",
+        link:"/skincare",
         title: "Skin Care",
         items: [
           "Natural Soaps",
@@ -23,7 +23,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/haircare",
         title: "Hair Care",
         items: [
           "Natural Shampoos and Conditioners",
@@ -34,7 +34,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/bodycare",
         title: "Body Care",
         items: [
           "Herbal Bath Products",
@@ -44,7 +44,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/makeup",
         title: "Makeup",
         items: [
           "Natural Foundations and Powders",
@@ -54,7 +54,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/fragrances",
         title: "Fragrances",
         items: [
           "Essential Oils",
@@ -64,7 +64,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/wellnessproduct",
         title: "Wellness Products",
         items: [
           "Herbal Teas",
@@ -75,7 +75,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/men-grooming",
         title: "Men’s Grooming",
         items: [
           "Beard Oils and Balms",
@@ -86,7 +86,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/badychild-care",
         title: "Baby and Child Care",
         items: [
           "Natural Baby Lotions",
@@ -97,12 +97,12 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/health-wellness",
         title: "Health and Wellness Kits",
         items: ["Detox Kits", "Spa Kits", "Sleep and Relaxation Kits"],
       },
       {
-        link:"/",
+        link:"/immuity-boost",
         title: "Immunity Boost Kits",
         items: [
           "Sustainable and Eco-Friendly Products",
@@ -119,7 +119,7 @@ export const categories = [
     link:"/jewelry",
     subcategories: [
       {
-        link:"/",
+        link:"/handmade-jewelry",
         title: "Handmade Jewelry",
         items: [
           "Necklaces",
@@ -132,7 +132,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/gemstones",
         title: "Gemstones",
         items: [
           "Precious Gemstones",
@@ -143,7 +143,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/jewelry-materials",
         title: "Jewelry Materials",
         items: [
           "Metal Jewelry",
@@ -155,12 +155,12 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/sustainable-jewelry",
         title: "Ethically Sourced & Sustainable Jewelry",
         items: ["Recycled Materials Jewelry", "Conflict-free Gemstones"],
       },
       {
-        link:"/",
+        link:"/men-jewelry",
         title: "Men’s Jewelry",
         items: [
           "Men’s Rings",
@@ -170,12 +170,12 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/children-jewelry",
         title: "Children’s Jewelry",
         items: ["Kids’ Necklaces", "Kids’ Bracelets", "Charm Jewelry for Kids"],
       },
       {
-        link:"/",
+        link:"/occasion-jewelry",
         title: "Bridal & Special Occasion Jewelry",
         items: [
           "Engagement Rings",
@@ -186,7 +186,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/traditional-jewelry",
         title: "Cultural & Traditional Jewelry",
         items: [
           "African Jewelry",
@@ -195,7 +195,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link:"/gemstone-jewelry",
         title: "Gemstone Jewelry by Birthstone",
         items: [
           "January (Garnet)",

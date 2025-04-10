@@ -211,7 +211,6 @@ const Header: React.FC = () => {
         </div>
       )}
 
-
       {menuOpen && (
         <div className="p-4 bg-white shadow-md lg:hidden">
           <nav className="flex flex-col space-y-4">

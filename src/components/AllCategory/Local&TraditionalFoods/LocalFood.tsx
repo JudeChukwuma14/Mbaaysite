@@ -1,28 +1,28 @@
 import React from "react";
 import image from "@/assets/image/Group 14.png";
 import card from "@/assets/image/card1.png";
-import ProductCard2 from "../Cards/ProductCard2";
+import ProductCard2 from "../../Cards/ProductCard2";
 
-const TranditionalFabrics: React.FC = () => {
+const LocalFood: React.FC = () => {
   const ImagePart = [
-    { image: image, text: "Men’s Traditional Wear" },
-    { image: image, text: "Women’s Traditional Wear" },
-    { image: image, text: "Children’s Traditional Wear" },
-    { image: image, text: "Unisex Traditional Clothing" },
-    { image: image, text: "Modern Clothing with Traditional Influence" },
-    { image: image, text: "Footwear & Shoes" },
-    { image: image, text: "Cultural Accessories & Adornments" },
-    { image: image, text: "Fabrics & Textiles" },
-    { image: image, text: "Cultural Footwear for Specific Occasions" },
-    { image: image, text: "Cultural & Festival Clothing" },
-    { image: image, text: "Bespoke & Tailored Clothing" },
-    { image: image, text: "Sustainable & Ethical Fashion" },
-    { image: image, text: "Traditional Embroidery & Design Work" },
-    { image: image, text: "Fashion for Specific Cultures & Regions" },
-    { image: image, text: "Seasonal & Special Occasion Fashion" },
-    { image: image, text: "Other Functional Categories" },
-    { image: image, text: "By Country or Region" },
-    { image: image, text: "By Fabric Type" },
+    { image: image, text: "Staple Foods" },
+    { image: image, text: "Specialty Grains & Legumes" },
+    { image: image, text: "Traditional Snacks & Street Foods" },
+    { image: image, text: "Indigenous Baked Goods" },
+    { image: image, text: "Traditional Soups & Stews" },
+    { image: image, text: "Fermented & Preserved Foods" },
+    { image: image, text: "Local Beverages" },
+    { image: image, text: "Regional & Ethnic Foods" },
+    { image: image, text: "Ethnic Sauces, Spices & Seasonings" },
+    { image: image, text: "Culturally Specific Food Categories" },
+    { image: image, text: "Traditional Sweets & Desserts" },
+    { image: image, text: "Packaged & Ready-to-Eat Foods" },
+    { image: image, text: "Traditional Oils & Fats" },
+    { image: image, text: "Local Grains & Flours" },
+    { image: image, text: "Fermented & Pickled Foods" },
+    { image: image, text: "Cultural Holiday & Festival Foods" },
+    { image: image, text: "Meal Plans & Subscription Boxes" },
+    { image: image, text: "Cultural Holiday & Festival Foods" },
   ];
   const ProductCard = [
     { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
@@ -72,4 +72,4 @@ const TranditionalFabrics: React.FC = () => {
   );
 };
 
-export default TranditionalFabrics;
+export default LocalFood;
