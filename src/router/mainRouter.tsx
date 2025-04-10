@@ -170,30 +170,30 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       {path: "/tranditionalFabrics", element: withSuspense(TranditionalFabrics)},
-      
-// BeautyWellness Subcategory Page
-{ path: "/skincare", element: withSuspense(Skincare) },
-{ path: "/haircare", element: withSuspense(Haircare) },
-{ path: "/bodycare", element: withSuspense(Bodycare) },
-{ path: "/makeup", element: withSuspense(Makeup) },
-{ path: "/fragrances", element: withSuspense(Fragrances) },
-{ path: "/wellnessproduct", element: withSuspense(Wellnessproducts) },
-{ path: "/men-grooming", element: withSuspense(MenGrooming) },
-{ path: "/badychild-care", element: withSuspense(BadychildCare) },
-{ path: "/health-wellness", element: withSuspense(HealthWellness) },
-{ path: "/immuity-boost", element: withSuspense(ImmuityBoost) },
+            
+      // BeautyWellness Subcategory Page
+      { path: "/skincare", element: withSuspense(Skincare) },
+      { path: "/haircare", element: withSuspense(Haircare) },
+      { path: "/bodycare", element: withSuspense(Bodycare) },
+      { path: "/makeup", element: withSuspense(Makeup) },
+      { path: "/fragrances", element: withSuspense(Fragrances) },
+      { path: "/wellnessproduct", element: withSuspense(Wellnessproducts) },
+      { path: "/men-grooming", element: withSuspense(MenGrooming) },
+      { path: "/badychild-care", element: withSuspense(BadychildCare) },
+      { path: "/health-wellness", element: withSuspense(HealthWellness) },
+      { path: "/immuity-boost", element: withSuspense(ImmuityBoost) },
 
 
-//Jewelry and Gemstones Subcategory
-{ path: "/handmade-jewelry", element: withSuspense(HandmadeJewelry) },
-{ path: "/gemstones", element: withSuspense(Gemstones) },
-{ path: "/jewelry-materials", element: withSuspense(JewelryMaterials) },
-{ path: "/sustainable-jewelry", element: withSuspense(SustainableJewelry) },
-{ path: "/children-jewelry", element: withSuspense(ChildrenJewelry) },
-{ path: "/men-jewelry", element: withSuspense(MenJewelry) },
-{ path: "/occasion-jewelry", element: withSuspense(OccasionJewelry) },
-{ path: "/traditional-jewelry", element: withSuspense(TraditionalJewelry) },
-{ path: "/gemstone-jewelry", element: withSuspense(GemstoneJewelry) },
+      //Jewelry and Gemstones Subcategory
+      { path: "/handmade-jewelry", element: withSuspense(HandmadeJewelry) },
+      { path: "/gemstones", element: withSuspense(Gemstones) },
+      { path: "/jewelry-materials", element: withSuspense(JewelryMaterials) },
+      { path: "/sustainable-jewelry", element: withSuspense(SustainableJewelry) },
+      { path: "/children-jewelry", element: withSuspense(ChildrenJewelry) },
+      { path: "/men-jewelry", element: withSuspense(MenJewelry) },
+      { path: "/occasion-jewelry", element: withSuspense(OccasionJewelry) },
+      { path: "/traditional-jewelry", element: withSuspense(TraditionalJewelry) },
+      { path: "/gemstone-jewelry", element: withSuspense(GemstoneJewelry) },
 
 
 

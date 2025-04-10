@@ -449,7 +449,7 @@ export const categories = [
       },
       {
         link:"/",
-        title: "Leather Goods",
+        title: "Leather Woods",
         items: [
           "Hand-stitched Leather Poufs",
           "Leather Wall Hangings",
@@ -889,7 +889,7 @@ export const categories = [
       },
       {
         link:"/",
-        title: "By Packaging",
+        title: "Packaging",
         items: [
           "Bulk Spices",
           "Individual Packs",
@@ -1072,34 +1072,7 @@ export const categories = [
           "Diaspora Food Subscription Boxes (African Food Box, Caribbean Meal Box, Asian Cuisine Box)",
           "Monthly Traditional Snack Subscription (Global Snack Box, Heritage Treats Box)",
         ],
-      },
-      {
-        link:"/",
-        title: "Other Functional Categories",
-        items: [
-          "New Arrivals",
-          "Best Sellers",
-          "Limited Edition & Seasonal Foods",
-          "Discounted & Sale Products",
-        ],
-      },
-      {
-        link:"/",
-        title: "By Packaging Size",
-        items: ["Bulk Foods", "Family-Size Packages", "Single-Serving Packs"],
-      },
-      {
-        link:"/",
-        title: "Search By Country or Region",
-        items: [
-          "Africa (Nigeria, Ethiopia, South Africa)",
-          "Caribbean (Jamaica, Trinidad, Haiti)",
-          "Latin America (Mexico, Brazil, Peru)",
-          "Asia (India, China, Philippines)",
-          "Europe (Greece, Italy, Portugal)",
-          "Middle East (Lebanon, Egypt, Morocco)",
-        ],
-      },
+      }
     ],
   },
   {
