@@ -21,7 +21,7 @@ interface DialogProps {
   children: React.ReactNode;
 }
 
-const Dialog: React.FC<DialogProps> = ({ open, onOpenChange, children }) => (
+const Dialog: React.FC<DialogProps> = ({ open, children }) => (
   <div
     className={`${
       open

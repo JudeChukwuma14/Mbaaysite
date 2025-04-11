@@ -22,28 +22,6 @@ const AllProduct = () => {
     queryFn: () => getVendorProducts(user.token),
   });
 
-  const product = [
-    {
-      id: "#1234509",
-      name: "Traditional Wears",
-      category: "Igbo Wears",
-      subCategory: "Men's Wear",
-      amount: "$50,000",
-      stock: "Stock",
-      date: "23/04/13",
-    },
-    {
-      id: "#1234508",
-      name: "Ankara Dress",
-      category: "Fashion",
-      subCategory: "Women's Wear",
-      amount: "$35,000",
-      stock: "Out-Of-Stock",
-      date: "12/02/13",
-    },
-    // Add more products here
-  ];
-
   const totalPages = Math.ceil(products?.length / rowsPerPage);
   const paginatedProducts = products?.slice(
     (currentPage - 1) * rowsPerPage,

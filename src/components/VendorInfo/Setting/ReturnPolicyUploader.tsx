@@ -20,8 +20,8 @@ interface ReturnPolicyUploaderProps {
 }
 
 export default function ReturnPolicyUploader({
-  returnPolicy,
-  returnPolicyName,
+  // returnPolicy,
+  // returnPolicyName,
   setReturnPolicy,
   setReturnPolicyName,
   setReturnPolicyText,

@@ -34,6 +34,8 @@ export default function EditVendorProfile() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof VendorProfile, string>>
   >({});
+
+  console.log(returnPolicyText);
   const user = useSelector((state: RootState) => state.vendor);
 
   const [profile, setProfile] = useState<VendorProfile>({
