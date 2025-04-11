@@ -5,7 +5,8 @@ import DescriptionSection from "./descriptionSection";
 import CategorySpecificUI from "./categorySpecificUi";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
-import ReturnPolicyPopup from "./returnPolicyPopup";
+import ReturnPolicyPopup from "./ReturnPolicyPopup";
+
 
 // Import components
 
@@ -216,12 +217,12 @@ const NewProduct = () => {
 
   return (
     <motion.div
-      className="p-6 space-y-6 bg-gray-100 min-h-screen"
+      className="min-h-screen p-6 space-y-6 bg-gray-100"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">New Product</h1>
 
         {selectedCategories.length > 0 && !isUpgraded && (
@@ -243,7 +244,7 @@ const NewProduct = () => {
       )}
 
       {/* Common product form fields */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+      <div className="grid items-start grid-cols-1 gap-6 md:grid-cols-2">
         {/* First Row - Description and Product Images */}
         <DescriptionSection
           productName={productName}
@@ -281,14 +282,14 @@ const NewProduct = () => {
           />
         ) : (
           <motion.div
-            className="bg-white p-5 rounded-lg shadow space-y-4"
+            className="p-5 space-y-4 bg-white rounded-lg shadow"
             initial={{ x: -50, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
             <h2 className="text-lg font-semibold">Subcategory</h2>
             <motion.select
-              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              className="w-full p-2 border border-orange-500 rounded outline-orange-500"
               value={subCategory}
               onChange={(e) => setSubCategory(e.target.value)}
             >
@@ -324,7 +325,7 @@ const NewProduct = () => {
         /> */}
 
         <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4"
+          className="p-5 space-y-4 bg-white rounded-lg shadow"
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 0.8 }}
@@ -333,14 +334,14 @@ const NewProduct = () => {
           <input
             type="number"
             placeholder="Quantity"
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+            className="w-full p-2 border border-orange-500 rounded outline-orange-500"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
           <input
             type="text"
             placeholder="SKU (Optional)"
-            className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+            className="w-full p-2 border border-orange-500 rounded outline-orange-500"
             value={sku}
             onChange={(e) => setSku(e.target.value)}
           />
@@ -348,24 +349,24 @@ const NewProduct = () => {
 
         {/* Fourth Row - Pricing */}
         <motion.div
-          className="bg-white p-5 rounded-lg shadow space-y-4 md:col-span-2"
+          className="p-5 space-y-4 bg-white rounded-lg shadow md:col-span-2"
           initial={{ x: -50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ delay: 1 }}
         >
           <h2 className="text-lg font-semibold">Pricing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <input
               type="text"
               placeholder="Price"
-              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              className="w-full p-2 border border-orange-500 rounded outline-orange-500"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
             />
             <input
               type="text"
               placeholder="Compare at pricing (Optional)"
-              className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+              className="w-full p-2 border border-orange-500 rounded outline-orange-500"
               value={comparePrice}
               onChange={(e) => setComparePrice(e.target.value)}
             />
@@ -375,19 +376,19 @@ const NewProduct = () => {
 
       <div className="flex justify-end space-x-4">
         <button
-          className="border border-orange-500 text-red-500 px-4 py-2 rounded-lg"
+          className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg"
           onClick={handleDiscard}
         >
           Discard
         </button>
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded-lg"
+          className="px-4 py-2 text-white bg-red-500 rounded-lg"
           onClick={handleSaveDraft}
         >
           Save Draft
         </button>
         <button
-          className="bg-green-500 text-white px-4 py-2 rounded-lg"
+          className="px-4 py-2 text-white bg-green-500 rounded-lg"
           onClick={handleAddProduct}
         >
           Add Product
