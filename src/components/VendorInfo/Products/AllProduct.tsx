@@ -1,14 +1,12 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { HiDotsVertical } from "react-icons/hi";
 import { motion } from "framer-motion";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { NavLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getVendorProducts } from "@/utils/VendorProductApi";
+import { useSelector } from "react-redux";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -18,7 +16,13 @@ const AllProduct = () => {
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
 
-  const products = [
+  const user = useSelector((state: any) => state.vendor);
+  const { data: products } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => getVendorProducts(user.token),
+  });
+
+  const product = [
     {
       id: "#1234509",
       name: "Traditional Wears",
@@ -40,8 +44,8 @@ const AllProduct = () => {
     // Add more products here
   ];
 
-  const totalPages = Math.ceil(products.length / rowsPerPage);
-  const paginatedProducts = products.slice(
+  const totalPages = Math.ceil(products?.length / rowsPerPage);
+  const paginatedProducts = products?.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -81,9 +85,9 @@ const AllProduct = () => {
       >
         <h1 className="text-2xl font-bold">Products Overview</h1>
         <NavLink to={"/app/new-product"}>
-        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg">
-          + New Product
-        </button>
+          <button className="bg-orange-500 text-white px-4 py-2 rounded-lg">
+            + New Product
+          </button>
         </NavLink>
       </motion.div>
 
@@ -138,7 +142,6 @@ const AllProduct = () => {
       >
         <thead className="bg-gray-100">
           <tr>
-            <th className="text-left p-3">Product ID</th>
             <th className="text-left p-3">Product Name</th>
             <th className="text-left p-3">Category</th>
             <th className="text-left p-3">Sub-Category</th>
@@ -148,7 +151,7 @@ const AllProduct = () => {
           </tr>
         </thead>
         <tbody>
-          {paginatedProducts.map((product, index) => (
+          {paginatedProducts?.map((product: any, index: any) => (
             <motion.tr
               key={index}
               className="hover:bg-gray-50"
@@ -156,25 +159,21 @@ const AllProduct = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 + index * 0.1 }}
             >
-              <td className="p-3">{product.id}</td>
               <td className="p-3">{product.name}</td>
               <td className="p-3">{product.category}</td>
               <td className="p-3">{product.subCategory}</td>
               <td className="p-3">{product.amount}</td>
               <td
                 className={`p-3 ${
-                  product.stock === "Stock"
-                    ? "text-green-500"
-                    : "text-red-500"
+                  product.stock === "Stock" ? "text-green-500" : "text-red-500"
                 }`}
               >
                 {product.stock}
               </td>
               <td className="p-3 flex items-center gap-2">
-              {product.date}
-            <HiDotsVertical className="w-4 h-4 text-gray-500" />
-          </td>
-
+                {product.date}
+                <HiDotsVertical className="w-4 h-4 text-gray-500" />
+              </td>
             </motion.tr>
           ))}
         </tbody>

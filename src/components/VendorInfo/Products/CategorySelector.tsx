@@ -1,6 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useQuery } from "@tanstack/react-query";
+import { get_single_vendor } from "@/utils/vendorApi";
 
 // Define types for our category structure
 interface SubSubCategory {
@@ -22,7 +26,10 @@ interface CategorySelectorProps {
   activeCategory: string;
   handleCategoryChange: (category: string) => void;
   vendorPlan?: "Shelves" | "Counter" | "Shop" | "Premium";
-  subCategories?: Record<string, string[]>;
+  selectedSubCategory: string;
+  setSelectedSubCategory: (subCategory: string) => void;
+  selectedSubSubCategory: string;
+  setSelectedSubSubCategory: (subSubCategory: string) => void;
   categoryData?: MainCategory[];
 }
 
@@ -31,18 +38,11 @@ export default function CategorySelector({
   activeCategory,
   handleCategoryChange,
   vendorPlan = "Shelves",
-  subCategories,
-}: CategorySelectorProps) {
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string>("");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] =
-    useState<string>("");
-  const isUpgraded =
-    vendorPlan === "Counter" ||
-    vendorPlan === "Shop" ||
-    vendorPlan === "Premium";
-
-  // This is the full category data structure from the file you shared
-  const categoryData = [
+  selectedSubCategory,
+  setSelectedSubCategory,
+  selectedSubSubCategory,
+  setSelectedSubSubCategory,
+  categoryData = [
     {
       name: "Beauty and Wellness",
       subCategories: [
@@ -1537,23 +1537,32 @@ export default function CategorySelector({
         },
       ],
     },
-  ];
-
-  // Find the active main category object
+  ],
+}: CategorySelectorProps) {
+  const isUpgraded =
+    vendorPlan === "Counter" ||
+    vendorPlan === "Shop" ||
+    vendorPlan === "Premium";
   const activeCategoryObj = categoryData.find(
     (cat) => cat.name === activeCategory
   );
 
-  // Reset subcategory when active category changes
+  const user = useSelector((state: RootState) => state.vendor);
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
+  // Reset subcategory and sub-subcategory when active category changes
   useEffect(() => {
     setSelectedSubCategory("");
     setSelectedSubSubCategory("");
-  }, [activeCategory]);
+  }, [activeCategory, setSelectedSubCategory, setSelectedSubSubCategory]);
 
   // Reset sub-subcategory when subcategory changes
   useEffect(() => {
     setSelectedSubSubCategory("");
-  }, [selectedSubCategory]);
+  }, [selectedSubCategory, setSelectedSubSubCategory]);
 
   // If vendor hasn't upgraded, show the dropdown filter
   if (!isUpgraded) {
@@ -1595,7 +1604,7 @@ export default function CategorySelector({
           <motion.input
             type="text"
             className="w-full p-3 border rounded-lg"
-            value={activeCategory}
+            value={vendors?.craftCategories?.[0] || activeCategory}
             readOnly
           />
         </div>

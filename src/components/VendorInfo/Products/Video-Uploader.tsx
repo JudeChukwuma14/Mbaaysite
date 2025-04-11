@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import {
   useRef,
   useCallback,
@@ -28,6 +27,7 @@ interface VideoUploaderProps {
       size?: number;
       type?: string;
       thumbnailUrl?: string;
+      file?: File; // Add file to pass the actual File object
     } | null
   ) => void;
   uploadedVideoInfo?: {
@@ -56,17 +56,13 @@ export default function VideoUploader({
   const [isPlaying, setIsPlaying] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
 
-  // Initialize from props if available
   useEffect(() => {
     if (uploadedVideoInfo?.thumbnailUrl) {
       setVideoThumbnail(uploadedVideoInfo.thumbnailUrl);
     }
   }, [uploadedVideoInfo]);
 
-  // Maximum file size in bytes (100MB)
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
-
-  // Supported video formats
   const SUPPORTED_VIDEO_FORMATS = [
     "video/mp4",
     "video/webm",
@@ -77,51 +73,35 @@ export default function VideoUploader({
     "video/x-matroska",
   ];
 
-  // Generate thumbnail from video
   const generateVideoThumbnail = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
-      // Create a video element to extract the thumbnail
       const video = document.createElement("video");
       video.preload = "metadata";
       video.muted = true;
       video.playsInline = true;
-
-      // Create object URL for the video
       const url = URL.createObjectURL(file);
       video.src = url;
 
-      // When video metadata is loaded, seek to the first frame
       video.onloadedmetadata = () => {
-        // Seek to 1 second or 25% of the video, whichever is less
         const seekTime = Math.min(1, video.duration * 0.25);
         video.currentTime = seekTime;
       };
 
-      // When the video has seeked to the desired time
       video.onseeked = () => {
-        // Create a canvas to draw the video frame
         const canvas = document.createElement("canvas");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
-        // Draw the video frame on the canvas
         const ctx = canvas.getContext("2d");
         if (ctx) {
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          // Convert the canvas to a data URL
           const thumbnailUrl = canvas.toDataURL("image/jpeg", 0.7);
-
-          // Clean up
           URL.revokeObjectURL(url);
-
           resolve(thumbnailUrl);
         } else {
           reject(new Error("Could not get canvas context"));
         }
       };
 
-      // Handle errors
       video.onerror = () => {
         URL.revokeObjectURL(url);
         reject(new Error("Error loading video"));
@@ -129,15 +109,12 @@ export default function VideoUploader({
     });
   };
 
-  // Handle drag over event
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
   }, []);
 
-  // Validate file
   const validateFile = (file: File): { valid: boolean; error?: string } => {
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       return {
         valid: false,
@@ -146,23 +123,18 @@ export default function VideoUploader({
         )}MB > ${MAX_FILE_SIZE / (1024 * 1024)}MB)`,
       };
     }
-
-    // Check if file is a supported video format
     if (!SUPPORTED_VIDEO_FORMATS.includes(file.type)) {
       return {
         valid: false,
         error: `Unsupported video format: ${file.type}`,
       };
     }
-
     return { valid: true };
   };
 
-  // Handle video upload
   const handleVideoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-
       const validation: any = validateFile(file);
       if (!validation.valid) {
         setVideoError(validation.error);
@@ -170,51 +142,44 @@ export default function VideoUploader({
       }
 
       setVideoError(null);
-
-      // Create URL for the video
       const url = URL.createObjectURL(file);
       setVideoUrl(url);
       setUploadedVideo(file);
       setIsPlaying(false);
+      setYoutubeUrl(""); // Clear YouTube URL
+      setYoutubeEmbedUrl(""); // Clear YouTube embed URL
 
-      // Generate thumbnail
       try {
         const thumbnail = await generateVideoThumbnail(file);
         setVideoThumbnail(thumbnail);
-
-        // Update parent component with video info
         if (onVideoInfoUpdate) {
           onVideoInfoUpdate({
             name: file.name,
             size: file.size,
             type: file.type,
             thumbnailUrl: thumbnail,
+            file: file, // Pass the File object to the parent
           });
         }
       } catch (error) {
         console.error("Error generating thumbnail:", error);
-        // Continue without a thumbnail
-
-        // Still update parent with basic video info
         if (onVideoInfoUpdate) {
           onVideoInfoUpdate({
             name: file.name,
             size: file.size,
             type: file.type,
+            file: file,
           });
         }
       }
     }
   };
 
-  // Handle video drop
   const handleVideoDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-
       const validation: any = validateFile(file);
       if (!validation.valid) {
         setVideoError(validation.error);
@@ -222,44 +187,39 @@ export default function VideoUploader({
       }
 
       setVideoError(null);
-
-      // Create URL for the video
       const url = URL.createObjectURL(file);
       setVideoUrl(url);
       setUploadedVideo(file);
       setIsPlaying(false);
+      setYoutubeUrl("");
+      setYoutubeEmbedUrl("");
 
-      // Generate thumbnail
       try {
         const thumbnail = await generateVideoThumbnail(file);
         setVideoThumbnail(thumbnail);
-
-        // Update parent component with video info
         if (onVideoInfoUpdate) {
           onVideoInfoUpdate({
             name: file.name,
             size: file.size,
             type: file.type,
             thumbnailUrl: thumbnail,
+            file: file,
           });
         }
       } catch (error) {
         console.error("Error generating thumbnail:", error);
-        // Continue without a thumbnail
-
-        // Still update parent with basic video info
         if (onVideoInfoUpdate) {
           onVideoInfoUpdate({
             name: file.name,
             size: file.size,
             type: file.type,
+            file: file,
           });
         }
       }
     }
   };
 
-  // Toggle video play/pause
   const toggleVideoPlay = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -275,12 +235,10 @@ export default function VideoUploader({
     }
   };
 
-  // Handle video error
   const handleVideoError = () => {
     setVideoError("Failed to load video. Format may not be supported.");
   };
 
-  // Remove uploaded video
   const removeUploadedVideo = () => {
     if (videoUrl) {
       URL.revokeObjectURL(videoUrl);
@@ -290,19 +248,14 @@ export default function VideoUploader({
     setUploadedVideo(null);
     setIsPlaying(false);
     setVideoError(null);
-
-    // Update parent component
     if (onVideoInfoUpdate) {
       onVideoInfoUpdate(null);
     }
   };
 
-  // Handle YouTube URL
   const handleYoutubeSubmit = () => {
     if (youtubeUrl) {
       let videoId = "";
-
-      // Extract video ID from different YouTube URL formats
       if (youtubeUrl.includes("youtube.com/watch?v=")) {
         videoId = youtubeUrl.split("v=")[1].split("&")[0];
       } else if (youtubeUrl.includes("youtu.be/")) {
@@ -312,16 +265,12 @@ export default function VideoUploader({
       if (videoId) {
         setYoutubeEmbedUrl(`https://www.youtube.com/embed/${videoId}`);
         setShowYoutubeInput(false);
-
-        // Clear any uploaded video
         if (videoUrl) {
           URL.revokeObjectURL(videoUrl);
           setVideoUrl("");
           setVideoThumbnail("");
           setUploadedVideo(null);
           setIsPlaying(false);
-
-          // Update parent component
           if (onVideoInfoUpdate) {
             onVideoInfoUpdate(null);
           }
@@ -332,7 +281,6 @@ export default function VideoUploader({
     }
   };
 
-  // Remove YouTube video
   const removeYoutubeVideo = () => {
     setYoutubeUrl("");
     setYoutubeEmbedUrl("");
@@ -348,11 +296,15 @@ export default function VideoUploader({
       <div className="flex justify-between items-center space-x-2">
         <h2 className="text-lg font-semibold">Product Video (Optional)</h2>
         <div
-          className="flex justify-between items-center cursor-pointer"
-          onClick={() => setShowYoutubeInput(true)}
+          className={`flex justify-between items-center ${
+            videoUrl ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+          }`}
+          onClick={() => !videoUrl && setShowYoutubeInput(true)} // Disable click when videoUrl exists
         >
           <FaYoutube size={30} className="mr-1 text-red-600" />
-          <h4 className="text-blue-600">Add youtube video</h4>
+          <h4 className={videoUrl ? "text-gray-400" : "text-blue-600"}>
+            Add YouTube video
+          </h4>
         </div>
       </div>
 
@@ -389,10 +341,7 @@ export default function VideoUploader({
           >
             <IoMdClose size={14} />
           </motion.button>
-
-          {/* Video container */}
           <div className="relative w-full h-[200px]">
-            {/* Video element - shown when playing */}
             <div className={`w-full h-full ${isPlaying ? "block" : "hidden"}`}>
               <video
                 ref={videoRef}
@@ -404,8 +353,6 @@ export default function VideoUploader({
                 playsInline
               />
             </div>
-
-            {/* Thumbnail - shown when not playing */}
             {!isPlaying && (
               <div className="w-full h-full bg-black flex items-center justify-center">
                 {videoThumbnail ? (
@@ -421,8 +368,6 @@ export default function VideoUploader({
                 )}
               </div>
             )}
-
-            {/* Play button - only shown when not playing */}
             {!isPlaying && (
               <div
                 className="absolute inset-0 flex items-center justify-center cursor-pointer"
@@ -433,8 +378,6 @@ export default function VideoUploader({
                 </div>
               </div>
             )}
-
-            {/* Pause button - only shown when playing */}
             {isPlaying && (
               <div
                 className="absolute top-2 left-2 cursor-pointer z-10"
@@ -445,8 +388,6 @@ export default function VideoUploader({
                 </div>
               </div>
             )}
-
-            {/* Video indicator */}
             <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
               {uploadedVideo?.name || uploadedVideoInfo?.name || "Video"}
               {uploadedVideo?.size || uploadedVideoInfo?.size
@@ -480,7 +421,7 @@ export default function VideoUploader({
       )}
 
       <AnimatePresence>
-        {showYoutubeInput && (
+        {showYoutubeInput && !videoUrl && (
           <motion.div
             className="mt-2 space-y-2"
             initial={{ opacity: 0, height: 0 }}

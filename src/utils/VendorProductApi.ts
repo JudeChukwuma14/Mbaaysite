@@ -13,6 +13,7 @@ export const uploadVendorProduct = async (
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error uploading vendor product:", error);
@@ -20,9 +21,15 @@ export const uploadVendorProduct = async (
   }
 };
 
-export const getVendorProducts = async (vendorId: string) => {
+export const getVendorProducts = async (token: any) => {
+  ``;
   try {
-    const response = await axios.get(`${URL}/products/${vendorId}`);
+    const response = await axios.get(`${URL}/uploaded}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error fetching vendor products:", error);
@@ -30,14 +37,9 @@ export const getVendorProducts = async (vendorId: string) => {
   }
 };
 
-export const getVendorProductById = async (
-  vendorId: string,
-  productId: string
-) => {
+export const getVendorProductById = async (productId: string) => {
   try {
-    const response = await axios.get(
-      `${URL}/products/${vendorId}/${productId}`
-    );
+    const response = await axios.get(`${URL}/${productId}`);
     return response.data;
   } catch (error) {
     console.error("Error fetching vendor product by ID:", error);

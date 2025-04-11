@@ -6,6 +6,10 @@ import { Camera, ChevronDown, Eye, EyeOff, Upload } from "lucide-react";
 import { MdVerified } from "react-icons/md";
 import type React from "react"; // Import React
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
+import { toast } from "react-hot-toast"; // Add this import for notifications
+import { upload_return_policy } from "@/utils/vendorApi";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 interface VendorProfile {
   companyName: string;
@@ -26,6 +30,11 @@ export default function EditVendorProfile() {
   const [returnPolicyText, setReturnPolicyText] = useState("");
   const [returnPolicy, setReturnPolicy] = useState<File | null>(null);
   const [returnPolicyName, setReturnPolicyName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof VendorProfile, string>>
+  >({});
+  const user = useSelector((state: RootState) => state.vendor);
 
   const [profile, setProfile] = useState<VendorProfile>({
     companyName: "PreciousLtd Limited",
@@ -75,6 +84,107 @@ export default function EditVendorProfile() {
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
+  };
+
+  const handleSubmit = async () => {
+    try {
+      setIsSubmitting(true);
+
+      // Validate form data
+      const newErrors: Partial<Record<keyof VendorProfile, string>> = {};
+
+      if (!profile.companyName.trim()) {
+        newErrors.companyName = "Company name is required";
+      }
+
+      if (!profile.email.trim()) {
+        newErrors.email = "Email is required";
+      } else if (!/\S+@\S+\.\S+/.test(profile.email)) {
+        newErrors.email = "Email is invalid";
+      }
+
+      if (!profile.phone.trim()) {
+        newErrors.phone = "Phone number is required";
+      }
+
+      if (!profile.accountName.trim()) {
+        newErrors.accountName = "Account name is required";
+      }
+
+      if (!profile.accountNumber.trim()) {
+        newErrors.accountNumber = "Account number is required";
+      }
+
+      if (!profile.bankName.trim()) {
+        newErrors.bankName = "Bank name is required";
+      }
+
+      // If there are validation errors, stop submission
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        toast.error("Please fix the errors in the form");
+        return;
+      }
+
+      // Prepare form data for submission
+      const formData = new FormData();
+
+      // Add profile data
+      Object.entries(profile).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
+
+      // Add images if they exist
+      if (profileImage) {
+        // Convert base64 to blob
+        const profileBlob = await fetch(profileImage).then((r) => r.blob());
+        formData.append("profileImage", profileBlob, "profile-image.jpg");
+      }
+
+      if (bannerImage) {
+        const bannerBlob = await fetch(bannerImage).then((r) => r.blob());
+        formData.append("bannerImage", bannerBlob, "banner-image.jpg");
+      }
+
+      if (logoImage) {
+        const logoBlob = await fetch(logoImage).then((r) => r.blob());
+        formData.append("logoImage", logoBlob, "logo-image.jpg");
+      }
+
+      // Add return policy if it exists
+      if (returnPolicy) {
+        formData.append("returnPolicy", returnPolicy);
+        upload_return_policy(user.token, formData).then((res) => {
+          console.log(res);
+        });
+      }
+
+      // Make API call to update profile
+      // const response = await fetch('/api/vendor/profile', {
+      //   method: 'PUT',
+      //   body: formData,
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error('Failed to update profile');
+      // }
+
+      // const data = await response.json();
+
+      // Simulate API call for now
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Show success message
+      toast.success("Profile updated successfully!");
+
+      // Clear any existing errors
+      setErrors({});
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -214,8 +324,15 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, companyName: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.companyName ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.companyName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.companyName}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-1">
@@ -227,8 +344,13 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, email: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.email ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-1">
@@ -240,8 +362,13 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, phone: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.phone ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.phone && (
+                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-1">
@@ -310,8 +437,15 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, accountName: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.accountName ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.accountName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.accountName}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-1">
@@ -323,8 +457,15 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, accountNumber: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.accountNumber ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.accountNumber && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.accountNumber}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-1">
@@ -336,8 +477,13 @@ export default function EditVendorProfile() {
                   onChange={(e) =>
                     setProfile({ ...profile, bankName: e.target.value })
                   }
-                  className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                    errors.bankName ? "border-red-500" : ""
+                  }`}
                 />
+                {errors.bankName && (
+                  <p className="text-red-500 text-xs mt-1">{errors.bankName}</p>
+                )}
               </div>
             </div>
           </motion.div>
@@ -398,8 +544,12 @@ export default function EditVendorProfile() {
             <button className="px-6 py-2 border rounded-lg hover:bg-orange-50 border-orange-500">
               Discard Changes
             </button>
-            <button className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">
-              Save Changes
+            <button
+              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </button>
           </motion.div>
         </div>
