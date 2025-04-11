@@ -138,6 +138,78 @@ const OccasionJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemsto
 const TraditionalJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/TraditionalJewelry"))
 const GemstoneJewelry = lazy(()=>import("@/components/AllCategory/Jewelry&Gemstones/subcategory/GemstoneJewelry"))
 
+
+// Books and poetry subcategory
+const CulturalEthnic = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/CulturalEthnic"))
+const TranditionalFolk = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/TranditionalFolk"))
+const Poetry = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/Poetry"))
+const HistoricalNarratives = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/HistoricalNarratives"))
+const SpiritualityReligion = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/SpiritualityReligion"))
+const LanguageLinguistics = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/LanguageLinguistics"))
+const CookbooksCulinaryTradition = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/CookbooksCulinaryTradition"))
+const ArtCraft = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/ArtCraft"))
+const Childrenbook = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/Childrenbook"))
+const TravelExploration = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/TravelExploration"))
+const HealthWellnessBook = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/HealthWellness"))
+const PoliticalSocialIssues = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/PoliticalSocialIssues")) 
+const ArtisticCreative = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/ArtisticCreative")) 
+const EnvironmentalNature = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/EnvironmentalNature")) 
+const InspriationalMotivational = lazy(()=>import("@/components/AllCategory/Books&Poetry/subcategory/InspriationalMotivational")) 
+
+
+
+
+// Homedocor Subcategory
+const TextileFabrics = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/TextileFabrics"))
+const CeramicsPottery = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/CeramicsPottery"))
+const Woodcraft = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/Woodcraft"))
+const Metalwork = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/Metalwork"))
+const BasketsWeaving = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/BasketsWeaving"))
+const Glasswork = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/Glasswork"))
+const Leather = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/LeatherWoods"))
+const BeadedDecor = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/BeadedDecor"))
+const StoneMarble = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/StoneMarble"))
+const HandcraftedKitchenware = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/HandcraftedKitchenware"))
+const WallArt = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/WallArt"))
+const Mirrors = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/Mirrors"))
+const Handwoven = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/HandwovenMatsCarpets"))
+const HandCraftedLamps = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/HandCraftedLamps"))
+const JewelryTrinket = lazy(()=>import("@/components/AllCategory/HomeDécor&Accessories/subcategory/JewelryTrinket"))
+
+
+
+// Vintage Stock Subcategory
+const VintageTextiles = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageTextiles"))
+const VintageClothing = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageClothing"))
+const VintageHomeDecor = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageHomeDecor"))
+const VintageInstruments = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageInstruments"))
+const VintageArt = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageArt"))
+const VintageFurniture = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageFurniture"))
+const VintageHandicraft = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageHandicraft"))
+const VintageReligious = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageReligious"))
+const VintageStorage = lazy(()=>import("@/components/AllCategory/VintageStocks/subcategory/VintageStorage"))
+
+
+// Plant Seeds subcategory
+const Plant = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/Plants"))
+const FruitPlants = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/FruitPlants"))
+const Vegetableplants = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/Vegetableplants"))
+const MedicinalPlants = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/MedicinalPlants"))
+const Seed = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/Seed"))
+const HerbSeeds = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/HerbSeeds"))
+const FlowerSeeds = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/FlowerSeeds"))
+const CulturalTraditionalSeed = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/CulturalTraditionalSeed"))
+const PlantingKit = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/PlantingKit"))
+const PlantCareProduct = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/PlantCareProduct"))
+const SeedingSapling = lazy(()=>import("@/components/AllCategory/Plant&Seeds/subcategory/SeedingSapling"))
+
+
+
+
+
+
+
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -195,8 +267,64 @@ const routesConfig: RouteObject[] = [
       { path: "/traditional-jewelry", element: withSuspense(TraditionalJewelry) },
       { path: "/gemstone-jewelry", element: withSuspense(GemstoneJewelry) },
 
+      // Books Subcategory
+      { path: "/cultural-ethnic", element: withSuspense(CulturalEthnic) },
+      { path: "/traditional-folk", element: withSuspense(TranditionalFolk) },
+      { path: "/poetry", element: withSuspense(Poetry) },
+      { path: "/historical-narrative", element: withSuspense(HistoricalNarratives) },
+      { path: "/spirituality-religion", element: withSuspense(SpiritualityReligion) },
+      { path: "/language-linguistics", element: withSuspense(LanguageLinguistics) },
+      { path: "cookbook", element: withSuspense(CookbooksCulinaryTradition) },
+      { path: "/art-craft", element: withSuspense(ArtCraft) },
+      { path: "children-book", element: withSuspense(Childrenbook) },
+      { path: "travel-exploration", element: withSuspense(TravelExploration) },
+      { path: "health-wellness", element: withSuspense(HealthWellnessBook) },
+      { path: "political-social", element: withSuspense(PoliticalSocialIssues) },
+      { path: "/artistic-writing", element: withSuspense(ArtisticCreative) },
+      { path: "/environment-nature", element: withSuspense(EnvironmentalNature) },
+      { path: "/inspirational-book", element: withSuspense(InspriationalMotivational) },
 
+      // Home Decor
+      { path: "/textiles", element: withSuspense(TextileFabrics) },
+      { path: "/ceramics-pottery", element: withSuspense(CeramicsPottery) },
+      { path: "/woodcraft", element: withSuspense(Woodcraft) },
+      { path: "/metalwork", element: withSuspense(Metalwork) },
+      { path: "/baskets-weaving", element: withSuspense(BasketsWeaving) },
+      { path: "/glasswork", element: withSuspense(Glasswork) },
+      { path: "/leather-woods", element: withSuspense(Leather) },
+      { path: "/beaded-decor", element: withSuspense(BeadedDecor) },
+      { path: "/stone-marble", element: withSuspense(StoneMarble) },
+      { path: "/handcrafted-kitchenware", element: withSuspense(HandcraftedKitchenware) },
+      { path: "/wall-art", element: withSuspense(WallArt) },
+      { path: "/mirrors", element: withSuspense(Mirrors) },
+      { path: "/artistic-writing", element: withSuspense(Handwoven) },
+      { path: "/handcrafted", element: withSuspense(HandCraftedLamps) },
+      { path: "/jewelry-trinket", element: withSuspense(JewelryTrinket) },
 
+      // Vintage stock
+      { path: "/vintagetextiles", element: withSuspense(VintageTextiles) },
+      { path: "/Vintage-Clothing", element: withSuspense(VintageClothing) },
+      { path: "/Vintage-Home", element: withSuspense(VintageHomeDecor) },
+      { path: "/Vintage-Instruments", element: withSuspense(VintageInstruments) },
+      { path: "/Vintage-Art", element: withSuspense(VintageArt) },
+      { path: "/Vintage-Furniture", element: withSuspense(VintageFurniture) },
+      { path: "/Vintage-Handicrafts", element: withSuspense(VintageHandicraft) },
+      { path: "/Vintage-Religious", element: withSuspense(VintageReligious) },
+      { path: "/Vintage-Storage", element: withSuspense(VintageStorage) },
+
+      // Plant Seed
+      
+      { path: "/plant", element: withSuspense(Plant) },
+      { path: "/FruitPlants", element: withSuspense(FruitPlants) },
+      { path: "/Vegetableplants", element: withSuspense(Vegetableplants) },
+      { path: "/MedicinalPlants", element: withSuspense(MedicinalPlants) },
+      { path: "/seed", element: withSuspense(Seed) },
+      { path: "/HerbSeeds", element: withSuspense(HerbSeeds) },
+      { path: "/FlowerSeeds", element: withSuspense(FlowerSeeds) },
+      { path: "/CulturalTraditionalSeed", element: withSuspense(CulturalTraditionalSeed) },
+      { path: "/PlantingKit", element: withSuspense(PlantingKit) },
+      { path: "/PlantCareProduct", element: withSuspense(PlantCareProduct) },
+      { path: "/SeedingSapling", element: withSuspense(SeedingSapling) },
     ],
   },
   {

@@ -4,15 +4,14 @@ import book from "@/assets/image/book.jpg";
 import Homedecor from "@/assets/image/Home Décor.jpg";
 import Vintage from "@/assets/image/Vintage Furniture.jpg";
 
-
 export const categories = [
   {
     name: "Beauty and Wellness",
     image: wellness,
-    link:"/beautywellness",
+    link: "/beautywellness",
     subcategories: [
       {
-        link:"/skincare",
+        link: "/skincare",
         title: "Skin Care",
         items: [
           "Natural Soaps",
@@ -23,7 +22,7 @@ export const categories = [
         ],
       },
       {
-        link:"/haircare",
+        link: "/haircare",
         title: "Hair Care",
         items: [
           "Natural Shampoos and Conditioners",
@@ -34,7 +33,7 @@ export const categories = [
         ],
       },
       {
-        link:"/bodycare",
+        link: "/bodycare",
         title: "Body Care",
         items: [
           "Herbal Bath Products",
@@ -44,7 +43,7 @@ export const categories = [
         ],
       },
       {
-        link:"/makeup",
+        link: "/makeup",
         title: "Makeup",
         items: [
           "Natural Foundations and Powders",
@@ -54,7 +53,7 @@ export const categories = [
         ],
       },
       {
-        link:"/fragrances",
+        link: "/fragrances",
         title: "Fragrances",
         items: [
           "Essential Oils",
@@ -64,7 +63,7 @@ export const categories = [
         ],
       },
       {
-        link:"/wellnessproduct",
+        link: "/wellnessproduct",
         title: "Wellness Products",
         items: [
           "Herbal Teas",
@@ -75,7 +74,7 @@ export const categories = [
         ],
       },
       {
-        link:"/men-grooming",
+        link: "/men-grooming",
         title: "Men’s Grooming",
         items: [
           "Beard Oils and Balms",
@@ -86,7 +85,7 @@ export const categories = [
         ],
       },
       {
-        link:"/badychild-care",
+        link: "/badychild-care",
         title: "Baby and Child Care",
         items: [
           "Natural Baby Lotions",
@@ -97,12 +96,12 @@ export const categories = [
         ],
       },
       {
-        link:"/health-wellness",
+        link: "/health-wellness",
         title: "Health and Wellness Kits",
         items: ["Detox Kits", "Spa Kits", "Sleep and Relaxation Kits"],
       },
       {
-        link:"/immuity-boost",
+        link: "/immuity-boost",
         title: "Immunity Boost Kits",
         items: [
           "Sustainable and Eco-Friendly Products",
@@ -116,10 +115,10 @@ export const categories = [
   {
     name: "Jewelry and Gemstones",
     image: jewelry,
-    link:"/jewelry",
+    link: "/jewelry",
     subcategories: [
       {
-        link:"/handmade-jewelry",
+        link: "/handmade-jewelry",
         title: "Handmade Jewelry",
         items: [
           "Necklaces",
@@ -132,7 +131,7 @@ export const categories = [
         ],
       },
       {
-        link:"/gemstones",
+        link: "/gemstones",
         title: "Gemstones",
         items: [
           "Precious Gemstones",
@@ -143,7 +142,7 @@ export const categories = [
         ],
       },
       {
-        link:"/jewelry-materials",
+        link: "/jewelry-materials",
         title: "Jewelry Materials",
         items: [
           "Metal Jewelry",
@@ -155,12 +154,12 @@ export const categories = [
         ],
       },
       {
-        link:"/sustainable-jewelry",
+        link: "/sustainable-jewelry",
         title: "Ethically Sourced & Sustainable Jewelry",
         items: ["Recycled Materials Jewelry", "Conflict-free Gemstones"],
       },
       {
-        link:"/men-jewelry",
+        link: "/men-jewelry",
         title: "Men’s Jewelry",
         items: [
           "Men’s Rings",
@@ -170,12 +169,12 @@ export const categories = [
         ],
       },
       {
-        link:"/children-jewelry",
+        link: "/children-jewelry",
         title: "Children’s Jewelry",
         items: ["Kids’ Necklaces", "Kids’ Bracelets", "Charm Jewelry for Kids"],
       },
       {
-        link:"/occasion-jewelry",
+        link: "/occasion-jewelry",
         title: "Bridal & Special Occasion Jewelry",
         items: [
           "Engagement Rings",
@@ -186,7 +185,7 @@ export const categories = [
         ],
       },
       {
-        link:"/traditional-jewelry",
+        link: "/traditional-jewelry",
         title: "Cultural & Traditional Jewelry",
         items: [
           "African Jewelry",
@@ -195,7 +194,7 @@ export const categories = [
         ],
       },
       {
-        link:"/gemstone-jewelry",
+        link: "/gemstone-jewelry",
         title: "Gemstone Jewelry by Birthstone",
         items: [
           "January (Garnet)",
@@ -217,10 +216,10 @@ export const categories = [
   {
     name: "Books and Poetry",
     image: book,
-    link:"/bookpoetry",
+    link: "/bookpoetry",
     subcategories: [
       {
-        link:"/",
+        link: "/cultural-ethnic",
         title: "Cultural and Ethnic Studies",
         items: [
           "Books on Indigenous Cultures",
@@ -230,7 +229,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/traditional-folk",
         title: "Traditional and Folk Literature",
         items: [
           "Folktales and Myths from Various Regions",
@@ -240,7 +239,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/poetry",
         title: "Poetry",
         items: [
           "Indigenous and Tribal Poetry",
@@ -251,7 +250,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/historical-narrative",
         title: "Historical Narratives",
         items: [
           "History of Indigenous Peoples",
@@ -262,7 +261,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/spirituality-religion",
         title: "Spirituality and Religion",
         items: [
           "Sacred Texts and Commentaries",
@@ -273,7 +272,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/language-linguistics",
         title: "Language and Linguistics",
         items: [
           "Books on Endangered Languages",
@@ -283,7 +282,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/cookbook",
         title: "Cookbooks and Culinary Traditions",
         items: [
           "Traditional Recipes from Various Cultures",
@@ -294,7 +293,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/art-craft",
         title: "Art and Craft",
         items: [
           "Traditional Handicrafts and Techniques",
@@ -304,7 +303,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/children-books",
         title: "Children’s Books",
         items: [
           "Bilingual Storybooks",
@@ -315,7 +314,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/travel-exploration",
         title: "Travel and Exploration",
         items: [
           "Travel Guides to Indigenous and Remote Regions",
@@ -325,7 +324,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/health-wellness",
         title: "Health and Wellness",
         items: [
           "Books on Traditional Healing Practices",
@@ -335,7 +334,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/political-social",
         title: "Political and Social Issues",
         items: [
           "Books on Indigenous Rights and Social Justice",
@@ -345,7 +344,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/artistic-writing",
         title: "Artistic and Creative Writing",
         items: [
           "Anthologies of Short Stories and Essays",
@@ -355,7 +354,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/environment-nature",
         title: "Environmental and Nature Studies",
         items: [
           "Indigenous Environmental Practices and Sustainability",
@@ -365,7 +364,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/inspirational-books",
         title: "Inspirational and Motivational Books",
         items: [
           "Stories of Resilience and Overcoming Challenges",
@@ -379,10 +378,10 @@ export const categories = [
   {
     name: "Home Décor and Accessories",
     image: Homedecor,
-    link:"/homedecor",
+    link: "/homedecor",
     subcategories: [
       {
-        link:"/",
+        link: "/textiles",
         title: "Textiles and Fabrics",
         items: [
           "Handwoven Rugs (Kilim, Dhurrie)",
@@ -393,7 +392,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/ceramics-pottery",
         title: "Ceramics and Pottery",
         items: [
           "Hand-painted Ceramic Bowls",
@@ -404,7 +403,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/woodcraft",
         title: "Woodcraft",
         items: [
           "Hand-carved Wooden Bowls",
@@ -415,7 +414,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/metalwork",
         title: "Metalwork",
         items: [
           "Hand-forged Iron Candle Holders",
@@ -426,7 +425,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/baskets-weaving",
         title: "Baskets and Weaving",
         items: [
           "Handwoven Storage Baskets",
@@ -437,7 +436,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/glasswork",
         title: "Glasswork",
         items: [
           "Blown Glass Vases",
@@ -448,7 +447,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/leather-woods",
         title: "Leather Woods",
         items: [
           "Hand-stitched Leather Poufs",
@@ -459,7 +458,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/beaded-decor",
         title: "Beaded Decor",
         items: [
           "Beaded Wall Hangings",
@@ -470,7 +469,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/stone-marble",
         title: "Stone and Marble Crafts",
         items: [
           "Hand-carved Marble Coasters",
@@ -481,7 +480,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/handcrafted",
         title: "Handcrafted Lamps and Lighting",
         items: [
           "Bamboo and Rattan Lampshades",
@@ -492,7 +491,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/wall-art",
         title: "Wall Art",
         items: [
           "Tapestries with Traditional Motifs",
@@ -503,7 +502,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/jewelry-trinket",
         title: "Jewelry and Trinket Boxes",
         items: [
           "Hand-carved Wooden Jewelry Boxes",
@@ -514,7 +513,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/mirrors",
         title: "Mirrors",
         items: [
           "Hand-carved Wooden Mirrors",
@@ -525,7 +524,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/handwoven",
         title: "Handwoven Mats and Carpets",
         items: [
           "Sisal Mats",
@@ -536,7 +535,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/handcrafted-kitchenware",
         title: "Handcrafted Kitchenware",
         items: [
           "Wooden Serving Trays",
@@ -551,10 +550,10 @@ export const categories = [
   {
     name: "Vintage Stocks",
     image: Vintage,
-    link:"/vintage",
+    link: "/vintage",
     subcategories: [
       {
-        link:"/",
+        link: "/vintagetextiles",
         title: "Vintage Textiles and Fabrics",
         items: [
           "Handwoven Kente Cloth",
@@ -565,7 +564,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Clothing",
         title: "Vintage Clothing",
         items: [
           "Traditional Kimonos",
@@ -576,7 +575,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Home",
         title: "Vintage Home Decor",
         items: [
           "Hand-carved Wooden Masks",
@@ -587,7 +586,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Instruments",
         title: "Vintage Instruments",
         items: [
           "African Djembe Drums",
@@ -598,7 +597,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Art",
         title: "Vintage Art",
         items: [
           "Hand-painted Miniatures",
@@ -609,7 +608,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Furniture",
         title: "Vintage Furniture",
         items: [
           "Handcrafted Wooden Chests",
@@ -620,7 +619,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Handicrafts",
         title: "Vintage Handicrafts",
         items: [
           "Woven Dreamcatchers",
@@ -631,7 +630,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Religious",
         title: "Vintage Religious and Spiritual Items",
         items: [
           "Antique Prayer Beads",
@@ -642,7 +641,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vintage-Storage",
         title: "Vintage Storage",
         items: [
           "Handcrafted Wooden Trunks",
@@ -657,10 +656,10 @@ export const categories = [
   {
     name: "Plant and Seeds",
     image: "/plants.jpg",
-    link:"/plantseed",
+    link: "/plantseed",
     subcategories: [
       {
-        link:"/",
+        link: "/plant",
         title: "Plants",
         items: [
           "Indoor Plants",
@@ -676,7 +675,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/FruitPlants",
         title: "Fruit Plants",
         items: [
           "Citrus Trees",
@@ -686,7 +685,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/Vegetableplants",
         title: "Vegetable Plants",
         items: [
           "Tomato Plants",
@@ -696,12 +695,12 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/MedicinalPlants",
         title: "Medicinal Plants",
         items: ["Aloe Vera", "Neem", "Holy Basil (Tulsi)", "Echinacea"],
       },
       {
-        link:"/",
+        link: "/seed",
         title: "Seeds",
         items: [
           "Vegetable Seeds",
@@ -717,7 +716,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/HerbSeeds",
         title: "Herb Seeds",
         items: [
           "Culinary Herbs (Basil, Thyme)",
@@ -726,7 +725,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/FlowerSeeds",
         title: "Flower Seeds",
         items: [
           "Annual Flowers",
@@ -736,7 +735,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/CulturalTraditionalSeed",
         title: "Cultural and Traditional Seeds",
         items: [
           "Indigenous Crop Seeds (Millet, Sorghum)",
@@ -745,7 +744,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/SeedingSapling",
         title: "Seedlings and Saplings",
         items: [
           "Tree Saplings",
@@ -764,7 +763,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/PlantingKit",
         title: "Planting Kits and Tools",
         items: [
           "Seed Starter Kits",
@@ -778,7 +777,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/PlantCareProduct",
         title: "Plant Care Products",
         items: [
           "Soil Mixes",
@@ -797,10 +796,10 @@ export const categories = [
   {
     name: "Spices, Condiments, and Seasonings",
     image: "/spices.jpg",
-    link:"/spices",
+    link: "/spices",
     subcategories: [
       {
-        link:"/",
+        link: "/",
         title: "Spices",
         items: [
           "Whole Spices (Ungrounded Spice)",
@@ -812,7 +811,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Condiments",
         items: [
           "Sauces (Hot Sauces, Soy Sauce, Barbecue Sauce)",
@@ -824,7 +823,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cultural & Regional Spices",
         items: [
           "African Spices (Berbere, Ras el Hanout, Suya Spice)",
@@ -835,7 +834,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Salt & Pepper Varieties",
         items: [
           "Artisan Salts (Himalayan Pink Salt, Black Lava Salt, Fleur de Sel)",
@@ -844,7 +843,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Marinades & Rubs",
         items: [
           "Meat Rubs (Barbecue Rubs, Cajun Rubs, Jerk Seasoning)",
@@ -853,7 +852,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Health & Wellness Spices",
         items: [
           "Ayurvedic Spices (Turmeric, Ashwagandha, Ginger)",
@@ -862,7 +861,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Spice Kits & Gift Sets",
         items: [
           "Regional Spice Kits (Indian Cooking Spice Kits, Mediterranean Spice Kits)",
@@ -870,7 +869,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cooking Ingredients",
         items: [
           "Flavor Extracts (Vanilla Extract, Almond Extract)",
@@ -879,7 +878,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Ethically Sourced & Organic Products",
         items: [
           "Fair Trade Spices",
@@ -888,7 +887,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Packaging",
         items: [
           "Bulk Spices",
@@ -897,7 +896,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Seasoning for Specific Cuisines",
         items: [
           "Indian Seasoning",
@@ -907,7 +906,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Special Dietary Categories",
         items: [
           "Gluten-free Spices",
@@ -917,7 +916,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Popular Uses",
         items: [
           "For Grilling & Barbecue",
@@ -931,40 +930,40 @@ export const categories = [
   {
     name: "Local & Traditional Foods",
     image: "/local_traditional_foods.jpg",
-    link:"/localfood",
+    link: "/localfood",
     subcategories: [
       {
-        link:"/",
+        link: "/",
         title: "Staple Foods",
         items: ["Rice", "Yam", "Cassava", "Plantain", "Millet", "Maize"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Specialty Grains & Legumes",
         items: ["Fonio", "Sorghum", "Teff", "Bambara Beans", "Cowpeas"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Traditional Snacks & Street Foods",
         items: ["Puff-puff", "Samosas", "Empanadas", "Mandazi"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Indigenous Baked Goods",
         items: ["Flatbreads", "Cornbread", "Meat Pies", "Johnny Cakes"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Traditional Soups & Stews",
         items: ["Groundnut Soup", "Egusi Soup", "Gumbo", "Bouillabaisse"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Fermented & Preserved Foods",
         items: ["Sauerkraut", "Kimchi", "Fermented Fish", "Pickled Vegetables"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Local Beverages",
         items: [
           "Non-Alcoholic Drinks (Hibiscus Tea (Zobo, Bissap), Tamarind Juice, Ginger Beer, Palm Wine)",
@@ -975,7 +974,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Regional & Ethnic Foods",
         items: [
           "African Cuisine (Jollof Rice, Injera, Ugali, Bobotie)",
@@ -987,7 +986,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Ethnic Sauces, Spices & Seasonings",
         items: [
           "Local Hot Sauces (Scotch Bonnet Sauce, Harissa, Piri-Piri)",
@@ -997,7 +996,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Culturally Specific Food Categories",
         items: [
           "Kosher Foods",
@@ -1008,7 +1007,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Traditional Sweets & Desserts",
         items: [
           "Ethnic Desserts (Turkish Delight, Baklava, Kulfi, Cassava Cake)",
@@ -1017,7 +1016,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Packaged & Ready-to-Eat Foods",
         items: [
           "Ready-to-Eat Traditional Meals (Canned Jollof Rice, Packaged Tacos, Frozen Samosas)",
@@ -1026,7 +1025,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Traditional Oils & Fats",
         items: [
           "Coconut Oil",
@@ -1037,7 +1036,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Local Grains & Flours",
         items: [
           "Cassava Flour",
@@ -1048,7 +1047,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Fermented & Pickled Foods",
         items: [
           "Pickled Vegetables & Fruits (Pickled Mango, Pickled Peppers)",
@@ -1057,7 +1056,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cultural Holiday & Festival Foods",
         items: [
           "Special Holiday Meals (Thanksgiving Turkey, Eid Lamb, Christmas Ham)",
@@ -1066,42 +1065,42 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Meal Plans & Subscription Boxes",
         items: [
           "Diaspora Food Subscription Boxes (African Food Box, Caribbean Meal Box, Asian Cuisine Box)",
           "Monthly Traditional Snack Subscription (Global Snack Box, Heritage Treats Box)",
         ],
-      }
+      },
     ],
   },
   {
     name: "Traditional Clothing & Fabrics",
     image: "/local_traditional_foods.jpg",
-    link:"/tranditionalFabrics",
+    link: "/tranditionalFabrics",
     subcategories: [
       {
-        link:"/",
+        link: "/",
         title: "Men’s Traditional Wear",
         items: ["Dashikis", "Boubous", "Kente Cloth", "Sherwanis", "Kimono"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Women’s Traditional Wear",
         items: ["Kaftans", "Kanga", "Sari", "Abaya", "Gele", "Kimono"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Children’s Traditional Wear",
         items: ["Mini Dashikis", "Cheongsam", "Cultural Dresses"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Unisex Traditional Clothing",
         items: ["Sarongs", "Robes", "Ponchos", "Caftans"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Modern Clothing with Traditional Influence",
         items: [
           "Contemporary African Fashion",
@@ -1111,7 +1110,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Footwear & Shoes",
         items: [
           "Traditional Shoes & Sandals",
@@ -1121,7 +1120,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cultural Accessories & Adornments",
         items: [
           "Headwear & Scarves",
@@ -1131,7 +1130,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Fabrics & Textiles",
         items: [
           "Handwoven & Local Fabrics",
@@ -1141,7 +1140,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cultural Footwear for Specific Occasions",
         items: [
           "Wedding Footwear",
@@ -1150,7 +1149,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Cultural & Festival Clothing",
         items: [
           "Wedding Attire",
@@ -1159,17 +1158,17 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Bespoke & Tailored Clothing",
         items: ["Custom Tailored Traditional Wear", "Made-to-Order Shoes"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Sustainable & Ethical Fashion",
         items: ["Eco-friendly Clothing", "Fair Trade Clothing & Shoes"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Traditional Embroidery & Design Work",
         items: [
           "Hand-Embroidered Clothing",
@@ -1178,7 +1177,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Fashion for Specific Cultures & Regions",
         items: [
           "African Fashion",
@@ -1189,12 +1188,12 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "Seasonal & Special Occasion Fashion",
         items: ["Summer Ethnic Wear", "Winter Ethnic Wear"],
       },
       {
-        link:"/",
+        link: "/",
         title: "Other Functional Categories",
         items: [
           "New Arrivals",
@@ -1204,7 +1203,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "By Country or Region",
         items: [
           "Africa",
@@ -1216,7 +1215,7 @@ export const categories = [
         ],
       },
       {
-        link:"/",
+        link: "/",
         title: "By Fabric Type",
         items: [
           "Cotton",
