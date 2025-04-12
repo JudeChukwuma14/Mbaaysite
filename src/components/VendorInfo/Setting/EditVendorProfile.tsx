@@ -27,7 +27,7 @@ export default function EditVendorProfile() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string | null>(null);
   const [logoImage, setLogoImage] = useState<string | null>(null);
-  const [returnPolicyText, setReturnPolicyText] = useState("");
+  const [, setReturnPolicyText] = useState("");
   const [returnPolicy, setReturnPolicy] = useState<File | null>(null);
   const [returnPolicyName, setReturnPolicyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -35,7 +35,6 @@ export default function EditVendorProfile() {
     Partial<Record<keyof VendorProfile, string>>
   >({});
 
-  returnPolicyText;
   const user = useSelector((state: RootState) => state.vendor);
 
   const [profile, setProfile] = useState<VendorProfile>({
@@ -191,16 +190,16 @@ export default function EditVendorProfile() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gray-50 p-6"
+      className="min-h-screen p-6 bg-gray-50"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
+            <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
               Be Mbaay Verified
               <MdVerified size={20} className="text-blue-500" />
             </div>
@@ -211,14 +210,14 @@ export default function EditVendorProfile() {
           {/* Banner and Profile Section */}
           <motion.div
             variants={itemVariants}
-            className="bg-white rounded-lg shadow-sm overflow-hidden"
+            className="overflow-hidden bg-white rounded-lg shadow-sm"
           >
             <div className="relative h-48 bg-gradient-to-r from-orange-500 to-black">
               {bannerImage ? (
                 <img
                   src={bannerImage || "/placeholder.svg"}
                   alt="Banner"
-                  className="w-full h-full object-cover"
+                  className="object-cover w-full h-full"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-orange-500 to-black" />
@@ -232,7 +231,7 @@ export default function EditVendorProfile() {
               />
               <label
                 htmlFor="banner-upload"
-                className="absolute bottom-4 right-4 bg-white p-2 rounded-full cursor-pointer hover:bg-gray-100"
+                className="absolute p-2 bg-white rounded-full cursor-pointer bottom-4 right-4 hover:bg-gray-100"
               >
                 <Camera className="w-5 h-5" />
               </label>
@@ -240,15 +239,15 @@ export default function EditVendorProfile() {
             <div className="p-6">
               <div className="flex items-end gap-4 -mt-16">
                 <div className="relative">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-gray-200 overflow-hidden">
+                  <div className="w-24 h-24 overflow-hidden bg-gray-200 border-4 border-white rounded-full">
                     {profileImage ? (
                       <img
                         src={profileImage || "/placeholder.svg"}
                         alt="Profile"
-                        className="w-full h-full object-cover"
+                        className="object-cover w-full h-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
+                      <div className="flex items-center justify-center w-full h-full">
                         <Camera className="w-8 h-8 text-gray-400" />
                       </div>
                     )}
@@ -284,26 +283,26 @@ export default function EditVendorProfile() {
           {/* Account Type and Rating */}
           <motion.div
             variants={itemVariants}
-            className="grid md:grid-cols-2 gap-6"
+            className="grid gap-6 md:grid-cols-2"
           >
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-sm text-gray-500 mb-2">Account Type</h3>
+            <div className="p-6 bg-white rounded-lg shadow-sm">
+              <h3 className="mb-2 text-sm text-gray-500">Account Type</h3>
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <span className="text-orange-500 font-semibold">C</span>
+                <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-lg">
+                  <span className="font-semibold text-orange-500">C</span>
                 </div>
                 <div className="font-semibold">Counter</div>
               </div>
               <div className="mt-2">
-                <span className="bg-orange-500 text-white text-xs px-3 py-1 rounded-full">
+                <span className="px-3 py-1 text-xs text-white bg-orange-500 rounded-full">
                   Standard Account
                 </span>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-sm text-gray-500 mb-2">Business Rating</h3>
+            <div className="p-6 bg-white rounded-lg shadow-sm">
+              <h3 className="mb-2 text-sm text-gray-500">Business Rating</h3>
               <div className="text-2xl font-bold">3.5</div>
-              <button className="text-purple-600 text-sm hover:underline">
+              <button className="text-sm text-purple-600 hover:underline">
                 View Reviews
               </button>
             </div>
@@ -312,12 +311,12 @@ export default function EditVendorProfile() {
           {/* Personal Information */}
           <motion.div
             variants={itemVariants}
-            className="bg-white p-6 rounded-lg shadow-sm"
+            className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <h2 className="font-semibold mb-4">Personal Information</h2>
+            <h2 className="mb-4 font-semibold">Personal Information</h2>
             <div className="grid gap-4">
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Company Name
                 </label>
                 <motion.input
@@ -337,7 +336,7 @@ export default function EditVendorProfile() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Email Address
                 </label>
                 <motion.input
@@ -355,7 +354,7 @@ export default function EditVendorProfile() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Phone Number
                 </label>
                 <motion.input
@@ -373,7 +372,7 @@ export default function EditVendorProfile() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Password
                 </label>
                 <div className="relative">
@@ -386,7 +385,7 @@ export default function EditVendorProfile() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-10 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className="absolute text-gray-500 -translate-y-1/2 right-10 top-1/2 hover:text-gray-700"
                   >
                     {showPassword ? (
                       <EyeOff className="w-5 h-5" />
@@ -397,8 +396,8 @@ export default function EditVendorProfile() {
                 </div>
                 <button
                   type="button"
-                  // className="absolute right-2 top-1/2 -translate-y-1/2 text-purple-600 hover:text-purple-700 text-sm"
-                  className="mt-3 text-purple-600 hover:text-purple-700 text-sm"
+                  // className="absolute text-sm text-purple-600 -translate-y-1/2 right-2 top-1/2 hover:text-purple-700"
+                  className="mt-3 text-sm text-purple-600 hover:text-purple-700"
                 >
                   Change password
                 </button>
@@ -409,11 +408,11 @@ export default function EditVendorProfile() {
           {/* Business Category */}
           <motion.div
             variants={itemVariants}
-            className="bg-white p-6 rounded-lg shadow-sm"
+            className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <div className="flex items-center justify-between border rounded-lg p-3">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
+                <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
                   💄
                 </div>
                 <span>Beauty and Skin Care</span>
@@ -425,12 +424,12 @@ export default function EditVendorProfile() {
           {/* Payment Details */}
           <motion.div
             variants={itemVariants}
-            className="bg-white p-6 rounded-lg shadow-sm"
+            className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <h2 className="font-semibold mb-4">Payment Details</h2>
+            <h2 className="mb-4 font-semibold">Payment Details</h2>
             <div className="grid gap-4">
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Account Name
                 </label>
                 <motion.input
@@ -450,7 +449,7 @@ export default function EditVendorProfile() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Account Number
                 </label>
                 <motion.input
@@ -470,7 +469,7 @@ export default function EditVendorProfile() {
                 )}
               </div>
               <div>
-                <label className="block text-sm text-gray-500 mb-1">
+                <label className="block mb-1 text-sm text-gray-500">
                   Bank Name
                 </label>
                 <motion.input
@@ -502,10 +501,10 @@ export default function EditVendorProfile() {
           {/* Logo & Branding */}
           <motion.div
             variants={itemVariants}
-            className="bg-white p-6 rounded-lg shadow-sm"
+            className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <h2 className="font-semibold mb-4">Logo & Branding</h2>
-            <div className="border-2 border-dashed rounded-lg p-8 text-center border-orange-500">
+            <h2 className="mb-4 font-semibold">Logo & Branding</h2>
+            <div className="p-8 text-center border-2 border-orange-500 border-dashed rounded-lg">
               {logoImage ? (
                 <img
                   src={logoImage || "/placeholder.svg"}
@@ -514,7 +513,7 @@ export default function EditVendorProfile() {
                 />
               ) : (
                 <div className="space-y-4">
-                  <div className="w-20 h-20 bg-gray-100 rounded-lg mx-auto flex items-center justify-center">
+                  <div className="flex items-center justify-center w-20 h-20 mx-auto bg-gray-100 rounded-lg">
                     <Upload className="w-8 h-8 text-gray-400" />
                   </div>
                   <div>
@@ -528,7 +527,7 @@ export default function EditVendorProfile() {
                     />
                     <label
                       htmlFor="logo-upload"
-                      className="mt-2 inline-block px-4 py-2 bg-orange-500 text-white rounded-lg cursor-pointer hover:bg-orange-600"
+                      className="inline-block px-4 py-2 mt-2 text-white bg-orange-500 rounded-lg cursor-pointer hover:bg-orange-600"
                     >
                       Upload Now
                     </label>
@@ -543,9 +542,10 @@ export default function EditVendorProfile() {
             variants={itemVariants}
             className="flex justify-end gap-4"
           >
-            <button className="px-6 py-2 border rounded-lg hover:bg-orange-50 border-orange-500">
+            <button className="px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50">
               Discard Changes
             </button>
+
             <button
               className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
               onClick={handleSubmit}

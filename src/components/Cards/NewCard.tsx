@@ -14,7 +14,7 @@ export default function NewCard() {
       audioRef.current.src = songs[currentTrack];
       if (isPlaying) audioRef.current.play();
     }
-  }, [currentTrack]);
+  }, [currentTrack, isPlaying, songs]);
 
   const togglePlay = () => {
     if (!audioRef.current) return;
@@ -35,14 +35,14 @@ export default function NewCard() {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 justify-center items-center">
+    <div className="grid items-center justify-center grid-cols-1 gap-3 md:grid-cols-2">
       {/* Large Main Card */}
       <div className="relative h-[410px] bg-cover bg-center" style={{ backgroundImage: `url(${Art})` }}>
         <div className="absolute inset-0 bg-black opacity-60"></div>
-        <div className="absolute bottom-2 text-white left-0 p-4">
+        <div className="absolute left-0 p-4 text-white bottom-2">
           <h5>African Woman Art</h5>
           <p className="text-sm">Black and White version of the PS5 coming out on sale.</p>
-          <a href="#" className="text-orange-500 text-sm cursor-pointer">Show Now</a>
+          <a href="#" className="text-sm text-orange-500 cursor-pointer">Show Now</a>
         </div>
       </div>
 
@@ -51,10 +51,10 @@ export default function NewCard() {
         {/* Music Card */}
         <div className="relative h-[200px] bg-cover bg-center" style={{ backgroundImage: `url(${Art})` }}>
           <div className="absolute inset-0 bg-black opacity-60"></div>
-          <div className="absolute bottom-2 text-white left-0 p-4">
+          <div className="absolute left-0 p-4 text-white bottom-2">
             <h5>Home</h5>
             <p className="text-sm">Lorem ipsum dolor sit amet consectetur.</p>
-            <a href="#" className="text-orange-500 text-sm cursor-pointer">Show Now</a>
+            <a href="#" className="text-sm text-orange-500 cursor-pointer">Show Now</a>
 
             {/* Audio Player */}
             <div className="flex items-center gap-4 mt-3">
@@ -79,7 +79,7 @@ export default function NewCard() {
         {/* Video Card */}
         <div className="relative h-[200px]">
           <video
-            className="w-full h-full object-cover "
+            className="object-cover w-full h-full "
             controls
             autoPlay
             loop

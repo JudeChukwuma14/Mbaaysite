@@ -39,16 +39,16 @@ const EditProfile: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-100">
-      <div className="flex-1 p-6 w-full bg-gray-100">
-        <div className="bg-white p-6">
-          <h1 className="text-2xl font-bold mb-4">Edit Your Profile</h1>
+    <div className="flex flex-col min-h-screen md:flex-row ">
+      <div className="flex-1 w-full p-6">
+        <div className="p-6 bg-white">
+          <h1 className="mb-4 text-2xl font-bold">Edit Your Profile</h1>
           <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div>
                 <label
                   htmlFor="firstName"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   First Name
                 </label>
@@ -65,7 +65,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="lastName"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   Last Name
                 </label>
@@ -82,7 +82,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   Email
                 </label>
@@ -99,7 +99,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="address"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   Address
                 </label>
@@ -116,7 +116,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="currentPassword"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   Current Password
                 </label>
@@ -132,7 +132,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="newPassword"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   New Password
                 </label>
@@ -148,7 +148,7 @@ const EditProfile: React.FC = () => {
               <div>
                 <label
                   htmlFor="confirmNewPassword"
-                  className="block text-gray-700 font-bold mb-2"
+                  className="block mb-2 font-bold text-gray-700"
                 >
                   Confirm New Password
                 </label>
@@ -165,13 +165,13 @@ const EditProfile: React.FC = () => {
             <div className="flex justify-end mt-6 space-x-4">
               <button
                 type="button"
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                className="px-4 py-2 text-white bg-orange-500 rounded hover:bg-orange-600"
               >
                 Save Changes
               </button>
