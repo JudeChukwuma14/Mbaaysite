@@ -1,47 +1,48 @@
-import  { useState } from "react";
-import { HiDotsVertical } from "react-icons/hi";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
 import { NavLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getVendorProducts } from "@/utils/VendorProductApi";
+import { useSelector } from "react-redux";
+import ProductDetailModal from "./ProductDetailModal";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const AllProduct = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(5);
-  const [category, setCategory] = useState("");
-  const [status, setStatus] = useState("");
+interface Product {
+  _id: string;
+  name: string;
+  category: string;
+  sub_category: string;
+  price: number;
+  inventory: number;
+  createdAt: string;
+  description: string;
+  status: string;
+  subSubCategory: string;
+  images: string[];
+}
 
-  const products = [
-    {
-      id: "#1234509",
-      name: "Traditional Wears",
-      category: "Igbo Wears",
-      subCategory: "Men's Wear",
-      amount: "$50,000",
-      stock: "Stock",
-      date: "23/04/13",
-    },
-    {
-      id: "#1234508",
-      name: "Ankara Dress",
-      category: "Fashion",
-      subCategory: "Women's Wear",
-      amount: "$35,000",
-      stock: "Out-Of-Stock",
-      date: "12/02/13",
-    },
-    // Add more products here
-  ];
+const AllProduct: React.FC = () => {
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage] = useState<number>(5);
+  const [category, setCategory] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
+  const [selectedProduct, setSelectedProduct] = useState<any>();
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(
+    null
+  );
 
-  const totalPages = Math.ceil(products.length / rowsPerPage);
-  const paginatedProducts = products.slice(
+  const user = useSelector((state: any) => state.vendor);
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ["products"],
+    queryFn: () => getVendorProducts(user.token),
+  });
+
+  const totalPages = Math.ceil((products?.length || 0) / rowsPerPage);
+  const paginatedProducts = products?.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -55,8 +56,24 @@ const AllProduct = () => {
   };
 
   const handleFilter = () => {
-    // Add filter logic here
     console.log(`Category: ${category}, Status: ${status}`);
+  };
+
+  const handleProductClick = (product: Product, id: any) => {
+    setSelectedProduct({
+      ...product,
+      productName: product.name,
+      subCategory: product.sub_category,
+      dateAdded: product.createdAt,
+    });
+
+    setSelectedProductId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
   };
 
   const chartData = {
@@ -81,9 +98,9 @@ const AllProduct = () => {
       >
         <h1 className="text-2xl font-bold">Products Overview</h1>
         <NavLink to={"/app/new-product"}>
-        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg">
-          + New Product
-        </button>
+          <button className="bg-orange-500 text-white px-4 py-2 rounded-lg">
+            + New Product
+          </button>
         </NavLink>
       </motion.div>
 
@@ -93,8 +110,9 @@ const AllProduct = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
+          style={{ maxWidth: "400px", maxHeight: "400px" }} // Reduced size
         >
-          <Doughnut data={chartData} />
+          <Doughnut data={chartData} options={{ maintainAspectRatio: true }} />
         </motion.div>
       </div>
 
@@ -118,7 +136,7 @@ const AllProduct = () => {
           <option value="Out-Of-Stock">Out-Of-Stock</option>
         </motion.select>
         <button
-          className="bg-orange-500 text-white px-4 py-2 rounded-lg "
+          className="bg-orange-500 text-white px-4 py-2 rounded-lg"
           onClick={handleFilter}
         >
           Filter
@@ -138,7 +156,6 @@ const AllProduct = () => {
       >
         <thead className="bg-gray-100">
           <tr>
-            <th className="text-left p-3">Product ID</th>
             <th className="text-left p-3">Product Name</th>
             <th className="text-left p-3">Category</th>
             <th className="text-left p-3">Sub-Category</th>
@@ -148,33 +165,35 @@ const AllProduct = () => {
           </tr>
         </thead>
         <tbody>
-          {paginatedProducts.map((product, index) => (
+          {paginatedProducts?.map((product: Product, index: number) => (
             <motion.tr
-              key={index}
-              className="hover:bg-gray-50"
+              key={product._id}
+              className="hover:bg-gray-50 cursor-pointer"
+              onClick={() => handleProductClick(product, product._id)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 + index * 0.1 }}
             >
-              <td className="p-3">{product.id}</td>
               <td className="p-3">{product.name}</td>
               <td className="p-3">{product.category}</td>
-              <td className="p-3">{product.subCategory}</td>
-              <td className="p-3">{product.amount}</td>
+              <td className="p-3">{product.sub_category}</td>
+              <td className="p-3">{product.price}</td>
               <td
                 className={`p-3 ${
-                  product.stock === "Stock"
-                    ? "text-green-500"
-                    : "text-red-500"
+                  product.inventory <= 0
+                    ? "text-red-500"
+                    : product.inventory < 10
+                    ? "text-amber-500"
+                    : "text-green-500"
                 }`}
               >
-                {product.stock}
+                {product.inventory <= 0
+                  ? "Out of Stock"
+                  : product.inventory < 10
+                  ? "Low Stock"
+                  : "In Stock"}
               </td>
-              <td className="p-3 flex items-center gap-2">
-              {product.date}
-            <HiDotsVertical className="w-4 h-4 text-gray-500" />
-          </td>
-
+              <td className="p-3">{product.createdAt.split("T")[0]}</td>
             </motion.tr>
           ))}
         </tbody>
@@ -199,6 +218,13 @@ const AllProduct = () => {
           Next
         </button>
       </div>
+
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        productId={selectedProductId}
+      />
     </main>
   );
 };
