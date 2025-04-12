@@ -93,7 +93,7 @@ const Error = lazy(() => import("@/components/Error/Error"));
 const userIndex = lazy(() => import("@/components/profileMangement/Index"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
-
+const RandomProductPage = lazy(()=>import("@/page/RandomProductPage"))
 
 
 
@@ -228,7 +228,7 @@ const routesConfig: RouteObject[] = [
       { path: "/product-details/:id", element: withSuspense(ProductDetail) },
       { path: "/product/:id", element: withSuspense(ProductInfo) }, 
       { path: "/auctionview", element: withSuspense(AuctionView) },
-      // {path:"/auctiondetail/:id",element:withSuspense(AuctionDetail)}
+      {path:"/random-product",element:withSuspense(RandomProductPage)},
       
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },

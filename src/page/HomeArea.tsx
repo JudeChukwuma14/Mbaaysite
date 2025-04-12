@@ -34,10 +34,10 @@ import NewArrival from "@/components/Cards/NewArrival";
 
 interface Product {
   _id: string;
-  id: string; // Optional id property
+  id: string; 
   name: string;
   price: number;
-  images: string[]; // Updated to match the expected type
+  images: string[]; 
 }
 
 const HomeArea: React.FC = () => {
