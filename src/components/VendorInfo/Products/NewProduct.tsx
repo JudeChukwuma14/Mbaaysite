@@ -10,7 +10,9 @@ import DescriptionSection from "./descriptionSection";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
 import ReturnPolicyPopup from "./ReturnPolicyPopup";
+
 import CurrencyInput from "./CurrencyInput";
+
 
 interface ProductData {
   productName: string;
@@ -458,12 +460,14 @@ const NewProduct = () => {
 
   return (
     <motion.div
-      className="p-6 space-y-6 bg-gray-100 min-h-screen"
+      className="min-h-screen p-6 space-y-6 bg-gray-100"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+
       <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6">
+
         <h1 className="text-2xl font-bold">New Product</h1>
         {selectedCategories.length > 0 && !isUpgraded && (
           <CategorySelector
@@ -485,6 +489,7 @@ const NewProduct = () => {
           getCurrentTheme={getCurrentTheme}
         />
       )}
+
 
       <div className="space-y-6">
         <div className="bg-white p-4 rounded-lg shadow">
@@ -509,6 +514,7 @@ const NewProduct = () => {
             />
           </div>
         </div>
+
 
         <div className="bg-white p-4 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4 border-b pb-2">
@@ -549,6 +555,7 @@ const NewProduct = () => {
                 </motion.select>
               </motion.div>
             )}
+
             <VideoUploader
               youtubeUrl={youtubeUrl}
               youtubeEmbedUrl={youtubeEmbedUrl}
@@ -558,6 +565,7 @@ const NewProduct = () => {
               setShowYoutubeInput={setShowYoutubeInput}
               onVideoInfoUpdate={handleVideoInfoUpdate}
               uploadedVideoInfo={uploadedVideoInfo}
+
             />
           </div>
         </div>
@@ -616,14 +624,16 @@ const NewProduct = () => {
 
       <div className="bg-white p-4 rounded-lg shadow flex justify-end space-x-4">
         <button
-          className="border border-orange-500 text-red-500 px-4 py-2 rounded-lg"
+          className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg"
           onClick={handleDiscard}
           disabled={isLoading}
         >
           Discard
         </button>
         <button
+
           className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+
           onClick={handleSaveDraft}
           disabled={isLoading}
         >
@@ -656,7 +666,9 @@ const NewProduct = () => {
           )}
         </button>
         <button
+
           className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+
           onClick={handleAddProduct}
           disabled={isLoading}
         >

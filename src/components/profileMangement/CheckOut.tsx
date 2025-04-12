@@ -46,10 +46,10 @@ const Checkout: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 lg:flex lg:space-x-8">
+    <div className="container mx-auto lg:flex lg:space-x-8">
       {/* Billing Details */}
-      <div className="w-full lg:w-2/3 bg-white p-6 rounded">
-        <h2 className="text-2xl font-bold mb-4">Billing Details</h2>
+      <div className="w-full p-6 bg-white rounded lg:w-2/3">
+        <h2 className="mb-4 text-2xl font-bold">Billing Details</h2>
         <form className="space-y-4">
           <input
             type="text"
@@ -57,7 +57,7 @@ const Checkout: React.FC = () => {
             value={formData.firstName}
             onChange={handleInputChange}
             placeholder="First Name*"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="text"
@@ -65,7 +65,7 @@ const Checkout: React.FC = () => {
             value={formData.companyName}
             onChange={handleInputChange}
             placeholder="Company Name"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="text"
@@ -73,7 +73,7 @@ const Checkout: React.FC = () => {
             value={formData.streetAddress}
             onChange={handleInputChange}
             placeholder="Street Address*"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="text"
@@ -81,7 +81,7 @@ const Checkout: React.FC = () => {
             value={formData.apartment}
             onChange={handleInputChange}
             placeholder="Apartment, floor, etc. (optional)"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="text"
@@ -89,7 +89,7 @@ const Checkout: React.FC = () => {
             value={formData.city}
             onChange={handleInputChange}
             placeholder="Town/City*"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="text"
@@ -97,7 +97,7 @@ const Checkout: React.FC = () => {
             value={formData.phone}
             onChange={handleInputChange}
             placeholder="Phone Number*"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <input
             type="email"
@@ -105,7 +105,7 @@ const Checkout: React.FC = () => {
             value={formData.email}
             onChange={handleInputChange}
             placeholder="Email Address*"
-            className="w-full border border-gray-300 rounded p-2"
+            className="w-full p-2 border border-gray-300 rounded"
           />
           <label className="flex items-center space-x-2">
             <input
@@ -113,7 +113,7 @@ const Checkout: React.FC = () => {
               name="saveInfo"
               checked={formData.saveInfo}
               onChange={handleInputChange}
-              className="h-4 w-4"
+              className="w-4 h-4"
             />
             <span>Save this information for faster checkout next time</span>
           </label>
@@ -121,13 +121,13 @@ const Checkout: React.FC = () => {
       </div>
 
       {/* Order Summary */}
-      <div className="w-full lg:w-1/3 bg-white p-6 rounded mt-8 lg:mt-0">
-        <h2 className="text-2xl font-bold mb-4">Your Order</h2>
+      <div className="w-full p-6 mt-8 bg-white rounded lg:w-1/3 lg:mt-0">
+        <h2 className="mb-4 text-2xl font-bold">Your Order</h2>
         <div className="space-y-4">
           {cartItems.map((item) => (
             <div key={item.id} className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover" />
+                <img src={item.image} alt={item.name} className="object-cover w-16 h-16" />
                 <span>{item.name}</span>
               </div>
               <span>${item.price}</span>
@@ -156,7 +156,7 @@ const Checkout: React.FC = () => {
               value="bank"
               checked={formData.paymentMethod === "bank"}
               onChange={handleInputChange}
-              className="h-4 w-4"
+              className="w-4 h-4"
             />
             <span className="flex items-center space-x-2">
               <FaCreditCard />
@@ -170,7 +170,7 @@ const Checkout: React.FC = () => {
               value="cash"
               checked={formData.paymentMethod === "cash"}
               onChange={handleInputChange}
-              className="h-4 w-4"
+              className="w-4 h-4"
             />
             <span className="flex items-center space-x-2">
               <FaMoneyBillWave />
@@ -179,17 +179,17 @@ const Checkout: React.FC = () => {
           </label>
         </div>
 
-        <div className="mt-4 flex items-center space-x-4">
+        <div className="flex items-center mt-4 space-x-4">
           <input
             type="text"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value)}
             placeholder="Coupon Code"
-            className="flex-grow border border-gray-300 rounded p-2"
+            className="flex-grow p-2 border border-gray-300 rounded"
           />
           <button
             onClick={handleCouponApply}
-            className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+            className="px-4 py-2 font-semibold text-white bg-orange-500 rounded hover:bg-orange-700"
           >
             Apply Coupon
           </button>
@@ -197,7 +197,7 @@ const Checkout: React.FC = () => {
 
         <button
           onClick={handlePlaceOrder}
-          className="mt-4 bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 w-full rounded"
+          className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
         >
           Place Order
         </button>

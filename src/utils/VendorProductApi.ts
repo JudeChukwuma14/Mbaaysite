@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/products";
 
 export const api = axios.create({
@@ -55,3 +56,4 @@ export const getVendorProductById = async (productId: string) => {
     throw error;
   }
 };
+

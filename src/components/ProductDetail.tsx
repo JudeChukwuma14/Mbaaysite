@@ -1,14 +1,21 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import React, {  useState } from "react";
+import {  useParams } from "react-router-dom";
 import { ProductData } from "./mockdata/data";
 import { motion } from "framer-motion";
+// import { getProductsById } from "@/utils/productApi";
+// import { toast } from "react-toastify";
+// import Spinner from "./Common/Spinner";
 
 const ProductDetail: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  // const [products, setProduct] = useState(null);
+  // const [mainImage, setMainImage] = useState("");
+  // const navigate = useNavigate();
+
   // State for quantity and selected size
   const [quantity, setQuantity] = useState<number>(1);
   const [selectedSize, setSelectedSize] = useState<string>("M");
-  const {id}=useParams<{id:string}>()
-  const product = ProductData.find((value)=>value.id ===id)
+  const product = ProductData.find((value) => value.id === id);
 
   // Handle size selection
   const handleSizeChange = (size: string) => setSelectedSize(size);
@@ -26,10 +33,35 @@ const ProductDetail: React.FC = () => {
     alert(`Buying ${quantity} item(s) in size ${selectedSize}`);
   };
 
+  // useEffect(() => {
+  //   if (!id) {
+  //     console.error("No product ID provided, redirecting to home...");
+  //     navigate("/"); // Redirect to home if no ID
+  //     return;
+  //   }
+
+  //   const fetchProduct = async () => {
+  //     try {
+  //       const data = await getProductsById(id);
+  //       setProduct(data.product);
+  //       setMainImage(data.product.images[0]); // Set the first image as default
+  //     } catch (error) {
+  //       console.error("Error fetching product:", error);
+  //       if (error.message.includes("Cast to ObjectId failed")) {
+  //         toast.error("Invalid product ID");
+  //         navigate("/"); // Redirect if the ID is invalid
+  //       }
+  //     }
+  //   };
+
+  //   fetchProduct();
+  // }, [id, navigate]);
+
+  // if (!products) return <Spinner/>
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8">
+    <div className="max-w-4xl p-4 mx-auto md:p-8">
       {/* Product Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Image Gallery */}
         <div>
           <div className="mb-4">
@@ -45,33 +77,55 @@ const ProductDetail: React.FC = () => {
                 key={idx}
                 src={product?.image} // Replace with thumbnail URLs
                 alt={`Thumbnail ${idx + 1}`}
-                className="w-16 h-16 object-cover rounded-lg border hover:ring-2 ring-orange-500 cursor-pointer"
+                className="object-cover w-16 h-16 border rounded-lg cursor-pointer hover:ring-2 ring-orange-500"
               />
             ))}
           </div>
         </div>
+{/* 
+        <div>
+          <img
+            src={mainImage}
+            alt={products?.title}
+            className="w-full rounded-lg shadow-md"
+            onError={(e) => {
+              e.target.src = "https://via.placeholder.com/300"; // Fallback image
+            }}
+          />
+          <div className="flex mt-4 space-x-2">
+            {products?.images.map((image, i) => (
+              <img
+                key={i}
+                src={image}
+                alt={`${products?.title} thumbnail ${i}`}
+                className="object-cover w-16 h-16 border border-gray-300 rounded-md cursor-pointer"
+                onClick={() => setMainImage(image)}
+              />
+            ))}
+          </div>
+        </div> */}
 
         <div>
-        <h1 className="text-2xl font-bold">{product?.title}</h1>
-          <p className="text-gray-600 mt-2">${product?.originalPrice}</p>
+          <h1 className="text-2xl font-bold">{product?.title}</h1>
+          <p className="mt-2 text-gray-600">${product?.originalPrice}</p>
 
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="mt-4 text-sm text-gray-500">
             High-quality vinyl with easy bubble-free install & mess-free
             removal. Pressure sensitive.
           </p>
 
           {/* Colors Section */}
           <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-2">Colours:</h3>
+            <h3 className="mb-2 text-sm font-semibold">Colours:</h3>
             <div className="flex gap-2">
-              <motion.button className="w-6 h-6 bg-gray-700 rounded-full border border-gray-300"></motion.button>
-              <motion.button className="w-6 h-6 bg-orange-500 rounded-full border border-gray-300"></motion.button>
+              <motion.button className="w-6 h-6 bg-gray-700 border border-gray-300 rounded-full"></motion.button>
+              <motion.button className="w-6 h-6 bg-orange-500 border border-gray-300 rounded-full"></motion.button>
             </div>
           </div>
 
           {/* Size Selection */}
           <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-2">Size:</h3>
+            <h3 className="mb-2 text-sm font-semibold">Size:</h3>
             <div className="flex gap-2">
               {["XS", "S", "M", "L", "XL"].map((size) => (
                 <button
@@ -90,17 +144,17 @@ const ProductDetail: React.FC = () => {
           </div>
 
           {/* Quantity Controls */}
-          <div className="mt-6 flex items-center gap-4">
+          <div className="flex items-center gap-4 mt-6">
             <button
               onClick={() => handleQuantityChange("decrement")}
-              className="px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200"
+              className="px-3 py-1 bg-gray-100 border rounded hover:bg-gray-200"
             >
               -
             </button>
             <span>{quantity}</span>
             <button
               onClick={() => handleQuantityChange("increment")}
-              className="px-3 py-1 rounded border bg-gray-100 hover:bg-gray-200"
+              className="px-3 py-1 bg-gray-100 border rounded hover:bg-gray-200"
             >
               +
             </button>
@@ -109,7 +163,7 @@ const ProductDetail: React.FC = () => {
           {/* Buy Now Button */}
           <button
             onClick={handleBuyNow}
-            className="mt-6 w-full bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600"
+            className="w-full py-2 mt-6 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
           >
             Buy Now
           </button>
@@ -118,17 +172,17 @@ const ProductDetail: React.FC = () => {
 
       {/* Related Items Section */}
       <div className="mt-12">
-        <h2 className="text-xl font-semibold mb-4">Related Items</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <h2 className="mb-4 text-xl font-semibold">Related Items</h2>
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[...Array(4)].map((_, idx) => (
             <div
               key={idx}
-              className="border rounded-lg p-4 shadow hover:shadow-lg transition"
+              className="p-4 transition border rounded-lg shadow hover:shadow-lg"
             >
               <img
                 src="https://img.freepik.com/free-photo/colorful-knitted-fabric_58702-1828.jpg?t=st=1737721644~exp=1737725244~hmac=99dfe62a7bd740d415d61e05cf6cd447d34e6b1602e0da3a729caf4ed1ac8c02&w=996"
                 alt="Related Item"
-                className="w-full h-40 object-cover rounded-lg mb-2"
+                className="object-cover w-full h-40 mb-2 rounded-lg"
               />
               <p className="text-sm font-medium">Product Name</p>
               <p className="text-sm text-gray-500">$120</p>
