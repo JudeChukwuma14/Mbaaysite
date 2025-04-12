@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useRef, useCallback, type ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import { FiUploadCloud } from "react-icons/fi";
@@ -16,14 +15,16 @@ interface ReturnPolicyUploaderProps {
   returnPolicyName: string;
   setReturnPolicy: React.Dispatch<React.SetStateAction<File | null>>;
   setReturnPolicyName: React.Dispatch<React.SetStateAction<string>>;
+  returnPolicyText: string;
   setReturnPolicyText: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function ReturnPolicyUploader({
   // returnPolicy,
-  // returnPolicyName,
+  returnPolicyName,
   setReturnPolicy,
   setReturnPolicyName,
+  // returnPolicyText,
   setReturnPolicyText,
 }: ReturnPolicyUploaderProps) {
   const returnPolicyRef = useRef<HTMLInputElement>(null);
@@ -68,6 +69,9 @@ export default function ReturnPolicyUploader({
     setReturnPolicy(null);
     setReturnPolicyName("");
     setReturnPolicyText("");
+    if (returnPolicyRef.current) {
+      returnPolicyRef.current.value = ""; // Clear file input
+    }
   };
 
   return (
@@ -79,7 +83,19 @@ export default function ReturnPolicyUploader({
     >
       <h2 className="text-lg font-semibold">Return Policy</h2>
 
-      {!vendors?.returnPolicy ? (
+      {returnPolicyName || vendors?.returnPolicy ? (
+        <div className="flex items-center justify-between bg-gray-100 p-2 rounded mt-2">
+          <span className="text-sm truncate">
+            {returnPolicyName || vendors?.returnPolicy || "Return Policy .txt"}
+          </span>
+          <motion.button
+            className="text-red-500 hover:text-red-700"
+            onClick={removeReturnPolicy}
+          >
+            <IoMdClose />
+          </motion.button>
+        </div>
+      ) : (
         <div
           className="border-dashed border-2 border-orange-500 p-5 rounded-lg text-center space-y-2 cursor-pointer"
           onClick={() => returnPolicyRef.current?.click()}
@@ -118,16 +134,6 @@ export default function ReturnPolicyUploader({
             accept=".txt"
             onChange={handleReturnPolicyUpload}
           />
-        </div>
-      ) : (
-        <div className="flex items-center justify-between bg-gray-100 p-2 rounded mt-2">
-          <span className="text-sm truncate">My Return Policy .txt</span>
-          <motion.button
-            className="text-red-500 hover:text-red-700"
-            onClick={removeReturnPolicy}
-          >
-            <IoMdClose />
-          </motion.button>
         </div>
       )}
     </motion.div>

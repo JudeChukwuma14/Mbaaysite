@@ -4,9 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Camera, ChevronDown, Eye, EyeOff, Upload } from "lucide-react";
 import { MdVerified } from "react-icons/md";
-import type React from "react"; // Import React
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
-import { toast } from "react-hot-toast"; // Add this import for notifications
+import { toast } from "react-hot-toast";
 import { upload_return_policy } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
@@ -27,13 +26,13 @@ export default function EditVendorProfile() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string | null>(null);
   const [logoImage, setLogoImage] = useState<string | null>(null);
-  const [, setReturnPolicyText] = useState("");
   const [returnPolicy, setReturnPolicy] = useState<File | null>(null);
   const [returnPolicyName, setReturnPolicyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<
     Partial<Record<keyof VendorProfile, string>>
   >({});
+  const [returnPolicyText, setReturnPolicyText] = useState<string>("");
 
   const user = useSelector((state: RootState) => state.vendor);
 
@@ -137,7 +136,6 @@ export default function EditVendorProfile() {
 
       // Add images if they exist
       if (profileImage) {
-        // Convert base64 to blob
         const profileBlob = await fetch(profileImage).then((r) => r.blob());
         formData.append("profileImage", profileBlob, "profile-image.jpg");
       }
@@ -159,18 +157,6 @@ export default function EditVendorProfile() {
           console.log(res);
         });
       }
-
-      // Make API call to update profile
-      // const response = await fetch('/api/vendor/profile', {
-      //   method: 'PUT',
-      //   body: formData,
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error('Failed to update profile');
-      // }
-
-      // const data = await response.json();
 
       // Simulate API call for now
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -215,7 +201,7 @@ export default function EditVendorProfile() {
             <div className="relative h-48 bg-gradient-to-r from-orange-500 to-black">
               {bannerImage ? (
                 <img
-                  src={bannerImage || "/placeholder.svg"}
+                  src={bannerImage}
                   alt="Banner"
                   className="object-cover w-full h-full"
                 />
@@ -242,7 +228,7 @@ export default function EditVendorProfile() {
                   <div className="w-24 h-24 overflow-hidden bg-gray-200 border-4 border-white rounded-full">
                     {profileImage ? (
                       <img
-                        src={profileImage || "/placeholder.svg"}
+                        src={profileImage}
                         alt="Profile"
                         className="object-cover w-full h-full"
                       />
@@ -396,7 +382,6 @@ export default function EditVendorProfile() {
                 </div>
                 <button
                   type="button"
-                  // className="absolute text-sm text-purple-600 -translate-y-1/2 right-2 top-1/2 hover:text-purple-700"
                   className="mt-3 text-sm text-purple-600 hover:text-purple-700"
                 >
                   Change password
@@ -489,12 +474,12 @@ export default function EditVendorProfile() {
             </div>
           </motion.div>
 
-          {/* Return Policy */}
           <ReturnPolicyUploader
             returnPolicy={returnPolicy}
             returnPolicyName={returnPolicyName}
             setReturnPolicy={setReturnPolicy}
             setReturnPolicyName={setReturnPolicyName}
+            returnPolicyText={returnPolicyText}
             setReturnPolicyText={setReturnPolicyText}
           />
 
@@ -507,7 +492,7 @@ export default function EditVendorProfile() {
             <div className="p-8 text-center border-2 border-orange-500 border-dashed rounded-lg">
               {logoImage ? (
                 <img
-                  src={logoImage || "/placeholder.svg"}
+                  src={logoImage}
                   alt="Logo"
                   className="max-w-[200px] mx-auto"
                 />
