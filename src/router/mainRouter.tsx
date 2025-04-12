@@ -102,6 +102,10 @@ const Pricing = lazy(() => import("@/components/VendorInfo/Pricing/Pricing"));
 const ProfilePage = lazy(
   () => import("../components/VendorInfo/Community&Res/Proflie")
 );
+
+const ProductDetailModal = lazy(
+  () => import("@/components/VendorInfo/Products/ProductDetailModal")
+);
 const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 const Error = lazy(() => import("@/components/Error/Error"));
@@ -179,6 +183,17 @@ const routesConfig: RouteObject[] = [
       {
         path: "comunity-detail/:communityid",
         element: withSuspense(CommunityDetailPage),
+      },
+      {
+        path: "products-detail/:productid",
+        element: withSuspense(() => (
+          <ProductDetailModal
+            product={null}
+            isOpen={false}
+            onClose={() => {}}
+            productId={""}
+          />
+        )),
       },
     ],
   },

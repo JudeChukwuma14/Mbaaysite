@@ -1,18 +1,22 @@
 import React, { useState } from "react";
 import { X, Edit, Trash2, Play } from "lucide-react";
 import { motion } from "framer-motion";
+import { getVendorProductById } from "@/utils/VendorProductApi";
+import { useQuery } from "@tanstack/react-query";
 
 interface Product {
-  productName: string;
+  _id: string;
+  name: string;
   description: string;
   price: number;
   inventory: number;
   status: string;
   category: string;
-  subCategory: string;
-  subSubCategory: string;
-  dateAdded: string;
+  sub_category: string;
+  sub_category2: string;
+  createdAt: string;
   images: string[];
+  product_video?: string;
 }
 
 interface DialogProps {
@@ -28,6 +32,8 @@ const Dialog: React.FC<DialogProps> = ({ open, children }) => (
         ? "fixed inset-0 z-50 flex items-center justify-center bg-black/50"
         : "hidden"
     }`}
+    role="dialog"
+    aria-modal="true"
   >
     <div className="bg-white rounded-lg shadow-xl">{children}</div>
   </div>
@@ -85,18 +91,16 @@ interface ProductDetailModalProps {
   product: Product | null;
   isOpen: boolean;
   onClose: () => void;
+  productId: any;
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   product,
   isOpen,
   onClose,
+  productId,
 }) => {
-  if (!product) return null;
-
-  const [selectedMedia, setSelectedMedia] = useState<string | null>(
-    product.images[0]
-  );
+  const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [isVideoSelected, setIsVideoSelected] = useState<boolean>(false);
 
   const dummyVideoUrl =
@@ -108,6 +112,24 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&q=80",
   ];
 
+  const { data: vendor_products } = useQuery({
+    queryKey: ["one_product", productId],
+    queryFn: () => getVendorProductById(productId),
+    enabled: !!productId,
+  });
+
+  // Use vendor_products if available, otherwise fall back to product prop
+  const productData = vendor_products || product;
+
+  // Initialize selectedMedia with the first image after productData is available
+  React.useEffect(() => {
+    if (productData?.images?.length) {
+      setSelectedMedia(productData.images[0]);
+    }
+  }, [productData]);
+
+  if (!productData) return null;
+
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
@@ -117,127 +139,151 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }).format(date);
   };
 
-  const getStatusColor = (status: string): string => {
-    switch (status) {
-      case "active":
-        return "bg-green-100 text-green-800";
-      case "draft":
-        return "bg-yellow-100 text-yellow-800";
-      case "archived":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-blue-100 text-blue-800";
-    }
-  };
-
   const handleMediaSelect = (media: string, isVideo: boolean = false): void => {
     setSelectedMedia(media);
     setIsVideoSelected(isVideo);
   };
 
   const allImages: string[] = [
-    ...product.images,
-    ...dummyImages.slice(0, 4 - product.images.length),
+    ...(productData.images || []),
+    ...dummyImages.slice(0, 4 - (productData.images?.length || 0)),
   ];
+
+  const videoUrl = productData.product_video || dummyVideoUrl;
+  const isYouTube =
+    videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
+  const embedUrl = isYouTube
+    ? videoUrl
+        .replace("watch?v=", "embed/")
+        .replace("youtu.be/", "youtube.com/embed/")
+    : videoUrl;
+
+  // Get YouTube video ID for thumbnail
+  const getYouTubeThumbnail = (url: string): string => {
+    let videoId = "";
+    if (url.includes("youtube.com")) {
+      const params = new URL(url).searchParams;
+      videoId = params.get("v") || "";
+    } else if (url.includes("youtu.be")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0] || "";
+    }
+    return videoId
+      ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+      : "/video-placeholder.jpg";
+  };
+
+  const videoThumbnail = isYouTube
+    ? getYouTubeThumbnail(videoUrl)
+    : "/video-placeholder.jpg"; // Use a placeholder for non-YouTube videos
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto p-0">
-        <div className="sticky top-0 z-10 bg-white p-6 border-b flex items-center justify-between">
+      <DialogContent className="sm:max-w-4xl w-full max-h-[90vh] overflow-y-auto p-0">
+        <div className="sticky top-0 z-10 bg-white p-4 sm:p-6 border-b flex items-center justify-between">
           <DialogTitle className="text-xl font-semibold">
             Product Details
           </DialogTitle>
           <div className="flex items-center gap-3">
-            <motion.button className="p-2 hover:bg-gray-100 rounded-full">
+            <motion.button
+              className="p-2 hover:bg-gray-100 rounded-full"
+              whileHover={{ scale: 1.1 }}
+              aria-label="Edit"
+            >
               <Edit size={18} className="text-gray-600" />
             </motion.button>
-            <motion.button className="p-2 hover:bg-gray-100 rounded-full">
+            <motion.button
+              className="p-2 hover:bg-gray-100 rounded-full"
+              whileHover={{ scale: 1.1 }}
+              aria-label="Delete"
+            >
               <Trash2 size={18} className="text-red-500" />
             </motion.button>
             <motion.button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 rounded-full"
+              whileHover={{ scale: 1.1 }}
+              aria-label="Close"
             >
               <X size={18} className="text-gray-600" />
             </motion.button>
           </div>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">
-              <div className="aspect-video bg-gray-100 rounded-lg relative overflow-hidden shadow-lg">
+              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
                 {isVideoSelected ? (
-                  <div className="w-full h-full">
+                  isYouTube ? (
+                    <iframe
+                      src={embedUrl}
+                      className="w-full h-full"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      title="Product Video"
+                    />
+                  ) : (
                     <video
-                      src={selectedMedia || dummyVideoUrl}
+                      src={embedUrl}
                       controls
                       autoPlay
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error("Failed to load video", e);
+                        e.currentTarget.poster = "/video-error.svg";
+                      }}
                     />
-                  </div>
+                  )
                 ) : (
-                  <div className="perspective-1000 w-full h-full group">
-                    <img
-                      src={selectedMedia || allImages[0]}
-                      alt={product.productName}
-                      className="w-full h-full object-cover transition-all duration-500 
-                               transform-style-3d hover:rotate-y-10 hover:scale-110 
-                               group-hover:shadow-xl rounded-lg"
-                    />
-                  </div>
+                  <img
+                    src={selectedMedia || allImages[0]}
+                    alt={productData.name}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
                 )}
               </div>
 
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
                 {allImages.map((image, index) => (
                   <div
                     key={`img-${index}`}
                     className={`aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer 
-                              relative transition-all duration-300
-                              ${
-                                selectedMedia === image
-                                  ? "ring-2 ring-blue-500"
-                                  : "opacity-80"
-                              }`}
+                    relative transition-all duration-300 ${
+                      selectedMedia === image
+                        ? "ring-2 ring-blue-500"
+                        : "opacity-80"
+                    }`}
                     onClick={() => handleMediaSelect(image)}
                   >
-                    <div className="relative perspective-1000 w-full h-full group">
-                      <img
-                        src={image}
-                        alt={`${product.productName} thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-500 
-                                  transform-style-3d group-hover:-translate-z-20 group-hover:rotate-y-15 
-                                  group-hover:scale-110 group-hover:shadow-2xl rounded-md"
-                        onError={(
-                          e: React.SyntheticEvent<HTMLImageElement, Event>
-                        ) => {
-                          console.error(`Failed to load image: ${image}`);
-                          e.currentTarget.src = "/placeholder.svg";
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 rounded-md" />
-                    </div>
+                    <img
+                      src={image}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.svg";
+                      }}
+                    />
                   </div>
                 ))}
+
                 <div
                   key="video"
                   className={`aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative 
-                            transition-all duration-300 hover:scale-105
-                            ${
-                              isVideoSelected
-                                ? "ring-2 ring-blue-500"
-                                : "opacity-80"
-                            }`}
-                  onClick={() => handleMediaSelect(dummyVideoUrl, true)}
+                    transition-all duration-300 hover:scale-105 ${
+                      isVideoSelected ? "ring-2 ring-blue-500" : "opacity-80"
+                    }`}
+                  onClick={() => handleMediaSelect(videoUrl, true)}
                 >
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
                     <Play className="text-white w-8 h-8" />
                   </div>
                   <img
-                    src={allImages[0]}
-                    alt={`${product.productName} video thumbnail`}
+                    src={videoThumbnail}
+                    alt="Video thumbnail"
                     className="w-full h-full object-cover opacity-70"
+                    onError={(e) => {
+                      e.currentTarget.src = "/video-placeholder.jpg";
+                    }}
                   />
                 </div>
               </div>
@@ -245,14 +291,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
             <div className="space-y-6">
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h1 className="text-2xl font-bold">{product.productName}</h1>
-                  <Badge className={getStatusColor(product.status)}>
-                    {product.status.charAt(0).toUpperCase() +
-                      product.status.slice(1)}
-                  </Badge>
-                </div>
-                <p className="text-gray-700">{product.description}</p>
+                <h1 className="text-2xl font-bold">{productData.name}</h1>
+                <p className="text-gray-700">{productData.description}</p>
               </div>
 
               <Separator />
@@ -261,12 +301,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div>
                   <h3 className="font-medium text-gray-500">Price</h3>
                   <p className="text-xl font-bold">
-                    ${product.price.toFixed(2)}
+                    ${productData.price?.toFixed(2)}
                   </p>
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-500">Inventory</h3>
-                  <p className="text-xl font-bold">{product.inventory}</p>
+                  <p className="text-xl font-bold">{productData.inventory}</p>
                 </div>
               </div>
 
@@ -276,15 +316,15 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div>
                   <h3 className="font-medium text-gray-500">Category</h3>
                   <div className="mt-1 flex flex-wrap gap-2">
-                    <Badge variant="secondary">{product.category}</Badge>
-                    <Badge variant="outline">{product.subCategory}</Badge>
-                    <Badge variant="outline">{product.subSubCategory}</Badge>
+                    <Badge variant="secondary">{productData.category}</Badge>
+                    <Badge variant="outline">{productData.sub_category}</Badge>
+                    <Badge variant="outline">{productData.sub_category2}</Badge>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="font-medium text-gray-500">Added on</h3>
-                  <p>{formatDate(product.dateAdded)}</p>
+                  <p>{formatDate(productData.createdAt)}</p>
                 </div>
               </div>
             </div>
