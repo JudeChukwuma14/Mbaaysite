@@ -6,6 +6,10 @@ import { useRef, useCallback, type ChangeEvent } from "react";
 import { motion } from "framer-motion";
 import { FiUploadCloud } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { get_single_vendor } from "@/utils/vendorApi";
+import { useQuery } from "@tanstack/react-query";
 
 interface ReturnPolicyUploaderProps {
   returnPolicy: File | null;
@@ -16,13 +20,20 @@ interface ReturnPolicyUploaderProps {
 }
 
 export default function ReturnPolicyUploader({
-  returnPolicy,
-  returnPolicyName,
+  // returnPolicy,
+  // returnPolicyName,
   setReturnPolicy,
   setReturnPolicyName,
   setReturnPolicyText,
 }: ReturnPolicyUploaderProps) {
   const returnPolicyRef = useRef<HTMLInputElement>(null);
+
+  const user = useSelector((state: RootState) => state.vendor);
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
 
   // Handle drag over event
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -68,7 +79,7 @@ export default function ReturnPolicyUploader({
     >
       <h2 className="text-lg font-semibold">Return Policy</h2>
 
-      {!returnPolicy ? (
+      {!vendors?.returnPolicy ? (
         <div
           className="border-dashed border-2 border-orange-500 p-5 rounded-lg text-center space-y-2 cursor-pointer"
           onClick={() => returnPolicyRef.current?.click()}
@@ -110,7 +121,7 @@ export default function ReturnPolicyUploader({
         </div>
       ) : (
         <div className="flex items-center justify-between bg-gray-100 p-2 rounded mt-2">
-          <span className="text-sm truncate">{returnPolicyName}</span>
+          <span className="text-sm truncate">My Return Policy .txt</span>
           <motion.button
             className="text-red-500 hover:text-red-700"
             onClick={removeReturnPolicy}
