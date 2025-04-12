@@ -6,10 +6,11 @@ import { Camera, ChevronDown, Eye, EyeOff, Upload } from "lucide-react";
 import { MdVerified } from "react-icons/md";
 import type React from "react"; // Import React
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
-import { toast } from "react-hot-toast"; // Add this import for notifications
+// import { toast } from "react-hot-toast";
 import { upload_return_policy } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { toast } from "react-toastify";
 
 interface VendorProfile {
   companyName: string;
@@ -331,7 +332,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.companyName && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.companyName}
                   </p>
                 )}
@@ -351,7 +352,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
                 )}
               </div>
               <div>
@@ -369,7 +370,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
                 )}
               </div>
               <div>
@@ -444,7 +445,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.accountName && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.accountName}
                   </p>
                 )}
@@ -464,7 +465,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.accountNumber && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.accountNumber}
                   </p>
                 )}
@@ -484,7 +485,7 @@ export default function EditVendorProfile() {
                   }`}
                 />
                 {errors.bankName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.bankName}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.bankName}</p>
                 )}
               </div>
             </div>
@@ -548,7 +549,7 @@ export default function EditVendorProfile() {
             </button>
 
             <button
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
+              className="px-6 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
