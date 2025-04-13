@@ -30,6 +30,7 @@ import { useEffect, useState } from "react";
 import { getAllProduct } from "@/utils/productApi";
 import Spinner from "@/components/Common/Spinner";
 import NewArrival from "@/components/Cards/NewArrival";
+import { Link } from "react-router-dom";
 // import FlashSale from "@/components/FlashSales/FlashSales";
 
 interface Product {
@@ -108,12 +109,12 @@ const HomeArea: React.FC = () => {
       <section className="px-8 mb-10">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold md:text-2xl md:pl-6">New Arrival</h2>
-          <button
+          <Link to="/random-product"
             type="submit"
             className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
           >
             View All
-          </button>
+          </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {products
