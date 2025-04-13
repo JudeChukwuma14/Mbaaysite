@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import image1 from "@/assets/image/fashion 1.png"; 
+import image2 from "@/assets/image/banner1.jpg"
+import image3 from "@/assets/image/banner2.jpg"
+import image4 from "@/assets/image/banner3.jpg"
 import { motion } from "framer-motion";
 
 const slides = [
@@ -11,7 +14,19 @@ const slides = [
     link: "/",
   },
   {
-    image: image1,
+    image: image2,
+    text: "Upgrade your wardrobe today",
+    buttonText: "Shop now",
+    link: "/",
+  },
+  {
+    image: image3,
+    text: "Upgrade your wardrobe today",
+    buttonText: "Shop now",
+    link: "/",
+  },
+  {
+    image: image4,
     text: "Upgrade your wardrobe today",
     buttonText: "Shop now",
     link: "/",
@@ -37,7 +52,7 @@ const Slider: React.FC = () => {
     setCurrentIndex((prevIndex) => (prevIndex + 1) % slides.length);
 
   return (
-    <div className="relative w-full h-48 md:h-56 lg:h-80 overflow-hidden">
+    <div className="relative w-full h-48 overflow-hidden md:h-56 lg:h-80">
       {slides.map((slide, index) => (
         <motion.div
           key={index}
@@ -50,14 +65,14 @@ const Slider: React.FC = () => {
             backgroundPosition: "center",
           }}
         >
-          <div className="w-full h-full bg-black/50 flex items-center px-6 md:px-16 lg:px-32">
+          <div className="flex items-center w-full h-full px-6 bg-black/50 md:px-16 lg:px-32">
             <div className="text-left text-white max-w-[450px]">
-              <h2 className="text-lg md:text-2xl lg:text-4xl font-semibold mb-4">
+              <h2 className="mb-4 text-lg font-semibold md:text-2xl lg:text-4xl">
                 {slide.text}
               </h2>
               <a
                 href={slide.link}
-                className="bg-orange-500 text-white px-4 md:px-5 py-2 rounded-md text-sm md:text-base font-medium inline-block"
+                className="inline-block px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-md md:px-5 md:text-base"
               >
                 {slide.buttonText}
               </a>
@@ -68,16 +83,16 @@ const Slider: React.FC = () => {
 
       {/* Navigation Buttons */}
       <motion.button
-        className="absolute left-2 md:left-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full"
+        className="absolute p-2 text-white transform -translate-y-1/2 rounded-full left-2 md:left-5 top-1/2 bg-black/30"
         onClick={prevSlide}
       >
-        <FaChevronLeft className=" hidden md:block" />
+        <FaChevronLeft className="hidden md:block" />
       </motion.button>
       <motion.button
-        className="absolute right-2 md:right-5 top-1/2 transform -translate-y-1/2 text-white bg-black/30 p-2 rounded-full"
+        className="absolute p-2 text-white transform -translate-y-1/2 rounded-full right-2 md:right-5 top-1/2 bg-black/30"
         onClick={nextSlide}
       >
-        <FaChevronRight className=" hidden md:block"/>
+        <FaChevronRight className="hidden md:block"/>
       </motion.button>
     </div>
   );
