@@ -1,134 +1,141 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import { ChevronLeft, ChevronRight, Filter } from "lucide-react"
-import NewArrival from "@/components/Cards/NewArrival"
-import Spinner from "@/components/Common/Spinner"
-import { getAllProduct } from "@/utils/productApi"
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
+import NewArrival from "@/components/Cards/NewArrival";
+import Spinner from "@/components/Common/Spinner";
+import { getAllProduct } from "@/utils/productApi";
 
 interface Product {
-  _id: string
-  id: string
-  name: string
-  price: number
-  images: string[]
-  category: string
+  _id: string;
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  category: string;
 }
 
 const RandomProductPage = () => {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>("")
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(12) // Reduced for better performance and UX
-  const [selectedCategory, setSelectedCategory] = useState<string>("")
-  const [showFilters, setShowFilters] = useState(false)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(12); // Reduced for better performance and UX
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-        const result = await getAllProduct()
-        const productsData = Array.isArray(result) ? result : result.products || []
-        setProducts(productsData)
+        const result = await getAllProduct();
+        const productsData = Array.isArray(result)
+          ? result
+          : result.products || [];
+        setProducts(productsData);
       } catch (err) {
-        console.error("Error fetching products:", err)
-        setError("Failed to fetch products. Please try again.")
+        console.error("Error fetching products:", err);
+        setError("Failed to fetch products. Please try again.");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   // Reset to first page when category changes
   useEffect(() => {
-    setCurrentPage(1)
-  }, [selectedCategory])
+    setCurrentPage(1);
+  }, [selectedCategory]);
 
   // Get unique categories from products for the dropdown
-  const categories = [...new Set(products.map((product) => product.category))].filter(Boolean).sort()
+  const categories = [...new Set(products.map((product) => product.category))]
+    .filter(Boolean)
+    .sort();
 
   // Filter products by selected category
   const filteredProducts = selectedCategory
     ? products.filter((product) => product.category === selectedCategory)
-    : products
+    : products;
 
   // Calculate pagination
-  const indexOfLastItem = currentPage * itemsPerPage
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentProducts = filteredProducts.slice(indexOfFirstItem, indexOfLastItem)
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentProducts = filteredProducts.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   // Handle page change
   const paginate = (pageNumber: number) => {
-    setCurrentPage(pageNumber)
+    setCurrentPage(pageNumber);
     // Scroll to top when page changes
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   // Generate pagination numbers with ellipsis for large page counts
   const getPaginationNumbers = () => {
-    const pageNumbers = []
-    const maxVisiblePages = 5 // Maximum number of page buttons to show
+    const pageNumbers = [];
+    const maxVisiblePages = 5; // Maximum number of page buttons to show
 
     if (totalPages <= maxVisiblePages) {
       // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
-        pageNumbers.push(i)
+        pageNumbers.push(i);
       }
     } else {
       // Always show first page
-      pageNumbers.push(1)
+      pageNumbers.push(1);
 
       // Calculate start and end of visible pages
-      let startPage = Math.max(2, currentPage - 1)
-      let endPage = Math.min(totalPages - 1, currentPage + 1)
+      let startPage = Math.max(2, currentPage - 1);
+      let endPage = Math.min(totalPages - 1, currentPage + 1);
 
       // Adjust if we're near the beginning
       if (currentPage <= 3) {
-        endPage = Math.min(maxVisiblePages - 1, totalPages - 1)
+        endPage = Math.min(maxVisiblePages - 1, totalPages - 1);
       }
 
       // Adjust if we're near the end
       if (currentPage >= totalPages - 2) {
-        startPage = Math.max(2, totalPages - maxVisiblePages + 2)
+        startPage = Math.max(2, totalPages - maxVisiblePages + 2);
       }
 
       // Add ellipsis after first page if needed
       if (startPage > 2) {
-        pageNumbers.push("ellipsis1")
+        pageNumbers.push("ellipsis1");
       }
 
       // Add middle pages
       for (let i = startPage; i <= endPage; i++) {
-        pageNumbers.push(i)
+        pageNumbers.push(i);
       }
 
       // Add ellipsis before last page if needed
       if (endPage < totalPages - 1) {
-        pageNumbers.push("ellipsis2")
+        pageNumbers.push("ellipsis2");
       }
 
       // Always show last page
       if (totalPages > 1) {
-        pageNumbers.push(totalPages)
+        pageNumbers.push(totalPages);
       }
     }
 
-    return pageNumbers
-  }
+    return pageNumbers;
+  };
 
   if (loading)
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Spinner />
       </div>
-    )
+    );
 
   if (error)
     return (
@@ -141,7 +148,7 @@ const RandomProductPage = () => {
           Try Again
         </button>
       </div>
-    )
+    );
 
   return (
     <section className="min-h-screen bg-gray-50">
@@ -151,7 +158,10 @@ const RandomProductPage = () => {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center mb-2 text-sm text-gray-500">
-                <Link to="/" className="transition-colors hover:text-orange-500">
+                <Link
+                  to="/"
+                  className="transition-colors hover:text-orange-500"
+                >
                   Home
                 </Link>
                 <span className="mx-2">/</span>
@@ -184,7 +194,7 @@ const RandomProductPage = () => {
                     ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-700 pointer-events-none">
-                    <ChevronDown  />
+                    <ChevronDown />
                   </div>
                 </div>
               </div>
@@ -197,9 +207,13 @@ const RandomProductPage = () => {
       <div className="px-4 py-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-gray-500">
-            Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
-            <span className="font-medium">{Math.min(indexOfLastItem, filteredProducts.length)}</span> of{" "}
-            <span className="font-medium">{filteredProducts.length}</span> products
+            Showing <span className="font-medium">{indexOfFirstItem + 1}</span>{" "}
+            to{" "}
+            <span className="font-medium">
+              {Math.min(indexOfLastItem, filteredProducts.length)}
+            </span>{" "}
+            of <span className="font-medium">{filteredProducts.length}</span>{" "}
+            products
           </p>
         </div>
 
@@ -222,7 +236,9 @@ const RandomProductPage = () => {
             <div className="flex items-center justify-center w-16 h-16 mb-4 bg-gray-200 rounded-full">
               <Filter size={24} className="text-gray-400" />
             </div>
-            <h3 className="mb-1 text-lg font-medium text-gray-900">No products found</h3>
+            <h3 className="mb-1 text-lg font-medium text-gray-900">
+              No products found
+            </h3>
             <p className="max-w-md mb-4 text-gray-500">
               {selectedCategory
                 ? `No products found in the "${selectedCategory}" category.`
@@ -256,10 +272,13 @@ const RandomProductPage = () => {
               {getPaginationNumbers().map((number, index) => {
                 if (number === "ellipsis1" || number === "ellipsis2") {
                   return (
-                    <span key={`ellipsis-${index}`} className="px-3 py-2 text-gray-500">
+                    <span
+                      key={`ellipsis-${index}`}
+                      className="px-3 py-2 text-gray-500"
+                    >
                       ...
                     </span>
-                  )
+                  );
                 }
 
                 return (
@@ -274,7 +293,7 @@ const RandomProductPage = () => {
                   >
                     {number}
                   </button>
-                )
+                );
               })}
             </div>
 
@@ -291,10 +310,10 @@ const RandomProductPage = () => {
         )}
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default RandomProductPage
+export default RandomProductPage;
 
 function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -312,5 +331,5 @@ function ChevronDown(props: React.SVGProps<SVGSVGElement>) {
     >
       <path d="m6 9 6 6 6-6" />
     </svg>
-  )
+  );
 }

@@ -99,19 +99,19 @@ const AboutUs: React.FC = () => {
   };
 
   return (
-    <div className="px-4 md:px-8 lg:px-16 py-8">
+    <div className="px-4 py-8 md:px-8 lg:px-16">
       {/* Breadcrumb */}
-      <div className="text-sm text-gray-500 mb-4">
+      <div className="mb-4 text-sm text-gray-500">
         <a href="/" className="hover:underline">
           Home
         </a>
         / <span>About</span>
       </div>
       <section className="mb-10">
-        <div className="grid md:grid-cols-2 gap-8 mb-4">
+        <div className="grid gap-8 mb-4 md:grid-cols-2">
           <div>
-            <h1 className="text-3xl font-bold mb-4">Our Story</h1>
-            <p className="text-gray-600 mb-4 text-justify">
+            <h1 className="mb-4 text-3xl font-bold">Our Story</h1>
+            <p className="mb-4 text-justify text-gray-600">
               Launched in 2015, Mbaay is World's premier online shopping
               marketplace with an active presence in Bangladesh. Supported by a
               wide range of tailored marketing, data, and service solutions,
@@ -136,7 +136,7 @@ const AboutUs: React.FC = () => {
         </div>
       </section>
       <section className="mb-10">
-        <div className="flex justify-center gap-4 py-8 px-5 md:px-0 flex-col  md:flex-row ">
+        <div className="flex flex-col justify-center gap-4 px-5 py-8 md:px-0 md:flex-row ">
           {statsData.map((stat, index) => (
             <StatsBoxprops
               key={index}
@@ -148,7 +148,7 @@ const AboutUs: React.FC = () => {
         </div>
       </section>
       <section className="mb-10">
-        <div className="w-full h-fit p-8">
+        <div className="w-full p-8 h-fit">
           <Slider {...settings}>
             {data.map((item, index) => (
               <div
@@ -160,11 +160,11 @@ const AboutUs: React.FC = () => {
                 <div className="overflow-hidden h-[200px] w-full flex justify-center items-center">
                   <img
                     src={item.img}
-                    className="w-[100%] h-[100%] object-contain" 
+                    className="w-[100%] h-[100%] object-contain"
                   />
                 </div>
                 {/* Text Section */}
-                <div className="flex flex-col justify-center items-center pt-2 flex-1">
+                <div className="flex flex-col items-center justify-center flex-1 pt-2">
                   <h1 className="text-xl font-bold text-center">{item.name}</h1>
                   <p className="text-[17px] text-center">{item.p}</p>
                   <div>
@@ -178,9 +178,9 @@ const AboutUs: React.FC = () => {
       </section>
       <section className="mb-10">
         <div>
-          <div className="flex justify-center gap-4 py-8 px-5 md:px-0 flex-col  md:flex-row">
-            <div className="flex flex-col items-center p-6 shadow-md w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+          <div className="flex flex-col justify-center gap-4 px-5 py-8 md:px-0 md:flex-row">
+            <div className="flex flex-col items-center w-full p-6 shadow-md sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev1} alt="" />
               </div>
               <div className="text-xl font-semibold">
@@ -190,8 +190,8 @@ const AboutUs: React.FC = () => {
                 <p>Free delivery for all orders over $140</p>
               </div>
             </div>
-            <div className="flex flex-col items-center p-6 shadow-md w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+            <div className="flex flex-col items-center w-full p-6 shadow-md sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev2} alt="" />
               </div>
               <div className="text-xl font-semibold">
@@ -201,8 +201,8 @@ const AboutUs: React.FC = () => {
                 <p>Friendly 24/7 customer support</p>
               </div>
             </div>
-            <div className="flex flex-col items-center p-6 shadow-md w-full sm:w-1/2 lg:w-1/4">
-              <div className="text-4xl mb-4">
+            <div className="flex flex-col items-center w-full p-6 shadow-md sm:w-1/2 lg:w-1/4">
+              <div className="mb-4 text-4xl">
                 <img src={sev3} alt="" />
               </div>
               <div className="text-xl font-semibold">

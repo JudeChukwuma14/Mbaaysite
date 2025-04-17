@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import image1 from "@/assets/image/fashion 1.png"; 
-import image2 from "@/assets/image/banner1.jpg"
-import image3 from "@/assets/image/banner2.jpg"
-import image4 from "@/assets/image/banner3.jpg"
+import image1 from "@/assets/image/fashion 1.png";
+import image2 from "@/assets/image/banner1.jpg";
+import image3 from "@/assets/image/banner2.jpg";
+import image4 from "@/assets/image/banner3.jpg";
 import { motion } from "framer-motion";
 
 const slides = [
@@ -92,7 +92,7 @@ const Slider: React.FC = () => {
         className="absolute p-2 text-white transform -translate-y-1/2 rounded-full right-2 md:right-5 top-1/2 bg-black/30"
         onClick={nextSlide}
       >
-        <FaChevronRight className="hidden md:block"/>
+        <FaChevronRight className="hidden md:block" />
       </motion.button>
     </div>
   );
