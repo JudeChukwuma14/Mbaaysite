@@ -68,7 +68,7 @@ const Registration: React.FC = () => {
       reset()
       navigate("/welcomepage")
     } catch (error) {
-      toast.error(error, {
+      toast.error((error as Error).message || "An unexpected error occurred", {
         position: "top-right",
         autoClose: 4000,
       })
