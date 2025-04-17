@@ -1,123 +1,155 @@
-import FirstCartCard from "@/components/Cards/FirstCartCard";
-import Fashion from "../assets/image/Fashion.jpeg";
-import Jewelry from "../assets/image/Jeal.jpeg";
-import Art from "../assets/image/Art.jpeg";
-import wellness from "../assets/image/Wellness.jpg";
-import BookPoetry from "../assets/image/Bookspoetry.jpg";
-import CategoryCard from "@/components/categorycardprops/CategoryCard";
-import VendorCard from "@/components/VendorCard";
-import sev1 from "../assets/image/Services.png";
-import sev2 from "../assets/image/Services-1.png";
-import sev3 from "../assets/image/Services-2.png";
-import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
-import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
+"use client"
 
-import Slider from "@/components/Slider";
-import Furniture from "@/assets/image/Furniture.jpg";
-import {
-  Auction,
-  ExploreData,
-  flashSale,
-  ProductData,
-  profilesData,
-} from "@/components/mockdata/data";
+import type React from "react"
 
-import NewCard from "@/components/Cards/NewCard";
-import ExploreCard from "@/components/Cards/ExploreCard";
-import AuctionCard from "@/components/AuctionPage/AuctionCard";
-import { NavLink } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { getAllProduct } from "@/utils/productApi";
-import Spinner from "@/components/Common/Spinner";
-import NewArrival from "@/components/Cards/NewArrival";
-import { Link } from "react-router-dom";
-// import FlashSale from "@/components/FlashSales/FlashSales";
+import { useEffect, useState } from "react"
+import { Link, NavLink } from "react-router-dom"
+import { ChevronRight } from "lucide-react"
+
+// Import components
+import Slider from "@/components/Slider"
+import CategoryCard from "@/components/categorycardprops/CategoryCard"
+import FirstCartCard from "@/components/Cards/FirstCartCard"
+import NewCard from "@/components/Cards/NewCard"
+import VendorCard from "@/components/VendorCard"
+import ExploreCard from "@/components/Cards/ExploreCard"
+import AuctionCard from "@/components/AuctionPage/AuctionCard"
+import FlashSaleCountdown from "@/components/FlashSales/FlashSale"
+import ProductSlider from "@/components/FlashSales/FlashSalesSlide"
+import NewArrival from "@/components/Cards/NewArrival"
+import Spinner from "@/components/Common/Spinner"
+
+// Import data and APIs
+import { Auction, ExploreData, flashSale, ProductData } from "@/components/mockdata/data"
+import { getAllProduct } from "@/utils/productApi"
+import { getAllVendor } from "@/utils/vendorApi"
+
+// Import images
+import Fashion from "../assets/image/Fashion.jpeg"
+import Jewelry from "../assets/image/Jeal.jpeg"
+import Art from "../assets/image/Art.jpeg"
+import wellness from "../assets/image/Wellness.jpg"
+import BookPoetry from "../assets/image/Bookspoetry.jpg"
+import Furniture from "@/assets/image/Furniture.jpg"
+import sev1 from "../assets/image/Services.png"
+import sev2 from "../assets/image/Services-1.png"
+import sev3 from "../assets/image/Services-2.png"
 
 interface Product {
-  _id: string;
-  id: string; 
-  name: string;
-  price: number;
-  images: string[]; 
+  _id: string
+  id: string
+  name: string
+  price: number
+  images: string[]
+  createdAt: string
+}
+
+interface VendorProfile {
+  storeName: string
+  country: string
+  city: string
+  avatar: string
+  backgroundImage: string
+  id: string
 }
 
 const HomeArea: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>("");
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>("")
+  const [getVender, setGetVendor] = useState<VendorProfile[]>([])
 
   const categoriesData = [
     { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
     { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
     { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
     { imageSrc: Furniture, title: "Furniture", link: "/furniture" },
-    {
-      imageSrc: wellness,
-      title: "Beauty and wellness",
-      link: "/wellness-product",
-    },
+    { imageSrc: wellness, title: "Beauty and wellness", link: "/wellness-product" },
     { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
-  ];
+  ]
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const result = await getAllProduct();
-        const productsData = Array.isArray(result)
-          ? result
-          : result.products || [];
-        setProducts(productsData);
+        const result = await getAllProduct()
+        const productsData = Array.isArray(result) ? result : result.products || []
+        setProducts(productsData)
       } catch (err) {
-        console.error("Error fetching products:", err);
-        setError("Failed to fetch products. Please try again.");
+        console.error("Error fetching products:", err)
+        setError("Failed to fetch products. Please try again.")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProducts();
-  }, []);
+    fetchProducts()
+  }, [])
 
-  if (loading) return <Spinner />;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  useEffect(() => {
+    const getVendor = async () => {
+      try {
+        const vendor = await getAllVendor()
+        setGetVendor(vendor.vendors)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+    getVendor()
+  }, [])
+
+  if (loading) return <Spinner />
+  if (error) return <p className="text-center text-red-500">{error}</p>
 
   return (
-    <>
-      <section className="mb-10 ">
+    <div className="bg-gray-50">
+      {/* Hero Slider */}
+      <section className="mb-12">
         <Slider />
       </section>
-      <section className="px-8 mb-10">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
-          <span className="pl-2 text-orange-500">Category</span>
+
+      {/* Categories Section */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Category</span>
         </div>
-        <h2 className="pl-6 mb-6 text-2xl font-bold">Browse By Category</h2>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Browse By Category</h2>
+          <Link
+            to="/categories"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           {categoriesData.map((category, index) => (
-            <CategoryCard
-              key={index}
-              imageSrc={category.imageSrc}
-              title={category.title}
-              link={category.link}
-            />
+            <CategoryCard key={index} imageSrc={category.imageSrc} title={category.title} link={category.link} />
           ))}
         </div>
       </section>
 
-      {/* New arrival */}
-      <section className="px-8 mb-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold md:text-2xl md:pl-6">New Arrival</h2>
-          <Link to="/random-product"
-            type="submit"
-            className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+      {/* New Arrivals Section */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Just Arrived</span>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">New Arrivals</h2>
+          <Link
+            to="/random-product"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {products
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 5)
             .map((product) => (
               <NewArrival
                 key={product._id}
@@ -127,163 +159,189 @@ const HomeArea: React.FC = () => {
                   poster: product.images[0] || "",
                 }}
               />
-            ))
-            .slice(0, 4)}
+            ))}
         </div>
       </section>
 
-      {/* Best selling */}
-      <section className="px-8 mb-10">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
-          <span className="pl-2 text-orange-500">This Month</span>
+      {/* Best Selling Products */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">This Month</span>
         </div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold md:text-2xl md:pl-6">
-            Best Selling Products
-          </h2>
-
-          <button
-            type="submit"
-            className="px-3 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Best Selling Products</h2>
+          <Link
+            to="/best-selling"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All
-          </button>
+          </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {ProductData.map((item) => (
             <FirstCartCard key={item.id} product={item} />
           ))}
         </div>
       </section>
 
-      <section className="px-8 mb-10 ">
-        <div className="p-5">
+      {/* Promotional Banner */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="overflow-hidden bg-white shadow-sm rounded-xl">
           <NewCard />
         </div>
       </section>
 
-      <section className="px-8 mb-10 ">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
-          <span className="pl-2 text-orange-500">This Month</span>
+      {/* Latest Vendors */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Featured Sellers</span>
         </div>
-        <h2 className="pl-6 mb-6 text-2xl font-bold">Latest Vendors</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
-          {profilesData.map((profile, index) => (
-            <VendorCard key={index} {...profile} />
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Latest Vendors</h2>
+          <Link
+            to="/vendors"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {getVender.slice(0, 5).map((profile, index) => (
+            <VendorCard
+              key={index}
+              name={profile.storeName}
+              location={profile.country}
+              profession={profile.city}
+              avatar="https://img.freepik.com/free-photo/confident-business-woman-portrait-smiling-face_53876-137693.jpg?t=st=1744826888~exp=1744830488~hmac=54c8ed57430092e7d2fa38dea2971200faf02d8f9bb49828b89fe6fea4862003&w=1380"
+              backgroundImage="https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+            />
           ))}
         </div>
       </section>
-      <section className="px-8 mb-10">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
-          <span className="pl-2 text-orange-500">Our Products</span>
+
+      {/* Explore Products */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Our Products</span>
         </div>
-        <h2 className="pl-6 mb-6 text-2xl font-bold">Explore Our Products</h2>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Explore Our Products</h2>
+          <Link
+            to="/products"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {ExploreData.map((item, index) => (
             <ExploreCard key={index} {...item} />
           ))}
         </div>
-        <div className="flex justify-center ">
-          <button
-            type="submit"
-            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+        <div className="flex justify-center">
+          <Link
+            to="/products"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All Products
-          </button>
+          </Link>
         </div>
       </section>
-      <section className="px-8 mb-10 ">
-        <div className="p-5">
+
+      {/* Second Promotional Banner */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="overflow-hidden bg-white shadow-sm rounded-xl">
           <NewCard />
         </div>
       </section>
 
-      <section className="px-8 mb-10">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
-          <span className="pl-2 text-orange-500">Today's</span>
+      {/* Flash Sale */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Today's</span>
         </div>
-        <div className="pl-6 mb-6">
+        <div className="mb-8">
           <FlashSaleCountdown />
         </div>
-        <div>
+        <div className="mb-8">
           <ProductSlider products={flashSale} />
         </div>
-        <div className="flex justify-center ">
-          <button
-            type="submit"
-            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+        <div className="flex justify-center">
+          <Link
+            to="/flash-sale"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
-            View All Products
-          </button>
+            View All Flash Sales
+          </Link>
         </div>
       </section>
-      <section className="px-8 mb-10">
-        <div className="flex items-center pl-6 mb-2 ">
-          <div className="w-3 h-4 bg-orange-500"></div>
+
+      {/* Auction */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Bid Now</span>
         </div>
-        <h2 className="pl-6 mb-6 text-2xl font-bold text-orange-500">
-          Auction
-        </h2>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-3 lg:grid-cols-4">
-          {Auction.map((item, index) => (
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-orange-500 md:text-3xl">Auction</h2>
+          <Link
+            to="/auctions"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {Auction.slice(0, 8).map((item, index) => (
             <AuctionCard key={index} {...item} />
-          )).slice(0, 8)}
+          ))}
         </div>
-        <div className="flex justify-center ">
+        <div className="flex justify-center">
           <NavLink
             to="/auctionview"
-            className="flex items-center justify-center px-5 py-2 text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
-            View All Auction
+            View All Auctions
           </NavLink>
         </div>
       </section>
 
-      <section className="mb-10 ">
-        <div>
-          <div className="flex flex-col justify-center gap-4 px-5 py-8 md:px-0 md:flex-row">
-            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
-              <div className="mb-4 text-4xl">
-                <img src={sev1} alt="" />
+      {/* Services */}
+      <section className="px-4 py-16 bg-white md:px-8">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="flex flex-col items-center p-6 text-center transition-shadow duration-300 rounded-lg hover:shadow-md">
+              <div className="flex items-center justify-center w-16 h-16 mb-4">
+                <img src={sev1 || "/placeholder.svg"} alt="Free Delivery" className="object-contain w-full h-full" />
               </div>
-              <div className="text-xl font-semibold">
-                <h4>FREE AND FAST DELIVERY</h4>
-              </div>
-              <div className="mt-2 text-center">
-                <p>Free delivery for all orders over $140</p>
-              </div>
+              <h3 className="mb-2 text-xl font-bold">FREE AND FAST DELIVERY</h3>
+              <p className="text-gray-600">Free delivery for all orders over $140</p>
             </div>
-            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
-              <div className="mb-4 text-4xl">
-                <img src={sev2} alt="" />
+
+            <div className="flex flex-col items-center p-6 text-center transition-shadow duration-300 rounded-lg hover:shadow-md">
+              <div className="flex items-center justify-center w-16 h-16 mb-4">
+                <img src={sev2 || "/placeholder.svg"} alt="Customer Service" className="object-contain w-full h-full" />
               </div>
-              <div className="text-xl font-semibold">
-                <h4>24/7 CUSTOMER SERVICE</h4>
-              </div>
-              <div className="mt-2 text-center">
-                <p>Friendly 24/7 customer support</p>
-              </div>
+              <h3 className="mb-2 text-xl font-bold">24/7 CUSTOMER SERVICE</h3>
+              <p className="text-gray-600">Friendly 24/7 customer support</p>
             </div>
-            <div className="flex flex-col items-center w-full p-6 sm:w-1/2 lg:w-1/4">
-              <div className="mb-4 text-4xl">
-                <img src={sev3} alt="" />
+
+            <div className="flex flex-col items-center p-6 text-center transition-shadow duration-300 rounded-lg hover:shadow-md">
+              <div className="flex items-center justify-center w-16 h-16 mb-4">
+                <img src={sev3 || "/placeholder.svg"} alt="Money Back" className="object-contain w-full h-full" />
               </div>
-              <div className="text-xl font-semibold">
-                <h4>MONEY BACK GUARANTEE</h4>
-              </div>
-              <div className="mt-2 text-center">
-                <p>We reurn money within 30 days</p>
-              </div>
+              <h3 className="mb-2 text-xl font-bold">MONEY BACK GUARANTEE</h3>
+              <p className="text-gray-600">We return money within 30 days</p>
             </div>
           </div>
         </div>
       </section>
-    </>
-  );
-};
+    </div>
+  )
+}
 
-export default HomeArea;
+export default HomeArea

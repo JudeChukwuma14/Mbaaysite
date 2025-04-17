@@ -11,18 +11,18 @@ interface VendorCardProps {
 
 const VendorCard: React.FC<VendorCardProps> = ({ backgroundImage, avatar, name, profession, location }) => {
   return (
-    <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white">
+    <div className="max-w-sm overflow-hidden bg-white rounded shadow-lg">
       <div className="relative">
-        <img src={backgroundImage} alt="Background" className="w-full h-32 object-cover" />
-        <div className="absolute top-24 left-4 flex items-center">
-          <img src={avatar} alt={name} className="w-16 h-16 rounded-full border-4 border-white" />
+        <img src={backgroundImage} alt="Background" className="object-cover w-full h-32" />
+        <div className="absolute flex items-center top-24 left-4">
+          <img src={avatar} alt={name} className="object-cover w-20 h-20 border-4 border-white rounded-full" />
         </div>
       </div>
       <div className="p-4 pt-12">
         <h3 className="text-lg font-semibold">{name}</h3>
         <p className="text-gray-600">{profession}</p>
-        <p className="text-gray-500 flex items-center">
-          <FaMapMarkerAlt className="text-sm mr-1" />{location}
+        <p className="flex items-center text-gray-500">
+          <FaMapMarkerAlt className="mr-1 text-sm" />{location}
         </p>
       </div>
     </div>

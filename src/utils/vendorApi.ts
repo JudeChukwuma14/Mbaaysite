@@ -55,3 +55,13 @@ export const upload_return_policy = async (token: string | null, data: any) => {
     console.log(error);
   }
 };
+
+
+export const getAllVendor = async()=>{
+  try {
+    const response = await api.get("/get_all_vendors");
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+}
