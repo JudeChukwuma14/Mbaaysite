@@ -72,7 +72,7 @@ const HomeArea: React.FC = () => {
     {
       imageSrc: wellness,
       title: "Beauty and wellness",
-      link: "/wellness-product",
+      link: "/beautywellness",
     },
     { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
   ];
