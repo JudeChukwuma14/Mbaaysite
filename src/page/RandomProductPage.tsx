@@ -36,6 +36,7 @@ const RandomProductPage = () => {
           ? result
           : result.products || [];
         setProducts(productsData);
+        console.log("Fetched products:", productsData);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to fetch products. Please try again.");

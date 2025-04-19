@@ -52,11 +52,13 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   return (
     <div className="max-w-sm overflow-hidden bg-white shadow-md">
       <div className="relative">
+      <Link to={`/product/${product._id}`}>
         <img
           src={product.images[0] || product.poster}
           alt={product.name}
           className="object-cover w-full h-56"
         />
+      </Link>
         <div className="absolute flex flex-col space-y-2 top-3 right-3">
           <button
             className="flex items-center justify-center w-8 h-8 bg-white rounded-full shadow"

@@ -88,7 +88,7 @@ const Header: React.FC = () => {
         </p>
         <div className="flex gap-6">
           <Link
-            to="/shop"
+            to="/random-product"
             className="font-medium transition-colors duration-200 hover:underline"
           >
             Shop Now

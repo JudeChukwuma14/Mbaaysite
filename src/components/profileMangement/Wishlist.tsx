@@ -46,7 +46,7 @@ const Wishlist: React.FC = () => {
               add your favorite products!
             </p>
             <a
-              href="/shop"
+              href="/random-product"
               className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
             >
               <FaShoppingCart />
@@ -112,7 +112,7 @@ const Wishlist: React.FC = () => {
 
             <div className="flex items-center justify-between pt-6 mt-8 border-t">
               <a
-                href="/shop"
+                href="/random-product"
                 className="flex items-center gap-2 font-medium text-orange-500 transition duration-300 hover:text-orange-600"
               >
                 <FaShoppingCart size={14} />
