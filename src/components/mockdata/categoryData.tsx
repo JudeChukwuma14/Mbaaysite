@@ -404,7 +404,7 @@ export const categories = [
       },
       {
         link: "/woodcraft",
-        title: "Woodcraft",
+        title: "Wood Craft",
         items: [
           "Hand-carved Wooden Bowls",
           "Traditional Wooden Masks",

@@ -126,4 +126,3 @@ const MenJewelry = () => {
 };
 
 export default MenJewelry;
-

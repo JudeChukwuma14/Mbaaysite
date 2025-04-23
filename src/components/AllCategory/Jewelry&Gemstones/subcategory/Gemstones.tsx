@@ -127,5 +127,3 @@ const Gemstones = () => {
 };
 
 export default Gemstones;
-
-

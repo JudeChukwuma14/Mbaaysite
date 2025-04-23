@@ -80,7 +80,9 @@ const TraditionalJewelry = () => {
 
   return (
     <div className="px-8 py-6">
-      <h2 className="mb-6 text-2xl font-bold">Cultural & Traditional Jewelry</h2>
+      <h2 className="mb-6 text-2xl font-bold">
+        Cultural & Traditional Jewelry
+      </h2>
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
@@ -125,5 +127,3 @@ const TraditionalJewelry = () => {
 };
 
 export default TraditionalJewelry;
-
-
