@@ -1,14 +1,26 @@
-"use client";
-
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Camera, ChevronDown, Eye, EyeOff, Upload } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Camera,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Edit,
+  X,
+  Search,
+} from "lucide-react";
 import { MdVerified } from "react-icons/md";
+import type React from "react";
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
 import { toast } from "react-hot-toast";
-import { upload_return_policy } from "@/utils/vendorApi";
+import { get_single_vendor, upload_return_policy } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import type { RootState } from "@/redux/store";
+import {
+  useUploadAvatar,
+  useUploadBusinessLogo,
+} from "../../../utils/editvendorApi";
+import { useQuery } from "@tanstack/react-query";
 
 interface VendorProfile {
   companyName: string;
@@ -21,11 +33,28 @@ interface VendorProfile {
   returnPolicy: string;
 }
 
+// Define popup types
+type PopupType = "password" | "location" | "account" | "email" | "store" | null;
+
+// Bank logos mapping
+const bankLogos: Record<string, string> = {
+  "Zenith Bank": "/placeholder.svg?height=30&width=30",
+  "First Bank": "/placeholder.svg?height=30&width=30",
+  GTBank: "/placeholder.svg?height=30&width=30",
+  "Access Bank": "/placeholder.svg?height=30&width=30",
+  UBA: "/placeholder.svg?height=30&width=30",
+};
+
+// Local storage keys
+const PROFILE_IMAGE_KEY = "vendor_profile_image";
+const BANNER_IMAGE_KEY = "vendor_banner_image";
+const LOGO_IMAGE_KEY = "vendor_logo_image";
+
 export default function EditVendorProfile() {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string | null>(null);
-  const [logoImage, setLogoImage] = useState<string | null>(null);
+  // const [logoImage, setLogoImage] = useState<string | null>(null);
   const [returnPolicy, setReturnPolicy] = useState<File | null>(null);
   const [returnPolicyName, setReturnPolicyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,8 +62,37 @@ export default function EditVendorProfile() {
     Partial<Record<keyof VendorProfile, string>>
   >({});
   const [returnPolicyText, setReturnPolicyText] = useState<string>("");
+  const [showEditDropdown, setShowEditDropdown] = useState(false);
+  const [activePopup, setActivePopup] = useState<PopupType>(null);
+  const [actualPassword, setActualPassword] = useState("Password123");
+
+  // Form states for popups
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
+  const [address, setAddress] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [storeName, setStoreName] = useState("");
+  const [storeNumber, setStoreNumber] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [isSearchingAccount, setIsSearchingAccount] = useState(false);
+  const [foundAccountName, setFoundAccountName] = useState("");
+  const [foundBankName, setFoundBankName] = useState("");
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
 
   const user = useSelector((state: RootState) => state.vendor);
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
+  // Mutations for image uploads
+  const uploadAvatarMutation = useUploadAvatar();
+  const uploadBusinessLogoMutation = useUploadBusinessLogo();
 
   const [profile, setProfile] = useState<VendorProfile>({
     companyName: "PreciousLtd Limited",
@@ -47,6 +105,65 @@ export default function EditVendorProfile() {
     returnPolicy: "",
   });
 
+  // Load images from local storage on component mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedProfileImage = localStorage.getItem(PROFILE_IMAGE_KEY);
+      const storedBannerImage = localStorage.getItem(BANNER_IMAGE_KEY);
+      // const storedLogoImage = localStorage.getItem(LOGO_IMAGE_KEY);
+
+      if (storedProfileImage) {
+        setProfileImage(storedProfileImage);
+      }
+      if (storedBannerImage) {
+        setBannerImage(storedBannerImage);
+      }
+      // if (storedLogoImage) {
+      //   setLogoImage(storedLogoImage);
+      // }
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node) &&
+        editButtonRef.current &&
+        !editButtonRef.current.contains(event.target as Node)
+      ) {
+        setShowEditDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Calculate dropdown position when it's shown
+  useEffect(() => {
+    if (showEditDropdown && editButtonRef.current && dropdownRef.current) {
+      const buttonRect = editButtonRef.current.getBoundingClientRect();
+      dropdownRef.current.style.top = `${
+        buttonRect.bottom + window.scrollY + 5
+      }px`;
+      // Position the dropdown to the right of the button
+      dropdownRef.current.style.left = `${
+        buttonRect.right - dropdownRef.current.offsetWidth + window.scrollX
+      }px`;
+    }
+  }, [showEditDropdown]);
+
+  // Function to save image to local storage
+  const saveImageToLocalStorage = (imageData: string, storageKey: string) => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(storageKey, imageData);
+    }
+  };
+
   const handleImageUpload = (
     event: React.ChangeEvent<HTMLInputElement>,
     type: "profile" | "banner" | "logo"
@@ -55,15 +172,46 @@ export default function EditVendorProfile() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
+        const imageData = reader.result as string;
+
         switch (type) {
           case "profile":
-            setProfileImage(reader.result as string);
+            setProfileImage(imageData);
+            saveImageToLocalStorage(imageData, PROFILE_IMAGE_KEY);
+
+            // Create FormData and upload profile image
+            const profileFormData = new FormData();
+            profileFormData.append("avatar", file);
+            uploadAvatarMutation.mutate({
+              data: profileFormData,
+              token: user.token,
+            });
             break;
+
           case "banner":
-            setBannerImage(reader.result as string);
+            setBannerImage(imageData);
+            saveImageToLocalStorage(imageData, BANNER_IMAGE_KEY);
+
+            // Create FormData and upload banner image
+            const bannerFormData = new FormData();
+            bannerFormData.append("businessLogo", file);
+            uploadBusinessLogoMutation.mutate({
+              data: bannerFormData,
+              token: user.token,
+            });
             break;
+
           case "logo":
-            setLogoImage(reader.result as string);
+            // setLogoImage(imageData);
+            saveImageToLocalStorage(imageData, LOGO_IMAGE_KEY);
+
+            // Create FormData and upload logo image
+            const logoFormData = new FormData();
+            logoFormData.append("avatar", file);
+            uploadAvatarMutation.mutate({
+              data: logoFormData,
+              token: user.token,
+            });
             break;
         }
       };
@@ -84,6 +232,45 @@ export default function EditVendorProfile() {
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
+  };
+
+  const handleEditOption = (option: string) => {
+    setShowEditDropdown(false);
+
+    switch (option) {
+      case "password":
+        setActivePopup("password");
+        setNewPassword("");
+        setConfirmPassword("");
+        break;
+      case "location":
+        setActivePopup("location");
+        setCountry("");
+        setState("");
+        setAddress("");
+        break;
+      case "account":
+        setActivePopup("account");
+        setAccountNumber("");
+        setFoundAccountName("");
+        setFoundBankName("");
+        break;
+      case "email":
+        setActivePopup("email");
+        setNewEmail("");
+        break;
+      case "store":
+        setActivePopup("store");
+        setStoreName("");
+        setStoreNumber("");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const closePopup = () => {
+    setActivePopup(null);
   };
 
   const handleSubmit = async () => {
@@ -134,21 +321,7 @@ export default function EditVendorProfile() {
         formData.append(key, value);
       });
 
-      // Add images if they exist
-      if (profileImage) {
-        const profileBlob = await fetch(profileImage).then((r) => r.blob());
-        formData.append("profileImage", profileBlob, "profile-image.jpg");
-      }
-
-      if (bannerImage) {
-        const bannerBlob = await fetch(bannerImage).then((r) => r.blob());
-        formData.append("bannerImage", bannerBlob, "banner-image.jpg");
-      }
-
-      if (logoImage) {
-        const logoBlob = await fetch(logoImage).then((r) => r.blob());
-        formData.append("logoImage", logoBlob, "logo-image.jpg");
-      }
+      // Images are now uploaded separately via mutations
 
       // Add return policy if it exists
       if (returnPolicy) {
@@ -174,18 +347,145 @@ export default function EditVendorProfile() {
     }
   };
 
+  // Handle account number search
+  const searchAccount = async () => {
+    if (!accountNumber.trim()) {
+      toast.error("Please enter an account number");
+      return;
+    }
+
+    setIsSearchingAccount(true);
+
+    try {
+      // Simulate API call to search for account details
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Mock response
+      setFoundAccountName("JOHN DOE");
+      setFoundBankName("FIRST BANK");
+
+      toast.success("Account details found");
+    } catch (error) {
+      console.error("Error searching account:", error);
+      toast.error("Failed to find account details");
+    } finally {
+      setIsSearchingAccount(false);
+    }
+  };
+
+  // Handle password change
+  const handlePasswordChange = () => {
+    if (!newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    // Update the actual password
+    setActualPassword(newPassword);
+
+    // Simulate password change
+    toast.success("Password changed successfully");
+    closePopup();
+  };
+
+  // Handle location change
+  const handleLocationChange = () => {
+    if (!country || !state || !address) {
+      toast.error("Please fill all location fields");
+      return;
+    }
+
+    // Simulate location change
+    toast.success("Location updated successfully");
+    closePopup();
+  };
+
+  // Handle email change
+  const handleEmailChange = () => {
+    if (!newEmail) {
+      toast.error("Please enter a new email address");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(newEmail)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    // Simulate email change
+    setProfile({ ...profile, email: newEmail });
+    toast.success("Email updated successfully");
+    closePopup();
+  };
+
+  // Handle store details change
+  const handleStoreChange = () => {
+    if (!storeName || !storeNumber) {
+      toast.error("Please fill all store details");
+      return;
+    }
+
+    // Simulate store details change
+    setProfile({
+      ...profile,
+      companyName: storeName,
+      phone: storeNumber,
+    });
+    toast.success("Store details updated successfully");
+    closePopup();
+  };
+
+  // Handle account details change
+  const handleAccountChange = () => {
+    if (!accountNumber || !foundAccountName || !foundBankName) {
+      toast.error("Please search for a valid account");
+      return;
+    }
+
+    // Update account details
+    setProfile({
+      ...profile,
+      accountNumber,
+      accountName: foundAccountName,
+      bankName: foundBankName,
+    });
+
+    toast.success("Account details updated successfully");
+    closePopup();
+  };
+
+  // Function to clear images from local storage and state
+  const clearImages = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(PROFILE_IMAGE_KEY);
+      localStorage.removeItem(BANNER_IMAGE_KEY);
+      localStorage.removeItem(LOGO_IMAGE_KEY);
+
+      setProfileImage(null);
+      setBannerImage(null);
+      // setLogoImage(null);0
+
+      toast.success("All images have been cleared");
+    }
+  };
+
   return (
     <motion.div
-      className="min-h-screen p-6 bg-gray-50"
+      className="min-h-screen bg-gray-50 p-6"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
+            <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
               Be Mbaay Verified
               <MdVerified size={20} className="text-blue-500" />
             </div>
@@ -196,12 +496,12 @@ export default function EditVendorProfile() {
           {/* Banner and Profile Section */}
           <motion.div
             variants={itemVariants}
-            className="overflow-hidden bg-white rounded-lg shadow-sm"
+            className="bg-white rounded-lg shadow-sm overflow-hidden"
           >
             <div className="relative h-48 bg-gradient-to-r from-orange-500 to-black">
               {bannerImage ? (
                 <img
-                  src={bannerImage}
+                  src={bannerImage || "/placeholder.svg"}
                   alt="Banner"
                   className="object-cover w-full h-full"
                 />
@@ -217,9 +517,17 @@ export default function EditVendorProfile() {
               />
               <label
                 htmlFor="banner-upload"
-                className="absolute p-2 bg-white rounded-full cursor-pointer bottom-4 right-4 hover:bg-gray-100"
+                className={`absolute p-2 bg-white rounded-full cursor-pointer bottom-4 right-4 hover:bg-gray-100 ${
+                  uploadBusinessLogoMutation.isPending
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
-                <Camera className="w-5 h-5" />
+                {uploadBusinessLogoMutation.isPending ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin"></div>
+                ) : (
+                  <Camera className="w-5 h-5" />
+                )}
               </label>
             </div>
             <div className="p-6">
@@ -228,7 +536,7 @@ export default function EditVendorProfile() {
                   <div className="w-24 h-24 overflow-hidden bg-gray-200 border-4 border-white rounded-full">
                     {profileImage ? (
                       <img
-                        src={profileImage}
+                        src={profileImage || "/placeholder.svg"}
                         alt="Profile"
                         className="object-cover w-full h-full"
                       />
@@ -247,19 +555,30 @@ export default function EditVendorProfile() {
                   />
                   <label
                     htmlFor="profile-upload"
-                    className="absolute bottom-0 right-0 bg-orange-500 p-1.5 rounded-full cursor-pointer hover:bg-orange-600"
+                    className={`absolute bottom-0 right-0 bg-orange-500 p-1.5 rounded-full cursor-pointer hover:bg-orange-600 ${
+                      uploadAvatarMutation.isPending
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
-                    <Camera className="w-4 h-4 text-white" />
+                    {uploadAvatarMutation.isPending ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-orange-500 rounded-full animate-spin"></div>
+                    ) : (
+                      <Camera className="w-4 h-4 text-white" />
+                    )}
                   </label>
                 </div>
-                <div className="flex gap-4 text-sm">
-                  <div>
-                    <div className="font-semibold">12</div>
-                    <div className="text-gray-500">Followers</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold">17</div>
-                    <div className="text-gray-500">Following</div>
+                <div className="flex flex-col">
+                  {/* Removed the company name display */}
+                  <div className="flex items-center gap-4 text-sm">
+                    <div>
+                      <div className="font-semibold">12</div>
+                      <div className="text-gray-500">Followers</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold">17</div>
+                      <div className="text-gray-500">Following</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -275,9 +594,9 @@ export default function EditVendorProfile() {
               <h3 className="mb-2 text-sm text-gray-500">Account Type</h3>
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-lg">
-                  <span className="font-semibold text-orange-500">C</span>
+                  <span className="font-semibold text-orange-500">S</span>
                 </div>
-                <div className="font-semibold">Counter</div>
+                <div className="font-semibold">Starter</div>
               </div>
               <div className="mt-2">
                 <span className="px-3 py-1 text-xs text-white bg-orange-500 rounded-full">
@@ -299,7 +618,71 @@ export default function EditVendorProfile() {
             variants={itemVariants}
             className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <h2 className="mb-4 font-semibold">Personal Information</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold">Personal Information</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Profile Details</span>
+                <div className="relative">
+                  <button
+                    ref={editButtonRef}
+                    className="flex items-center gap-1 px-3 py-1 text-sm bg-white border border-gray-300 rounded-full shadow-sm hover:bg-gray-50 edit-dropdown-toggle"
+                    onClick={() => setShowEditDropdown(!showEditDropdown)}
+                  >
+                    <Edit className="w-3 h-3" />
+                    Edit
+                  </button>
+
+                  {/* Edit Dropdown with fixed z-index and positioning */}
+                  {showEditDropdown && (
+                    <div className="fixed inset-0 z-[9999] pointer-events-none">
+                      <motion.div
+                        ref={dropdownRef}
+                        className="absolute bg-white rounded-lg shadow-lg py-1 w-48 pointer-events-auto"
+                        style={{
+                          position: "fixed",
+                          zIndex: 9999,
+                        }}
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <button
+                          className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                          onClick={() => handleEditOption("password")}
+                        >
+                          Change Password
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                          onClick={() => handleEditOption("location")}
+                        >
+                          Change Location
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                          onClick={() => handleEditOption("account")}
+                        >
+                          Change Account Details
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                          onClick={() => handleEditOption("email")}
+                        >
+                          Change Email Address
+                        </button>
+                        <button
+                          className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                          onClick={() => handleEditOption("store")}
+                        >
+                          Change Store Name and Number
+                        </button>
+                      </motion.div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
             <div className="grid gap-4">
               <div>
                 <label className="block mb-1 text-sm text-gray-500">
@@ -307,16 +690,14 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="text"
-                  value={profile.companyName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, companyName: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                  value={vendors?.storeName}
+                  readOnly
+                  className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.companyName ? "border-red-500" : ""
                   }`}
                 />
                 {errors.companyName && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.companyName}
                   </p>
                 )}
@@ -327,16 +708,14 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="email"
-                  value={profile.email}
-                  onChange={(e) =>
-                    setProfile({ ...profile, email: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                  value={vendors?.email}
+                  readOnly
+                  className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.email ? "border-red-500" : ""
                   }`}
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.email}</p>
                 )}
               </div>
               <div>
@@ -345,16 +724,14 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="tel"
-                  value={profile.phone}
-                  onChange={(e) =>
-                    setProfile({ ...profile, phone: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                  value={vendors?.storePhone}
+                  readOnly
+                  className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.phone ? "border-red-500" : ""
                   }`}
                 />
                 {errors.phone && (
-                  <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.phone}</p>
                 )}
               </div>
               <div>
@@ -364,14 +741,14 @@ export default function EditVendorProfile() {
                 <div className="relative">
                   <motion.input
                     type={showPassword ? "text" : "password"}
-                    value="••••••••••••"
-                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                    value={showPassword ? actualPassword : "••••••••••••"}
+                    className="w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed"
                     readOnly
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute text-gray-500 -translate-y-1/2 right-10 top-1/2 hover:text-gray-700"
+                    className="absolute text-gray-500 -translate-y-1/2 right-3 top-1/2 hover:text-gray-700"
                   >
                     {showPassword ? (
                       <EyeOff className="w-5 h-5" />
@@ -383,6 +760,7 @@ export default function EditVendorProfile() {
                 <button
                   type="button"
                   className="mt-3 text-sm text-purple-600 hover:text-purple-700"
+                  onClick={() => handleEditOption("password")}
                 >
                   Change password
                 </button>
@@ -420,15 +798,13 @@ export default function EditVendorProfile() {
                 <motion.input
                   type="text"
                   value={profile.accountName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, accountName: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                  readOnly
+                  className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.accountName ? "border-red-500" : ""
                   }`}
                 />
                 {errors.accountName && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.accountName}
                   </p>
                 )}
@@ -440,15 +816,13 @@ export default function EditVendorProfile() {
                 <motion.input
                   type="text"
                   value={profile.accountNumber}
-                  onChange={(e) =>
-                    setProfile({ ...profile, accountNumber: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
+                  readOnly
+                  className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.accountNumber ? "border-red-500" : ""
                   }`}
                 />
                 {errors.accountNumber && (
-                  <p className="text-red-500 text-xs mt-1">
+                  <p className="mt-1 text-xs text-red-500">
                     {errors.accountNumber}
                   </p>
                 )}
@@ -457,20 +831,36 @@ export default function EditVendorProfile() {
                 <label className="block mb-1 text-sm text-gray-500">
                   Bank Name
                 </label>
-                <motion.input
-                  type="text"
-                  value={profile.bankName}
-                  onChange={(e) =>
-                    setProfile({ ...profile, bankName: e.target.value })
-                  }
-                  className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500 ${
-                    errors.bankName ? "border-red-500" : ""
-                  }`}
-                />
+                <div className="relative">
+                  <div className="flex items-center gap-2 w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed">
+                    {profile.bankName && bankLogos[profile.bankName] && (
+                      <img
+                        src={bankLogos[profile.bankName] || "/placeholder.svg"}
+                        alt={profile.bankName}
+                        className="w-6 h-6 object-contain"
+                      />
+                    )}
+                    <motion.input
+                      type="text"
+                      value={profile.bankName}
+                      readOnly
+                      className={`flex-1 outline-none bg-gray-50 cursor-not-allowed ${
+                        errors.bankName ? "text-red-500" : ""
+                      }`}
+                    />
+                  </div>
+                </div>
                 {errors.bankName && (
-                  <p className="text-red-500 text-xs mt-1">{errors.bankName}</p>
+                  <p className="mt-1 text-xs text-red-500">{errors.bankName}</p>
                 )}
               </div>
+              <button
+                type="button"
+                className="text-sm text-purple-600 hover:text-purple-700"
+                onClick={() => handleEditOption("account")}
+              >
+                Change account details
+              </button>
             </div>
           </motion.div>
 
@@ -484,7 +874,7 @@ export default function EditVendorProfile() {
           />
 
           {/* Logo & Branding */}
-          <motion.div
+          {/* <motion.div
             variants={itemVariants}
             className="p-6 bg-white rounded-lg shadow-sm"
           >
@@ -492,7 +882,7 @@ export default function EditVendorProfile() {
             <div className="p-8 text-center border-2 border-orange-500 border-dashed rounded-lg">
               {logoImage ? (
                 <img
-                  src={logoImage}
+                  src={logoImage || "/placeholder.svg"}
                   alt="Logo"
                   className="max-w-[200px] mx-auto"
                 />
@@ -512,27 +902,36 @@ export default function EditVendorProfile() {
                     />
                     <label
                       htmlFor="logo-upload"
-                      className="inline-block px-4 py-2 mt-2 text-white bg-orange-500 rounded-lg cursor-pointer hover:bg-orange-600"
+                      className={`inline-block px-4 py-2 mt-2 text-white bg-orange-500 rounded-lg cursor-pointer hover:bg-orange-600 ${
+                        uploadAvatarMutation.isPending
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
                     >
-                      Upload Now
+                      {uploadAvatarMutation.isPending
+                        ? "Uploading..."
+                        : "Upload Now"}
                     </label>
                   </div>
                 </div>
               )}
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Action Buttons */}
           <motion.div
             variants={itemVariants}
             className="flex justify-end gap-4"
           >
-            <button className="px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50">
+            <button
+              className="px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50"
+              onClick={clearImages}
+            >
               Discard Changes
             </button>
 
             <button
-              className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
+              className="px-6 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
@@ -541,6 +940,323 @@ export default function EditVendorProfile() {
           </motion.div>
         </div>
       </div>
+
+      {/* Popups */}
+      <AnimatePresence>
+        {activePopup && (
+          <motion.div
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-md overflow-hidden bg-white rounded-lg"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            >
+              <div className="p-6">
+                {/* Password Change Popup */}
+                {activePopup === "password" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold">Change Password</h2>
+                      <button
+                        onClick={closePopup}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          New Password
+                        </label>
+                        <motion.input
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Confirm New Password
+                        </label>
+                        <motion.input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          onClick={closePopup}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          onClick={handlePasswordChange}
+                        >
+                          Change Password
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Location Change Popup */}
+                {activePopup === "location" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold">Change Location</h2>
+                      <button
+                        onClick={closePopup}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Country
+                        </label>
+                        <motion.input
+                          type="text"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          State
+                        </label>
+                        <motion.input
+                          type="text"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Address
+                        </label>
+                        <motion.textarea
+                          value={address}
+                          onChange={(e) => setAddress(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                          rows={3}
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          onClick={closePopup}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          onClick={handleLocationChange}
+                        >
+                          Update Location
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Account Change Popup */}
+                {activePopup === "account" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold">
+                        Change Account Details
+                      </h2>
+                      <button
+                        onClick={closePopup}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Account Number
+                        </label>
+                        <div className="flex gap-2">
+                          <motion.input
+                            type="text"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                          />
+                          <button
+                            className="flex items-center gap-1 px-3 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                            onClick={searchAccount}
+                            disabled={isSearchingAccount}
+                          >
+                            {isSearchingAccount ? (
+                              "Searching..."
+                            ) : (
+                              <>
+                                <Search className="w-4 h-4" />
+                                Search
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {foundAccountName && (
+                        <div className="p-3 bg-gray-50 rounded-lg">
+                          <p className="text-sm font-medium">
+                            Account Name:{" "}
+                            <span className="text-gray-700">
+                              {foundAccountName}
+                            </span>
+                          </p>
+                          <p className="text-sm font-medium">
+                            Bank:{" "}
+                            <span className="text-gray-700">
+                              {foundBankName}
+                            </span>
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          onClick={closePopup}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          onClick={handleAccountChange}
+                          disabled={!foundAccountName}
+                        >
+                          Update Account
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Email Change Popup */}
+                {activePopup === "email" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold">
+                        Change Email Address
+                      </h2>
+                      <button
+                        onClick={closePopup}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          New Email Address
+                        </label>
+                        <motion.input
+                          type="email"
+                          value={newEmail}
+                          onChange={(e) => setNewEmail(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          onClick={closePopup}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          onClick={handleEmailChange}
+                        >
+                          Update Email
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Store Change Popup */}
+                {activePopup === "store" && (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-semibold">
+                        Change Store Details
+                      </h2>
+                      <button
+                        onClick={closePopup}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Store Name
+                        </label>
+                        <motion.input
+                          type="text"
+                          value={storeName}
+                          onChange={(e) => setStoreName(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Store Number
+                        </label>
+                        <motion.input
+                          type="tel"
+                          value={storeNumber}
+                          onChange={(e) => setStoreNumber(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2 mt-6">
+                        <button
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          onClick={closePopup}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          onClick={handleStoreChange}
+                        >
+                          Update Store
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

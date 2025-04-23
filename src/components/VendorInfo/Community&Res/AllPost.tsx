@@ -120,12 +120,10 @@ export default function SocialFeed() {
     };
   }
 
-
-
   // interface PostImagesProps {
   //   images: string[];
   // }
-  
+
   // function PostImages({ images }: PostImagesProps) {
   //   const gridStyles = () => {
   //     if (images.length === 2) {
@@ -138,12 +136,12 @@ export default function SocialFeed() {
   //       return ""; // fallback for 1 image (handled directly)
   //     }
   //   };
-  
+
   //   return (
   //     <div className={`grid ${gridStyles()} w-full h-[300px]`}>
   //       {images.slice(0, 4).map((image, index) => {
   //         const isBigImage = images.length === 3 && index === 0;
-  
+
   //         return (
   //           <div
   //             key={index}
@@ -162,8 +160,8 @@ export default function SocialFeed() {
   //     </div>
   //   );
   // }
-  
-  const user = useSelector((state: RootState) => state.vendor)
+
+  const user = useSelector((state: RootState) => state.vendor);
 
   // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
@@ -512,11 +510,21 @@ export default function SocialFeed() {
                               text: e.currentTarget.value,
                               userType: "vendors",
                             });
-                            queryClient.invalidateQueries({ queryKey: ['comm_posts'] })
-                            queryClient.invalidateQueries({ queryKey: ['communities'] })
-                            queryClient.invalidateQueries({ queryKey: ['vendors'] })
-                            queryClient.invalidateQueries({ queryKey: ['vendor'] })
-                            queryClient.invalidateQueries({ queryKey: ['all_comm'] })
+                            queryClient.invalidateQueries({
+                              queryKey: ["comm_posts"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["communities"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["vendors"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["vendor"],
+                            });
+                            queryClient.invalidateQueries({
+                              queryKey: ["all_comm"],
+                            });
                             setShowEmojiPicker((prev) => ({
                               ...prev,
                               [post.id]: false,
@@ -525,7 +533,7 @@ export default function SocialFeed() {
                               position: "top-right",
                               autoClose: 4000,
                             });
-                             setTimeout(() => {
+                            setTimeout(() => {
                               window.location.reload();
                             }, 1000);
                           }
@@ -569,10 +577,17 @@ export default function SocialFeed() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
-                {/* <img src="/placeholder.svg?height=60&width=60" alt="Profile" className="w-12 h-12 rounded-full" /> */}
-                <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                  <p>{vendors?.userName?.charAt()}</p>
-                </div>
+                {!vendors?.userName ? (
+                  <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                    {vendors?.userName.charAt(0).toUpperCase()}
+                  </div>
+                ) : (
+                  <img
+                    src={vendors?.avatar}
+                    alt="Vendor"
+                    className="w-10 h-10 rounded-full"
+                  />
+                )}
                 <div>
                   <h2 className="font-semibold">{vendors?.userName}</h2>
                 </div>

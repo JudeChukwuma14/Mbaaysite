@@ -9,14 +9,15 @@ import {
   Store,
   Crown,
   Sparkles,
+  LucideListStart,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function UpgradePage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [upgradeType, setUpgradeType] = useState<"Counter" | "Shop" | null>(
-    null
-  );
+  const [upgradeType, setUpgradeType] = useState<
+    "Shelves" | "Counter" | "Shop" | null
+  >(null);
   const [openDialog, setOpenDialog] = useState(false);
 
   const categories = [
@@ -41,7 +42,7 @@ export default function UpgradePage() {
     }
   };
 
-  const handleUpgrade = (type: "Counter" | "Shop") => {
+  const handleUpgrade = (type: "Shelves" | "Counter" | "Shop") => {
     setUpgradeType(type);
     setOpenDialog(true);
     setSelectedCategories([]);
@@ -58,16 +59,6 @@ export default function UpgradePage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <header className="py-6 px-4 border-b">
-        <div className="max-w-6xl mx-auto w-full">
-          {/* <div className="flex items-center">
-            <div className="mr-auto">
-              <img src={logo} alt="MbaayLogo" className=" w-14" />
-            </div>
-          </div> */}
-        </div>
-      </header>
-
       <main className="flex-1 py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -80,13 +71,62 @@ export default function UpgradePage() {
               Upgrade Your Class Option for more Features
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Current Account: Shelves
+              Current Account: Starter
             </p>
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Shelves Plan */}
+            {/* Starter Plan */}
             <motion.div
+              className="border rounded-lg overflow-hidden bg-white"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              whileHover={{
+                y: -5,
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div className="bg-gray-50 p-4 flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                  <LucideListStart className="h-4 w-4 text-gray-600" />
+                </div>
+                <h3 className="font-semibold">Starter</h3>
+              </div>
+              <div className="p-4">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      Showcase products up to 10 different categories
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      Add products to help buyers and potential customers
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      Stay available to help buyers and potential customers
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
+                    <span className="text-sm">Clients can contact</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="p-4 pt-0">
+                <div className="w-full text-center py-2 bg-gray-100 rounded text-sm font-medium">
+                  Current Plan
+                </div>
+              </div>
+            </motion.div>
+            {/* Shelves Plan */}
+            {/* <motion.div
               className="border rounded-lg overflow-hidden bg-white"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -129,9 +169,60 @@ export default function UpgradePage() {
                 </ul>
               </div>
               <div className="p-4 pt-0">
-                <div className="w-full text-center py-2 bg-gray-100 rounded text-sm font-medium">
-                  Current Plan
+                <div className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium text-center">
+                  Upgrade to Shelves
                 </div>
+              </div>
+            </motion.div> */}
+            <motion.div
+              className="border rounded-lg overflow-hidden bg-white"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              whileHover={{
+                y: -5,
+                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <div className="bg-gray-50 p-4 flex items-center gap-3">
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <Layers className="h-4 w-4 text-gray-600" />
+                </div>
+                <h3 className="font-semibold">Shelves</h3>
+              </div>
+              <div className="p-4">
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      Categorize products up to 100 products
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                    <span className="text-sm">
+                      Showcase products in your own counter
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                    <span className="text-sm">Get verified</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
+                    <span className="text-sm">Clients can contact</span>
+                  </li>
+                </ul>
+              </div>
+              <div className="p-4 pt-0">
+                <motion.button
+                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium"
+                  onClick={() => handleUpgrade("Counter")}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                >
+                  Upgrade to Shelves
+                </motion.button>
               </div>
             </motion.div>
 
@@ -178,7 +269,7 @@ export default function UpgradePage() {
               </div>
               <div className="p-4 pt-0">
                 <motion.button
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium"
                   onClick={() => handleUpgrade("Counter")}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}

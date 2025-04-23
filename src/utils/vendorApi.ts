@@ -55,3 +55,56 @@ export const upload_return_policy = async (token: string | null, data: any) => {
     console.log(error);
   }
 };
+
+// Verify bank account
+// export const verify_bank_account = async (
+//   token: string,
+//   accountNumber: string,
+//   bankCode: string
+// ) => {
+//   try {
+//     const response = await axios.post(
+//       `${API_BASE_URL}/vendor/verify_account`,
+//       { accountNumber, bankCode },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error verifying bank account:", error);
+//     throw error;
+//   }
+// };
+
+// // Get bank list
+// export const get_bank_list = async (token: string) => {
+//   try {
+//     const response = await axios.get(`${API_BASE_URL}/vendor/banks`, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error fetching bank list:", error);
+//     throw error;
+//   }
+// };
+
+// // Update vendor profile
+// export const update_vendor_profile = async (token: string, data: any) => {
+//   try {
+//     const response = await axios.patch(`${API_BASE_URL}/vendor/update`, data, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error("Error updating vendor profile:", error);
+//     throw error;
+//   }
+// };
