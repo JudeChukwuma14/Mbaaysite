@@ -40,6 +40,7 @@ import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 
+
 interface Product {
   _id: string;
   id: string;
@@ -54,7 +55,7 @@ interface VendorProfile {
   country: string;
   city: string;
   avatar: string;
-  backgroundImage: string;
+  businessLogo: string;
   id: string;
 }
 
@@ -242,8 +243,8 @@ const HomeArea: React.FC = () => {
               name={profile.storeName}
               location={profile.country}
               profession={profile.city}
-              avatar="https://img.freepik.com/free-photo/confident-business-woman-portrait-smiling-face_53876-137693.jpg?t=st=1744826888~exp=1744830488~hmac=54c8ed57430092e7d2fa38dea2971200faf02d8f9bb49828b89fe6fea4862003&w=1380"
-              backgroundImage="https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+              avatar={profile.avatar||"https://img.freepik.com/free-photo/confident-business-woman-portrait-smiling-face_53876-137693.jpg?t=st=1744826888~exp=1744830488~hmac=54c8ed57430092e7d2fa38dea2971200faf02d8f9bb49828b89fe6fea4862003&w=1380"}
+            backgroundImage={profile?.businessLogo||"https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"}
             />
           ))}
         </div>

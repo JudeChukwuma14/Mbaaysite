@@ -364,7 +364,7 @@ export const categories = [
         ],
       },
       {
-        link: "/inspirational-books",
+        link: "/inspirational-book",
         title: "Inspirational and Motivational Books",
         items: [
           "Stories of Resilience and Overcoming Challenges",

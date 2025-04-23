@@ -94,7 +94,7 @@ const BookPoetry: React.FC = () => {
     { image: PoliticalSocialIssues, link:"/political-social", text: "Political and Social Issues" },
     { image: ArtisticCreative, link:"/artistic-writing", text: "Artistic and Creative Writing" },
     { image: EnvironmentalNature, link:"/environment-nature", text: "Environmental and Nature Studies" },
-    { image: InspirationalBooks, link:"/inspirational-books", text: "Inspirational and Motivational Books" },
+    { image: InspirationalBooks, link:"/inspirational-book", text: "Inspirational and Motivational Books" },
   ];
 
   return (
