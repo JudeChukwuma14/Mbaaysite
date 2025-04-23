@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import image from "@/assets/image/Group 14.png";
 import ProductCard2 from "@/components/Cards/ProductCard2";
 import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -11,6 +10,14 @@ import HistoricalNarratives from "@/assets/image/HistoricalNarratives.jpg"
 import SpiritualityReligion from "@/assets/image/SpiritualityReligion.jpg"
 import LanguageLinguistics from "@/assets/image/LanguageLinguistics.jpg"
 import Cookbook from "@/assets/image/CookbooksTraditions.jpg"
+import ArtCraft from "@/assets/image/ArtCraft.jpg"
+import ChildrenBooks from "@/assets/image/ChildrenBook.jpg"
+import TravelExploration from "@/assets/image/TravelExploration.jpg"
+import HealthWellness from "@/assets/image/HealthWellness.jpg"
+import PoliticalSocialIssues from "@/assets/image/PoliticalSocialIssues.jpg"
+import ArtisticCreative from "@/assets/image/ArtisticCreative.jpg"
+import EnvironmentalNature from "@/assets/image/EnvironmentalNature.jpg"
+import InspirationalBooks from "@/assets/image/InspirationalBooks.jpg"
 interface Product {
   _id: string;
   name: string;
@@ -80,14 +87,14 @@ const BookPoetry: React.FC = () => {
     { image: SpiritualityReligion, link:"/spirituality-religion", text: "Spirituality and Religion" },
     { image: LanguageLinguistics, link:"/language-linguistics", text: "Language and Linguistics" },
     { image: Cookbook, link:"/cookbook", text: "Cookbooks and Culinary Traditions" },
-    { image: image, link:"/art-craft", text: "Art and Craft" },
-    { image: image, link:"/children-books", text: "Children’s Books" },
-    { image: image, link:"/travel-exploration", text: "Travel and Exploration" },
-    { image: image, link:"/health-wellness", text: "Health and Wellness" },
-    { image: image, link:"/political-social", text: "Political and Social Issues" },
-    { image: image, link:"/artistic-writing", text: "Artistic and Creative Writing" },
-    { image: image, link:"/environment-nature", text: "Environmental and Nature Studies" },
-    { image: image, link:"/inspirational-books", text: "Inspirational and Motivational Books" },
+    { image: ArtCraft, link:"/art-craft", text: "Art and Craft" },
+    { image: ChildrenBooks, link:"/children-books", text: "Children’s Books" },
+    { image: TravelExploration, link:"/travel-exploration", text: "Travel and Exploration" },
+    { image: HealthWellness, link:"/health-wellness-book", text: "Health and Wellness" },
+    { image: PoliticalSocialIssues, link:"/political-social", text: "Political and Social Issues" },
+    { image: ArtisticCreative, link:"/artistic-writing", text: "Artistic and Creative Writing" },
+    { image: EnvironmentalNature, link:"/environment-nature", text: "Environmental and Nature Studies" },
+    { image: InspirationalBooks, link:"/inspirational-books", text: "Inspirational and Motivational Books" },
   ];
 
   return (
@@ -108,6 +115,8 @@ const BookPoetry: React.FC = () => {
                   alt={item.text}
                   width={300}
                   height={300}
+
+                  className="object-cover w-full h-full transition-transform duration-300 transform hover:scale-105"
                 />
               </div>
                 <p className="text-center">{item.text}</p>

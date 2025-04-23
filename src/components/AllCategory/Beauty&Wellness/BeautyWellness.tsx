@@ -108,6 +108,7 @@ const BeautyWellness: React.FC = () => {
                   alt={item.text}
                   width={300}
                   height={300}
+                  className="object-cover w-full h-full transition-transform duration-300 transform hover:scale-105"
                 />
               </div>
                 <p className="text-center">{item.text}</p>

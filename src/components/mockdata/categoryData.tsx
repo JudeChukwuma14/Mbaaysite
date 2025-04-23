@@ -324,7 +324,7 @@ export const categories = [
         ],
       },
       {
-        link: "/health-wellness",
+        link: "/health-wellness-book",
         title: "Health and Wellness",
         items: [
           "Books on Traditional Healing Practices",
