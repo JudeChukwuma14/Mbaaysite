@@ -216,7 +216,7 @@ export const categories = [
   {
     name: "Books and Poetry",
     image: book,
-    link: "/bookpoetry",
+    link: "/book-poetry",
     subcategories: [
       {
         link: "/cultural-ethnic",
@@ -233,7 +233,7 @@ export const categories = [
         title: "Traditional and Folk Literature",
         items: [
           "Folktales and Myths from Various Regions",
-          "Oral Traditions and Storytelling",
+          "Oral Traditions and Story telling",
           "Epic Poems and Legendary Tales",
           "Traditional Proverbs and Sayings",
         ],

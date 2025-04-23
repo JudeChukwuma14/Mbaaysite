@@ -62,7 +62,7 @@ const ArtCraft = () => {
         <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
         <p className="max-w-md mb-6 text-gray-500">{error}</p>
         <a
-          href="/random-productom-product"
+          href="/random-product"
           className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
         >
           <FaShoppingCart />
@@ -85,7 +85,7 @@ const ArtCraft = () => {
             No products match your criteria. Browse our shop to find your favorite products!
           </p>
           <a
-            href="/random-productom-product"
+            href="/random-product"
             className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
           >
             <FaShoppingCart />

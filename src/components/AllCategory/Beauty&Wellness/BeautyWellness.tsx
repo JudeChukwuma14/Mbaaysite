@@ -79,13 +79,13 @@ const BeautyWellness: React.FC = () => {
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
         <p className="max-w-md mb-6 text-gray-500">{error}</p>
-        <a
-          href="/shop"
+        <Link
+          to="/shop"
           className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
         >
           <FaShoppingCart />
           Continue Shopping
-        </a>
+        </Link>
       </div>
     );
   }
@@ -127,13 +127,13 @@ const BeautyWellness: React.FC = () => {
               No products are available in this category. Browse our shop to
               find your favorite products!
             </p>
-            <a
-              href="/random-product"
+            <Link
+              to="/random-product"
               className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
             >
               <FaShoppingCart />
               Continue Shopping
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">

@@ -1,70 +1,161 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import image from "@/assets/image/Group 14.png";
-import card from "@/assets/image/card1.png";
 import ProductCard2 from "@/components/Cards/ProductCard2";
+import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import { getAllProduct } from "@/utils/productApi";
+import CulturalEthnic from "@/assets/image/CulturalEthnic.jpg"
+import TraditionalLiterature from "@/assets/image/TraditionalLiterature.jpg"
+import Poetry from "@/assets/image/Poetry.jpg"
+import HistoricalNarratives from "@/assets/image/HistoricalNarratives.jpg"
+import SpiritualityReligion from "@/assets/image/SpiritualityReligion.jpg"
+import LanguageLinguistics from "@/assets/image/LanguageLinguistics.jpg"
+import Cookbook from "@/assets/image/CookbooksTraditions.jpg"
+interface Product {
+  _id: string;
+  name: string;
+  price: number;
+  images: string[];
+  createdAt: string;
+  category: string;
+  sub_category?: string;
+  sub_category2?: string;
+}
 
+interface Subcategory {
+  image: string;
+  link: string;
+  text: string;
+}
 
 const BookPoetry: React.FC = () => {
-  const ImagePart = [
-    { image: image, text: "Cultural and Ethnic Studies" },
-    { image: image, text: "Traditional and Folk Literature" },
-    { image: image, text: "Poetry" },
-    { image: image, text: "Historical Narratives" },
-    { image: image, text: "Spirituality and Religion" },
-    { image: image, text: "Language and Linguistics" },
-    { image: image, text: "Cookbooks and Culinary Traditions" },
-    { image: image, text: "Art and Craft" },
-    { image: image, text: "Children’s Books" },
-    { image: image, text: "Travel and Exploration" },
-    { image: image, text: "Health and Wellness" },
-    { image: image, text: "Political and Social Issues" },
-    { image: image, text: "Artistic and Creative Writing" },
-    { image: image, text: "Environmental and Nature Studies" },
-    { image: image, text: "Inspirational and Motivational Books" },
+  const [products, setProducts] = useState<Product[]>([]);
+  const [error, setError] = useState<string>("");
+
+    useEffect(() => {
+      const fetchProducts = async () => {
+        try {
+          const result = await getAllProduct();
+          const allProducts = Array.isArray(result)
+            ? (result as Product[])
+            : result.products || [];
+  
+          // Filter products by category: Beauty and Wellness
+          const filtered = allProducts.filter(
+            (product: Product) =>
+              product.category?.toLowerCase() === "book and poetry"
+          );
+  
+          setProducts(filtered);
+        } catch (err) {
+          console.error("Error fetching products:", err);
+          setError("Failed to fetch products. Please try again.");
+        }
+      };
+  
+      fetchProducts();
+    }, []);
+  
+    if (error) {
+      return (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
+          <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
+          <p className="max-w-md mb-6 text-gray-500">{error}</p>
+          <Link
+            to="/shop"
+            className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+          >
+            <FaShoppingCart />
+            Continue Shopping
+          </Link>
+        </div>
+      );
+    }
+  const ImagePart: Subcategory[] = [
+    { image: CulturalEthnic, link:"/cultural-ethnic", text: "Cultural and Ethnic Studies" },
+    { image: TraditionalLiterature, link:"/traditional-folk", text: "Traditional and Folk Literature" },
+    { image: Poetry, link:"/poetry", text: "Poetry" },
+    { image: HistoricalNarratives, link:"/historical-narrative", text: "Historical Narratives" },
+    { image: SpiritualityReligion, link:"/spirituality-religion", text: "Spirituality and Religion" },
+    { image: LanguageLinguistics, link:"/language-linguistics", text: "Language and Linguistics" },
+    { image: Cookbook, link:"/cookbook", text: "Cookbooks and Culinary Traditions" },
+    { image: image, link:"/art-craft", text: "Art and Craft" },
+    { image: image, link:"/children-books", text: "Children’s Books" },
+    { image: image, link:"/travel-exploration", text: "Travel and Exploration" },
+    { image: image, link:"/health-wellness", text: "Health and Wellness" },
+    { image: image, link:"/political-social", text: "Political and Social Issues" },
+    { image: image, link:"/artistic-writing", text: "Artistic and Creative Writing" },
+    { image: image, link:"/environment-nature", text: "Environmental and Nature Studies" },
+    { image: image, link:"/inspirational-books", text: "Inspirational and Motivational Books" },
   ];
-  const ProductCard = [
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-    { image: card, name: "Jude", price: "200", rating: 4, label: "sales!" },
-  ];
+
   return (
     <div>
-      <div className="py-3 pl-10 mb-6 ">
-        <h3 className="text-xl font-semibold ">Jewelry</h3>
+      <div className="py-3 pl-10 mb-10">
+        <h3 className="text-xl font-semibold">
+          <Link to="/">Home</Link> / Books & Poetry
+        </h3>
       </div>
       <div className="mb-8">
         <div className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 lg:grid-cols-5">
           {ImagePart.map((item, index) => (
-            <div
-              key={index}
-              className="flex flex-col items-center justify-center"
-            >
-              <img src={item.image} alt="" width={300} height={300} />
-              <p className="text-center ">{item.text}</p>
-            </div>
+            <Link to={item.link} key={index}>
+              <div className="flex flex-col items-center justify-center">
+              <div className="flex items-center justify-center w-32 h-32 mb-2 overflow-hidden bg-gray-100 rounded-full shadow-lg">
+              <img
+                  src={item.image}
+                  alt={item.text}
+                  width={300}
+                  height={300}
+                />
+              </div>
+                <p className="text-center">{item.text}</p>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
       <div>
-        <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">
-          {ProductCard.map((item, index) => (
-            <ProductCard2
-              key={index}
-              image={item.image}
-              name={item.name}
-              price={item.price}
-              rating={item.rating}
-              label={item.label}
-            />
-          ))}
-        </div>
+        {products.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
+            <h2 className="mb-2 text-2xl font-semibold text-gray-400">
+              No Books and Poetry Products Found
+            </h2>
+            <p className="max-w-md mb-6 text-gray-500">
+              No products are available in this category. Browse our shop to
+              find your favorite products!
+            </p>
+            <Link
+              to="/random-product"
+              className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+            >
+              <FaShoppingCart />
+              Continue Shopping
+            </Link>
+          </div>
+        ) : (
+          <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">
+            {products
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .slice(0, 10)
+              .map((product) => (
+                <ProductCard2
+                  key={product._id}
+                  image={product.images[0] || ""}
+                  name={product.name}
+                  price={product.price.toString()}
+                  rating={4} // Replace with actual rating if available
+                  label="sales!" // Replace with dynamic label if applicable
+                />
+              ))}
+          </div>
+        )}
       </div>
     </div>
   );

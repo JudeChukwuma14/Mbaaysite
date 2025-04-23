@@ -237,7 +237,7 @@ const routesConfig: RouteObject[] = [
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
       { path: "/furniture", element: withSuspense(Furniture) },
-      { path: "/bookpoetry", element: withSuspense(BookPoetry)},
+      { path: "/book-poetry", element: withSuspense(BookPoetry)},
       { path: "/homedecor", element: withSuspense(HomeDecor) },
       { path: "/localfood", element: withSuspense(LocalFood) },
       { path: "/plantseed", element: withSuspense(PlantSeed) },

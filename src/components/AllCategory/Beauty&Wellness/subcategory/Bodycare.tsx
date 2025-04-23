@@ -33,16 +33,11 @@ const BadyCare = () => {
 
         // Define keywords for hair and scalp subcategories
         const keywords = [
-          " herbal bath products",
+          "herbal bath products",
           "body lotions and creams",
           "deodorants and antiperspirants",
-          " sunscreens and sunblocks",
-          
+          "sunscreens and sunblocks",
         ];
-       
-        
-        
-       
         const filtered = allProducts.filter((product: Product) => {
           const category = product.category?.toLowerCase() || "";
           const sub1 = product.sub_category?.toLowerCase() || "";
