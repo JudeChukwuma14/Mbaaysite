@@ -301,7 +301,7 @@ const routesConfig: RouteObject[] = [
       { path: "/handcrafted-kitchenware", element: withSuspense(HandcraftedKitchenware) },
       { path: "/wall-art", element: withSuspense(WallArt) },
       { path: "/mirrors", element: withSuspense(Mirrors) },
-      { path: "/artistic-writing", element: withSuspense(Handwoven) },
+      { path: "/handwoven", element: withSuspense(Handwoven) },
       { path: "/handcrafted", element: withSuspense(HandCraftedLamps) },
       { path: "/jewelry-trinket", element: withSuspense(JewelryTrinket) },
 

@@ -44,7 +44,7 @@ const OccasionJewelry = () => {
           const sub1 = product.sub_category?.toLowerCase() || "";
           const sub2 = product.sub_category2?.toLowerCase() || "";
           return (
-            category === "Jewelry and Gemstones" &&
+            category === "jewelry and gemstones" &&
             (keywords.includes(sub1) ||
               keywords.includes(sub2) ||
               sub1 === subcategory?.toLowerCase() ||
