@@ -40,7 +40,6 @@ import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 
-
 interface Product {
   _id: string;
   id: string;
@@ -77,6 +76,25 @@ const HomeArea: React.FC = () => {
     },
     { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
   ];
+
+  const createInitialAvatar = (name: string) => {
+    // Get first letter and ensure it's uppercase
+    const firstLetter = name.trim().charAt(0).toUpperCase();
+
+    // Color options (you can customize these)
+    const colors = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+    const color = colors[firstLetter.charCodeAt(0) % colors.length];
+
+    // Create SVG with just the first letter
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'>
+      <rect width='100' height='100' fill='${color}' rx='50' />
+      <text x='50%' y='50%' font-size='60' fill='white' 
+            font-weight='bold'
+            text-anchor='middle' dominant-baseline='middle'>${firstLetter}</text>
+    </svg>`;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -237,16 +255,31 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {getVender.slice(0, 5).map((profile, index) => (
-            <VendorCard
-              key={index}
-              name={profile.storeName}
-              location={profile.country}
-              profession={profile.city}
-              avatar={profile.avatar||"https://img.freepik.com/free-photo/confident-business-woman-portrait-smiling-face_53876-137693.jpg?t=st=1744826888~exp=1744830488~hmac=54c8ed57430092e7d2fa38dea2971200faf02d8f9bb49828b89fe6fea4862003&w=1380"}
-            backgroundImage={profile?.businessLogo||"https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"}
-            />
-          ))}
+          {getVender.slice(0, 5).map((profile, index) => {
+            // Verify the store name is correct
+            console.log(`Vendor ${index}:`, profile.storeName);
+
+            const avatarUrl = profile.avatar
+              ? profile.avatar
+              : createInitialAvatar(profile.storeName || "V"); // Fallback to "V" if no name
+
+            // Verify the generated avatar URL
+            console.log(`Avatar ${index}:`, avatarUrl);
+
+            return (
+              <VendorCard
+                key={index}
+                name={profile.storeName}
+                location={profile.country}
+                profession={profile.city}
+                avatar={avatarUrl}
+                backgroundImage={
+                  profile?.businessLogo ||
+                  "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+                }
+              />
+            );
+          })}
         </div>
       </section>
 
