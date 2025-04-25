@@ -8,7 +8,7 @@ import fruitplant from "@/assets/image/fruitPlant.jpg";
 import vegetableplant from "@/assets/image/VegetablePlants.jpg";
 import medicinalplant from "@/assets/image/MedicinalPlants.jpg";
 import seed from "@/assets/image/seed.jpg";
-import herbseed from "@/assets/image/herbseed.jpg";
+import herbseed from "@/assets/image/Herbseed.jpg";
 import flowerseed from "@/assets/image/flowerseed.jpg";
 import culturaltraditionalseed from "@/assets/image/CulturalTraditionalSeeds.jpg";
 import SeedingSapling from "@/assets/image/SeedingSapling.jpg";
