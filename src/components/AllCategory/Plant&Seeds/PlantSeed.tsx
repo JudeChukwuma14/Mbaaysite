@@ -4,7 +4,7 @@ import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { getAllProduct } from "@/utils/productApi";
 import plants from "@/assets/image/plant.jpg";
-import fruitplant from "@/assets/image/fruitplant.jpg";
+import fruitplant from "@/assets/image/fruitPlant.jpg";
 import vegetableplant from "@/assets/image/VegetablePlants.jpg";
 import medicinalplant from "@/assets/image/MedicinalPlants.jpg";
 import seed from "@/assets/image/seed.jpg";
