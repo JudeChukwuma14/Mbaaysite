@@ -9,7 +9,7 @@ import image7 from "@/assets/image/Hand.jpg";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
 const Sliding: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import background from "../../assets/image/bg2.jpeg";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
