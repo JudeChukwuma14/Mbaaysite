@@ -799,7 +799,7 @@ export const categories = [
     link: "/spices",
     subcategories: [
       {
-        link: "/",
+        link: "/Spices",
         title: "Spices",
         items: [
           "Whole Spices (Ungrounded Spice)",
@@ -811,7 +811,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/Condiments",
         title: "Condiments",
         items: [
           "Sauces (Hot Sauces, Soy Sauce, Barbecue Sauce)",
@@ -823,7 +823,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CulturalRegionalSpices",
         title: "Cultural & Regional Spices",
         items: [
           "African Spices (Berbere, Ras el Hanout, Suya Spice)",
@@ -834,7 +834,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/SaltPepperVarieties",
         title: "Salt & Pepper Varieties",
         items: [
           "Artisan Salts (Himalayan Pink Salt, Black Lava Salt, Fleur de Sel)",
@@ -843,7 +843,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/MarinadesRubs",
         title: "Marinades & Rubs",
         items: [
           "Meat Rubs (Barbecue Rubs, Cajun Rubs, Jerk Seasoning)",
@@ -852,7 +852,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/HealthWellnessSpices",
         title: "Health & Wellness Spices",
         items: [
           "Ayurvedic Spices (Turmeric, Ashwagandha, Ginger)",
@@ -861,7 +861,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/SpiceKitsGiftSets",
         title: "Spice Kits & Gift Sets",
         items: [
           "Regional Spice Kits (Indian Cooking Spice Kits, Mediterranean Spice Kits)",
@@ -869,7 +869,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CookingIngredients",
         title: "Cooking Ingredients",
         items: [
           "Flavor Extracts (Vanilla Extract, Almond Extract)",
@@ -878,7 +878,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/EthicallySourcedOrganic",
         title: "Ethically Sourced & Organic Products",
         items: [
           "Fair Trade Spices",
@@ -887,7 +887,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/Packaging",
         title: "Packaging",
         items: [
           "Bulk Spices",
@@ -896,7 +896,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/SeasoningCuisines",
         title: "Seasoning for Specific Cuisines",
         items: [
           "Indian Seasoning",
@@ -906,7 +906,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/SpecialDietaryCategories",
         title: "Special Dietary Categories",
         items: [
           "Gluten-free Spices",
@@ -916,7 +916,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/PopularUses",
         title: "Popular Uses",
         items: [
           "For Grilling & Barbecue",
@@ -1077,30 +1077,30 @@ export const categories = [
   {
     name: "Traditional Clothing & Fabrics",
     image: "/local_traditional_foods.jpg",
-    link: "/tranditionalFabrics",
+    link: "/traditionalFabrics",
     subcategories: [
       {
-        link: "/",
+        link: "/MenTraditional",
         title: "Men’s Traditional Wear",
         items: ["Dashikis", "Boubous", "Kente Cloth", "Sherwanis", "Kimono"],
       },
       {
-        link: "/",
+        link: "/WomenTranditional",
         title: "Women’s Traditional Wear",
         items: ["Kaftans", "Kanga", "Sari", "Abaya", "Gele", "Kimono"],
       },
       {
-        link: "/",
+        link: "/ChildrenTranditional",
         title: "Children’s Traditional Wear",
         items: ["Mini Dashikis", "Cheongsam", "Cultural Dresses"],
       },
       {
-        link: "/",
+        link: "/UnisexTranditional",
         title: "Unisex Traditional Clothing",
         items: ["Sarongs", "Robes", "Ponchos", "Caftans"],
       },
       {
-        link: "/",
+        link: "/FashionSpecific",
         title: "Modern Clothing with Traditional Influence",
         items: [
           "Contemporary African Fashion",
@@ -1110,7 +1110,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/Footwear",
         title: "Footwear & Shoes",
         items: [
           "Traditional Shoes & Sandals",
@@ -1120,7 +1120,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CulturalAccessories",
         title: "Cultural Accessories & Adornments",
         items: [
           "Headwear & Scarves",
@@ -1130,7 +1130,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/FabricsTextiles",
         title: "Fabrics & Textiles",
         items: [
           "Handwoven & Local Fabrics",
@@ -1140,7 +1140,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CulturalFootwear",
         title: "Cultural Footwear for Specific Occasions",
         items: [
           "Wedding Footwear",
@@ -1149,7 +1149,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/FestivalClothing",
         title: "Cultural & Festival Clothing",
         items: [
           "Wedding Attire",
@@ -1158,17 +1158,17 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/TailoredClothing",
         title: "Bespoke & Tailored Clothing",
         items: ["Custom Tailored Traditional Wear", "Made-to-Order Shoes"],
       },
       {
-        link: "/",
+        link: "/EthicalFashion",
         title: "Sustainable & Ethical Fashion",
         items: ["Eco-friendly Clothing", "Fair Trade Clothing & Shoes"],
       },
       {
-        link: "/",
+        link: "/TraditionalEmbroidery",
         title: "Traditional Embroidery & Design Work",
         items: [
           "Hand-Embroidered Clothing",
@@ -1177,7 +1177,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CountryRegional",
         title: "Fashion for Specific Cultures & Regions",
         items: [
           "African Fashion",
@@ -1188,12 +1188,12 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/OccasionFashion",
         title: "Seasonal & Special Occasion Fashion",
         items: ["Summer Ethnic Wear", "Winter Ethnic Wear"],
       },
       {
-        link: "/",
+        link: "/FunctionalCategories",
         title: "Other Functional Categories",
         items: [
           "New Arrivals",
@@ -1203,7 +1203,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CountryRegional",
         title: "By Country or Region",
         items: [
           "Africa",
@@ -1215,7 +1215,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/FabricType",
         title: "By Fabric Type",
         items: [
           "Cotton",

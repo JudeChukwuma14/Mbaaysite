@@ -479,7 +479,42 @@ const PlantCareProduct = lazy(
 const SeedingSapling = lazy(
   () =>
     import("@/components/AllCategory/Plant&Seeds/subcategory/SeedingSapling")
-);
+)
+
+
+
+// spices subcategory
+const Conditments = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/Conditments"));
+ const CookingIngredients = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/CookingIngredients"))
+ const CulturalRegional = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/CulturalRegional"));
+ const EthincallySourced = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/EthincallySourced"));
+ const HealthWellnessSpices = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/HealthWellnessSpices"));
+ const Marinades = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/Marinades"));
+ const PopularUses = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/PopularUses"));
+ const SaltPepper = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/SaltPepper"));
+ const Seasoning = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/Seasoning"));
+ const SpecialDietary = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/SpecialDietary"));
+ const SpiceKits = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/SpiceKits"));
+ const Spicesi = lazy(()=>import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/Spices"));
+
+//  traditionalFabrics subcategory
+const ChildrenTranditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/ChildrenTranditional"));
+const CountryRegional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CountryRegion"));
+const CulturalAccessories = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalAccessories"));
+const CulturalFootwear = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalFootwear"));
+const EthicalFashion = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/EthicalFashion"));
+const FabricsTextiles = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricsTextiles"));
+const FabricTypes = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricType"));
+const FashionSpecific = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FashionSpecific"));
+const FestivalClothing = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FestivalClothing"));
+const Footwear = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/Footwear"));
+const FunctionalCategories = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FunctionalCategories"));
+const MenTraditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/MenTraditional"));
+const OccasionFashion = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/OccasionFashion"));
+const TailoredClothing = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TailoredClothing"));
+const TraditionalEmbroidery = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TraditionalEmbroidery"));
+const UnisexTranditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/UnisexTranditional"));
+const WomenTranditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/WomenTranditional"));
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -637,6 +672,39 @@ const routesConfig: RouteObject[] = [
       { path: "/PlantingKit", element: withSuspense(PlantingKit) },
       { path: "/PlantCareProduct", element: withSuspense(PlantCareProduct) },
       { path: "/SeedingSapling", element: withSuspense(SeedingSapling) },
+
+      // spices subcategory
+      {path:"/Conditments",element:withSuspense(Conditments)},
+      {path:"/CookingIngredients",element:withSuspense(CookingIngredients)},
+      {path:"/CulturalRegional",element:withSuspense(CulturalRegional)},
+      {path:"/EthincallySourced",element:withSuspense(EthincallySourced)},
+      {path:"/HealthWellnessSpices",element:withSuspense(HealthWellnessSpices)},
+      {path:"/Marinades",element:withSuspense(Marinades)},
+      {path:"/PopularUses",element:withSuspense(PopularUses)},
+      {path:"/SaltPepper",element:withSuspense(SaltPepper)},
+      {path:"/Seasoning",element:withSuspense(Seasoning)},
+      {path:"/SpecialDietary",element:withSuspense(SpecialDietary)},
+      {path:"/SpiceKits",element:withSuspense(SpiceKits)},
+      {path:"/Spices",element:withSuspense(Spicesi)},
+
+      // traditionalFabrics subcategory
+      {path:"/ChildrenTranditional",element:withSuspense(ChildrenTranditional)},
+      {path:"/CountryRegional",element:withSuspense(CountryRegional)},
+      {path:"/CulturalAccessories",element:withSuspense(CulturalAccessories)},
+      {path:"/CulturalFootwear",element:withSuspense(CulturalFootwear)},
+      {path:"/EthicalFashion",element:withSuspense(EthicalFashion)},
+      {path:"/FabricsTextiles",element:withSuspense(FabricsTextiles)},
+      {path:"/FabricType",element:withSuspense(FabricTypes)},
+      {path:"/FashionSpecific",element:withSuspense(FashionSpecific)},
+      {path:"/FestivalClothing",element:withSuspense(FestivalClothing)},
+      {path:"/Footwear",element:withSuspense(Footwear)},
+      {path:"/FunctionalCategories",element:withSuspense(FunctionalCategories)},
+      {path:"/MenTraditional",element:withSuspense(MenTraditional)},
+      {path:"/OccasionFashion",element:withSuspense(OccasionFashion)},
+      {path:"/TailoredClothing",element:withSuspense(TailoredClothing)},
+      {path:"/TraditionalEmbroidery",element:withSuspense(TraditionalEmbroidery)},
+      {path:"/UnisexTranditional",element:withSuspense(UnisexTranditional)},
+      {path:"/WomenTranditional",element:withSuspense(WomenTranditional)},
     ],
   },
   {
