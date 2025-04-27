@@ -41,7 +41,7 @@ const Jewelry: React.FC = () => {
           ? (result as Product[])
           : result.products || [];
 
-        // Filter products by category: Beauty and Wellness
+       //
         const filtered = allProducts.filter(
           (product: Product) =>
             product.category?.toLowerCase() === "jewelry and gemstones"

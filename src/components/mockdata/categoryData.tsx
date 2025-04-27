@@ -933,37 +933,37 @@ export const categories = [
     link: "/localfood",
     subcategories: [
       {
-        link: "/",
+        link: "/StapleFoods",
         title: "Staple Foods",
         items: ["Rice", "Yam", "Cassava", "Plantain", "Millet", "Maize"],
       },
       {
-        link: "/",
+        link: "/SpecialtyGrains",
         title: "Specialty Grains & Legumes",
         items: ["Fonio", "Sorghum", "Teff", "Bambara Beans", "Cowpeas"],
       },
       {
-        link: "/",
+        link: "/TraditionalSnacks",
         title: "Traditional Snacks & Street Foods",
         items: ["Puff-puff", "Samosas", "Empanadas", "Mandazi"],
       },
       {
-        link: "/",
+        link: "/IndigenousBake",
         title: "Indigenous Baked Goods",
         items: ["Flatbreads", "Cornbread", "Meat Pies", "Johnny Cakes"],
       },
       {
-        link: "/",
+        link: "/TraditionalSoup",
         title: "Traditional Soups & Stews",
         items: ["Groundnut Soup", "Egusi Soup", "Gumbo", "Bouillabaisse"],
       },
       {
-        link: "/",
+        link: "/FermentedFood",
         title: "Fermented & Preserved Foods",
         items: ["Sauerkraut", "Kimchi", "Fermented Fish", "Pickled Vegetables"],
       },
       {
-        link: "/",
+        link: "/LocalBeverages",
         title: "Local Beverages",
         items: [
           "Non-Alcoholic Drinks (Hibiscus Tea (Zobo, Bissap), Tamarind Juice, Ginger Beer, Palm Wine)",
@@ -974,7 +974,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/RegionalEthnicFood",
         title: "Regional & Ethnic Foods",
         items: [
           "African Cuisine (Jollof Rice, Injera, Ugali, Bobotie)",
@@ -986,7 +986,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/EthinicSauces",
         title: "Ethnic Sauces, Spices & Seasonings",
         items: [
           "Local Hot Sauces (Scotch Bonnet Sauce, Harissa, Piri-Piri)",
@@ -996,7 +996,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/CulturallySpecific",
         title: "Culturally Specific Food Categories",
         items: [
           "Kosher Foods",
@@ -1007,7 +1007,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/TraditionalSweet",
         title: "Traditional Sweets & Desserts",
         items: [
           "Ethnic Desserts (Turkish Delight, Baklava, Kulfi, Cassava Cake)",
@@ -1016,7 +1016,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/PackagedReadyFood",
         title: "Packaged & Ready-to-Eat Foods",
         items: [
           "Ready-to-Eat Traditional Meals (Canned Jollof Rice, Packaged Tacos, Frozen Samosas)",
@@ -1025,7 +1025,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/TraditionalOil",
         title: "Traditional Oils & Fats",
         items: [
           "Coconut Oil",
@@ -1036,7 +1036,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/LocalGrains",
         title: "Local Grains & Flours",
         items: [
           "Cassava Flour",
@@ -1047,7 +1047,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/PickledFood",
         title: "Fermented & Pickled Foods",
         items: [
           "Pickled Vegetables & Fruits (Pickled Mango, Pickled Peppers)",
@@ -1056,7 +1056,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/FestivalFood",
         title: "Cultural Holiday & Festival Foods",
         items: [
           "Special Holiday Meals (Thanksgiving Turkey, Eid Lamb, Christmas Ham)",
@@ -1065,7 +1065,7 @@ export const categories = [
         ],
       },
       {
-        link: "/",
+        link: "/MealPlans",
         title: "Meal Plans & Subscription Boxes",
         items: [
           "Diaspora Food Subscription Boxes (African Food Box, Caribbean Meal Box, Asian Cuisine Box)",
@@ -1077,7 +1077,7 @@ export const categories = [
   {
     name: "Traditional Clothing & Fabrics",
     image: "/local_traditional_foods.jpg",
-    link: "/traditionalFabrics",
+    link: "/tranditionalFabrics",
     subcategories: [
       {
         link: "/MenTraditional",
@@ -1194,7 +1194,7 @@ export const categories = [
       },
       {
         link: "/FunctionalCategories",
-        title: "Other Functional Categories",
+        title: "Functional Categories",
         items: [
           "New Arrivals",
           "Best Sellers",
@@ -1204,7 +1204,7 @@ export const categories = [
       },
       {
         link: "/CountryRegional",
-        title: "By Country or Region",
+        title: "Country or Region",
         items: [
           "Africa",
           "Asia",
@@ -1216,7 +1216,7 @@ export const categories = [
       },
       {
         link: "/FabricType",
-        title: "By Fabric Type",
+        title: "Fabric Type",
         items: [
           "Cotton",
           "Silk",

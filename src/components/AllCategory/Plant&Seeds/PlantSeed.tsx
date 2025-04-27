@@ -43,9 +43,10 @@ const PlantSeed: React.FC = () => {
           ? (result as Product[])
           : result.products || [];
 
-        // Filter products by category: Beauty and Wellness
+       //
         const filtered = allProducts.filter(
-          (product: Product) => product.category?.toLowerCase() === "plant and seeds"
+          (product: Product) =>
+            product.category?.toLowerCase() === "plant and seeds"
         );
 
         setProducts(filtered);
@@ -78,15 +79,39 @@ const PlantSeed: React.FC = () => {
   const ImagePart: Subcategory[] = [
     { image: plants, link: "/plant", text: "Plants" },
     { image: fruitplant, link: "/FruitPlants", text: "Fruit Plants" },
-    { image: vegetableplant, link: "/Vegetableplants", text: "Vegetable Plants" },
-    { image: medicinalplant, link: "/MedicinalPlants", text: "Medicinal Plants" },
+    {
+      image: vegetableplant,
+      link: "/Vegetableplants",
+      text: "Vegetable Plants",
+    },
+    {
+      image: medicinalplant,
+      link: "/MedicinalPlants",
+      text: "Medicinal Plants",
+    },
     { image: seed, link: "/seed", text: "Seeds" },
     { image: herbseed, link: "/HerbSeeds", text: "Herb Seeds" },
     { image: flowerseed, link: "/FlowerSeeds", text: "Flower Seeds" },
-    { image: culturaltraditionalseed, link: "/CulturalTraditionalSeed", text: "Cultural and Traditional Seeds" },
-    { image: SeedingSapling, link: "/SeedingSapling", text: "Seedlings and Saplings" },
-    { image: plantingkit, link: "/PlantingKit", text: "Planting Kits and Tools" },
-    { image: plantcareproduct, link: "/PlantCareProduct", text: "Plant Care Products" },
+    {
+      image: culturaltraditionalseed,
+      link: "/CulturalTraditionalSeed",
+      text: "Cultural and Traditional Seeds",
+    },
+    {
+      image: SeedingSapling,
+      link: "/SeedingSapling",
+      text: "Seedlings and Saplings",
+    },
+    {
+      image: plantingkit,
+      link: "/PlantingKit",
+      text: "Planting Kits and Tools",
+    },
+    {
+      image: plantcareproduct,
+      link: "/PlantCareProduct",
+      text: "Plant Care Products",
+    },
   ];
 
   return (

@@ -47,7 +47,7 @@ const BookPoetry: React.FC = () => {
             ? (result as Product[])
             : result.products || [];
   
-          // Filter products by category: Beauty and Wellness
+         //
           const filtered = allProducts.filter(
             (product: Product) =>
               product.category?.toLowerCase() === "book and poetry"

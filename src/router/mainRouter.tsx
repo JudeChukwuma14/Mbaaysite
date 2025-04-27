@@ -135,6 +135,8 @@ const Vintage = lazy(
   () => import("@/components/AllCategory/VintageStocks/Vintage")
 );
 
+const Art =lazy(()=>import("@/components/AllCategory/Art/ArtPage"))
+
 // BeautyWellness Subcategory Page
 const Skincare = lazy(
   () => import("@/components/AllCategory/Beauty&Wellness/subcategory/Skincare")
@@ -516,6 +518,48 @@ const TraditionalEmbroidery = lazy(()=>import("@/components/AllCategory/Traditio
 const UnisexTranditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/UnisexTranditional"));
 const WomenTranditional = lazy(()=>import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/WomenTranditional"));
 
+// Fashion Subcategory
+const Accessories = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/Accessories"))
+const EthnicWear = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/EthnicWear"))
+const FashionJewelry = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/FashionJewelry"))
+const FootWear = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/FootWear"))
+const KidFashion = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/KidFashion"))
+const MenFashion = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/MenFashion"))
+const SportWear = lazy(()=>import("@/components/AllCategory/Fashion/subcategory/SportWear"))
+const WomenFashion =lazy(()=>import("@/components/AllCategory/Fashion/subcategory/WomenFashion"))
+
+// Furniture
+const BedroomFurniture = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/BedroomFurniture"))
+const ChairsStools = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/ChairsStools"))
+const Dresser = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/Dresser"))
+const LivingRoom = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/LivingRoom"))
+const OfficeFurniture = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/OfficeFurniture"))
+const OutdoorFurniture =lazy(()=>import("@/components/AllCategory/Furniture/subcategory/OutdoorFurniture"))
+const SofasCouches = lazy(()=>import("@/components/AllCategory/Furniture/subcategory/SofasCouches"))
+const TablesDesks =lazy(()=>import("@/components/AllCategory/Furniture/subcategory/TablesDesks"))
+
+// Local Food
+const CulturallySpecific = lazy(()=>import('@/components/AllCategory/Local&TraditionalFoods/subcategory/CulturallySpecific'))
+const EthinicSauces= lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/EthinicSauces"));
+const FermentedFood = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/FermentedFood"))
+const FestivalFood = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/FestivalFood"))
+const IndigenousBake =lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/IndigenousBake"))
+const LocalBeverages =lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/LocalBeverages"))
+const LocalGrains =lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/LocalGrains"))
+const MealPlans =lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/MealPlans"))
+const PackagedReadyFood =lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/PackagedReadyFood"))
+const PickledFood = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/PickledFood"))
+const RegionalEthnicFood = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/RegionalEthnicFood"))
+const SpecialtyGrains  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/SpecialtyGrains"))
+const StapleFoods  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/StapleFoods"))
+const TraditionalOil  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/TraditionalOil"))
+const TraditionalSnacks  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/TraditionalSnacks"))
+const TraditionalSoup  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/TraditionalSoup"))
+const TraditionalSweet  = lazy(()=>import("@/components/AllCategory/Local&TraditionalFoods/subcategory/TraditionalSweet"))
+
+
+
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -551,7 +595,7 @@ const routesConfig: RouteObject[] = [
         path: "/tranditionalFabrics",
         element: withSuspense(TranditionalFabrics),
       },
-
+      {path:"/art", element:withSuspense(Art)},
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
       { path: "/haircare", element: withSuspense(Haircare) },
@@ -705,6 +749,48 @@ const routesConfig: RouteObject[] = [
       {path:"/TraditionalEmbroidery",element:withSuspense(TraditionalEmbroidery)},
       {path:"/UnisexTranditional",element:withSuspense(UnisexTranditional)},
       {path:"/WomenTranditional",element:withSuspense(WomenTranditional)},
+
+      // Local & Traditional Foods Subcategory
+      { path: "/CulturallySpecific", element: withSuspense(CulturallySpecific) },
+      { path: "/EthinicSauces", element: withSuspense(EthinicSauces) },
+      { path: "/FermentedFood", element: withSuspense(FermentedFood) },
+      { path: "/FestivalFood", element: withSuspense(FestivalFood) },
+      { path: "/IndigenousBake", element: withSuspense(IndigenousBake) },
+      { path: "/LocalBeverages", element: withSuspense(LocalBeverages) },
+      { path: "/LocalGrains", element: withSuspense(LocalGrains) },
+      { path: "/MealPlans", element: withSuspense(MealPlans) },
+      { path: "/PackagedReadyFood", element: withSuspense(PackagedReadyFood) },
+      { path: "/PickledFood", element: withSuspense(PickledFood) },
+      { path: "/RegionalEthnicFood", element: withSuspense(RegionalEthnicFood) },
+      { path: "/SpecialtyGrains", element: withSuspense(SpecialtyGrains) },
+      { path: "/StapleFoods", element: withSuspense(StapleFoods) },
+      { path: "/TraditionalOil", element: withSuspense(TraditionalOil) },
+      { path: "/TraditionalSnacks", element: withSuspense(TraditionalSnacks) },
+      { path: "/TraditionalSoup", element: withSuspense(TraditionalSoup) },
+      { path: "/TraditionalSweet", element: withSuspense(TraditionalSweet) },
+
+      // Furniture Subcategory
+      { path: "/BedroomFurniture", element: withSuspense(BedroomFurniture) },
+      { path: "/ChairsStools", element: withSuspense(ChairsStools) },
+      { path: "/Dresser", element: withSuspense(Dresser) },
+      { path: "/LivingRoom", element: withSuspense(LivingRoom) },
+      { path: "/OfficeFurniture", element: withSuspense(OfficeFurniture) },
+      { path: "/OutdoorFurniture", element: withSuspense(OutdoorFurniture) },
+      { path: "/SofasCouches", element: withSuspense(SofasCouches) },
+      { path: "/TablesDesks", element: withSuspense(TablesDesks) },
+
+      // Fashion Subcategory
+      { path: "/Accessories", element: withSuspense(Accessories) },
+      { path: "/EthnicWear", element: withSuspense(EthnicWear) },
+      { path: "/FashionJewelry", element: withSuspense(FashionJewelry) },
+      { path: "/FootWear", element: withSuspense(FootWear) },
+      { path: "/KidFashion", element: withSuspense(KidFashion) },
+      { path: "/MenFashion", element: withSuspense(MenFashion) },
+      { path: "/SportWear", element: withSuspense(SportWear) },
+      { path: "/WomenFashion", element: withSuspense(WomenFashion) },
+
+
+
     ],
   },
   {
