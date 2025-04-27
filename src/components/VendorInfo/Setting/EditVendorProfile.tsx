@@ -11,7 +11,6 @@ import {
 import { MdVerified } from "react-icons/md";
 import type React from "react";
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
-<<<<<<< HEAD
 import { toast } from "react-hot-toast";
 import { get_single_vendor, upload_return_policy } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
@@ -22,13 +21,6 @@ import {
 } from "../../../utils/editvendorApi";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-=======
-// import { toast } from "react-hot-toast";
-import { upload_return_policy } from "@/utils/vendorApi";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
-import { toast } from "react-toastify";
->>>>>>> ec556b4e637a3d8cbff979e6d42352cc6bacb5b1
 
 interface VendorProfile {
   companyName: string;
@@ -91,10 +83,6 @@ export default function EditVendorProfile() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
 
-<<<<<<< HEAD
-=======
-
->>>>>>> ec556b4e637a3d8cbff979e6d42352cc6bacb5b1
   const user = useSelector((state: RootState) => state.vendor);
 
   const { data: vendors } = useQuery({
