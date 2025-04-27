@@ -56,21 +56,21 @@ const Sliding: React.FC = () => {
   return (
     <div className="">
       <motion.div className="hidden lg:block w-[500px] h-screen overflow-hidden fixed top-0 left-0">
-        <div className="absolute z-10 flex left-7 w-full top-7 ">
-          <img src={logo} alt="Logo" />
+        <div className="absolute z-10 flex w-full left-7 top-7 ">
+          <img src={logo} alt="Logo" className="w-20" />
         </div>
         <Slider {...settings} className="w-full h-screen">
           {slides.map((slide, index) => (
-            <div key={index} className="flex flex-col items-start relative">
+            <div key={index} className="relative flex flex-col items-start">
               <img
                 src={slide.img}
                 alt=""
-                className="w-full h-screen object-cover mb-4"
+                className="object-cover w-full h-screen mb-4"
               />
               {/* Overlay for the slide */}
-              <div className="bg-black w-full h-screen absolute inset-0 opacity-50"></div>
+              <div className="absolute inset-0 w-full h-screen bg-black opacity-50"></div>
               {/* Slide text */}
-              <p className="absolute text-white bottom-28 px-5 text-center z-10">
+              <p className="absolute z-10 px-5 text-center text-white bottom-28">
                 {slide.text}
               </p>
             </div>
