@@ -1,8 +1,24 @@
-import React, { useState } from "react";
-import { X, Edit, Trash2, Play } from "lucide-react";
-import { motion } from "framer-motion";
-import { getVendorProductById } from "@/utils/VendorProductApi";
-import { useQuery } from "@tanstack/react-query";
+"use client";
+
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import {
+  X,
+  Edit,
+  Trash2,
+  Play,
+  Save,
+  AlertTriangle,
+  Upload,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  getVendorProductById,
+  updateVendorProduct,
+  deleteVendorProduct,
+} from "@/utils/VendorProductApi";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-hot-toast";
 
 interface Product {
   _id: string;
@@ -10,7 +26,6 @@ interface Product {
   description: string;
   price: number;
   inventory: number;
-  status: string;
   category: string;
   sub_category: string;
   sub_category2: string;
@@ -35,7 +50,9 @@ const Dialog: React.FC<DialogProps> = ({ open, children }) => (
     role="dialog"
     aria-modal="true"
   >
-    <div className="bg-white rounded-lg shadow-xl">{children}</div>
+    <div className="w-full max-w-[95%] sm:max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto">
+      {children}
+    </div>
   </div>
 );
 
@@ -47,7 +64,15 @@ interface DialogContentProps {
 const DialogContent: React.FC<DialogContentProps> = ({
   className,
   children,
-}) => <div className={`bg-white ${className || ""}`}>{children}</div>;
+}) => (
+  <div
+    className={`bg-white rounded-lg shadow-xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 ${
+      className || ""
+    }`}
+  >
+    {children}
+  </div>
+);
 
 interface DialogTitleProps {
   className?: string;
@@ -55,7 +80,9 @@ interface DialogTitleProps {
 }
 
 const DialogTitle: React.FC<DialogTitleProps> = ({ className, children }) => (
-  <h2 className={`text-lg font-semibold ${className || ""}`}>{children}</h2>
+  <h2 className={`text-lg sm:text-xl font-semibold ${className || ""}`}>
+    {children}
+  </h2>
 );
 
 interface BadgeProps {
@@ -76,7 +103,7 @@ const Badge: React.FC<BadgeProps> = ({
   };
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+      className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium ${
         variants[variant] || variants.default
       } ${className || ""}`}
     >
@@ -85,7 +112,9 @@ const Badge: React.FC<BadgeProps> = ({
   );
 };
 
-const Separator: React.FC = () => <hr className="my-4 border-gray-200" />;
+const Separator: React.FC = () => (
+  <hr className="my-3 sm:my-4 border-gray-200" />
+);
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -102,6 +131,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [isVideoSelected, setIsVideoSelected] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false);
+  const [editedProduct, setEditedProduct] = useState<Partial<Product>>({});
+  const [newImages, setNewImages] = useState<(File | null)[]>([]);
+  const [newVideo, setNewVideo] = useState<File | null>(null);
+
+  const queryClient = useQueryClient();
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // LocalStorage keys
+  const getLocalStorageImageKey = (id: string, index: number) =>
+    `product_image_${id}_${index}`;
+  const getLocalStorageVideoKey = (id: string) => `product_video_${id}`;
 
   const dummyVideoUrl =
     "https://static.videezy.com/system/resources/previews/000/005/529/original/Reaviling_Sjusj%C3%B8en_Ski_Senter.mp4";
@@ -118,15 +160,125 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     enabled: !!productId,
   });
 
+  // Update product mutation
+  const updateMutation = useMutation({
+    mutationFn: async (updatedProduct: Partial<Product>) => {
+      const formData = new FormData();
+      // Append text fields
+      if (updatedProduct.name) formData.append("name", updatedProduct.name);
+      if (updatedProduct.description)
+        formData.append("description", updatedProduct.description);
+      if (updatedProduct.price)
+        formData.append("price", updatedProduct.price.toString());
+      if (updatedProduct.inventory)
+        formData.append("inventory", updatedProduct.inventory.toString());
+      // Append new images
+      newImages.forEach((image, index) => {
+        if (image) {
+          formData.append(`images[${index}]`, image);
+        }
+      });
+      // Append new video
+      if (newVideo) {
+        formData.append("product_video", newVideo);
+      }
+      return updateVendorProduct(productId, formData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["one_product", productId] });
+      queryClient.invalidateQueries({ queryKey: ["vendor_products"] });
+      toast.success("Product updated successfully");
+      setIsEditing(false);
+      // Don't clear newImages and newVideo here as we want to keep them in localStorage
+    },
+    onError: (error) => {
+      console.error("Error updating product:", error);
+      toast.error("Failed to update product");
+    },
+  });
+
+  // Delete product mutation
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteVendorProduct(productId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendor_products"] });
+      toast.success("Product deleted successfully");
+      // Clear localStorage for this product
+      clearProductFromLocalStorage();
+      onClose();
+    },
+    onError: (error) => {
+      console.error("Error deleting product:", error);
+      toast.error("Failed to delete product");
+    },
+  });
+
   // Use vendor_products if available, otherwise fall back to product prop
   const productData = vendor_products || product;
 
-  // Initialize selectedMedia with the first image after productData is available
-  React.useEffect(() => {
-    if (productData?.images?.length) {
-      setSelectedMedia(productData.images[0]);
+  // Clear all localStorage items related to this product
+  const clearProductFromLocalStorage = () => {
+    if (productId) {
+      // Clear images
+      if (productData?.images) {
+        productData.images.forEach((_: string, index: number) => {
+          localStorage.removeItem(getLocalStorageImageKey(productId, index));
+        });
+      }
+      // Clear video
+      localStorage.removeItem(getLocalStorageVideoKey(productId));
     }
-  }, [productData]);
+  };
+
+  // Load images and video from localStorage
+  useEffect(() => {
+    if (productId && productData) {
+      const updatedImages = [...(productData.images || [])];
+      let hasLocalStorageImages = false;
+
+      // Load images from localStorage
+      productData.images?.forEach((_: string, index: number) => {
+        const localStorageImage = localStorage.getItem(
+          getLocalStorageImageKey(productId, index)
+        );
+        if (localStorageImage) {
+          updatedImages[index] = localStorageImage;
+          hasLocalStorageImages = true;
+        }
+      });
+
+      // Load video from localStorage
+      const localStorageVideo = localStorage.getItem(
+        getLocalStorageVideoKey(productId)
+      );
+
+      // Update state with localStorage data if available
+      if (hasLocalStorageImages || localStorageVideo) {
+        setEditedProduct({
+          ...productData,
+          images: updatedImages,
+          product_video: localStorageVideo || productData.product_video,
+        });
+      } else {
+        setEditedProduct({
+          name: productData.name,
+          description: productData.description,
+          price: productData.price,
+          inventory: productData.inventory,
+          images: productData.images,
+          product_video: productData.product_video,
+        });
+      }
+
+      // Initialize newImages array
+      setNewImages(new Array(productData.images?.length || 0).fill(null));
+
+      // Set selected media
+      if (updatedImages.length > 0) {
+        setSelectedMedia(updatedImages[0]);
+      }
+    }
+  }, [productId, productData]);
 
   if (!productData) return null;
 
@@ -139,17 +291,21 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }).format(date);
   };
 
-  const handleMediaSelect = (media: string, isVideo: boolean = false): void => {
+  const handleMediaSelect = (media: string, isVideo = false): void => {
     setSelectedMedia(media);
     setIsVideoSelected(isVideo);
   };
 
+  // Use editedProduct.images if available, otherwise fall back to productData.images
+  const displayImages = editedProduct.images || productData.images || [];
+
   const allImages: string[] = [
-    ...(productData.images || []),
-    ...dummyImages.slice(0, 4 - (productData.images?.length || 0)),
+    ...displayImages,
+    ...dummyImages.slice(0, 4 - displayImages.length),
   ];
 
-  const videoUrl = productData.product_video || dummyVideoUrl;
+  const videoUrl =
+    editedProduct.product_video || productData.product_video || dummyVideoUrl;
   const isYouTube =
     videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
   const embedUrl = isYouTube
@@ -176,31 +332,151 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     ? getYouTubeThumbnail(videoUrl)
     : "/video-placeholder.jpg"; // Use a placeholder for non-YouTube videos
 
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditedProduct({
+      ...editedProduct,
+      [name]:
+        name === "price" || name === "inventory"
+          ? Number.parseFloat(value)
+          : value,
+    });
+  };
+
+  const handleImageChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newImageUrl = URL.createObjectURL(file);
+
+      // Update the editedProduct images array
+      const updatedImages = [...(editedProduct.images || allImages)];
+      updatedImages[index] = newImageUrl;
+      setEditedProduct({ ...editedProduct, images: updatedImages });
+
+      // Store the file for submission
+      const updatedNewImages = [...newImages];
+      updatedNewImages[index] = file;
+      setNewImages(updatedNewImages);
+
+      // Update selected media if the changed image is currently selected
+      if (selectedMedia === allImages[index]) {
+        setSelectedMedia(newImageUrl);
+      }
+
+      // Store in localStorage
+      if (productId) {
+        localStorage.setItem(
+          getLocalStorageImageKey(productId, index),
+          newImageUrl
+        );
+      }
+    }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newVideoUrl = URL.createObjectURL(file);
+      setEditedProduct({ ...editedProduct, product_video: newVideoUrl });
+      setNewVideo(file);
+
+      if (isVideoSelected) {
+        setSelectedMedia(newVideoUrl);
+      }
+
+      // Store in localStorage
+      if (productId) {
+        localStorage.setItem(getLocalStorageVideoKey(productId), newVideoUrl);
+      }
+    }
+  };
+
+  const handleSave = () => {
+    if (formRef.current?.checkValidity()) {
+      updateMutation.mutate(editedProduct);
+    } else {
+      formRef.current?.reportValidity();
+    }
+  };
+
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate();
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const toggleEdit = () => {
+    if (isEditing) {
+      // If we're exiting edit mode without saving, we don't reset the form
+      // because we want to keep the localStorage changes
+    }
+    setIsEditing(!isEditing);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl w-full max-h-[90vh] overflow-y-auto p-0">
-        <div className="sticky top-0 z-10 bg-white p-4 sm:p-6 border-b flex items-center justify-between">
-          <DialogTitle className="text-xl font-semibold">
-            Product Details
+      <DialogContent className="p-0">
+        <div className="sticky top-0 z-10 bg-white p-3 sm:p-4 md:p-6 border-b flex items-center justify-between">
+          <DialogTitle className="text-lg sm:text-xl md:text-2xl">
+            {isEditing ? "Edit Product" : "Product Details"}
           </DialogTitle>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {isEditing ? (
+              <motion.button
+                onClick={handleSave}
+                className="p-2 sm:p-3 hover:bg-green-100 rounded-full"
+                whileHover={{ scale: 1.1 }}
+                aria-label="Save"
+                disabled={updateMutation.isPending}
+              >
+                {updateMutation.isPending ? (
+                  <div className="w-5 h-5 border-2 border-t-green-500 border-green-200 rounded-full animate-spin" />
+                ) : (
+                  <Save size={18} className="text-green-600" />
+                )}
+              </motion.button>
+            ) : (
+              <motion.button
+                onClick={toggleEdit}
+                className="p-2 sm:p-3 hover:bg-gray-100 rounded-full"
+                whileHover={{ scale: 1.1 }}
+                aria-label="Edit"
+              >
+                <Edit size={18} className="text-gray-600" />
+              </motion.button>
+            )}
             <motion.button
-              className="p-2 hover:bg-gray-100 rounded-full"
-              whileHover={{ scale: 1.1 }}
-              aria-label="Edit"
-            >
-              <Edit size={18} className="text-gray-600" />
-            </motion.button>
-            <motion.button
-              className="p-2 hover:bg-gray-100 rounded-full"
+              onClick={handleDelete}
+              className="p-2 sm:p-3 hover:bg-red-100 rounded-full"
               whileHover={{ scale: 1.1 }}
               aria-label="Delete"
+              disabled={deleteMutation.isPending}
             >
-              <Trash2 size={18} className="text-red-500" />
+              {deleteMutation.isPending ? (
+                <div className="w-5 h-5 border-2 border-t-red-500 border-red-200 rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={18} className="text-red-500" />
+              )}
             </motion.button>
             <motion.button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              onClick={() => {
+                if (isEditing) {
+                  toggleEdit(); // Exit edit mode
+                }
+                onClose();
+              }}
+              className="p-2 sm:p-3 hover:bg-gray-100 rounded-full"
               whileHover={{ scale: 1.1 }}
               aria-label="Close"
             >
@@ -209,10 +485,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
         </div>
 
-        <div className="p-4 sm:p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-              <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+        <form
+          ref={formRef}
+          className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
                 {isVideoSelected ? (
                   isYouTube ? (
                     <iframe
@@ -224,7 +503,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     />
                   ) : (
                     <video
-                      src={embedUrl}
+                      src={selectedMedia || embedUrl}
                       controls
                       autoPlay
                       className="w-full h-full object-cover"
@@ -243,11 +522,11 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 )}
               </div>
 
-              <div className="grid grid-cols-4 sm:grid-cols-5 gap-2">
-                {allImages.map((image, index) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+                {allImages.map((image: string, index: number) => (
                   <div
                     key={`img-${index}`}
-                    className={`aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer 
+                    className={`w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer 
                     relative transition-all duration-300 ${
                       selectedMedia === image
                         ? "ring-2 ring-blue-500"
@@ -256,65 +535,186 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     onClick={() => handleMediaSelect(image)}
                   >
                     <img
-                      src={image}
+                      src={image || "/placeholder.svg"}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder.svg";
                       }}
                     />
+                    {isEditing && (
+                      <label
+                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                        title="Replace image"
+                      >
+                        <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                        <motion.input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleImageChange(e, index)}
+                        />
+                      </label>
+                    )}
                   </div>
                 ))}
 
                 <div
                   key="video"
-                  className={`aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative 
+                  className={`w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative 
                     transition-all duration-300 hover:scale-105 ${
                       isVideoSelected ? "ring-2 ring-blue-500" : "opacity-80"
                     }`}
-                  onClick={() => handleMediaSelect(videoUrl, true)}
+                  onClick={() =>
+                    handleMediaSelect(
+                      editedProduct.product_video || videoUrl,
+                      true
+                    )
+                  }
                 >
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                    <Play className="text-white w-8 h-8" />
+                    <Play className="text-white w-6 sm:w-8 h-6 sm:h-8" />
                   </div>
                   <img
-                    src={videoThumbnail}
+                    src={videoThumbnail || "/placeholder.svg"}
                     alt="Video thumbnail"
                     className="w-full h-full object-cover opacity-70"
                     onError={(e) => {
                       e.currentTarget.src = "/video-placeholder.jpg";
                     }}
                   />
+                  {isEditing && (
+                    <label
+                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                      title="Replace video"
+                    >
+                      <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                      <motion.input
+                        type="file"
+                        accept="video/*"
+                        className="hidden"
+                        onChange={handleVideoChange}
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               <div>
-                <h1 className="text-2xl font-bold">{productData.name}</h1>
-                <p className="text-gray-700">{productData.description}</p>
+                {isEditing ? (
+                  <div className="space-y-3">
+                    <div>
+                      <label
+                        htmlFor="name"
+                        className="block text-sm sm:text-base font-medium text-gray-700 mb-1"
+                      >
+                        Product Name
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={editedProduct.name || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="description"
+                        className="block text-sm sm:text-base font-medium text-gray-700 mb-1"
+                      >
+                        Description
+                      </label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={editedProduct.description || ""}
+                        onChange={handleInputChange}
+                        rows={4}
+                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+                      {productData.name}
+                    </h1>
+                    <p className="text-gray-700 text-sm sm:text-base">
+                      {productData.description}
+                    </p>
+                  </>
+                )}
               </div>
 
               <Separator />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <h3 className="font-medium text-gray-500">Price</h3>
-                  <p className="text-xl font-bold">
-                    ${productData.price?.toFixed(2)}
-                  </p>
+                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                    Price
+                  </h3>
+                  {isEditing ? (
+                    <div className="mt-1">
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                          $
+                        </span>
+                        <motion.input
+                          type="number"
+                          id="price"
+                          name="price"
+                          value={editedProduct.price || ""}
+                          onChange={handleInputChange}
+                          className="w-full pl-7 p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                          step="0.01"
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-lg sm:text-xl font-bold">
+                      ${productData.price?.toFixed(2)}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-500">Inventory</h3>
-                  <p className="text-xl font-bold">{productData.inventory}</p>
+                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                    Inventory
+                  </h3>
+                  {isEditing ? (
+                    <div className="mt-1">
+                      <motion.input
+                        type="number"
+                        id="inventory"
+                        name="inventory"
+                        value={editedProduct.inventory || ""}
+                        onChange={handleInputChange}
+                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        min="0"
+                        required
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-lg sm:text-xl font-bold">
+                      {productData.inventory}
+                    </p>
+                  )}
                 </div>
               </div>
 
               <Separator />
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <h3 className="font-medium text-gray-500">Category</h3>
+                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                    Category
+                  </h3>
                   <div className="mt-1 flex flex-wrap gap-2">
                     <Badge variant="secondary">{productData.category}</Badge>
                     <Badge variant="outline">{productData.sub_category}</Badge>
@@ -323,14 +723,65 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-medium text-gray-500">Added on</h3>
-                  <p>{formatDate(productData.createdAt)}</p>
+                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                    Added on
+                  </h3>
+                  <p className="text-sm sm:text-base">
+                    {formatDate(productData.createdAt)}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        </form>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-lg shadow-xl p-4 sm:p-6 max-w-[90%] sm:max-w-md w-full mx-4"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-red-600">
+                <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
+                <h3 className="text-base sm:text-lg font-semibold">
+                  Delete Product
+                </h3>
+              </div>
+
+              <p className="mb-4 sm:mb-6 text-sm sm:text-base">
+                Are you sure you want to delete{" "}
+                <span className="font-semibold">{productData.name}</span>? This
+                action cannot be undone.
+              </p>
+
+              <div className="flex justify-end gap-2 sm:gap-3">
+                <button
+                  onClick={cancelDelete}
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 border border-gray-300 rounded-md hover:bg-gray-50 min-w-[80px] text-sm sm:text-base"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-red-600 text-white rounded-md hover:bg-red-700 min-w-[80px] text-sm sm:text-base"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Dialog>
   );
 };

@@ -12,7 +12,6 @@ import {
 import { useState } from "react";
 import CreatePostModal from "./CreatePostModal";
 import CommunityModal from "./CommunityModal";
-import mbayy from "../../../assets/image/MBLogo.png";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import moment from "moment";
@@ -48,7 +47,7 @@ export default function ProfilePage() {
       <div className="relative h-32 border rounded-xl">
         <div className="absolute -bottom-6 left-4">
           <img
-            src="/placeholder.svg?height=48&width=48"
+            src={posts?.data?.avatar}
             alt="Profile"
             className="w-12 h-12 border-2 border-white rounded-lg"
           />
@@ -60,7 +59,11 @@ export default function ProfilePage() {
             <span className="text-[#00FFFF]">i</span>
           </h1>
         </div> */}
-        <img src={mbayy} alt="banner" className="w-[100%] h-[100%]" />
+        <img
+          src={posts?.data?.businessLogo}
+          alt="banner"
+          className="w-[100%] h-[100%]"
+        />
       </div>
 
       {/* Profile Info */}
