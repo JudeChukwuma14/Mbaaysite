@@ -39,6 +39,7 @@ import Furniture from "@/assets/image/Furniture.jpg";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
+import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 
 interface Product {
   _id: string;
@@ -129,7 +130,22 @@ const HomeArea: React.FC = () => {
   }, []);
 
   if (loading) return <Spinner />;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
+        <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
+        <p className="max-w-md mb-6 text-gray-500">{error}</p>
+        <Link
+          to="/shop"
+          className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+        >
+          <FaShoppingCart />
+          Continue Shopping
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">
@@ -217,7 +233,7 @@ const HomeArea: React.FC = () => {
             Best Selling Products
           </h2>
           <Link
-            to="/best-selling"
+            to="/random-product"
             className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All
