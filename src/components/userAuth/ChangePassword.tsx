@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import background from "../../assets/image/bg2.jpeg";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";

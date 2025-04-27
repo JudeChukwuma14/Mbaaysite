@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import background from "../../assets/image/bg2.jpeg";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

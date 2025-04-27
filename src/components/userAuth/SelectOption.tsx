@@ -2,7 +2,7 @@ import React from "react";
 import background from "../../assets/image/bg2.jpeg";
 import userImage from "../../assets/image/user.png";
 import vendorImage from "../../assets/image/vendor.png";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";

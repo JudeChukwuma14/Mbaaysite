@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import background from "../../assets/image/bg2.jpeg";
-import logo from "../../assets/image/mbbaylogo.png";
+import logo from "../../assets/image/MBLogo.png";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
@@ -67,11 +67,11 @@ const Signup: React.FC = () => {
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
           {/* Logo for small screens */}
-          <div className="flex justify-between items-center px-4 my-6">
+          <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
             </div>
-            <div className="hidden lg:block text-right my-4 md:mx-16 lg:w-full">
+            <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Already have an Account? </span>
               <a href="#" className="text-blue-500 hover:underline">
                 Sign in
@@ -81,11 +81,11 @@ const Signup: React.FC = () => {
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
               {/* Header */}
-              <h1 className="text-2xl font-bold mb-2">Let's go!</h1>
-              <h2 className="text-xl font-semibold mb-2">
+              <h1 className="mb-2 text-2xl font-bold">Let's go!</h1>
+              <h2 className="mb-2 text-xl font-semibold">
                 Join with our Platform
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="mb-6 text-gray-600">
                 Enter your valid email address and complete some easy steps to
                 register your account.
               </p>
@@ -99,7 +99,7 @@ const Signup: React.FC = () => {
                     {...register("name", { required: "Name is required" })}
                   />
                   {errors.name && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-red-500">
                       {errors.name.message}
                     </p>
                   )}
@@ -119,7 +119,7 @@ const Signup: React.FC = () => {
                     })}
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-red-500">
                       {errors.email.message}
                     </p>
                   )}
@@ -134,13 +134,13 @@ const Signup: React.FC = () => {
                     })}
                   />
                   {errors.phoneNumber && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-red-500">
                       {errors.phoneNumber.message}
                     </p>
                   )}
                 </div>
 
-                <div className="mb-2 relative">
+                <div className="relative mb-2">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter password"
@@ -154,19 +154,19 @@ const Signup: React.FC = () => {
                     })}
                   />
                   <span
-                    className="absolute right-5 top-5 text-gray-500 cursor-pointer"
+                    className="absolute text-gray-500 cursor-pointer right-5 top-5"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.password && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-red-500">
                       {errors.password.message}
                     </p>
                   )}
                 </div>
 
-                <div className="mb-2 relative">
+                <div className="relative mb-2">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="Confirm Password"
@@ -178,13 +178,13 @@ const Signup: React.FC = () => {
                     })}
                   />
                   <span
-                    className="absolute right-5 top-5 text-gray-500 cursor-pointer"
+                    className="absolute text-gray-500 cursor-pointer right-5 top-5"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                   {errors.confirmPassword && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="mt-1 text-sm text-red-500">
                       {errors.confirmPassword.message}
                     </p>
                   )}
@@ -192,11 +192,11 @@ const Signup: React.FC = () => {
 
                 <button
                   type="submit"
-                  className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+                  className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin"></div>
                   ) : (
                     "Sign up"
                   )}
@@ -211,12 +211,12 @@ const Signup: React.FC = () => {
               </div>
 
               {/* Sign up with Google */}
-              <button className="w-full bg-black text-white p-3 font-semibold flex items-center justify-center hover:bg-gray-800 transition duration-300">
-                <i className="fab fa-google mr-2"></i> Sign up with Google
+              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
+                <i className="mr-2 fab fa-google"></i> Sign up with Google
               </button>
 
               {/* Vendor/Seller Link */}
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <Link
                   to={"/signup-vendor"}
                   className="text-orange-500 hover:underline"
@@ -224,7 +224,7 @@ const Signup: React.FC = () => {
                   Become a Vendor/Seller?
                 </Link>
               </div>
-              <div className="block lg:hidden text-left my-2">
+              <div className="block my-2 text-left lg:hidden">
                 <span className="text-gray-600">Already have an Account? </span>
                 <Link to={"/signin"} className="text-blue-500 hover:underline">
                   Sign in

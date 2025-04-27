@@ -112,3 +112,12 @@ export const update_vendor_profile = async (token: string, data: any) => {
     throw error;
   }
 };
+
+export const getAllVendor = async () => {
+  try {
+    const response = await api.get("/get_all_vendors");
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
