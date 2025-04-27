@@ -3,6 +3,8 @@ import { Sun, Moon, Bell, Search, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
+import { get_single_vendor } from "@/utils/vendorApi";
 
 const VendorHeader: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -19,7 +21,12 @@ const VendorHeader: React.FC = () => {
     };
   }
 
-  const user = useSelector((state: RootState) => state.vendor);
+  const user: any = useSelector((state: RootState) => state.vendor);
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
 
   const notifications = [
     {
@@ -196,13 +203,13 @@ const VendorHeader: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        {!user.vendor?.name ? (
+        {!vendors?.avatar ? (
           <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-            {user.user.name.charAt(0).toUpperCase()}
+            {vendors?.userName.charAt(0).toUpperCase()}
           </div>
         ) : (
           <img
-            src="/vendor-avatar.png"
+            src={vendors?.avatar}
             alt="Vendor"
             className="w-10 h-10 rounded-full"
           />

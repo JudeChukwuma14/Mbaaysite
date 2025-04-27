@@ -25,7 +25,7 @@ interface CategorySelectorProps {
   selectedCategories: string[];
   activeCategory: string;
   handleCategoryChange: (category: string) => void;
-  vendorPlan?: "Shelves" | "Counter" | "Shop" | "Premium";
+  vendorPlan?: "Starter" | "Shelves" | "Counter" | "Shop" | "Premium";
   selectedSubCategory: string;
   setSelectedSubCategory: (subCategory: string) => void;
   selectedSubSubCategory: string;
@@ -37,7 +37,7 @@ export default function CategorySelector({
   selectedCategories,
   activeCategory,
   handleCategoryChange,
-  vendorPlan = "Shelves",
+  vendorPlan = "Starter",
   selectedSubCategory,
   setSelectedSubCategory,
   selectedSubSubCategory,
@@ -181,7 +181,7 @@ export default function CategorySelector({
           ],
         },
         {
-          name: "Ethically Sourced & Substainable Jewelry",
+          name: "Ethically Sourced & Sustainable Jewelry",
           subSubCategories: [
             { name: "Recycled Materials Jewelry" },
             { name: "Conflict-free Gemstones" },
@@ -1540,24 +1540,27 @@ export default function CategorySelector({
   ],
 }: CategorySelectorProps) {
   const isUpgraded =
+    vendorPlan === "Shelves" ||
     vendorPlan === "Counter" ||
     vendorPlan === "Shop" ||
     vendorPlan === "Premium";
-  const activeCategoryObj = categoryData.find(
-    (cat) => cat.name === activeCategory
-  );
-
   const user = useSelector((state: RootState) => state.vendor);
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
 
+  // Determine the vendor's selected category
+  const vendorCategory = vendors?.craftCategories?.[0] || activeCategory;
+  const activeCategoryObj = categoryData.find(
+    (cat) => cat.name === vendorCategory
+  );
+
   // Reset subcategory and sub-subcategory when active category changes
   useEffect(() => {
     setSelectedSubCategory("");
     setSelectedSubSubCategory("");
-  }, [activeCategory, setSelectedSubCategory, setSelectedSubSubCategory]);
+  }, [vendorCategory, setSelectedSubCategory, setSelectedSubSubCategory]);
 
   // Reset sub-subcategory when subcategory changes
   useEffect(() => {
@@ -1569,9 +1572,11 @@ export default function CategorySelector({
     return (
       <div className="relative">
         <motion.select
-          className="bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
-          value={activeCategory}
+          className="bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 appearance-none cursor-pointer focus:outline-n
+System: one focus:ring-2 focus:ring-orange-500"
+          value={vendorCategory}
           onChange={(e) => handleCategoryChange(e.target.value)}
+          disabled // Disable for non-upgraded vendors to prevent changing category
         >
           <option value="">Filter by Category</option>
           {selectedCategories.map((cat) => (
@@ -1603,18 +1608,18 @@ export default function CategorySelector({
           <label className="block text-sm font-medium">Product Category</label>
           <motion.input
             type="text"
-            className="w-full p-3 border rounded-lg"
-            value={vendors?.craftCategories?.[0] || activeCategory}
+            className="w-full p-3 border rounded-lg bg-gray-100"
+            value={vendorCategory}
             readOnly
           />
         </div>
 
         {/* Subcategory Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium">{activeCategory}</label>
+          <label className="block text-sm font-medium">{vendorCategory}</label>
           <div className="relative">
             <motion.select
-              className="w-full p-3 border rounded-lg appearance-none pr-10"
+              className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={selectedSubCategory}
               onChange={(e) => setSelectedSubCategory(e.target.value)}
             >
@@ -1639,7 +1644,7 @@ export default function CategorySelector({
             </label>
             <div className="relative">
               <motion.select
-                className="w-full p-3 border rounded-lg appearance-none pr-10"
+                className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
                 value={selectedSubSubCategory}
                 onChange={(e) => setSelectedSubSubCategory(e.target.value)}
               >

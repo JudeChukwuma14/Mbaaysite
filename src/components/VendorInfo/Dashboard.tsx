@@ -30,7 +30,7 @@ const Dashboard = () => {
 
   const totalOrders = 3234;
   const productsSold = 1455;
-  const accountType = "Shelves";
+  const accountType = "Starter";
 
   const orders = [
     {

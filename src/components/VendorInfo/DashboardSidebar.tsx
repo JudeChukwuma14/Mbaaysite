@@ -92,14 +92,17 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         </nav>
       </div>
       <div className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg dark:bg-gray-700">
-        {/* <img
-          src="/vendor-avatar.png"
-          alt="Vendor"
-          className="w-12 h-12 rounded-full"
-        /> */}
-        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-          <p>{vendors?.userName?.charAt()}</p>
-        </div>
+        {!vendors?.userName ? (
+          <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+            {vendors?.avatar?.charAt(0).toUpperCase()}
+          </div>
+        ) : (
+          <img
+            src={vendors?.avatar}
+            alt="Vendor"
+            className="w-10 h-10 rounded-full"
+          />
+        )}
         <div>
           <p className="text-sm font-semibold text-orange-500">
             {vendors?.userName}

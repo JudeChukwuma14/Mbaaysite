@@ -1,6 +1,5 @@
 import axios from "axios";
 
-
 const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/products";
 
 export const api = axios.create({
@@ -57,3 +56,29 @@ export const getVendorProductById = async (productId: string) => {
   }
 };
 
+// Update vendor product
+export const updateVendorProduct = async (productId: string, data: any) => {
+  try {
+    const response = await axios.patch(
+      `${API_BASE_URL}/edit/${productId}`,
+      data
+    );
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating product:", error);
+    throw error;
+  }
+};
+
+// Delete vendor product
+export const deleteVendorProduct = async (productId: string) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/delete/${productId}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    throw error;
+  }
+};

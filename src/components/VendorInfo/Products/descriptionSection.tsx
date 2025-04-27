@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 
 import { useRef } from "react";
@@ -7,7 +5,33 @@ import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { FaUpload } from "react-icons/fa";
+
+// Add these formats and modules configurations
+const formats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "list",
+  "bullet",
+  "link",
+  "clean",
+];
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    ["clean"],
+  ],
+  clipboard: {
+    // Prevent unwanted div/p/span tags when pasting
+    matchVisual: false,
+  },
+};
 
 interface DescriptionSectionProps {
   productName: string;
@@ -32,7 +56,7 @@ export default function DescriptionSection({
 
   return (
     <motion.div
-      className="bg-white p-5 rounded-lg shadow space-y-4 h-[520px] flex flex-col"
+      className="bg-white p-5 rounded-lg shadow space-y-4 h-[500px] flex flex-col"
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.2 }}
@@ -50,11 +74,10 @@ export default function DescriptionSection({
         <div className="flex justify-between items-center">
           <label className="text-sm text-gray-600">Product Description</label>
           <button
-            className="text-sm text-blue-600 hover:text-blue-800 flex items-center space-x-1"
+            className="text-sm text-blue-600 hover:text-blue-800"
             onClick={() => descriptionFileRef.current?.click()}
           >
-            <FaUpload size={15} />
-            <span>Upload .txt file</span>
+            Upload .txt file
           </button>
           <motion.input
             type="file"
@@ -83,6 +106,8 @@ export default function DescriptionSection({
             placeholder="Product Description"
             value={value}
             onChange={setValue}
+            formats={formats}
+            modules={modules}
             className="border outline-orange-500 border-orange-500 h-full"
           />
         </div>

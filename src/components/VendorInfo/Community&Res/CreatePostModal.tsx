@@ -242,10 +242,17 @@ export default function CreatePostModal({
             <div ref={modalContentRef} className="flex-1 p-4 overflow-y-auto">
               <form onSubmit={handlePost}>
                 <div className="flex items-center mb-4 space-x-3">
-                  {/* <img src="/placeholder.svg?height=48&width=48" alt="Profile" className="w-12 h-12 rounded-full" /> */}
-                  <div className="w-[50px] h-[50px] bg-orange-500 rounded-full text-white flex items-center justify-center">
-                    <p>{posts?.data?.storeName?.charAt(0)}</p>
-                  </div>
+                  {!posts?.data?.storeName ? (
+                    <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                      {posts?.data?.storeName?.charAt(0)}
+                    </div>
+                  ) : (
+                    <img
+                      src={posts?.data?.avatar}
+                      alt="Profile"
+                      className="w-10 h-10 rounded-full"
+                    />
+                  )}
                   <div>
                     <h3 className="font-semibold">{posts?.data?.storeName}</h3>
                     <p className="text-sm text-gray-600">
