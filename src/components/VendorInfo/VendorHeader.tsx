@@ -203,7 +203,7 @@ const VendorHeader: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-        {!vendors?.userName ? (
+        {!vendors?.avatar ? (
           <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
             {vendors?.userName.charAt(0).toUpperCase()}
           </div>

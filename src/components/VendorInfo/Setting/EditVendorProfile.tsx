@@ -1,4 +1,3 @@
-import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera,
@@ -21,6 +20,7 @@ import {
   useUploadBusinessLogo,
 } from "../../../utils/editvendorApi";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
 interface VendorProfile {
   companyName: string;
@@ -498,12 +498,12 @@ export default function EditVendorProfile() {
             variants={itemVariants}
             className="bg-white rounded-lg shadow-sm overflow-hidden"
           >
-            <div className="relative h-48 bg-gradient-to-r from-orange-500 to-black">
+            <div className="relative h-48 bg-white border border-b-green-100">
               {bannerImage ? (
                 <img
                   src={bannerImage || "/placeholder.svg"}
                   alt="Banner"
-                  className="object-cover w-full h-full"
+                  className="object-contain w-full h-full"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-orange-500 to-black" />

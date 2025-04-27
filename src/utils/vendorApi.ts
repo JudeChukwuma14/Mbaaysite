@@ -95,16 +95,20 @@ export const upload_return_policy = async (token: string | null, data: any) => {
 // };
 
 // // Update vendor profile
-// export const update_vendor_profile = async (token: string, data: any) => {
-//   try {
-//     const response = await axios.patch(`${API_BASE_URL}/vendor/update`, data, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error("Error updating vendor profile:", error);
-//     throw error;
-//   }
-// };
+export const update_vendor_profile = async (token: string, data: any) => {
+  try {
+    const response = await axios.put(
+      `${API_BASE_URL}/update_vendor_info`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating vendor profile:", error);
+    throw error;
+  }
+};
