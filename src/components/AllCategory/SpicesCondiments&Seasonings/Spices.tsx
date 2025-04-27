@@ -67,45 +67,44 @@ const Spices: React.FC = () => {
   }
 
   const ImagePart: Subcategory[] = [
-    { image: image, text: "Spices", link: "/Spices" },
-    { image: image, text: "Condiments", link: "/Condiments" },
+    { image: image, text: "Condiments", link: "/Conditments" },
+    { image: image, text: "Cooking Ingredients", link: "/CookingIngredients" },
     {
       image: image,
       text: "Cultural & Regional Spices",
-      link: "/CulturalRegionalSpices",
+      link: "/CulturalRegional",
     },
     {
       image: image,
-      text: "Salt & Pepper Varieties",
-      link: "/SaltPepperVarieties",
+      text: "Ethically Sourced & Organic Products",
+      link: "/EthincallySourced",
     },
-    { image: image, text: "Marinades & Rubs", link: "/MarinadesRubs" },
+    { image: image, text: "Spices", link: "/Spices-i" },
     {
       image: image,
       text: "Health & Wellness Spices",
       link: "/HealthWellnessSpices",
     },
+    { image: image, text: "Marinades & Rubs", link: "/Marinades" },
+    {
+      image: image,
+      text: "Salt & Pepper Varieties",
+      link: "/SaltPepper",
+    },
     {
       image: image,
       text: "Spice Kits & Gift Sets",
-      link: "/SpiceKitsGiftSets",
+      link: "/SpiceKits",
     },
-    { image: image, text: "Cooking Ingredients", link: "/CookingIngredients" },
-    {
-      image: image,
-      text: "Ethically Sourced & Organic Products",
-      link: "/EthicallySourcedOrganic",
-    },
-    { image: image, text: "Packaging", link: "/Packaging" },
     {
       image: image,
       text: "Seasoning for Specific Cuisines",
-      link: "/SeasoningCuisines",
+      link: "/Seasoning",
     },
     {
       image: image,
       text: "Special Dietary",
-      link: "/SpecialDietaryCategories",
+      link: "/SpecialDietary",
     },
     { image: image, text: "Popular Uses", link: "/PopularUses" },
   ];

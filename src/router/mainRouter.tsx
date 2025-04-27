@@ -729,7 +729,7 @@ const routesConfig: RouteObject[] = [
       {path:"/Seasoning",element:withSuspense(Seasoning)},
       {path:"/SpecialDietary",element:withSuspense(SpecialDietary)},
       {path:"/SpiceKits",element:withSuspense(SpiceKits)},
-      {path:"/Spices",element:withSuspense(Spicesi)},
+      {path:"/Spices-i",element:withSuspense(Spicesi)},
 
       // traditionalFabrics subcategory
       {path:"/ChildrenTranditional",element:withSuspense(ChildrenTranditional)},

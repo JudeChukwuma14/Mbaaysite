@@ -799,7 +799,7 @@ export const categories = [
     link: "/spices",
     subcategories: [
       {
-        link: "/Spices",
+        link: "/Spices-i",
         title: "Spices",
         items: [
           "Whole Spices (Ungrounded Spice)",
@@ -811,7 +811,7 @@ export const categories = [
         ],
       },
       {
-        link: "/Condiments",
+        link: "/Conditments",
         title: "Condiments",
         items: [
           "Sauces (Hot Sauces, Soy Sauce, Barbecue Sauce)",
@@ -823,7 +823,7 @@ export const categories = [
         ],
       },
       {
-        link: "/CulturalRegionalSpices",
+        link: "/CulturalRegional",
         title: "Cultural & Regional Spices",
         items: [
           "African Spices (Berbere, Ras el Hanout, Suya Spice)",
@@ -834,7 +834,7 @@ export const categories = [
         ],
       },
       {
-        link: "/SaltPepperVarieties",
+        link: "/SaltPepper",
         title: "Salt & Pepper Varieties",
         items: [
           "Artisan Salts (Himalayan Pink Salt, Black Lava Salt, Fleur de Sel)",
@@ -843,7 +843,7 @@ export const categories = [
         ],
       },
       {
-        link: "/MarinadesRubs",
+        link: "/Marinades",
         title: "Marinades & Rubs",
         items: [
           "Meat Rubs (Barbecue Rubs, Cajun Rubs, Jerk Seasoning)",
@@ -861,7 +861,7 @@ export const categories = [
         ],
       },
       {
-        link: "/SpiceKitsGiftSets",
+        link: "/SpiceKits",
         title: "Spice Kits & Gift Sets",
         items: [
           "Regional Spice Kits (Indian Cooking Spice Kits, Mediterranean Spice Kits)",
@@ -878,7 +878,7 @@ export const categories = [
         ],
       },
       {
-        link: "/EthicallySourcedOrganic",
+        link: "/EthincallySourced",
         title: "Ethically Sourced & Organic Products",
         items: [
           "Fair Trade Spices",
@@ -887,16 +887,7 @@ export const categories = [
         ],
       },
       {
-        link: "/Packaging",
-        title: "Packaging",
-        items: [
-          "Bulk Spices",
-          "Individual Packs",
-          "Ready-to-use Jars & Containers",
-        ],
-      },
-      {
-        link: "/SeasoningCuisines",
+        link: "/Seasoning",
         title: "Seasoning for Specific Cuisines",
         items: [
           "Indian Seasoning",
@@ -906,7 +897,7 @@ export const categories = [
         ],
       },
       {
-        link: "/SpecialDietaryCategories",
+        link: "/SpecialDietary",
         title: "Special Dietary Categories",
         items: [
           "Gluten-free Spices",
