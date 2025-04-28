@@ -323,7 +323,7 @@ const HomeArea: React.FC = () => {
         </div>
         <div className="flex justify-center">
           <Link
-            to="/products"
+            to="/random-product"
             className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All Products
@@ -352,7 +352,7 @@ const HomeArea: React.FC = () => {
         </div>
         <div className="flex justify-center">
           <Link
-            to="/flash-sale"
+            to="/random-product"
             className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All Flash Sales
