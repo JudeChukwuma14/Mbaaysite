@@ -310,7 +310,7 @@ const HomeArea: React.FC = () => {
             Explore Our Products
           </h2>
           <Link
-            to="/products"
+            to="/random-product"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />

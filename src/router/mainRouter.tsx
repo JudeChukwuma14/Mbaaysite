@@ -7,6 +7,7 @@ import Layout from "@/components/profileMangement/Layout";
 // import CommunityPage from "@/components/VendorInfo/Community&Res/Community";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
+import ProtectedVendor from "./ProtectedVendor";
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -813,40 +814,45 @@ const routesConfig: RouteObject[] = [
   },
   {
     path: "/app",
-    element: <VendorLayout />,
-    children: [
-      { index: true, element: withSuspense(Dashboard) },
-      { path: "orders", element: withSuspense(AllOrder) },
-      { path: "order-details", element: withSuspense(OrderDetails) },
-      { path: "all-products", element: withSuspense(AllProduct) },
-      { path: "new-product", element: withSuspense(NewProduct) },
-      { path: "customers", element: withSuspense(Customer) },
-      { path: "Payments", element: withSuspense(Payments) },
-      { path: "preview-invoice", element: withSuspense(PreviewInvoice) },
-      { path: "edit-vendor-profile", element: withSuspense(EditVendorProfile) },
-      { path: "kyc-verification", element: withSuspense(KycVerification) },
-      { path: "inbox", element: withSuspense(Inbox) },
-      { path: "all-post", element: withSuspense(AllPost) },
-      { path: "profile", element: withSuspense(ProfilePage) },
-      { path: "my-community", element: withSuspense(CommunitySection) },
-      { path: "reviews", element: withSuspense(Reviews) },
-      { path: "pricing", element: withSuspense(Pricing) },
-      {
-        path: "comunity-detail/:communityid",
-        element: withSuspense(CommunityDetailPage),
-      },
-      {
-        path: "products-detail/:productid",
-        element: withSuspense(() => (
-          <ProductDetailModal
-            product={null}
-            isOpen={false}
-            onClose={() => {}}
-            productId={""}
-          />
-        )),
-      },
-    ],
+    element: <ProtectedVendor />,
+   children:[
+    {
+      element:<VendorLayout/>,
+      children: [
+        { index: true, element: withSuspense(Dashboard) },
+        { path: "orders", element: withSuspense(AllOrder) },
+        { path: "order-details", element: withSuspense(OrderDetails) },
+        { path: "all-products", element: withSuspense(AllProduct) },
+        { path: "new-product", element: withSuspense(NewProduct) },
+        { path: "customers", element: withSuspense(Customer) },
+        { path: "Payments", element: withSuspense(Payments) },
+        { path: "preview-invoice", element: withSuspense(PreviewInvoice) },
+        { path: "edit-vendor-profile", element: withSuspense(EditVendorProfile) },
+        { path: "kyc-verification", element: withSuspense(KycVerification) },
+        { path: "inbox", element: withSuspense(Inbox) },
+        { path: "all-post", element: withSuspense(AllPost) },
+        { path: "profile", element: withSuspense(ProfilePage) },
+        { path: "my-community", element: withSuspense(CommunitySection) },
+        { path: "reviews", element: withSuspense(Reviews) },
+        { path: "pricing", element: withSuspense(Pricing) },
+        {
+          path: "comunity-detail/:communityid",
+          element: withSuspense(CommunityDetailPage),
+        },
+        {
+          path: "products-detail/:productid",
+          element: withSuspense(() => (
+            <ProductDetailModal
+              product={null}
+              isOpen={false}
+              onClose={() => {}}
+              productId={""}
+            />
+          )),
+        },
+      ],
+    }
+   ]
   },
   { path: "signin", element: withSuspense(Login) },
   { path: "signup", element: withSuspense(Signup) },

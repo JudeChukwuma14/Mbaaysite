@@ -29,6 +29,7 @@ const Header: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.user.user);
+  const vendor = useSelector((state: RootState) => state.vendor.vendor);
   const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -120,22 +121,16 @@ const Header: React.FC = () => {
             Recently Viewed
           </Link>
           <Link
-            to="/become-vendor"
+            to={vendor ? "/app" : "/login-vendor"}
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
-            Become a Vendor
+            {vendor ? "Vendor Dashboard" : "Become a Vendor"}
           </Link>
           <Link
-            to="/vendors-auction"
+            to="/auctionview"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
             Auction
-          </Link>
-          <Link
-            to="/app"
-            className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
-          >
-            Vendor dashboard
           </Link>
         </nav>
 
@@ -325,26 +320,19 @@ const Header: React.FC = () => {
               Recently Viewed
             </Link>
             <Link
-              to="/login-vendor"
-              className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
-              onClick={toggleMenu}
+              to={vendor ? "/app" : "/login-vendor"}
+              className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
             >
-              Become a Vendor
+              {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>
             <Link
-              to="/vendors-auction"
+              to="/auctionview"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
             >
               Auction
             </Link>
-            <Link
-              to="/app"
-              className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
-              onClick={toggleMenu}
-            >
-              Vendor dashboard
-            </Link>
+
             <Link
               to="/dashboard/wishlist"
               className="flex items-center gap-2 px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500 md:hidden"
