@@ -115,7 +115,7 @@ const Header: React.FC = () => {
 
         <nav className="items-center hidden space-x-4 lg:flex lg:space-x-8">
           <Link
-            to="/recently-viewed"
+            to="/"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
             Recently Viewed
@@ -313,7 +313,7 @@ const Header: React.FC = () => {
         <div className="bg-white shadow-md lg:hidden">
           <nav className="flex flex-col divide-y divide-gray-100">
             <Link
-              to="/recently-viewed"
+              to="/"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
             >
