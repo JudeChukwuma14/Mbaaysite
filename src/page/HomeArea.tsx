@@ -165,7 +165,7 @@ const HomeArea: React.FC = () => {
             Browse By Category
           </h2>
           <Link
-            to="/categories"
+            to="/"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />
@@ -264,7 +264,7 @@ const HomeArea: React.FC = () => {
             Latest Vendors
           </h2>
           <Link
-            to="/vendors"
+            to="/"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />
