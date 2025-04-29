@@ -20,12 +20,10 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const {
     register,
     handleSubmit,

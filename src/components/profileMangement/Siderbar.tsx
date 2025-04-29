@@ -11,6 +11,8 @@ import {
   Wallet,
   MessagesSquare,
 } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { logout } from "@/redux/slices/userSlice";
 
 
 
@@ -64,6 +66,7 @@ const sidebarLayout: SidebarItem[] = [
 const Siderbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const toggleDropdown = (label: string) => {
@@ -77,8 +80,8 @@ const Siderbar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    console.log("User logged out");
-    navigate("/login");
+    dispatch(logout())
+    navigate("/signin");
   };
 
   return (
