@@ -67,13 +67,15 @@ const Signin: React.FC = () => {
         >
           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
+              <Link to="/">
+                <img src={logo} width={50} alt="" />
+              </Link>
             </div>
             <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Don't have an Account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
+              <Link to="/signup" className="text-blue-500 hover:underline">
                 Sign Up now!
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -169,7 +171,7 @@ const Signin: React.FC = () => {
                 </Link>
               </div>
 
-              <div className="block my-2 text-left  lg:hidden">
+              <div className="block my-2 text-left lg:hidden">
                 <span className="text-gray-600">Don't have an account? </span>
                 <Link to={"/signup"} className="text-blue-500 hover:underline">
                   Sign up

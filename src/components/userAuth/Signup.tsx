@@ -71,9 +71,9 @@ const Signup: React.FC = () => {
             </div>
             <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Already have an Account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
+              <Link to="/signin" className="text-blue-500 hover:underline">
                 Sign in
-              </a>
+              </Link>
             </div>
           </div>
           <div className="flex items-center justify-center px-4">

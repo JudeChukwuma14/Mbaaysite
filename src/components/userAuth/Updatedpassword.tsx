@@ -18,7 +18,7 @@ const Updatedpassword: React.FC = () => {
         {/* Right Section */}
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
           {/* Logo for small screens */}
           <div className="  items-left mt-6 flex-col min-h-[150px]">
@@ -26,16 +26,16 @@ const Updatedpassword: React.FC = () => {
               <img src={logo} width={50} alt="" />
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <div className="w-full max-w-md">
-              <h1 className="text-2xl font-bold mb-2">PASSWORD UPDATED</h1>
-              <p className="text-gray-600 mb-6">
+              <h1 className="mb-2 text-2xl font-bold">PASSWORD UPDATED</h1>
+              <p className="mb-6 text-gray-600">
                 Your password has been updated
               </p>
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <button
                   type="submit"
-                  className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300"
+                  className="w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
                 >
                   Login
                 </button>

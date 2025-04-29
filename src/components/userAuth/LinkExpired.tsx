@@ -20,7 +20,7 @@ const LinkExpired: React.FC = () => {
         {/* Right Section */}
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
           {/* Logo for small screens */}
           <div className="  items-left mt-6 flex-col min-h-[150px]">
@@ -28,24 +28,24 @@ const LinkExpired: React.FC = () => {
               <img src={logo} width={50} alt="" />
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <div className="w-full max-w-md">
-              <h1 className="text-2xl font-bold mb-2">LINK EXPIRED</h1>
-              <p className="text-gray-600 mb-6">
+              <h1 className="mb-2 text-2xl font-bold">LINK EXPIRED</h1>
+              <p className="mb-6 text-gray-600">
                 Your link has expired because you haven’t used it. Reset
                 password link expires in every 3 mins and can be used only once.
                 You can create one by clicking the button below.
               </p>
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <button
                   type="submit"
-                  className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300"
+                  className="w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
                 >
                   Resend another link
                 </button>
               </div>
 
-              <div className="text-center mt-4">
+              <div className="mt-4 text-center">
                 <a href="#" className="text-black hover:underline">
                   Cancel
                 </a>
