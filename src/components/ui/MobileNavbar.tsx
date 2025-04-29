@@ -104,8 +104,8 @@ const MobileNavbar = () => {
             <img
               src="https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
               alt=""
-              width={70}
-              height={70}
+              width={60}
+              height={60}
             />
           </Link>
           <div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto pt-10">
@@ -121,7 +121,7 @@ const MobileNavbar = () => {
                         <SheetClose asChild>
                           <NavLink
                             to={item.urlLink}
-                            className={`flex items-center p-4 rounded-lg gap-4 ${
+                            className={`flex items-center p-3 gap-4 ${
                               isActive
                                 ? "bg-orange-500 text-white"
                                 : "hover:bg-orange-300"
@@ -136,7 +136,7 @@ const MobileNavbar = () => {
                         </SheetClose>
                       ) : (
                         <div
-                          className={`flex items-center p-4 rounded-lg gap-4 cursor-pointer ${
+                          className={`flex items-center p-3 gap-4 cursor-pointer ${
                             openDropdown === item.label
                               ? "bg-orange-500 text-white"
                               : "hover:bg-orange-300"
@@ -169,7 +169,7 @@ const MobileNavbar = () => {
                             <SheetClose asChild key={child.title}>
                               <NavLink
                                 to={child.link}
-                                className="flex items-center p-2 rounded-lg hover:bg-orange-300"
+                                className="flex items-center p-2 hover:bg-orange-300"
                               >
                                 <p className="text-sm font-semibold">
                                   {child.title}
@@ -187,7 +187,7 @@ const MobileNavbar = () => {
               <SheetClose asChild>
                 <button
                   onClick={handleLogout}
-                  className="flex items-center w-full gap-4 p-4 mt-16 rounded-lg hover:bg-orange-300"
+                  className="flex items-center w-full gap-4 p-3 mt-16 hover:bg-orange-300"
                 >
                   <LogOutIcon width={25} />
                   <p className="text-sm font-semibold">Logout</p>

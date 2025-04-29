@@ -4,13 +4,13 @@ import MobileNavbar from "../ui/MobileNavbar";
 
 const Navbar = () => {
   return (
-    <nav className="bg-[#F3F4F6] w-full fixed z-50 flex items-center justify-between px-6 py-4 lg:px-10">
+    <nav className="bg-[#F3F4F6] w-full fixed z-50 flex items-center justify-between px-6 py-3 lg:px-10">
       <Link to="/" className="flex items-center gap-1">
         <img
           src="https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
           alt=""
-          width={70}
-          height={70}
+          width={60}
+          height={60}
         />
       </Link>
 
