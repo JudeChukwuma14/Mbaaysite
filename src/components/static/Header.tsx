@@ -321,7 +321,7 @@ const Header: React.FC = () => {
             </Link>
             <Link
               to={vendor ? "/app" : "/login-vendor"}
-              className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
+              className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
             >
               {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>

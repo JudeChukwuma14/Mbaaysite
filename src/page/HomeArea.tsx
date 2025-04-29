@@ -69,7 +69,7 @@ const HomeArea: React.FC = () => {
     { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
     { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
     { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
-    { imageSrc: Furniture, title: "Furniture", link: "/furniture" },
+    { imageSrc: Furniture, title: "Home Décor", link: "/homedecor" },
     {
       imageSrc: wellness,
       title: "Beauty and wellness",
@@ -183,32 +183,37 @@ const HomeArea: React.FC = () => {
         </div>
       </section>
 
-      {/* New Arrivals Section */}
+      {/* Explore Products */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">Just Arrived</span>
+          <span className="font-medium text-orange-500">Our Products</span>
         </div>
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            New Arrivals
+            Explore Our Products
           </h2>
           <Link
             to="/random-product"
-            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
-            View All
+            View All <ChevronRight size={16} />
           </Link>
         </div>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {ExploreData.map((item, index) => (
+            <ExploreCard key={index} {...item} />
+          ))}
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {/* <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {products
             .sort(
               (a, b) =>
                 new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             )
-            .slice(0, 5)
+            .slice(0, 20)
             .map((product) => (
               <NewArrival
                 key={product._id}
@@ -219,6 +224,14 @@ const HomeArea: React.FC = () => {
                 }}
               />
             ))}
+        </div> */}
+        <div className="flex justify-center">
+          <Link
+            to="/random-product"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+          >
+            View All Products
+          </Link>
         </div>
       </section>
 
@@ -298,39 +311,45 @@ const HomeArea: React.FC = () => {
           })}
         </div>
       </section>
-
-      {/* Explore Products */}
+      {/* New Arrivals Section */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">Our Products</span>
+          <span className="font-medium text-orange-500">Just Arrived</span>
         </div>
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            Explore Our Products
+            New Arrivals
           </h2>
           <Link
             to="/random-product"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
-            View All <ChevronRight size={16} />
+            View All
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {ExploreData.map((item, index) => (
-            <ExploreCard key={index} {...item} />
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <Link
-            to="/random-product"
-            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All Products
-          </Link>
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {products
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 5)
+            .map((product) => (
+              <NewArrival
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
+            ))}
         </div>
       </section>
-
+      {/* ............................... */}
       {/* Second Promotional Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">
