@@ -1,9 +1,4 @@
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://www.mbaay.com",
-      "permanent": true
-    }
-  ]
-}
+    "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  }
+  
