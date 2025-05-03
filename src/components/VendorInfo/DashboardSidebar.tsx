@@ -82,7 +82,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
             Icon={Settings}
           />
           <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
-          <NavItem title="Pricing" to="pricing" Icon={IoIosPricetag} />
+          <NavItem title="Upgrade plan" to="pricing" Icon={IoIosPricetag} />
           <NavItem
             title="Community"
             subItems={["All Post", "Profile", "My Community"]}
