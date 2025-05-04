@@ -42,7 +42,7 @@ const Signup: React.FC = () => {
       });
       navigate(`/verify-otp/${response.data._id}`);
     } catch (err) {
-      toast.error(err,{
+      toast.error((err as Error)?.message || String(err), {
         position: "top-right",
         autoClose: 4000,
       });

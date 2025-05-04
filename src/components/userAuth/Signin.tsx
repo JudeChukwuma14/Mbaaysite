@@ -43,8 +43,7 @@ const Signin: React.FC = () => {
         throw new Error("Invalid response format from server");
       }
     } catch (err) {
-      console.log('.....',err)
-      toast.error(err,  {
+      toast.error((err as Error)?.message || String(err), {
         position: "top-right",
         autoClose: 4000,
       });

@@ -38,8 +38,8 @@ const OTPVerification: React.FC = () => {
         autoClose: 3000,
       });
       navigate("/signin");
-    } catch (error: unknown) {
-      toast.error((error as Error)?.message || "Failed to send OTP", {
+    } catch (err) {
+      toast.error((err as Error)?.message || String(err), {
         position: "top-right",
         autoClose: 4000,
       });
