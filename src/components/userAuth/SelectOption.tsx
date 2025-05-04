@@ -10,6 +10,8 @@ const SelectOption: React.FC = () => {
   const bg = {
     backgroundImage: `url(${background})`,
   };
+  const accountType = localStorage.getItem("accountType");
+  console.log("accouuntType", accountType)
   return (
     <div className="w-full h-screen">
       <div className="flex flex-col md:flex-row">
@@ -29,11 +31,11 @@ const SelectOption: React.FC = () => {
             Please select account type to get started
           </h1>
           <div className="space-y-4 md:space-y-7 lg:ml-[200px]">
-            <Link to="/signin">
+            <Link to={accountType  ? "/signin" : "/signup"}>
               <div className="w-full md:w-[636px] bg-orange-500 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start mb-5">
                 <div className="flex flex-col gap-2">
                   <span className="text-xl font-bold text-white md:text-3xl">
-                    Login as a User
+                  {accountType  ? "Login as a User" : "Sign up as a User"}
                   </span>
                   <p className="text-sm md:text-[16px] md:w-[410px]">
                     Bringing the Soul of Home to Your Doorstep
@@ -48,11 +50,11 @@ const SelectOption: React.FC = () => {
                 </div>
               </div>
             </Link>
-            <Link to={"/login-vendor"}>
+            <Link to= {accountType ? "/login-vendor" : "/signup-vendor"}>
             <div className="w-full md:w-[636px] bg-orange-300 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
               <div className="flex flex-col gap-2">
                 <span className="text-xl font-bold text-white md:text-3xl">
-                  Login as a Vendor/Seller
+                {accountType  ? "Login as a Vendor/Seller" : "Sign up as a Vendor/Seller"}
                 </span>
                 <p className="text-sm md:text-[16px] md:w-[410px]">
                   Reconnect with Your Roots—Shop Artisanal & Cultural Creations

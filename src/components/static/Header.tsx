@@ -120,7 +120,7 @@ const Header: React.FC = () => {
             Recently Viewed
           </Link>
           <Link
-            to={vendor ? "/app" : "/login-vendor"}
+            to={vendor ? "/app" : "/signup-vendor"}
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
             {vendor ? "Vendor Dashboard" : "Become a Vendor"}
@@ -319,7 +319,7 @@ const Header: React.FC = () => {
               Recently Viewed
             </Link>
             <Link
-              to={vendor ? "/app" : "/login-vendor"}
+              to={vendor ? "/app" : "/signup-vendor"}
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
             >
               {vendor ? "Vendor Dashboard" : "Become a Vendor"}

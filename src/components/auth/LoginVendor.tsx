@@ -66,24 +66,11 @@ const LoginVendor: React.FC = () => {
           token: response?.data?.token,
         })
       );
+      localStorage.setItem("accountType", "vendor");
       navigate("/app");
-    } catch (error) {
-      if (isApiError(error)) {
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to log in. Please try again.",
-          {
-            position: "top-right",
-            autoClose: 4000,
-          }
-        );
-      } else {
-        const apiError = error as ApiError;
-        toast.error(apiError.response?.data?.message || "Invalid credentials", {
-          position: "top-right",
-          autoClose: 4000,
-        });
-      }
+    } catch (err) {
+      console.log("error message", err);
+      toast.error(err);
     } finally {
       setIsLoading(false);
     }

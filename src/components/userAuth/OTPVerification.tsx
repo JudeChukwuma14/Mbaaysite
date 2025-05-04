@@ -31,6 +31,8 @@ const OTPVerification: React.FC = () => {
         throw new Error("User ID is missing");
       }
       const response = await verifyOtp(userId, data.otp);
+      localStorage.setItem("accountType", "user");
+      localStorage.setItem("accountType", userId);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
@@ -53,7 +55,7 @@ const OTPVerification: React.FC = () => {
         throw new Error("User ID is missing");
       }
       const response = await resendOtp(userId);
-
+      localStorage.setItem("accountType", userId);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,

@@ -41,8 +41,8 @@ const Signup: React.FC = () => {
         autoClose: 3000,
       });
       navigate(`/verify-otp/${response.data._id}`);
-    } catch (error: unknown) {
-      toast.error((error as Error)?.message || "Failed to create account", {
+    } catch (err) {
+      toast.error(err,{
         position: "top-right",
         autoClose: 4000,
       });
