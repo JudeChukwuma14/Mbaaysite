@@ -192,13 +192,12 @@ const Header: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2">
-
             {/* Wishlist */}
             <Link
               to="/dashboard/wishlist"
               className="relative hidden p-2 transition-colors duration-200 rounded-full md:block "
               aria-label="Wishlist"
-              >
+            >
               <FaHeart size={20} className="text-white" />
               {totalWishlistQuantity > 0 && (
                 <span className="absolute -top-1 -right-1 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center font-medium shadow-md">
@@ -212,7 +211,7 @@ const Header: React.FC = () => {
               to="/cart"
               className="relative p-2 transition-colors duration-200 rounded-full "
               aria-label="Shopping Cart"
-              >
+            >
               <FaShoppingCart size={20} className="text-white" />
               {totalQuantity > 0 && (
                 <span className="absolute -top-1 -right-1 text-xs text-white bg-[#ff710b] rounded-full h-5 w-5 flex items-center justify-center font-medium shadow-md">
@@ -220,23 +219,23 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-              {/* User icon or first letter */}
-              <div>
-                {firstLetter ? (
-                  <Link to="/dashboard">
-                    <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
-                      {firstLetter}
-                    </div>
-                  </Link>
-                ) : (
-                  <Link
-                    to="/selectpath"
-                    className="px-3 py-2 text-white transition-colors duration-300 border border-orange-600 hover:border-white"
-                  >
-                   Get started
-                  </Link>
-                )}
-              </div>
+            {/* User icon or first letter */}
+            <div>
+              {firstLetter ? (
+                <Link to="/dashboard">
+                  <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
+                    {firstLetter}
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  to="/selectpath"
+                  className="px-3 py-2 text-white transition-colors duration-300 border border-orange-600 hover:border-white"
+                >
+                  Get started
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu icon */}
