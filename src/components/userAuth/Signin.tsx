@@ -33,10 +33,9 @@ const Signin: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await LoginUser(data);
-      console.log("Login Response:", response);
-
       if (response.user && response.token) {
         dispatch(setUser({ user: response.user, token: response.token }));
+      localStorage.setItem("accountType", "user");
         toast.success(response.message || "Login successful");
         navigate("/");
       } else {

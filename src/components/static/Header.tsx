@@ -29,6 +29,7 @@ const Header: React.FC = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  
   const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -220,7 +221,7 @@ const Header: React.FC = () => {
               )}
             </Link>
             {/* User icon or first letter */}
-            <div>
+            <div className="ml-5">
               {firstLetter ? (
                 <Link to="/dashboard">
                   <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">

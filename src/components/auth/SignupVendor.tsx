@@ -42,16 +42,16 @@ const Registration: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("us"); // Default to 'us'
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedCity, setSelectedCity] = useState<string>("");
 
   const countries: ICountry[] = Country.getAllCountries();
   const states: IState[] = selectedCountry
-    ? State.getStatesOfCountry(selectedCountry)
+    ? State.getStatesOfCountry(selectedCountry.toUpperCase()) // Convert to uppercase for country-state-city
     : [];
   const cities: ICity[] = selectedState
-    ? City.getCitiesOfState(selectedCountry, selectedState)
+    ? City.getCitiesOfState(selectedCountry.toUpperCase(), selectedState)
     : [];
 
   const {
@@ -77,6 +77,7 @@ const Registration: React.FC = () => {
         position: "top-right",
         autoClose: 3000,
       });
+      localStorage.setItem("accountType", "vendor");
       reset();
       navigate("/welcomepage");
     } catch (err) {
@@ -202,7 +203,7 @@ const Registration: React.FC = () => {
                       required: "Country is required",
                     })}
                     className={selectClass}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
+                    onChange={(e) => setSelectedCountry(e.target.value.toLowerCase())} // Convert to lowercase for PhoneInput
                   >
                     <option value="">Select Country</option>
                     {countries.map((country) => (
@@ -267,6 +268,7 @@ const Registration: React.FC = () => {
                     </p>
                   )}
                 </div>
+                {/* Phone Number */}
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-700">
                     Store Number
@@ -277,7 +279,7 @@ const Registration: React.FC = () => {
                     rules={{ required: "Phone number is required" }}
                     render={({ field }) => (
                       <PhoneInput
-                        country={"us"}
+                        country={selectedCountry || "us"} // Sync with selected country, default to 'us'
                         value={field.value}
                         onChange={(storePhone) => field.onChange(storePhone)}
                         inputProps={{

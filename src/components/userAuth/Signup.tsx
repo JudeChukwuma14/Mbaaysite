@@ -35,11 +35,11 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await createUser(data);
-      console.log(response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
+      localStorage.setItem("accountType", "user");
       navigate(`/verify-otp/${response.data._id}`);
     } catch (err) {
       toast.error((err as Error)?.message || String(err), {
