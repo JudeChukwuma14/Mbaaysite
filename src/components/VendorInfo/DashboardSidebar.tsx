@@ -92,9 +92,9 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         </nav>
       </div>
       <div className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg dark:bg-gray-700">
-        {!vendors?.userName ? (
+        {!vendors?.avatar ? (
           <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-            {vendors?.avatar?.charAt(0).toUpperCase()}
+            {vendors?.storeName?.charAt(0)?.toUpperCase()}
           </div>
         ) : (
           <img
@@ -105,7 +105,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         )}
         <div>
           <p className="text-sm font-semibold text-orange-500">
-            {vendors?.userName}
+            {vendors?.storeName}
           </p>
           <div className="flex items-center justify-center mt-2">
             <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>

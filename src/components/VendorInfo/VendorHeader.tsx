@@ -10,6 +10,13 @@ const VendorHeader: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [showNotifications, setShowNotifications] = useState(false);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good Morning";
+    if (hour < 18) return "Good Afternoon";
+    return "Good Evening";
+  };
+
   interface RootState {
     vendor: {
       vendor: {
@@ -85,10 +92,11 @@ const VendorHeader: React.FC = () => {
       }`}
     >
       <h1 className="text-xl font-semibold">
-        Good Morning,{" "}
+        {getGreeting()},{" "}
         <span className="text-orange-500">
-          {user?.vendor?.name.charAt(0).toUpperCase() +
-            user?.vendor?.name.slice(1)}
+          {/* {user?.vendor?.storeName?.charAt(0)?.toUpperCase() +
+            user?.vendor?.storeName?.slice(1)} */}
+          {vendors?.storeName}
         </span>
       </h1>
       <div className="flex items-center gap-4">
@@ -205,7 +213,7 @@ const VendorHeader: React.FC = () => {
         </div>
         {!vendors?.avatar ? (
           <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-            {vendors?.userName.charAt(0).toUpperCase()}
+            {vendors?.storeName?.charAt(0)?.toUpperCase()}
           </div>
         ) : (
           <img
