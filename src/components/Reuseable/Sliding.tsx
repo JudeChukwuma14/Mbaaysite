@@ -12,6 +12,7 @@ import "slick-carousel/slick/slick-theme.css";
 import logo from "../../assets/image/MBLogo.png";
 import "react-toastify/dist/ReactToastify.css";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 const Sliding: React.FC = () => {
   const [slides] = useState([
     {
@@ -56,9 +57,11 @@ const Sliding: React.FC = () => {
   return (
     <div className="">
       <motion.div className="hidden lg:block w-[500px] h-screen overflow-hidden fixed top-0 left-0">
-        <div className="absolute z-10 flex w-full left-7 top-7 ">
-          <img src={logo} alt="Logo" className="w-20" />
-        </div>
+        <Link to="/">
+          <div className="absolute z-10 flex w-full left-7 top-7 ">
+            <img src={logo} alt="Logo" className="w-20" />
+          </div>
+        </Link>
         <Slider {...settings} className="w-full h-screen">
           {slides.map((slide, index) => (
             <div key={index} className="relative flex flex-col items-start">

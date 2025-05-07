@@ -56,7 +56,7 @@ const Forgotpassword: React.FC = () => {
         <Sliding />
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
           {/* Logo for small screens */}
           <div className="items-left mt-6 flex-col min-h-[150px]">
@@ -64,7 +64,7 @@ const Forgotpassword: React.FC = () => {
               <img src={logo} width={50} alt="" />
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <form onSubmit={handleSubmit(onSubmit)} className="w-96">
               <div className="mb-4">
                 <input
@@ -87,11 +87,11 @@ const Forgotpassword: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="w-full bg-orange-500 text-white p-3 font-semibold hover:bg-orange-600 transition duration-300 flex items-center justify-center"
+                className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                  <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin"></div>
                 ) : (
                   "Request reset password link"
                 )}

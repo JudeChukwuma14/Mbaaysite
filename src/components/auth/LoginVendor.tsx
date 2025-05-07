@@ -18,14 +18,6 @@ interface FormData {
   password: string;
 }
 
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
-
 const LoginVendor: React.FC = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -37,15 +29,6 @@ const LoginVendor: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
-
-  const isApiError = (error: unknown): error is ApiError => {
-    return (
-      typeof error === "object" &&
-      error !== null &&
-      "response" in error &&
-      typeof (error as ApiError).response === "object"
-    );
-  };
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
@@ -66,24 +49,13 @@ const LoginVendor: React.FC = () => {
           token: response?.data?.token,
         })
       );
+      localStorage.setItem("accountType", "vendor");
       navigate("/app");
-    } catch (error) {
-      if (isApiError(error)) {
-        toast.error(
-          error.response?.data?.message ||
-            "Failed to log in. Please try again.",
-          {
-            position: "top-right",
-            autoClose: 4000,
-          }
-        );
-      } else {
-        const apiError = error as ApiError;
-        toast.error(apiError.response?.data?.message || "Invalid credentials", {
-          position: "top-right",
-          autoClose: 4000,
-        });
-      }
+    } catch (err) {
+      toast.error((err as Error)?.message || String(err), {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }

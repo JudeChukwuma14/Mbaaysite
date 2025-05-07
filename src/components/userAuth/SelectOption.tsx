@@ -10,6 +10,8 @@ const SelectOption: React.FC = () => {
   const bg = {
     backgroundImage: `url(${background})`,
   };
+  const accountType = localStorage.getItem("accountType");
+  console.log("accouuntType", accountType)
   return (
     <div className="w-full h-screen">
       <div className="flex flex-col md:flex-row">
@@ -18,20 +20,22 @@ const SelectOption: React.FC = () => {
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[350px] pb-10"
         >
-           <div className="flex justify-between items-center px-4 my-6">
+           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
+            <Link to="/">
+            <img src={logo} width={50} alt="" />
+            </Link>
             </div>
           </div>
-          <h1 className="md:text-2xl mt-16 font-bold mb-8 text-center">
+          <h1 className="mt-16 mb-8 font-bold text-center md:text-2xl">
             Please select account type to get started
           </h1>
           <div className="space-y-4 md:space-y-7 lg:ml-[200px]">
-            <Link to="/signup">
+            <Link to={accountType  ? "/signin" : "/signup"}>
               <div className="w-full md:w-[636px] bg-orange-500 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start mb-5">
                 <div className="flex flex-col gap-2">
-                  <span className="text-xl md:text-3xl font-bold text-white">
-                    Login as a User
+                  <span className="text-xl font-bold text-white md:text-3xl">
+                  {accountType  ? "Login as a User" : "Sign up as a User"}
                   </span>
                   <p className="text-sm md:text-[16px] md:w-[410px]">
                     Bringing the Soul of Home to Your Doorstep
@@ -46,11 +50,11 @@ const SelectOption: React.FC = () => {
                 </div>
               </div>
             </Link>
-            <Link to={"/login-vendor"}>
+            <Link to= {accountType ? "/login-vendor" : "/signup-vendor"}>
             <div className="w-full md:w-[636px] bg-orange-300 text-white py-4 px-4 md:px-6 rounded-lg flex flex-col md:flex-row md:justify-between items-center md:items-start">
               <div className="flex flex-col gap-2">
-                <span className="text-xl md:text-3xl font-bold text-white">
-                  Login as a Vendor/Seller
+                <span className="text-xl font-bold text-white md:text-3xl">
+                {accountType  ? "Login as a Vendor/Seller" : "Sign up as a Vendor/Seller"}
                 </span>
                 <p className="text-sm md:text-[16px] md:w-[410px]">
                   Reconnect with Your Roots—Shop Artisanal & Cultural Creations
@@ -67,7 +71,7 @@ const SelectOption: React.FC = () => {
             </Link>
           </div>
           <div className="mt-8 lg:ml-[200px]">
-            <a href="/" className="text-orange-500 text-sm md:text-lg">
+            <a href="/" className="text-sm text-orange-500 md:text-lg">
               Click to visit homepage
             </a>
           </div>

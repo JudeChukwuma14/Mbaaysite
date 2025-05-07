@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import {
   FaSearch,
-  FaUser,
   FaShoppingCart,
   FaHeart,
   FaBars,
@@ -29,6 +28,8 @@ const Header: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.user.user);
+  const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  
   const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
@@ -114,28 +115,22 @@ const Header: React.FC = () => {
 
         <nav className="items-center hidden space-x-4 lg:flex lg:space-x-8">
           <Link
-            to="/recently-viewed"
+            to="/"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
             Recently Viewed
           </Link>
           <Link
-            to="/become-vendor"
+            to={vendor ? "/app" : "/signup-vendor"}
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
-            Become a Vendor
+            {vendor ? "Vendor Dashboard" : "Become a Vendor"}
           </Link>
           <Link
-            to="/vendors-auction"
+            to="/auctionview"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
           >
             Auction
-          </Link>
-          <Link
-            to="/app"
-            className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
-          >
-            Vendor dashboard
           </Link>
         </nav>
 
@@ -198,24 +193,6 @@ const Header: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2">
-            {/* User icon or first letter */}
-            <div>
-              {firstLetter ? (
-                <Link to="/dashboard">
-                  <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
-                    {firstLetter}
-                  </div>
-                </Link>
-              ) : (
-                <Link
-                  to="/selectpath"
-                  className="p-2 text-white transition-colors duration-200 rounded-full hover:text-orange-500 "
-                >
-                  <FaUser size={20} />
-                </Link>
-              )}
-            </div>
-
             {/* Wishlist */}
             <Link
               to="/dashboard/wishlist"
@@ -243,6 +220,23 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
+            {/* User icon or first letter */}
+            <div className="ml-5">
+              {firstLetter ? (
+                <Link to="/dashboard">
+                  <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
+                    {firstLetter}
+                  </div>
+                </Link>
+              ) : (
+                <Link
+                  to="/selectpath"
+                  className="px-3 py-2 text-white transition-colors duration-300 border border-orange-600 hover:border-white"
+                >
+                  Get started
+                </Link>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu icon */}
@@ -318,33 +312,26 @@ const Header: React.FC = () => {
         <div className="bg-white shadow-md lg:hidden">
           <nav className="flex flex-col divide-y divide-gray-100">
             <Link
-              to="/recently-viewed"
+              to="/"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
             >
               Recently Viewed
             </Link>
             <Link
-              to="/login-vendor"
+              to={vendor ? "/app" : "/signup-vendor"}
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
-              onClick={toggleMenu}
             >
-              Become a Vendor
+              {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>
             <Link
-              to="/vendors-auction"
+              to="/auctionview"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
             >
               Auction
             </Link>
-            <Link
-              to="/app"
-              className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
-              onClick={toggleMenu}
-            >
-              Vendor dashboard
-            </Link>
+
             <Link
               to="/dashboard/wishlist"
               className="flex items-center gap-2 px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500 md:hidden"

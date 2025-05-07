@@ -476,16 +476,16 @@ export default function EditVendorProfile() {
 
   return (
     <motion.div
-      className="min-h-screen bg-gray-50 p-6"
+      className="min-h-screen p-6 bg-gray-50"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <div className="max-w-5xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
+            <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
               Be Mbaay Verified
               <MdVerified size={20} className="text-blue-500" />
             </div>
@@ -496,7 +496,7 @@ export default function EditVendorProfile() {
           {/* Banner and Profile Section */}
           <motion.div
             variants={itemVariants}
-            className="bg-white rounded-lg shadow-sm overflow-hidden"
+            className="overflow-hidden bg-white rounded-lg shadow-sm"
           >
             <div className="relative h-48 bg-white border border-b-green-100">
               {bannerImage ? (
@@ -524,7 +524,7 @@ export default function EditVendorProfile() {
                 }`}
               >
                 {uploadBusinessLogoMutation.isPending ? (
-                  <div className="w-5 h-5 border-2 border-gray-300 border-t-orange-500 rounded-full animate-spin"></div>
+                  <div className="w-5 h-5 border-2 border-gray-300 rounded-full border-t-orange-500 animate-spin"></div>
                 ) : (
                   <Camera className="w-5 h-5" />
                 )}
@@ -562,7 +562,7 @@ export default function EditVendorProfile() {
                     }`}
                   >
                     {uploadAvatarMutation.isPending ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-orange-500 rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-white rounded-full border-t-orange-500 animate-spin"></div>
                     ) : (
                       <Camera className="w-4 h-4 text-white" />
                     )}
@@ -637,7 +637,7 @@ export default function EditVendorProfile() {
                     <div className="fixed inset-0 z-[9999] pointer-events-none">
                       <motion.div
                         ref={dropdownRef}
-                        className="absolute bg-white rounded-lg shadow-lg py-1 w-48 pointer-events-auto"
+                        className="absolute w-48 py-1 bg-white rounded-lg shadow-lg pointer-events-auto"
                         style={{
                           position: "fixed",
                           zIndex: 9999,
@@ -742,7 +742,7 @@ export default function EditVendorProfile() {
                   <motion.input
                     type={showPassword ? "text" : "password"}
                     value={showPassword ? actualPassword : "••••••••••••"}
-                    className="w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed"
+                    className="w-full p-2 border rounded-lg cursor-not-allowed bg-gray-50"
                     readOnly
                   />
                   <button
@@ -832,12 +832,12 @@ export default function EditVendorProfile() {
                   Bank Name
                 </label>
                 <div className="relative">
-                  <div className="flex items-center gap-2 w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed">
+                  <div className="flex items-center w-full gap-2 p-2 border rounded-lg cursor-not-allowed bg-gray-50">
                     {profile.bankName && bankLogos[profile.bankName] && (
                       <img
                         src={bankLogos[profile.bankName] || "/placeholder.svg"}
                         alt={profile.bankName}
-                        className="w-6 h-6 object-contain"
+                        className="object-contain w-6 h-6"
                       />
                     )}
                     <motion.input
@@ -1119,7 +1119,7 @@ export default function EditVendorProfile() {
                       </div>
 
                       {foundAccountName && (
-                        <div className="p-3 bg-gray-50 rounded-lg">
+                        <div className="p-3 rounded-lg bg-gray-50">
                           <p className="text-sm font-medium">
                             Account Name:{" "}
                             <span className="text-gray-700">

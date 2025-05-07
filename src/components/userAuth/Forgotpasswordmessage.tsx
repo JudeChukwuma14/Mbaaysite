@@ -47,7 +47,7 @@ const Forgotpasswordmessage: React.FC = () => {
         {/* Right Section */}
         <motion.div
           style={bg}
-          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:flex lg:justify-center"
+          className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
           {/* Logo for small screens */}
           <div className="items-left mt-6 flex-col min-h-[150px]">
@@ -55,14 +55,14 @@ const Forgotpasswordmessage: React.FC = () => {
               <img src={logo} width={50} alt="" />
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex items-center justify-center">
             <div className="w-full max-w-md">
-              <h1 className="text-2xl font-bold mb-2">FORGOT PASSWORD</h1>
-              <p className="text-gray-600 mb-6">
+              <h1 className="mb-2 text-2xl font-bold">FORGOT PASSWORD</h1>
+              <p className="mb-6 text-gray-600">
                 You will receive an email with a link to reset your password.
                 Please check your inbox.
               </p>
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <button
                   onClick={handleResendEmail}
                   className="text-orange-500 hover:underline"
@@ -71,7 +71,7 @@ const Forgotpasswordmessage: React.FC = () => {
                   {isLoading ? "Resending..." : "Resend email link"}
                 </button>
               </div>
-              <div className="text-left mt-4">
+              <div className="mt-4 text-left">
                 <a
                   href="/forgot-password"
                   className="text-black hover:underline"

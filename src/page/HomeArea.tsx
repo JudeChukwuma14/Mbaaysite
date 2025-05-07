@@ -39,6 +39,7 @@ import Furniture from "@/assets/image/Furniture.jpg";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
+import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 
 interface Product {
   _id: string;
@@ -68,7 +69,7 @@ const HomeArea: React.FC = () => {
     { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
     { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
     { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
-    { imageSrc: Furniture, title: "Furniture", link: "/furniture" },
+    { imageSrc: Furniture, title: "Home Décor", link: "/homedecor" },
     {
       imageSrc: wellness,
       title: "Beauty and wellness",
@@ -129,7 +130,22 @@ const HomeArea: React.FC = () => {
   }, []);
 
   if (loading) return <Spinner />;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
+        <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
+        <p className="max-w-md mb-6 text-gray-500">{error}</p>
+        <Link
+          to="/shop"
+          className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+        >
+          <FaShoppingCart />
+          Continue Shopping
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">
@@ -149,7 +165,7 @@ const HomeArea: React.FC = () => {
             Browse By Category
           </h2>
           <Link
-            to="/categories"
+            to="/"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />
@@ -167,6 +183,134 @@ const HomeArea: React.FC = () => {
         </div>
       </section>
 
+      {/* Explore Products */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Our Products</span>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
+            Explore Our Products
+          </h2>
+          <Link
+            to="/random-product"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {ExploreData.map((item, index) => (
+            <ExploreCard key={index} {...item} />
+          ))}
+        </div>
+
+        {/* <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {products
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 20)
+            .map((product) => (
+              <NewArrival
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
+            ))}
+        </div> */}
+        <div className="flex justify-center">
+          <Link
+            to="/random-product"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+          >
+            View All Products
+          </Link>
+        </div>
+      </section>
+
+      {/* Best Selling Products */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">This Month</span>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
+            Best Selling Products
+          </h2>
+          <Link
+            to="/random-product"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+          >
+            View All
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {ProductData.map((item) => (
+            <FirstCartCard key={item.id} product={item} />
+          ))}
+        </div>
+      </section>
+
+      {/* Promotional Banner */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="overflow-hidden bg-white shadow-sm rounded-xl">
+          <NewCard />
+        </div>
+      </section>
+
+      {/* Latest Vendors */}
+      <section className="container px-4 mx-auto mb-16 md:px-8">
+        <div className="flex items-center mb-3">
+          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
+          <span className="font-medium text-orange-500">Featured Sellers</span>
+        </div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
+            Latest Vendors
+          </h2>
+          <Link
+            to="/"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {getVender.slice(0, 5).map((profile, index) => {
+            // Verify the store name is correct
+            console.log(`Vendor ${index}:`, profile.storeName);
+
+            const avatarUrl = profile.avatar
+              ? profile.avatar
+              : createInitialAvatar(profile.storeName || "V"); // Fallback to "V" if no name
+
+            // Verify the generated avatar URL
+            console.log(`Avatar ${index}:`, avatarUrl);
+
+            return (
+              <VendorCard
+                key={index}
+                name={profile.storeName}
+                location={profile.country}
+                profession={profile.city}
+                avatar={avatarUrl}
+                backgroundImage={
+                  profile?.businessLogo ||
+                  "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+                }
+              />
+            );
+          })}
+        </div>
+      </section>
       {/* New Arrivals Section */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
@@ -205,116 +349,7 @@ const HomeArea: React.FC = () => {
             ))}
         </div>
       </section>
-
-      {/* Best Selling Products */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
-        <div className="flex items-center mb-3">
-          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">This Month</span>
-        </div>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            Best Selling Products
-          </h2>
-          <Link
-            to="/best-selling"
-            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {ProductData.map((item) => (
-            <FirstCartCard key={item.id} product={item} />
-          ))}
-        </div>
-      </section>
-
-      {/* Promotional Banner */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
-        <div className="overflow-hidden bg-white shadow-sm rounded-xl">
-          <NewCard />
-        </div>
-      </section>
-
-      {/* Latest Vendors */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
-        <div className="flex items-center mb-3">
-          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">Featured Sellers</span>
-        </div>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            Latest Vendors
-          </h2>
-          <Link
-            to="/vendors"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
-          >
-            View All <ChevronRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {getVender.slice(0, 5).map((profile, index) => {
-            // Verify the store name is correct
-            console.log(`Vendor ${index}:`, profile.storeName);
-
-            const avatarUrl = profile.avatar
-              ? profile.avatar
-              : createInitialAvatar(profile.storeName || "V"); // Fallback to "V" if no name
-
-            // Verify the generated avatar URL
-            console.log(`Avatar ${index}:`, avatarUrl);
-
-            return (
-              <VendorCard
-                key={index}
-                name={profile.storeName}
-                location={profile.country}
-                profession={profile.city}
-                avatar={avatarUrl}
-                backgroundImage={
-                  profile?.businessLogo ||
-                  "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
-                }
-              />
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Explore Products */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
-        <div className="flex items-center mb-3">
-          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">Our Products</span>
-        </div>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            Explore Our Products
-          </h2>
-          <Link
-            to="/products"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
-          >
-            View All <ChevronRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {ExploreData.map((item, index) => (
-            <ExploreCard key={index} {...item} />
-          ))}
-        </div>
-        <div className="flex justify-center">
-          <Link
-            to="/products"
-            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All Products
-          </Link>
-        </div>
-      </section>
-
+      {/* ............................... */}
       {/* Second Promotional Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">
@@ -336,7 +371,7 @@ const HomeArea: React.FC = () => {
         </div>
         <div className="flex justify-center">
           <Link
-            to="/flash-sale"
+            to="/random-product"
             className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All Flash Sales

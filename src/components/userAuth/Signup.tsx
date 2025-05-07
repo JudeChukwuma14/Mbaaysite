@@ -20,12 +20,10 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const {
     register,
     handleSubmit,
@@ -37,14 +35,14 @@ const Signup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await createUser(data);
-      console.log(response);
       toast.success(response.message, {
         position: "top-right",
         autoClose: 3000,
       });
+      localStorage.setItem("accountType", "user");
       navigate(`/verify-otp/${response.data._id}`);
-    } catch (error: unknown) {
-      toast.error((error as Error)?.message || "Failed to create account", {
+    } catch (err) {
+      toast.error((err as Error)?.message || String(err), {
         position: "top-right",
         autoClose: 4000,
       });
@@ -73,9 +71,9 @@ const Signup: React.FC = () => {
             </div>
             <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Already have an Account? </span>
-              <a href="#" className="text-blue-500 hover:underline">
+              <Link to="/signin" className="text-blue-500 hover:underline">
                 Sign in
-              </a>
+              </Link>
             </div>
           </div>
           <div className="flex items-center justify-center px-4">
