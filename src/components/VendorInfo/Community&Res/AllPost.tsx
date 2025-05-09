@@ -577,9 +577,9 @@ export default function SocialFeed() {
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
-                {!vendors?.userName ? (
+                {!vendors?.avatar ? (
                   <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                    {vendors?.userName.charAt(0).toUpperCase()}
+                    {vendors?.storeName?.charAt(0)?.toUpperCase()}
                   </div>
                 ) : (
                   <img
@@ -589,7 +589,7 @@ export default function SocialFeed() {
                   />
                 )}
                 <div>
-                  <h2 className="font-semibold">{vendors?.userName}</h2>
+                  <h2 className="font-semibold">{vendors?.storeName}</h2>
                 </div>
               </div>
             </div>
