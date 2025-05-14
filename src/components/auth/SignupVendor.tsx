@@ -345,6 +345,9 @@ const Registration: React.FC = () => {
                         <option value="Traditional and Religious Items">
                           Traditional and Religious Items
                         </option>
+                         <option value="Local Food and Drink Products">
+                          Local Food and Drink Products
+                        </option>
                       </select>
                     )}
                   />

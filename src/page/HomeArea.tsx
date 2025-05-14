@@ -121,7 +121,9 @@ const HomeArea: React.FC = () => {
     const getVendor = async () => {
       try {
         const vendor = await getAllVendor();
+        console.log(vendor)
         setGetVendor(vendor.vendors);
+        
       } catch (error) {
         console.log(error);
       }
@@ -277,7 +279,7 @@ const HomeArea: React.FC = () => {
             Latest Vendors
           </h2>
           <Link
-            to="/"
+            to="/more-vendor"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />

@@ -99,7 +99,8 @@ const userIndex = lazy(() => import("@/components/profileMangement/Index"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
-
+const AllVendor = lazy(()=>import("@/components/Reuseable/AllVendor"))
+const VendorProfileProduct = lazy(()=>import("@/components/Reuseable/VendorProfileProduct"))
 // All Category Links
 const Fashion = lazy(() => import("@/components/AllCategory/Fashion/Fashion"));
 const Furniture = lazy(
@@ -580,6 +581,8 @@ const routesConfig: RouteObject[] = [
       { path: "/product/:id", element: withSuspense(ProductInfo) },
       { path: "/auctionview", element: withSuspense(AuctionView) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
+      {path:"/more-vendor", element:withSuspense(AllVendor)},
+      {path:"/veiws-profile/:id", element:withSuspense(VendorProfileProduct)},
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
