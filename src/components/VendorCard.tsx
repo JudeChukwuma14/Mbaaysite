@@ -1,6 +1,6 @@
 import React from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+
 
 interface VendorCardProps {
   backgroundImage: string;
