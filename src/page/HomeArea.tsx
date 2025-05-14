@@ -51,6 +51,7 @@ interface Product {
 }
 
 interface VendorProfile {
+  _id: string;
   storeName: string;
   country: string;
   city: string;
@@ -298,7 +299,9 @@ const HomeArea: React.FC = () => {
             console.log(`Avatar ${index}:`, avatarUrl);
 
             return (
-              <VendorCard
+             <Link
+                to={`/veiws-profile/${profile._id}`}>
+                   <VendorCard
                 key={index}
                 name={profile.storeName}
                 location={profile.country}
@@ -309,6 +312,7 @@ const HomeArea: React.FC = () => {
                   "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
                 }
               />
+                </Link>
             );
           })}
         </div>

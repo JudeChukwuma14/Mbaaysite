@@ -1,14 +1,14 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import NewArrival from "../Cards/NewArrival";
 import { getAllVendor } from "@/utils/vendorApi";
 import Spinner from "../Common/Spinner";
-import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
+import { FaRegSadTear, FaShoppingCart, FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
 // Default banner image
 const defaultBanner =
-  "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/nnn.jpg-QWA6eh1XxoPvPC0bNonSUIuKqnTuLn.jpeg";
+  "https://www.mbaay.com/assets/MBLogo-spwX6zWd.png";
 
 interface Product {
   _id: string;
@@ -30,23 +30,26 @@ interface Vendor {
   [key: string]: any;
 }
 
+const PRODUCTS_PER_PAGE = 20;
+
 const VendorProfileProduct: React.FC = () => {
-  const { vendorId } = useParams<{ vendorId: string }>(); // Get vendorId from URL
+  const { id } = useParams<{ id: string }>(); // Get vendorId from URL
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     const fetchVendorData = async () => {
-      if (!vendorId) {
-        setError("No vendor ID provided");
+      if (!id) {
+        setError("Invalid vendor URL. Please select a vendor.");
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        console.log("Fetching vendors for vendorId:", vendorId); // Debug log
+        console.log("Fetching vendors for vendorId:", id); // Debug log
         const response = await getAllVendor();
         console.log("API response:", response); // Debug log
 
@@ -56,10 +59,10 @@ const VendorProfileProduct: React.FC = () => {
 
         // Find the vendor by vendorId
         const selectedVendor = response.vendors.find(
-          (v: Vendor) => v._id === vendorId
+          (v: Vendor) => v._id === id
         );
         if (!selectedVendor) {
-          throw new Error(`Vendor with ID ${vendorId} not found`);
+          throw new Error(`Vendor with ID ${id} not found`);
         }
 
         console.log("Selected vendor:", selectedVendor); // Debug log
@@ -74,15 +77,39 @@ const VendorProfileProduct: React.FC = () => {
     };
 
     fetchVendorData();
-  }, [vendorId]);
+  }, [id]);
 
+  // Pagination logic
+  const totalProducts = vendor?.products.length || 0;
+  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+  const currentProducts = vendor?.products.slice(
+    startIndex,
+    startIndex + PRODUCTS_PER_PAGE
+  ) || [];
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  if (!id) {
+    return <Navigate to="/shop" replace />;
+  }
   if (loading) {
     return <Spinner />;
   }
 
   if (error || !vendor) {
     return (
-      <div className="min-h-screen text-white bg-black">
+      <div className="min-h-screen">
         <div className="container px-4 py-12 mx-auto text-center">
           <FaRegSadTear className="mx-auto mb-4 text-5xl text-gray-300" />
           <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
@@ -90,7 +117,7 @@ const VendorProfileProduct: React.FC = () => {
             {error || "Vendor not found"}
           </p>
           <Link
-            to="/shop"
+            to="/more-vendor"
             className="flex items-center gap-2 px-6 py-2 mx-auto font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 w-fit"
           >
             <FaShoppingCart />
@@ -102,7 +129,7 @@ const VendorProfileProduct: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen text-white bg-black">
+    <div className="min-h-screen">
       {/* Hero Banner */}
       <div className="relative w-full h-48 bg-white sm:h-56 md:h-64 lg:h-80">
         {/* Banner Image */}
@@ -158,8 +185,8 @@ const VendorProfileProduct: React.FC = () => {
       {/* Product Grid */}
       <div className="container px-4 py-12 mx-auto">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {vendor.products.length > 0 ? (
-            vendor.products.map((product) => (
+          {currentProducts.length > 0 ? (
+            currentProducts.map((product) => (
               <NewArrival
                 key={product._id}
                 product={{
@@ -177,7 +204,7 @@ const VendorProfileProduct: React.FC = () => {
                 This vendor has no products available at the moment.
               </p>
               <Link
-                to="/shop"
+                to="/more-vendor"
                 className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
               >
                 <FaShoppingCart />
@@ -186,6 +213,39 @@ const VendorProfileProduct: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {totalProducts > PRODUCTS_PER_PAGE && (
+          <div className="flex items-center justify-center gap-4 mt-8">
+            <button
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                currentPage === 1
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-orange-500 hover:bg-orange-600"
+              }`}
+            >
+              <FaArrowLeft />
+              Previous
+            </button>
+            <span className="text-gray-300">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                currentPage === totalPages
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-orange-500 hover:bg-orange-600"
+              }`}
+            >
+              Next
+              <FaArrowRight />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
