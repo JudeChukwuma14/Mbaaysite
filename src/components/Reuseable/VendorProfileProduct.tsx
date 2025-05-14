@@ -1,9 +1,10 @@
 import type React from "react";
 import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import NewArrival from "../Cards/NewArrival";
-import { get_single_vendor } from "@/utils/vendorApi";
-import { getVendorProducts } from "@/utils/VendorProductApi";
-
+import { getAllVendor } from "@/utils/vendorApi";
+import Spinner from "../Common/Spinner";
+import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 
 // Default banner image
 const defaultBanner =
@@ -23,67 +24,78 @@ interface Vendor {
   storeName: string;
   businessLogo?: string;
   avatar?: string;
-  products: string[]; // Array of product IDs
-  followers: string[]; // Array of follower IDs
-  following: string[]; // Array of following IDs
+  products: Product[];
+  followers: string[];
+  following: string[];
   [key: string]: any;
 }
 
 const VendorProfileProduct: React.FC = () => {
+  const { vendorId } = useParams<{ vendorId: string }>(); // Get vendorId from URL
   const [vendor, setVendor] = useState<Vendor | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Assume token is available (e.g., from auth context or localStorage)
-  const token = localStorage.getItem("token"); // Adjust based on your auth setup
-
   useEffect(() => {
     const fetchVendorData = async () => {
-      if (!token) {
-        setError("Please log in to view your profile");
+      if (!vendorId) {
+        setError("No vendor ID provided");
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
+        console.log("Fetching vendors for vendorId:", vendorId); // Debug log
+        const response = await getAllVendor();
+        console.log("API response:", response); // Debug log
 
-        // Fetch vendor details
-        const vendorData = await get_single_vendor(token);
-        if (!vendorData) throw new Error("Failed to fetch vendor");
-        setVendor(vendorData);
+        if (!response || !Array.isArray(response.vendors)) {
+          throw new Error("Invalid response format: vendors array not found");
+        }
 
-        // Fetch products
-        const productsData = await getVendorProducts(token);
-        if (!productsData) throw new Error("Failed to fetch products");
-
-        // Filter products by vendor's _id
-        const vendorProducts = productsData.filter(
-          (product: Product) =>
-            product.poster === vendorData._id ||
-            vendorData.products.includes(product._id)
+        // Find the vendor by vendorId
+        const selectedVendor = response.vendors.find(
+          (v: Vendor) => v._id === vendorId
         );
-        setProducts(vendorProducts);
+        if (!selectedVendor) {
+          throw new Error(`Vendor with ID ${vendorId} not found`);
+        }
+
+        console.log("Selected vendor:", selectedVendor); // Debug log
+        setVendor(selectedVendor);
       } catch (err) {
-        setError((err as Error)?.message || String(err));
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("Error fetching vendor data:", errorMessage); // Debug log
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
     };
 
     fetchVendorData();
-  }, [token]);
+  }, [vendorId]);
 
   if (loading) {
-    return <div className="min-h-screen text-white bg-black">Loading...</div>;
+    return <Spinner />;
   }
 
   if (error || !vendor) {
     return (
       <div className="min-h-screen text-white bg-black">
-        <div className="container px-4 py-12 mx-auto text-center text-red-400">
-          {error || "Vendor not found"}
+        <div className="container px-4 py-12 mx-auto text-center">
+          <FaRegSadTear className="mx-auto mb-4 text-5xl text-gray-300" />
+          <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
+          <p className="max-w-md mx-auto mb-6 text-gray-500">
+            {error || "Vendor not found"}
+          </p>
+          <Link
+            to="/shop"
+            className="flex items-center gap-2 px-6 py-2 mx-auto font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 w-fit"
+          >
+            <FaShoppingCart />
+            Continue Shopping
+          </Link>
         </div>
       </div>
     );
@@ -146,8 +158,8 @@ const VendorProfileProduct: React.FC = () => {
       {/* Product Grid */}
       <div className="container px-4 py-12 mx-auto">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products.length > 0 ? (
-            products.map((product) => (
+          {vendor.products.length > 0 ? (
+            vendor.products.map((product) => (
               <NewArrival
                 key={product._id}
                 product={{
@@ -158,8 +170,19 @@ const VendorProfileProduct: React.FC = () => {
               />
             ))
           ) : (
-            <div className="py-12 text-center text-gray-400 col-span-full">
-              No artworks available at the moment.
+            <div className="flex flex-col items-center justify-center py-16 text-center col-span-full">
+              <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
+              <h2 className="mb-2 text-2xl font-semibold text-gray-400">No Products</h2>
+              <p className="max-w-md mb-6 text-gray-500">
+                This vendor has no products available at the moment.
+              </p>
+              <Link
+                to="/shop"
+                className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+              >
+                <FaShoppingCart />
+                Continue Shopping
+              </Link>
             </div>
           )}
         </div>
