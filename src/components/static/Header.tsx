@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -29,8 +27,16 @@ const Header: React.FC = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  
-  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
+
+  // Fallback to 'V' if vendor exists but storeName is unavailable
+  const firstLetter = vendor?.storeName
+    ? vendor.storeName.charAt(0).toUpperCase()
+    : vendor?.id
+      ? "V"
+      : user?.name
+        ? user.name.charAt(0).toUpperCase()
+        : "";
+  const dashboardLink = vendor ? "/app" : "/dashboard";
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
@@ -84,8 +90,15 @@ const Header: React.FC = () => {
     <header className="sticky top-0 z-50 w-full bg-white shadow-md">
       {/* Top bar */}
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden font-medium md:block">
-          Welcome to Mbaay Global Marketplaces
+        <p className="font-medium">
+          Welcome to Mbaay{" "}
+          {vendor?.storeName
+            ? `, ${vendor.storeName}`
+            : vendor?.id
+              ? ", Vendor"
+              : user?.name
+                ? `, ${user.name}`
+                : "Global Marketplaces"}!
         </p>
         <div className="flex gap-6">
           <Link
@@ -196,7 +209,7 @@ const Header: React.FC = () => {
             {/* Wishlist */}
             <Link
               to="/dashboard/wishlist"
-              className="relative hidden p-2 transition-colors duration-200 rounded-full md:block "
+              className="relative hidden p-2 transition-colors duration-200 rounded-full md:block"
               aria-label="Wishlist"
             >
               <FaHeart size={20} className="text-white" />
@@ -210,7 +223,7 @@ const Header: React.FC = () => {
             {/* Cart */}
             <Link
               to="/cart"
-              className="relative p-2 transition-colors duration-200 rounded-full "
+              className="relative p-2 transition-colors duration-200 rounded-full"
               aria-label="Shopping Cart"
             >
               <FaShoppingCart size={20} className="text-white" />
@@ -220,10 +233,14 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-            {/* User icon or first letter */}
+
+            {/* User/Vendor icon */}
             <div className="ml-5">
               {firstLetter ? (
-                <Link to="/dashboard">
+                <Link
+                  to={dashboardLink}
+                  aria-label={vendor ? "Vendor Dashboard" : "User Dashboard"}
+                >
                   <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
                     {firstLetter}
                   </div>
@@ -321,6 +338,7 @@ const Header: React.FC = () => {
             <Link
               to={vendor ? "/app" : "/signup-vendor"}
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
+              onClick={toggleMenu}
             >
               {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>
@@ -331,7 +349,6 @@ const Header: React.FC = () => {
             >
               Auction
             </Link>
-
             <Link
               to="/dashboard/wishlist"
               className="flex items-center gap-2 px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500 md:hidden"

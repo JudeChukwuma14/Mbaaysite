@@ -2,11 +2,10 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define the User type
 interface User {
-  id: string; // Or number, depending on your user ID type
+  id: string; 
   name: string;
   email: string;
   phoneNumber: string;
-  // Add other user properties as needed
 }
 
 // Define the state type

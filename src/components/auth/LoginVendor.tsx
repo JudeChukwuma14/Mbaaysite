@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Sliding from "../Reuseable/Sliding";
-import { LoginVendorAPI } from "@/utils/vendorApi";
+import { LoginVendorAPI, get_single_vendor } from "@/utils/vendorApi";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { setVendor } from "@/redux/slices/vendorSlice";
@@ -32,23 +32,23 @@ const LoginVendor: React.FC = () => {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
-    console.log(data);
     try {
-      const response = await LoginVendorAPI({
+      const loginResponse = await LoginVendorAPI({
         emailOrPhone: data.emailOrPhone,
         password: data.password,
       });
-      console.log("Vender logs", response);
-      toast.success(response.message, {
+      const { token } = loginResponse.data;
+      const vendorProfile = await get_single_vendor(token);
+      dispatch(
+        setVendor({
+          vendor: vendorProfile,
+          token,
+        })
+      );
+      toast.success(loginResponse.message, {
         position: "top-right",
         autoClose: 3000,
       });
-      dispatch(
-        setVendor({
-          vendor: response?.data?.user,
-          token: response?.data?.token,
-        })
-      );
       localStorage.setItem("accountType", "vendor");
       navigate("/app");
     } catch (err) {
