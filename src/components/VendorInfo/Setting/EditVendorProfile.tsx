@@ -1,17 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Camera,
-  ChevronDown,
-  Eye,
-  EyeOff,
-  Edit,
-  X,
-  Search,
-} from "lucide-react";
+import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
 import type React from "react";
 import ReturnPolicyUploader from "./ReturnPolicyUploader";
-import { toast } from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { get_single_vendor, upload_return_policy } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
@@ -50,11 +43,19 @@ const PROFILE_IMAGE_KEY = "vendor_profile_image";
 const BANNER_IMAGE_KEY = "vendor_banner_image";
 const LOGO_IMAGE_KEY = "vendor_logo_image";
 
+// Maximum file sizes in bytes
+const MAX_BANNER_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_PROFILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+// Helper function to format bytes to MB
+const formatFileSize = (bytes: number) => {
+  return (bytes / (1024 * 1024)).toFixed(2) + "MB";
+};
+
 export default function EditVendorProfile() {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [bannerImage, setBannerImage] = useState<string | null>(null);
-  // const [logoImage, setLogoImage] = useState<string | null>(null);
   const [returnPolicy, setReturnPolicy] = useState<File | null>(null);
   const [returnPolicyName, setReturnPolicyName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -170,6 +171,32 @@ export default function EditVendorProfile() {
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Check file size based on type
+      if (type === "banner" && file.size > MAX_BANNER_SIZE) {
+        toast.error(
+          `Banner image is too large. Maximum size is ${formatFileSize(
+            MAX_BANNER_SIZE
+          )}`,
+          {
+            position: "top-right",
+            autoClose: 5000,
+          }
+        );
+        return;
+      }
+
+      if (type === "profile" && file.size > MAX_PROFILE_SIZE) {
+        toast.error(
+          `Profile image is too large. Maximum size is ${formatFileSize(
+            MAX_PROFILE_SIZE
+          )}`,
+          {
+            position: "top-right",
+            autoClose: 5000,
+          }
+        );
+        return;
+      }
       const reader = new FileReader();
       reader.onloadend = () => {
         const imageData = reader.result as string;
@@ -309,7 +336,10 @@ export default function EditVendorProfile() {
       // If there are validation errors, stop submission
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
-        toast.error("Please fix the errors in the form");
+        toast.error("Please fix the errors in the form", {
+          position: "top-right",
+          autoClose: 4000,
+        });
         return;
       }
 
@@ -350,7 +380,10 @@ export default function EditVendorProfile() {
   // Handle account number search
   const searchAccount = async () => {
     if (!accountNumber.trim()) {
-      toast.error("Please enter an account number");
+      toast.error("Please enter an account number", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
@@ -364,10 +397,16 @@ export default function EditVendorProfile() {
       setFoundAccountName("JOHN DOE");
       setFoundBankName("FIRST BANK");
 
-      toast.success("Account details found");
+      toast.success("Account details found", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error("Error searching account:", error);
-      toast.error("Failed to find account details");
+      toast.error("Failed to find account details", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsSearchingAccount(false);
     }
@@ -376,12 +415,18 @@ export default function EditVendorProfile() {
   // Handle password change
   const handlePasswordChange = () => {
     if (!newPassword) {
-      toast.error("Please enter a new password");
+      toast.error("Please enter a new password", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
+      toast.error("Passwords do not match", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
@@ -389,44 +434,65 @@ export default function EditVendorProfile() {
     setActualPassword(newPassword);
 
     // Simulate password change
-    toast.success("Password changed successfully");
+    toast.success("Password changed successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
     closePopup();
   };
 
   // Handle location change
   const handleLocationChange = () => {
     if (!country || !state || !address) {
-      toast.error("Please fill all location fields");
+      toast.error("Please fill all location fields", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
     // Simulate location change
-    toast.success("Location updated successfully");
+    toast.success("Location updated successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
     closePopup();
   };
 
   // Handle email change
   const handleEmailChange = () => {
     if (!newEmail) {
-      toast.error("Please enter a new email address");
+      toast.error("Please enter a new email address", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
     if (!/\S+@\S+\.\S+/.test(newEmail)) {
-      toast.error("Please enter a valid email address");
+      toast.error("Please enter a valid email address", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
     // Simulate email change
     setProfile({ ...profile, email: newEmail });
-    toast.success("Email updated successfully");
+    toast.success("Email updated successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
     closePopup();
   };
 
   // Handle store details change
   const handleStoreChange = () => {
     if (!storeName || !storeNumber) {
-      toast.error("Please fill all store details");
+      toast.error("Please fill all store details", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
@@ -436,14 +502,20 @@ export default function EditVendorProfile() {
       companyName: storeName,
       phone: storeNumber,
     });
-    toast.success("Store details updated successfully");
+    toast.success("Store details updated successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
     closePopup();
   };
 
   // Handle account details change
   const handleAccountChange = () => {
     if (!accountNumber || !foundAccountName || !foundBankName) {
-      toast.error("Please search for a valid account");
+      toast.error("Please search for a valid account", {
+        position: "top-right",
+        autoClose: 4000,
+      });
       return;
     }
 
@@ -455,7 +527,10 @@ export default function EditVendorProfile() {
       bankName: foundBankName,
     });
 
-    toast.success("Account details updated successfully");
+    toast.success("Account details updated successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
     closePopup();
   };
 
@@ -470,7 +545,10 @@ export default function EditVendorProfile() {
       setBannerImage(null);
       // setLogoImage(null);0
 
-      toast.success("All images have been cleared");
+      toast.success("All images have been cleared", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     }
   };
 
@@ -481,6 +559,7 @@ export default function EditVendorProfile() {
       initial="hidden"
       animate="visible"
     >
+      <ToastContainer />
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
@@ -503,7 +582,7 @@ export default function EditVendorProfile() {
                 <img
                   src={bannerImage || "/placeholder.svg"}
                   alt="Banner"
-                  className="object-contain w-full h-full"
+                  className="object-cover w-full h-full"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-r from-orange-500 to-black" />
@@ -750,11 +829,11 @@ export default function EditVendorProfile() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute text-gray-500 -translate-y-1/2 right-3 top-1/2 hover:text-gray-700"
                   >
-                    {showPassword ? (
+                    {/* {showPassword ? (
                       <EyeOff className="w-5 h-5" />
                     ) : (
                       <Eye className="w-5 h-5" />
-                    )}
+                    )} */}
                   </button>
                 </div>
                 <button
@@ -775,10 +854,10 @@ export default function EditVendorProfile() {
           >
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
+                {/* <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
                   💄
-                </div>
-                <span>Beauty and Skin Care</span>
+                </div> */}
+                <span>{vendors?.craftCategories?.[0]}</span>
               </div>
               <ChevronDown className="w-5 h-5 text-gray-500" />
             </div>
@@ -872,51 +951,6 @@ export default function EditVendorProfile() {
             returnPolicyText={returnPolicyText}
             setReturnPolicyText={setReturnPolicyText}
           />
-
-          {/* Logo & Branding */}
-          {/* <motion.div
-            variants={itemVariants}
-            className="p-6 bg-white rounded-lg shadow-sm"
-          >
-            <h2 className="mb-4 font-semibold">Logo & Branding</h2>
-            <div className="p-8 text-center border-2 border-orange-500 border-dashed rounded-lg">
-              {logoImage ? (
-                <img
-                  src={logoImage || "/placeholder.svg"}
-                  alt="Logo"
-                  className="max-w-[200px] mx-auto"
-                />
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-center w-20 h-20 mx-auto bg-gray-100 rounded-lg">
-                    <Upload className="w-8 h-8 text-gray-400" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Upload your logo</p>
-                    <input
-                      type="file"
-                      id="logo-upload"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(e, "logo")}
-                    />
-                    <label
-                      htmlFor="logo-upload"
-                      className={`inline-block px-4 py-2 mt-2 text-white bg-orange-500 rounded-lg cursor-pointer hover:bg-orange-600 ${
-                        uploadAvatarMutation.isPending
-                          ? "opacity-50 cursor-not-allowed"
-                          : ""
-                      }`}
-                    >
-                      {uploadAvatarMutation.isPending
-                        ? "Uploading..."
-                        : "Upload Now"}
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div> */}
 
           {/* Action Buttons */}
           <motion.div
