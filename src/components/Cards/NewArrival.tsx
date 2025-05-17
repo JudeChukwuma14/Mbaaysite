@@ -13,6 +13,7 @@ import { convertPrice } from "@/utils/currencyCoverter";
 
 interface Product {
   _id: string;
+  id: string;
   name: string;
   price: number;
   images: string[];

@@ -353,7 +353,7 @@ const HomeArea: React.FC = () => {
                 }}
               />
             ))}
-        </div>
+        </div> 
       </section>
       {/* ............................... */}
       {/* Second Promotional Banner */}
