@@ -316,6 +316,7 @@ const Registration: React.FC = () => {
                         className={selectClass}
                       >
                         <option value="">select craft categories</option>
+                        <option value="Art and Sculpture">Art and Sculpture</option>
                         <option value="Beauty and Wellness">
                           Beauty and Wellness
                         </option>
@@ -345,7 +346,7 @@ const Registration: React.FC = () => {
                         <option value="Traditional and Religious Items">
                           Traditional and Religious Items
                         </option>
-                         <option value="Local Food and Drink Products">
+                        <option value="Local Food and Drink Products">
                           Local Food and Drink Products
                         </option>
                       </select>

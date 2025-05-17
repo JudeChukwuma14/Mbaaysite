@@ -86,7 +86,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
         <div className="p-4">
           <h3 className="mb-1 text-base font-medium text-gray-800 line-clamp-1">{product.name}</h3>
           <div className="flex items-center">
-            <span className="text-lg font-semibold text-gray-900">
+            <span className="text-sm font-semibold text-gray-900">
               {convertedPrice.toLocaleString(language, {
                 style: "currency",
                 currency: currency,

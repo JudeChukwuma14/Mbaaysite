@@ -134,7 +134,7 @@ const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-md">
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="font-medium">
+        <p className="font-medium ">
           {t("welcome")}{" "}
           {vendor?.storeName
             ? `, ${vendor.storeName}`
@@ -147,7 +147,7 @@ const Header: React.FC = () => {
         <div className="flex items-center gap-6">
           <Link
             to="/random-product"
-            className="font-medium transition-colors duration-200 hover:underline"
+            className="hidden font-medium transition-colors duration-200 md:block hover:underline"
           >
             {t("shop_now")}
           </Link>
@@ -322,7 +322,7 @@ const Header: React.FC = () => {
               )}
             </Link>
 
-            <div className="ml-5">
+            <div className="ml-2">
               {firstLetter ? (
                 <Link
                   to={dashboardLink}
@@ -335,7 +335,7 @@ const Header: React.FC = () => {
               ) : (
                 <Link
                   to="/selectpath"
-                  className="px-3 py-2 text-white transition-colors duration-300 border border-orange-600 hover:border-white"
+                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bordering-white hover:bg-orange-600"
                 >
                   Get started
                 </Link>

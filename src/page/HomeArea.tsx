@@ -209,25 +209,6 @@ const HomeArea: React.FC = () => {
           ))}
         </div>
 
-        {/* <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-            )
-            .slice(0, 20)
-            .map((product) => (
-              <NewArrival
-                key={product._id}
-                product={{
-                  ...product,
-                  id: product._id,
-                  poster: product.images[0] || "",
-                }}
-              />
-            ))}
-        </div> */}
         <div className="flex justify-center">
           <Link
             to="/random-product"
@@ -281,9 +262,9 @@ const HomeArea: React.FC = () => {
           </h2>
           <Link
             to="/more-vendor"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
-            View All <ChevronRight size={16} />
+            View All
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
