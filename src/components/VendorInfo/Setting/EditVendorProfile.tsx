@@ -854,9 +854,6 @@ export default function EditVendorProfile() {
           >
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
-                {/* <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded">
-                  💄
-                </div> */}
                 <span>{vendors?.craftCategories?.[0]}</span>
               </div>
               <ChevronDown className="w-5 h-5 text-gray-500" />
