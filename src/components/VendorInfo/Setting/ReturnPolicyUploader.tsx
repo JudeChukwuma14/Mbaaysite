@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useRef, useCallback, type ChangeEvent, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -9,6 +7,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { useQuery } from "@tanstack/react-query";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface ReturnPolicyUploaderProps {
   returnPolicy: File | null;
@@ -140,8 +140,12 @@ export default function ReturnPolicyUploader({
           reader.readAsDataURL(file); // Read binary files as data URL
         }
       } else {
-        alert(
-          "Please upload a .txt, .pdf, or .doc/.docx file for return policy"
+        toast.error(
+          "Please upload a .txt, .pdf, or .doc/.docx file for return policy",
+          {
+            position: "top-right",
+            autoClose: 4000,
+          }
         );
       }
     }
@@ -195,6 +199,11 @@ export default function ReturnPolicyUploader({
                 }
               }
             }
+            // Show success message
+            toast.success("Return policy uploaded successfully!", {
+              position: "top-right",
+              autoClose: 3000,
+            });
           }
         };
 
@@ -204,8 +213,12 @@ export default function ReturnPolicyUploader({
           reader.readAsDataURL(file);
         }
       } else {
-        alert(
-          "Please upload a .txt, .pdf, or .doc/.docx file for return policy"
+        toast.error(
+          "Please upload a .txt, .pdf, or .doc/.docx file for return policy",
+          {
+            position: "top-right",
+            autoClose: 4000,
+          }
         );
       }
     }
@@ -225,6 +238,11 @@ export default function ReturnPolicyUploader({
     if (returnPolicyRef.current) {
       returnPolicyRef.current.value = ""; // Clear file input
     }
+    // Show info message
+    toast.info("Return policy removed", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   // Render file preview based on type
@@ -236,6 +254,7 @@ export default function ReturnPolicyUploader({
 
     return (
       <div className="flex items-center justify-between bg-gray-100 p-3 rounded mt-2">
+        <ToastContainer />
         <div className="flex items-center gap-2">
           <span className="text-xl">{fileIcon}</span>
           <span className="text-sm truncate">{fileName}</span>

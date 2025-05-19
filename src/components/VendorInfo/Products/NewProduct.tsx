@@ -10,6 +10,8 @@ import DescriptionSection from "./descriptionSection";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
 import ReturnPolicyPopup from "./ReturnPolicyPopup";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import CurrencyInput from "./CurrencyInput";
 
@@ -271,7 +273,10 @@ const NewProduct = () => {
         };
         reader.readAsText(file);
       } else {
-        alert("Please upload a .txt file for description");
+        toast.error("Please upload a .txt file for description", {
+          position: "top-right",
+          autoClose: 4000,
+        });
       }
     }
   };
@@ -325,13 +330,20 @@ const NewProduct = () => {
         productImages: productImages,
       };
       localStorage.setItem("productDraft", JSON.stringify(draftData));
-      alert("Draft saved successfully!");
+      toast.success("Draft saved successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error("Error saving draft:", error);
-      alert(
+      toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to save draft. Please fill all required fields."
+          : "Failed to save draft. Please fill all required fields.",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
       );
     } finally {
       setIsLoading(false);
@@ -360,7 +372,10 @@ const NewProduct = () => {
     setYoutubeEmbedUrl("");
     setUploadedVideoInfo(null);
     setSelectedCategories([defaultCategory, "Jewelry and Gemstones"]);
-    alert("Changes discarded successfully");
+    toast.success("Changes discarded successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   const handleSaveDraft = () => saveDraft();
@@ -432,11 +447,22 @@ const NewProduct = () => {
 
       await uploadVendorProduct(user.token, formData);
       localStorage.removeItem("productDraft");
-      alert("Product added successfully!");
-      resetForm(); // Reset form after successful submission
+      toast.success("Product added successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      resetForm();
     } catch (error) {
       console.error("Error adding product:", error);
-      alert(error instanceof Error ? error.message : "Failed to add product");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to add product. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
+      );
     } finally {
       setIsLoading(false);
     }
@@ -465,6 +491,7 @@ const NewProduct = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <ToastContainer />
       <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6">
         <h1 className="text-2xl font-bold">New Product</h1>
         {selectedCategories.length > 0 && !isUpgraded && (

@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import {
   useRef,
@@ -13,6 +11,8 @@ import { CiVideoOn } from "react-icons/ci";
 import { FaYoutube } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { FiPlay, FiPause } from "react-icons/fi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 interface VideoUploaderProps {
   youtubeUrl: string;
