@@ -276,7 +276,10 @@ export default function VideoUploader({
           }
         }
       } else {
-        alert("Invalid YouTube URL");
+        toast.error("Invalid YouTube URL", {
+          position: "top-right",
+          autoClose: 4000,
+        });
       }
     }
   };
@@ -293,6 +296,7 @@ export default function VideoUploader({
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.4 }}
     >
+      <ToastContainer />
       <div className="flex justify-between items-center space-x-2">
         <h2 className="text-lg font-semibold">Product Video (Optional)</h2>
         <div
