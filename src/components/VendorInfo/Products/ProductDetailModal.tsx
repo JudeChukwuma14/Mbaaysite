@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -18,7 +16,35 @@ import {
   deleteVendorProduct,
 } from "@/utils/VendorProductApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-hot-toast";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+
+const formats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "list",
+  "bullet",
+  "link",
+  "clean",
+];
+
+const modules = {
+  toolbar: [
+    [{ header: [1, 2, false] }],
+    ["bold", "italic", "underline", "strike"],
+    [{ list: "ordered" }, { list: "bullet" }],
+    ["link"],
+    ["clean"],
+  ],
+  clipboard: {
+    matchVisual: false,
+  },
+};
 
 interface Product {
   _id: string;
@@ -187,13 +213,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["one_product", productId] });
       queryClient.invalidateQueries({ queryKey: ["vendor_products"] });
-      toast.success("Product updated successfully");
+      toast.success("Product updated successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       setIsEditing(false);
       // Don't clear newImages and newVideo here as we want to keep them in localStorage
     },
     onError: (error) => {
       console.error("Error updating product:", error);
-      toast.error("Failed to update product");
+      toast.error("Failed to update product", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     },
   });
 
@@ -202,14 +234,20 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     mutationFn: () => deleteVendorProduct(productId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vendor_products"] });
-      toast.success("Product deleted successfully");
+      toast.success("Product deleted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       // Clear localStorage for this product
       clearProductFromLocalStorage();
       onClose();
     },
     onError: (error) => {
       console.error("Error deleting product:", error);
-      toast.error("Failed to delete product");
+      toast.error("Failed to delete product", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     },
   });
 
@@ -427,6 +465,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="p-0">
+        <ToastContainer />
         <div className="sticky top-0 z-10 bg-white p-3 sm:p-4 md:p-6 border-b flex items-center justify-between">
           <DialogTitle className="text-lg sm:text-xl md:text-2xl">
             {isEditing ? "Edit Product" : "Product Details"}
@@ -629,12 +668,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       >
                         Description
                       </label>
-                      <textarea
+                      <ReactQuill
+                        theme="snow"
                         id="description"
-                        name="description"
+                        placeholder="Product Description"
                         value={editedProduct.description || ""}
-                        onChange={handleInputChange}
-                        rows={4}
+                        onChange={(value) =>
+                          setEditedProduct({
+                            ...editedProduct,
+                            description: value,
+                          })
+                        }
+                        formats={formats}
+                        modules={modules}
                         className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                       />
                     </div>

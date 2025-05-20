@@ -19,7 +19,6 @@ export default function ReturnPolicyPopup({
 
   const handleUploadClick = () => {
     setShowReturnPolicyPopup(false);
-    // Navigate to edit-profile page using react-router-dom
     navigate("/app/edit-vendor-profile");
   };
 
