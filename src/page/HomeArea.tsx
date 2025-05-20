@@ -124,7 +124,7 @@ const HomeArea: React.FC = () => {
         const vendor = await getAllVendor();
         console.log(vendor)
         setGetVendor(vendor.vendors);
-        
+
       } catch (error) {
         console.log(error);
       }
@@ -187,6 +187,7 @@ const HomeArea: React.FC = () => {
       </section>
 
       {/* Explore Products */}
+
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -195,27 +196,34 @@ const HomeArea: React.FC = () => {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
             Explore Our Products
+
           </h2>
           <Link
             to="/random-product"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
+            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
-            View All <ChevronRight size={16} />
+            View All
           </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {ExploreData.map((item, index) => (
-            <ExploreCard key={index} {...item} />
-          ))}
         </div>
 
-        <div className="flex justify-center">
-          <Link
-            to="/random-product"
-            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All Products
-          </Link>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {products
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .slice(0, 5)
+            .map((product) => (
+              <NewArrival
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
+            ))}
         </div>
       </section>
 
@@ -280,20 +288,20 @@ const HomeArea: React.FC = () => {
             console.log(`Avatar ${index}:`, avatarUrl);
 
             return (
-             <Link
+              <Link
                 to={`/veiws-profile/${profile._id}`}>
-                   <VendorCard
-                key={index}
-                name={profile.storeName}
-                location={profile.country}
-                profession={profile.city}
-                avatar={avatarUrl}
-                backgroundImage={
-                  profile?.businessLogo ||
-                  "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
-                }
-              />
-                </Link>
+                <VendorCard
+                  key={index}
+                  name={profile.storeName}
+                  location={profile.country}
+                  profession={profile.city}
+                  avatar={avatarUrl}
+                  backgroundImage={
+                    profile?.businessLogo ||
+                    "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+                  }
+                />
+              </Link>
             );
           })}
         </div>
@@ -310,31 +318,25 @@ const HomeArea: React.FC = () => {
           </h2>
           <Link
             to="/random-product"
-            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
-            View All
+            View All <ChevronRight size={16} />
           </Link>
         </div>
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {ExploreData.map((item, index) => (
+            <ExploreCard key={index} {...item} />
+          ))}
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-            )
-            .slice(0, 5)
-            .map((product) => (
-              <NewArrival
-                key={product._id}
-                product={{
-                  ...product,
-                  id: product._id,
-                  poster: product.images[0] || "",
-                }}
-              />
-            ))}
-        </div> 
+        <div className="flex justify-center">
+          <Link
+            to="/random-product"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+          >
+            View All Products
+          </Link>
+        </div>
       </section>
       {/* ............................... */}
       {/* Second Promotional Banner */}
