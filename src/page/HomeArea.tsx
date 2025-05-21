@@ -213,7 +213,7 @@ const HomeArea: React.FC = () => {
                 new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             )
-            .slice(0, 5)
+            .slice(0, 15)
             .map((product) => (
               <NewArrival
                 key={product._id}
