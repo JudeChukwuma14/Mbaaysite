@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
@@ -14,13 +14,20 @@ import {
 import { Link } from "react-router-dom";
 
 export default function UpgradePage() {
+  // Track selected categories for each plan type
+  const [shelvesCategories, setShelvesCategories] = useState<string[]>([]);
+  const [counterCategories, setCounterCategories] = useState<string[]>([]);
+  const [shopCategories, setShopCategories] = useState<string[]>([]);
+
+  // Current selection in the modal
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [upgradeType, setUpgradeType] = useState<
     "Shelves" | "Counter" | "Shop" | null
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const categories = [
+  // All available categories
+  const allCategories = [
     "Beauty and Wellness",
     "Jewelry and Gemstones",
     "Books and Poetry",
@@ -32,30 +39,102 @@ export default function UpgradePage() {
     "Traditional Clothing & Fabrics",
   ];
 
+  // Get available categories (excluding ones already selected in other plans)
+  const getAvailableCategories = () => {
+    const usedCategories = [
+      ...shelvesCategories,
+      ...counterCategories,
+      ...shopCategories,
+    ];
+    return allCategories.filter(
+      (category) => !usedCategories.includes(category)
+    );
+  };
+
+  // Get max categories allowed for the current upgrade type
+  const getMaxCategories = () => {
+    switch (upgradeType) {
+      case "Shelves":
+        return 1;
+      case "Counter":
+        return 3;
+      case "Shop":
+        return 5;
+      default:
+        return 0;
+    }
+  };
+
+  // Handle category selection in the modal
   const handleCategoryChange = (category: string) => {
     if (selectedCategories.includes(category)) {
       setSelectedCategories(selectedCategories.filter((c) => c !== category));
     } else {
-      if (selectedCategories.length < 2) {
+      const maxCategories = getMaxCategories();
+      if (selectedCategories.length < maxCategories) {
         setSelectedCategories([...selectedCategories, category]);
       }
     }
   };
 
+  // Open the upgrade dialog
   const handleUpgrade = (type: "Shelves" | "Counter" | "Shop") => {
     setUpgradeType(type);
     setOpenDialog(true);
-    setSelectedCategories([]);
+
+    // Pre-select categories if already chosen
+    switch (type) {
+      case "Shelves":
+        setSelectedCategories([...shelvesCategories]);
+        break;
+      case "Counter":
+        setSelectedCategories([...counterCategories]);
+        break;
+      case "Shop":
+        setSelectedCategories([...shopCategories]);
+        break;
+    }
   };
 
+  // Confirm the upgrade and save selected categories
   const confirmUpgrade = () => {
-    // Here you would handle the actual upgrade process
+    if (!upgradeType) return;
+
+    // Save selected categories to the appropriate state
+    switch (upgradeType) {
+      case "Shelves":
+        setShelvesCategories([...selectedCategories]);
+        break;
+      case "Counter":
+        setCounterCategories([...selectedCategories]);
+        break;
+      case "Shop":
+        setShopCategories([...selectedCategories]);
+        break;
+    }
+
     console.log(
       `Upgrading to ${upgradeType} with categories:`,
       selectedCategories
     );
     setOpenDialog(false);
   };
+
+  // Get available categories when the dialog opens
+  useEffect(() => {
+    if (openDialog) {
+      // If we're editing existing selections, keep them available
+      const currentSelections =
+        upgradeType === "Shelves"
+          ? shelvesCategories
+          : upgradeType === "Counter"
+          ? counterCategories
+          : shopCategories;
+
+      const availableCategories =
+        getAvailableCategories().concat(currentSelections);
+    }
+  }, [openDialog, upgradeType]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -75,7 +154,7 @@ export default function UpgradePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Starter Plan */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
@@ -125,55 +204,8 @@ export default function UpgradePage() {
                 </div>
               </div>
             </motion.div>
+
             {/* Shelves Plan */}
-            {/* <motion.div
-              className="border rounded-lg overflow-hidden bg-white"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="bg-gray-50 p-4 flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Layers className="h-4 w-4 text-gray-600" />
-                </div>
-                <h3 className="font-semibold">Shelves</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products up to 10 different categories
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Add products to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Stay available to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">
-                <div className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium text-center">
-                  Upgrade to Shelves
-                </div>
-              </div>
-            </motion.div> */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
               initial={{ opacity: 0, y: 20 }}
@@ -195,13 +227,13 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 100 products
+                      Select <strong>1</strong> product category
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Showcase products in your own counter
+                      Showcase products in your own shelves
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -213,15 +245,36 @@ export default function UpgradePage() {
                     <span className="text-sm">Clients can contact</span>
                   </li>
                 </ul>
+
+                {/* Show selected categories if any */}
+                {shelvesCategories.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-sm font-medium mb-2">
+                      Selected Categories:
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {shelvesCategories.map((category) => (
+                        <span
+                          key={category}
+                          className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="p-4 pt-0">
                 <motion.button
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium"
-                  onClick={() => handleUpgrade("Counter")}
+                  onClick={() => handleUpgrade("Shelves")}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  Upgrade to Shelves
+                  {shelvesCategories.length > 0
+                    ? "Edit Categories"
+                    : "Upgrade to Shelves"}
                 </motion.button>
               </div>
             </motion.div>
@@ -248,7 +301,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 100 products
+                      Select <strong>3</strong> product categories
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -266,6 +319,25 @@ export default function UpgradePage() {
                     <span className="text-sm">Clients can contact</span>
                   </li>
                 </ul>
+
+                {/* Show selected categories if any */}
+                {counterCategories.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-sm font-medium mb-2">
+                      Selected Categories:
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {counterCategories.map((category) => (
+                        <span
+                          key={category}
+                          className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="p-4 pt-0">
                 <motion.button
@@ -274,7 +346,9 @@ export default function UpgradePage() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  Upgrade to Counter
+                  {counterCategories.length > 0
+                    ? "Edit Categories"
+                    : "Upgrade to Counter"}
                 </motion.button>
               </div>
             </motion.div>
@@ -301,7 +375,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 500 products
+                      Select <strong>5</strong> product categories
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -321,6 +395,25 @@ export default function UpgradePage() {
                     <span className="text-sm">Clients can contact</span>
                   </li>
                 </ul>
+
+                {/* Show selected categories if any */}
+                {shopCategories.length > 0 && (
+                  <div className="mt-3 pt-3 border-t">
+                    <p className="text-sm font-medium mb-2">
+                      Selected Categories:
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {shopCategories.map((category) => (
+                        <span
+                          key={category}
+                          className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full"
+                        >
+                          {category}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="p-4 pt-0">
                 <motion.button
@@ -329,7 +422,9 @@ export default function UpgradePage() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
-                  Upgrade to Shop
+                  {shopCategories.length > 0
+                    ? "Edit Categories"
+                    : "Upgrade to Shop"}
                 </motion.button>
               </div>
             </motion.div>
@@ -457,53 +552,86 @@ export default function UpgradePage() {
                 </div>
 
                 <p className="text-sm text-gray-500 mb-4">
-                  Please select two categories for your {upgradeType} upgrade:
+                  Please select {getMaxCategories()}{" "}
+                  {getMaxCategories() === 1 ? "category" : "categories"} for
+                  your {upgradeType} upgrade:
                 </p>
 
                 <div className="grid grid-cols-1 gap-3">
-                  {categories.map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <div
-                          className={`w-5 h-5 border rounded flex items-center justify-center ${
-                            selectedCategories.includes(category)
-                              ? "bg-blue-600 border-blue-600"
-                              : "border-gray-300"
-                          } ${
-                            selectedCategories.length >= 2 &&
-                            !selectedCategories.includes(category)
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
+                  {allCategories.map((category) => {
+                    // Check if category is already selected in another plan
+                    const isUsedInOtherPlan =
+                      (upgradeType !== "Shelves" &&
+                        shelvesCategories.includes(category)) ||
+                      (upgradeType !== "Counter" &&
+                        counterCategories.includes(category)) ||
+                      (upgradeType !== "Shop" &&
+                        shopCategories.includes(category));
+
+                    return (
+                      <div
+                        key={category}
+                        className="flex items-center space-x-2"
+                      >
+                        <label
+                          className={`flex items-center space-x-2 ${
+                            isUsedInOtherPlan
+                              ? "cursor-not-allowed opacity-50"
+                              : "cursor-pointer"
                           }`}
-                          onClick={() => {
-                            if (
-                              !(
-                                selectedCategories.length >= 2 &&
-                                !selectedCategories.includes(category)
-                              )
-                            ) {
-                              handleCategoryChange(category);
-                            }
-                          }}
                         >
-                          {selectedCategories.includes(category) && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{
-                                type: "spring",
-                                damping: 10,
-                                stiffness: 200,
-                              }}
-                            >
-                              <Check className="h-4 w-4 text-white" />
-                            </motion.div>
-                          )}
-                        </div>
-                        <span className="text-sm">{category}</span>
-                      </label>
-                    </div>
-                  ))}
+                          <div
+                            className={`w-5 h-5 border rounded flex items-center justify-center ${
+                              selectedCategories.includes(category)
+                                ? "bg-blue-600 border-blue-600"
+                                : "border-gray-300"
+                            } ${
+                              (selectedCategories.length >=
+                                getMaxCategories() &&
+                                !selectedCategories.includes(category)) ||
+                              isUsedInOtherPlan
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              if (
+                                !isUsedInOtherPlan &&
+                                !(
+                                  selectedCategories.length >=
+                                    getMaxCategories() &&
+                                  !selectedCategories.includes(category)
+                                )
+                              ) {
+                                handleCategoryChange(category);
+                              }
+                            }}
+                          >
+                            {selectedCategories.includes(category) && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{
+                                  type: "spring",
+                                  damping: 10,
+                                  stiffness: 200,
+                                }}
+                              >
+                                <Check className="h-4 w-4 text-white" />
+                              </motion.div>
+                            )}
+                          </div>
+                          <span className="text-sm">
+                            {category}
+                            {isUsedInOtherPlan && (
+                              <span className="ml-1 text-xs text-red-500">
+                                (Used in another plan)
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <div className="mt-6 flex justify-between">
@@ -518,19 +646,23 @@ export default function UpgradePage() {
 
                   <motion.button
                     className={`px-4 py-2 rounded font-medium ${
-                      selectedCategories.length === 2
+                      selectedCategories.length === getMaxCategories()
                         ? upgradeType === "Counter"
                           ? "bg-orange-500 text-white"
                           : "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-500 cursor-not-allowed"
                     }`}
                     onClick={confirmUpgrade}
-                    disabled={selectedCategories.length !== 2}
+                    disabled={selectedCategories.length !== getMaxCategories()}
                     whileHover={
-                      selectedCategories.length === 2 ? { scale: 1.03 } : {}
+                      selectedCategories.length === getMaxCategories()
+                        ? { scale: 1.03 }
+                        : {}
                     }
                     whileTap={
-                      selectedCategories.length === 2 ? { scale: 0.97 } : {}
+                      selectedCategories.length === getMaxCategories()
+                        ? { scale: 0.97 }
+                        : {}
                     }
                   >
                     Confirm Upgrade

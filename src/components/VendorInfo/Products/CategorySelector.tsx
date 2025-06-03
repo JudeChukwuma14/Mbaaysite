@@ -176,8 +176,8 @@ export default function CategorySelector({
             { name: "Leather Jewelry" },
             { name: "Wooden Jewelry" },
             { name: "Personalized & Custom Orders" },
-            { name: "Custom Engraving" },
-            { name: "Personalized Gemstone Settings" },
+            // { name: "Custom Engraving" },
+            // { name: "Personalized Gemstone Settings" },
           ],
         },
         {
@@ -222,6 +222,23 @@ export default function CategorySelector({
             { name: "Native/Indigenous Jewelry" },
           ],
         },
+        {
+          name: "Gemstone jewelry by Birthstone",
+          subSubCategories: [
+            { name: "January (Garnet)" },
+            { name: "February (Amethyst)" },
+            { name: "March (Aqumarine)" },
+            { name: "April (Diamond)" },
+            { name: "May (Emerald)" },
+            { name: "June (Pearl, Moonstone)" },
+            { name: "July (Ruby)" },
+            { name: "August (Peridot)" },
+            { name: "September (Sapphire)" },
+            { name: "October (Opal, Tourmaline)" },
+            { name: "November (Topaz, Citrine)" },
+            { name: "December (Turquoise, Zircon)" },
+          ],
+        },
       ],
     },
     {
@@ -250,7 +267,7 @@ export default function CategorySelector({
           subSubCategories: [
             { name: "Indigenous and Tribal Poetry" },
             { name: "Contemporary Poems by Diaspora Writers" },
-            { name: "Traditional Poetic Forms" },
+            { name: "Traditional Poetic Forms (Haiku, Ghazal)" },
             { name: "Bilingual Poetry Collections" },
             { name: "Poetry about Migration and Identity" },
           ],
@@ -370,205 +387,6 @@ export default function CategorySelector({
       ],
     },
     {
-      name: "Vintage and Antique Jewelry",
-      subCategories: [
-        {
-          name: "Vintage Jewelry",
-          subSubCategories: [
-            { name: "Handcrafted Beaded Necklaces" },
-            { name: "Antique Silver Rings" },
-            { name: "Tribal Earrings" },
-            { name: "Vintage Cuff Bracelets" },
-            { name: "Ethnic Pendants" },
-          ],
-        },
-        {
-          name: "Religious and Spiritual Jewelry",
-          subSubCategories: [
-            { name: "Prayer Beads" },
-            { name: "Symbolic Pendants" },
-            { name: "Chakra Jewelry" },
-            { name: "Healing Crystals Jewelry" },
-          ],
-        },
-        {
-          name: "Cultural Gemstones",
-          subSubCategories: [
-            { name: "Turquoise" },
-            { name: "Amber" },
-            { name: "Coral" },
-            { name: "Onyx" },
-          ],
-        },
-        {
-          name: "Festive and Ritual Jewelry",
-          subSubCategories: [
-            { name: "Wedding jewelry" },
-            { name: "Festival jewelry" },
-            { name: "Ritual adornments" },
-            { name: "Crowning and Headpieces" },
-          ],
-        },
-      ],
-    },
-    {
-      name: "Home Décor and Accessories",
-      subCategories: [
-        {
-          name: "Textiles and Fabrics",
-          subSubCategories: [
-            { name: "Handwoven Rugs (e.g., Kilim, Dhurrie)" },
-            { name: "Embroidered Cushion Covers" },
-            { name: "Hand-dyed Batik Throws" },
-            { name: "Traditional Quilts" },
-            { name: "Handwoven Blankets and Shawls" },
-          ],
-        },
-        {
-          name: "Ceramics and Pottery",
-          subSubCategories: [
-            { name: "Hand-painted Ceramic Bowls" },
-            { name: "Earthenware Vases" },
-            { name: "Traditional Clay Cooking Pots" },
-            { name: "Decorative Terracotta Planters" },
-            { name: "Handcrafted Ceramic Tableware" },
-          ],
-        },
-        {
-          name: "Woodcraft",
-          subSubCategories: [
-            { name: "Hand-carved Wooden Bowls" },
-            { name: "Traditional Wooden Masks" },
-            { name: "Ornate Wooden Wall Art" },
-            {
-              name: "Handcrafted Wooden Furniture (e.g., stools, side tables)",
-            },
-            { name: "Wooden Picture Frames" },
-          ],
-        },
-        {
-          name: "Metalwork",
-          subSubCategories: [
-            { name: "Hand-forged Iron Candle Holders" },
-            { name: "Copper and Brass Wall Hangings" },
-            { name: "Metal Trays with Intricate Designs" },
-            { name: "Handcrafted Lanterns" },
-            { name: "Sculpted Metal Figurines" },
-          ],
-        },
-        {
-          name: "Baskets and Weaving",
-          subSubCategories: [
-            { name: "Handwoven Storage Baskets" },
-            { name: "Decorative Wicker Baskets" },
-            { name: "Palm Leaf Trays" },
-            { name: "Woven Wall Art" },
-            { name: "Traditional Market Baskets" },
-          ],
-        },
-        {
-          name: "Glasswork",
-          subSubCategories: [
-            { name: "Blown Glass Vases" },
-            { name: "Stained Glass Window Hangings" },
-            { name: "Glass Bead Curtains" },
-            { name: "Mosaic Glass Bowls" },
-            { name: "Handcrafted Glass Candle Holders" },
-          ],
-        },
-        {
-          name: "Leather Goods",
-          subSubCategories: [
-            { name: "Hand-stitched Leather Poufs" },
-            { name: "Leather Wall Hangings" },
-            { name: "Decorative Leather Storage Boxes" },
-            { name: "Handcrafted Leather Coasters" },
-            { name: "Leather-bound Journals" },
-          ],
-        },
-        {
-          name: "Beaded Decor",
-          subSubCategories: [
-            { name: "Beaded Wall Hangings" },
-            { name: "Beaded Coasters" },
-            { name: "Beaded Table Runners" },
-            { name: "Decorative Beaded Mirrors" },
-            { name: "Handcrafted Beaded Lampshades" },
-          ],
-        },
-        {
-          name: "Stone and Marble Crafts",
-          subSubCategories: [
-            { name: "Hand-carved Marble Coasters" },
-            { name: "Stone Sculptures" },
-            { name: "Marble Candle Holders" },
-            { name: "Stone Planters" },
-            { name: "Decorative Stone Tiles" },
-          ],
-        },
-        {
-          name: "Handcrafted Lamps and Lighting",
-          subSubCategories: [
-            { name: "Bamboo and Rattan Lampshades" },
-            { name: "Handwoven Lanterns" },
-            { name: "Beaded Chandelier" },
-            { name: "Ceramic Table Lamps" },
-            { name: "Wooden Floor Lamps" },
-          ],
-        },
-        {
-          name: "Wall Art",
-          subSubCategories: [
-            { name: "Tapestries with Traditional Motifs" },
-            { name: "Hand-painted Murals on Canvas" },
-            { name: "Tribal Masks and Shields" },
-            { name: "Wooden Wall Panels" },
-            { name: "Metal Wall Sculptures" },
-          ],
-        },
-        {
-          name: "Jewelry and Trinket Boxes",
-          subSubCategories: [
-            { name: "Hand-carved Wooden Jewelry Boxes" },
-            { name: "Decorative Ceramic Trinket Dishes" },
-            { name: "Beaded Jewelry Organizers" },
-            { name: "Hand-painted Keepsake Boxes" },
-            { name: "Embroidered Fabric Jewelry Rolls" },
-          ],
-        },
-        {
-          name: "Mirrors",
-          subSubCategories: [
-            { name: "Hand-carved Wooden Mirrors" },
-            { name: "Decorative Metal Mirrors" },
-            { name: "Mosaic Mirrors" },
-            { name: "Beaded Frame Mirrors" },
-            { name: "Embossed Leather Mirrors" },
-          ],
-        },
-        {
-          name: "Handwoven Mats and Carpets",
-          subSubCategories: [
-            { name: "Sisal Mats" },
-            { name: "Wool Rugs with Ethnic Patterns" },
-            { name: "Cotton Dhurries" },
-            { name: "Bamboo Mats" },
-            { name: "Silk Carpets" },
-          ],
-        },
-        {
-          name: "Handcrafted Kitchenware",
-          subSubCategories: [
-            { name: "Wooden Serving Trays" },
-            { name: "Hand-thrown Clay Pots" },
-            { name: "Carved Wooden Utensils" },
-            { name: "Handwoven Table Mats" },
-            { name: "Ceramic Mugs and Cups" },
-          ],
-        },
-      ],
-    },
-    {
       name: "Vintage Stocks",
       subCategories: [
         {
@@ -664,6 +482,163 @@ export default function CategorySelector({
       ],
     },
     {
+      name: "Home Décor and Accessories",
+      subCategories: [
+        {
+          name: "Textiles and Fabrics",
+          subSubCategories: [
+            { name: "Handwoven Rugs (e.g., Kilim, Dhurrie)" },
+            { name: "Embroidered Cushion Covers" },
+            { name: "Hand-dyed Batik Throws" },
+            { name: "Traditional Quilts" },
+            { name: "Handwoven Blankets and Shawls" },
+          ],
+        },
+        {
+          name: "Ceramics and Pottery",
+          subSubCategories: [
+            { name: "Hand-painted Ceramic Bowls" },
+            { name: "Earthenware Vases" },
+            { name: "Traditional Clay Cooking Pots" },
+            { name: "Decorative Terracotta Planters" },
+            { name: "Handcrafted Ceramic Tableware" },
+          ],
+        },
+        {
+          name: "Wood Craft",
+          subSubCategories: [
+            { name: "Hand-carved Wooden Bowls" },
+            { name: "Traditional Wooden Masks" },
+            { name: "Ornate Wooden Wall Art" },
+            {
+              name: "Handcrafted Wooden Furniture (e.g., stools, side tables)",
+            },
+            { name: "Wooden Picture Frames" },
+          ],
+        },
+        {
+          name: "Metalwork",
+          subSubCategories: [
+            { name: "Hand-forged Iron Candle Holders" },
+            { name: "Copper and Brass Wall Hangings" },
+            { name: "Metal Trays with Intricate Designs" },
+            { name: "Handcrafted Lanterns" },
+            { name: "Sculpted Metal Figurines" },
+          ],
+        },
+        {
+          name: "Baskets and Weaving",
+          subSubCategories: [
+            { name: "Handwoven Storage Baskets" },
+            { name: "Decorative Wicker Baskets" },
+            { name: "Palm Leaf Trays" },
+            { name: "Woven Wall Art" },
+            { name: "Traditional Market Baskets" },
+          ],
+        },
+        {
+          name: "Glasswork",
+          subSubCategories: [
+            { name: "Blown Glass Vases" },
+            { name: "Stained Glass Window Hangings" },
+            { name: "Glass Bead Curtains" },
+            { name: "Mosaic Glass Bowls" },
+            { name: "Handcrafted Glass Candle Holders" },
+          ],
+        },
+        {
+          name: "Leather Woods",
+          subSubCategories: [
+            { name: "Hand-stitched Leather Poufs" },
+            { name: "Leather Wall Hangings" },
+            { name: "Decorative Leather Storage Boxes" },
+            { name: "Handcrafted Leather Coasters" },
+            { name: "Leather-bound Journals" },
+          ],
+        },
+        {
+          name: "Beaded Decor",
+          subSubCategories: [
+            { name: "Beaded Wall Hangings" },
+            { name: "Beaded Coasters" },
+            { name: "Beaded Table Runners" },
+            { name: "Decorative Beaded Mirrors" },
+            { name: "Handcrafted Beaded Lampshades" },
+          ],
+        },
+        {
+          name: "Stone and Marble Crafts",
+          subSubCategories: [
+            { name: "Hand-carved Marble Coasters" },
+            { name: "Stone Sculptures" },
+            { name: "Marble Candle Holders" },
+            { name: "Stone Planters" },
+            { name: "Decorative Stone Tiles" },
+          ],
+        },
+        {
+          name: "Handcrafted Lamps and Lighting",
+          subSubCategories: [
+            { name: "Bamboo and Rattan Lampshades" },
+            { name: "Handwoven Lanterns" },
+            { name: "Beaded Chandelier" },
+            { name: "Ceramic Table Lamps" },
+            { name: "Wooden Floor Lamps" },
+          ],
+        },
+        {
+          name: "Wall Art",
+          subSubCategories: [
+            { name: "Tapestries with Traditional Motifs" },
+            { name: "Hand-painted Murals on Canvas" },
+            { name: "Tribal Masks and Shields" },
+            { name: "Wooden Wall Panels" },
+            { name: "Metal Wall Sculptures" },
+          ],
+        },
+        {
+          name: "Jewelry and Trinket Boxes",
+          subSubCategories: [
+            { name: "Hand-carved Wooden Jewelry Boxes" },
+            { name: "Decorative Ceramic Trinket Dishes" },
+            { name: "Beaded Jewelry Organizers" },
+            { name: "Hand-painted Keepsake Boxes" },
+            { name: "Embroidered Fabric Jewelry Rolls" },
+          ],
+        },
+        {
+          name: "Mirrors",
+          subSubCategories: [
+            { name: "Hand-carved Wooden Mirrors" },
+            { name: "Decorative Metal Mirrors" },
+            { name: "Mosaic Mirrors" },
+            { name: "Beaded Frame Mirrors" },
+            { name: "Embossed Leather Mirrors" },
+          ],
+        },
+        {
+          name: "Handwoven Mats and Carpets",
+          subSubCategories: [
+            { name: "Sisal Mats" },
+            { name: "Wool Rugs with Ethnic Patterns" },
+            { name: "Cotton Dhurries" },
+            { name: "Bamboo Mats" },
+            { name: "Silk Carpets" },
+          ],
+        },
+        {
+          name: "Handcrafted Kitchenware",
+          subSubCategories: [
+            { name: "Wooden Serving Trays" },
+            { name: "Hand-thrown Clay Pots" },
+            { name: "Carved Wooden Utensils" },
+            { name: "Handwoven Table Mats" },
+            { name: "Ceramic Mugs and Cups" },
+          ],
+        },
+      ],
+    },
+    {
       name: "Plant and Seeds",
       subCategories: [
         {
@@ -679,17 +654,29 @@ export default function CategorySelector({
             { name: "Shrubs and Bushes" },
             { name: "Climbing Plants" },
             { name: "Garden Flowers" },
-            { name: "Fruit Plants" },
-            { name: "Citrus Trees" },
+          ],
+        },
+        {
+          name: "Fruit Plants",
+          subSubCategories: [
             { name: "Berry Bushes" },
             { name: "Exotic Fruits" },
-            { name: "Grafted Fruit Plants" },
-            { name: "Vegetable Plants" },
+            { name: "Citrus Trees" },
+            { name: "Exotic Fruit Plants" },
+          ],
+        },
+        {
+          name: "Vegetable Plants",
+          subSubCategories: [
             { name: "Tomato Plants" },
             { name: "Pepper Plants" },
             { name: "Leafy Greens" },
             { name: "Root Vegetables" },
-            { name: "Medicinal Plants" },
+          ],
+        },
+        {
+          name: "Medicinal Plants",
+          subSubCategories: [
             { name: "Aloe Vera" },
             { name: "Neem" },
             { name: "Holy Basil (Tulsi)" },
@@ -709,17 +696,29 @@ export default function CategorySelector({
             { name: "Berries" },
             { name: "Exotic Fruits" },
             { name: "Citrus Seeds" },
-            { name: "Herb Seeds" },
-            { name: "Culinary Herbs (e.g., Basil, Thyme)" },
-            { name: "Medicinal Herbs (e.g., Moringa, Ashwagandha)" },
-            { name: "Aromatic Herbs (e.g., Lemongrass, Mint)" },
-            { name: "Flower Seeds" },
+          ],
+        },
+        {
+          name: "Herb Seeds",
+          subSubCategories: [
+            { name: "Culinary Herbs (Basil, Thyme)" },
+            { name: "Medicinal Herbs (Moringa, Ashwagandha" },
+            { name: "Aromatic Herbs (Lemongrass, Mint" },
+          ],
+        },
+        {
+          name: "Flower Seeds",
+          subSubCategories: [
             { name: "Annual Flowers" },
             { name: "Perennial Flowers" },
             { name: "Edible Flowers" },
-            { name: "Wildflowers" },
-            { name: "Cultural and Traditional Seeds" },
-            { name: "Indigenous Crop Seeds (e.g., Millet, Sorghum)" },
+            { name: "Wildflower Seeds" },
+          ],
+        },
+        {
+          name: "Cultural and Traditional Seeds",
+          subSubCategories: [
+            { name: "Indigenous Crop Seeds (Millet, Sorghum)" },
             { name: "Heritage Seeds" },
             { name: "Ceremonial and Ritual Seeds" },
           ],
@@ -896,14 +895,6 @@ export default function CategorySelector({
           ],
         },
         {
-          name: "By Packaging",
-          subSubCategories: [
-            { name: "Bulk Spices" },
-            { name: "Individual Packs" },
-            { name: "Ready-to-use Jars & Containers" },
-          ],
-        },
-        {
           name: "Seasoning for Specific Cuisines",
           subSubCategories: [
             { name: "Indian Seasoning" },
@@ -938,28 +929,58 @@ export default function CategorySelector({
         {
           name: "Staple Foods",
           subSubCategories: [
-            { name: "Rice, Yam, Cassava, Plantain, Millet, Maize" },
-            {
-              name: "Specialty Grains & Legumes (e.g., Fonio, Sorghum, Teff, Bambara Beans, Cowpeas)",
-            },
+            { name: "Rice" },
+            { name: "Yam" },
+            { name: "Cassava" },
+            { name: "Maize" },
+            { name: "Plantains" },
+            { name: "Millets" },
+          ],
+        },
+        {
+          name: "Specialty Grains & Legumes",
+          subSubCategories: [
+            { name: "Fonio" },
+            { name: "Sorghum" },
+            { name: "Teff" },
+            { name: "Bamara Beans" },
+            { name: "Cowpeas" },
           ],
         },
         {
           name: "Traditional Snacks & Street Foods",
           subSubCategories: [
-            { name: "Puff-puff, Samosas, Empanadas, Mandazi" },
-            {
-              name: "Indigenous Baked Goods (e.g., Flatbreads, Cornbread, Meat Pies, Johnny Cakes)",
-            },
+            { name: "Puff-puff" },
+            { name: "Samosas" },
+            { name: "Empanadas" },
+            { name: "Mandazi" },
+          ],
+        },
+        {
+          name: "Indigenous Baked Goods",
+          subSubCategories: [
+            { name: "Flatbreads" },
+            { name: "Cornbread " },
+            { name: "Meat Pies " },
+            { name: "Johnny Cakes" },
           ],
         },
         {
           name: "Traditional Soups & Stews",
           subSubCategories: [
-            { name: "Groundnut Soup, Egusi Soup, Gumbo, Bouillabaisse" },
-            {
-              name: "Fermented & Preserved Foods (e.g., Sauerkraut, Kimchi, Fermented Fish, Pickled Vegetables)",
-            },
+            { name: "Groundnut Soup" },
+            { name: "Egusi Soup" },
+            { name: "Gumbo" },
+            { name: "Bouillabisse" },
+          ],
+        },
+        {
+          name: "Fermented & Preserved Foods",
+          subSubCategories: [
+            { name: "Sauerkraut" },
+            { name: "Kimchi" },
+            { name: "Fermented Fish" },
+            { name: "Pickled Vegetables" },
           ],
         },
         {
@@ -1119,47 +1140,47 @@ export default function CategorySelector({
             },
           ],
         },
-        {
-          name: "Other Functional Categories",
-          subSubCategories: [
-            { name: "New Arrivals" },
-            { name: "Best Sellers" },
-            { name: "Limited Edition & Seasonal Foods" },
-            { name: "Discounted & Sale Products" },
-            { name: "By Packaging Size" },
-            { name: "Bulk Foods" },
-            { name: "Family-Size Packages" },
-            { name: "Single-Serving Packs" },
-            { name: "Search By Country or Region" },
-            { name: "Africa (e.g., Nigeria, Ethiopia, South Africa)" },
-            { name: "Caribbean (e.g., Jamaica, Trinidad, Haiti)" },
-            { name: "Latin America (e.g., Mexico, Brazil, Peru)" },
-            { name: "Asia (e.g., India, China, Philippines)" },
-            { name: "Europe (e.g., Greece, Italy, Portugal)" },
-            { name: "Middle East (e.g., Lebanon, Egypt, Morocco)" },
-            { name: "Can vendors add recipes" },
-          ],
-        },
       ],
     },
     {
       name: "Traditional Clothing and Fabrics",
       subCategories: [
         {
-          name: "Traditional Clothing",
+          name: "Men's Traditional Wear",
           subSubCategories: [
-            {
-              name: "Men's Traditional Wear (e.g., Dashikis, Boubous, Kente Cloth, Sherwanis, Kimono)",
-            },
-            {
-              name: "Women's Traditional Wear (e.g., Kaftans, Kanga, Sari, Abaya, Gele, Kimono)",
-            },
-            {
-              name: "Children's Traditional Wear (e.g., Mini Dashikis, Cheongsam, Cultural Dresses)",
-            },
-            {
-              name: "Unisex Traditional Clothing (e.g., Sarongs, Robes, Ponchos, Caftans)",
-            },
+            { name: "Dashikis" },
+            { name: "Kimonos" },
+            { name: "Sherwanis" },
+            { name: "Boubous" },
+            { name: "Kente Cloth" },
+          ],
+        },
+        {
+          name: "Women's Traditional Wear",
+          subSubCategories: [
+            { name: "kaftans" },
+            { name: "Kanga" },
+            { name: "Sari" },
+            { name: "Abaya" },
+            { name: "Gele" },
+            { name: "Kimono" },
+          ],
+        },
+        {
+          name: "Children's Traditional Wear",
+          subSubCategories: [
+            { name: "Mini Dashikis" },
+            { name: "Cheongsams" },
+            { name: "Cultural Dresses" },
+          ],
+        },
+        {
+          name: "Unisex Traditional Clothing",
+          subSubCategories: [
+            { name: "Ponchos" },
+            { name: "Sarongs" },
+            { name: "Robes" },
+            { name: "Caftans" },
           ],
         },
         {
@@ -1324,20 +1345,28 @@ export default function CategorySelector({
           ],
         },
         {
-          name: "Other Functional Categories",
+          name: "Functional Categories",
           subSubCategories: [
             { name: "New Arrivals" },
             { name: "Best Sellers" },
             { name: "Limited Edition & Seasonal Fashion" },
             { name: "Discounted & Sale Products" },
-            { name: "By Country or Region" },
-            { name: "Africa (e.g., Nigeria, Ghana, South Africa)" },
-            { name: "Asia (e.g., India, China, Japan)" },
-            { name: "Middle East (e.g., Egypt, Morocco, Saudi Arabia)" },
-            { name: "Latin America (e.g., Brazil, Mexico, Colombia)" },
-            { name: "Caribbean (e.g., Jamaica, Haiti, Trinidad)" },
-            { name: "Europe (e.g., Greece, Italy, Portugal)" },
-            { name: "By Fabric Type" },
+          ],
+        },
+        {
+          name: "Country or Region",
+          subSubCategories: [
+            { name: "Africa" },
+            { name: "Asia" },
+            { name: "Middle East" },
+            { name: "Latin America" },
+            { name: "Caribbean" },
+            { name: "Europe" },
+          ],
+        },
+        {
+          name: "Fabric Type",
+          subSubCategories: [
             { name: "Cotton" },
             { name: "Silk" },
             { name: "Wool" },
