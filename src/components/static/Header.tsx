@@ -36,8 +36,8 @@ const Header: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  const user = useSelector((state: RootState) => state.user.user);
-  const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  const user = useSelector((state: RootState) => state.user?.user || null);
+  const vendor = useSelector((state: RootState) => state.vendor?.vendor || null);
   const settings = useSelector((state: RootState) => state.settings);
 
   const countries = Country.getAllCountries();
@@ -63,7 +63,7 @@ const Header: React.FC = () => {
     setCountrySearch("");
   };
 
-  const firstLetter = vendor?.storeName
+ const firstLetter = vendor?.storeName
     ? vendor.storeName.charAt(0).toUpperCase()
     : vendor?.id
       ? "V"

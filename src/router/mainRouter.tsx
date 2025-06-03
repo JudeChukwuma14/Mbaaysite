@@ -8,6 +8,7 @@ import Layout from "@/components/profileMangement/Layout";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
 import ProtectedVendor from "./ProtectedVendor";
+import ErrorPage from "@/components/Error/ErrorPage";
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -572,6 +573,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/",
     element: <WebLayout />,
+    errorElement:<ErrorPage/>,
     children: [
       { index: true, element: withSuspense(Home) },
       { path: "/about", element: withSuspense(About) },
