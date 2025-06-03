@@ -579,12 +579,12 @@ const routesConfig: RouteObject[] = [
       { path: "/about", element: withSuspense(About) },
       { path: "/contact", element: withSuspense(Contact) },
       { path: "/cart", element: withSuspense(Cart) },
-      { path: "/product-details/:id", element: withSuspense(ProductDetail) },
-      { path: "/product/:id", element: withSuspense(ProductInfo) },
+      { path: "/product-details/:id", element: withSuspense(ProductDetail), errorElement: <ErrorPage /> },
+      { path: "/product/:id", element: withSuspense(ProductInfo), errorElement: <ErrorPage /> },
       { path: "/auctionview", element: withSuspense(AuctionView) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
       {path:"/more-vendor", element:withSuspense(AllVendor)},
-      {path:"/veiws-profile/:id", element:withSuspense(VendorProfileProduct)},
+      {path:"/veiws-profile/:id", element:withSuspense(VendorProfileProduct), errorElement: <ErrorPage />},
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
@@ -802,6 +802,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/dashboard",
     element: <Layout />,
+     errorElement: <ErrorPage />,
     children: [
       { index: true, element: withSuspense(EditProfile) },
       { path: "/dashboard/orderlist", element: withSuspense(OrderList) },
@@ -820,6 +821,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/app",
     element: <ProtectedVendor />,
+    errorElement: <ErrorPage />,
    children:[
     {
       element:<VendorLayout/>,
@@ -842,7 +844,7 @@ const routesConfig: RouteObject[] = [
         { path: "pricing", element: withSuspense(Pricing) },
         {
           path: "comunity-detail/:communityid",
-          element: withSuspense(CommunityDetailPage),
+          element: withSuspense(CommunityDetailPage), errorElement: <ErrorPage />
         },
         {
           path: "products-detail/:productid",
@@ -854,6 +856,7 @@ const routesConfig: RouteObject[] = [
               productId={""}
             />
           )),
+           errorElement: <ErrorPage />
         },
       ],
     }
@@ -869,7 +872,7 @@ const routesConfig: RouteObject[] = [
   },
   { path: "forgotpassword", element: withSuspense(ForgotPassword) },
   { path: "restpassword", element: withSuspense(ResetPassword) },
-  { path: "/verify-otp/:userId", element: withSuspense(OtpVerify) },
+  { path: "/verify-otp/:userId", element: withSuspense(OtpVerify), errorElement: <ErrorPage /> },
   { path: "sendlink", element: withSuspense(SendLink) },
   { path: "numberforgotpass", element: withSuspense(Number) },
   { path: "updatepassword", element: withSuspense(Updatepassword) },
@@ -877,6 +880,6 @@ const routesConfig: RouteObject[] = [
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
-  { path: "*", element: withSuspense(Error) }, // 404 page not found
+  { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
 ];
 export const mainRouter = createBrowserRouter(routesConfig);
