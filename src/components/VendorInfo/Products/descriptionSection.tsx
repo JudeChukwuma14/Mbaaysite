@@ -6,7 +6,6 @@ import { IoMdClose } from "react-icons/io";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 
-// Add these formats and modules configurations
 const formats = [
   "header",
   "bold",

@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -12,15 +14,23 @@ import {
   LucideListStart,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { useUpgradeVendorPlan } from "@/utils/upgradeApi";
 
 export default function UpgradePage() {
+  // Track selected categories for the current selection
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [upgradeType, setUpgradeType] = useState<
-    "Shelves" | "Counter" | "Shop" | null
+    "Shelf" | "Counter" | "Shop" | null
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const categories = [
+  // Get user token from Redux
+  const user = useSelector((state: RootState) => state.vendor);
+
+  // All available categories
+  const allCategories = [
     "Beauty and Wellness",
     "Jewelry and Gemstones",
     "Books and Poetry",
@@ -32,28 +42,54 @@ export default function UpgradePage() {
     "Traditional Clothing & Fabrics",
   ];
 
+  // TanStack Query mutation for upgrading plan
+  const upgradeMutation = useUpgradeVendorPlan();
+
+  // Get max categories allowed for the current upgrade type
+  const getMaxCategories = () => {
+    switch (upgradeType) {
+      case "Shelf":
+        return 1;
+      case "Counter":
+        return 3;
+      case "Shop":
+        return 5;
+      default:
+        return 0;
+    }
+  };
+
+  // Handle category selection in the modal
   const handleCategoryChange = (category: string) => {
     if (selectedCategories.includes(category)) {
       setSelectedCategories(selectedCategories.filter((c) => c !== category));
     } else {
-      if (selectedCategories.length < 2) {
+      const maxCategories = getMaxCategories();
+      if (selectedCategories.length < maxCategories) {
         setSelectedCategories([...selectedCategories, category]);
       }
     }
   };
 
-  const handleUpgrade = (type: "Shelves" | "Counter" | "Shop") => {
+  // Open the upgrade dialog
+  const handleUpgrade = (type: "Shelf" | "Counter" | "Shop") => {
     setUpgradeType(type);
     setOpenDialog(true);
-    setSelectedCategories([]);
+    setSelectedCategories([]); // Reset selections when opening dialog
   };
 
+  // Confirm the upgrade and call the API
   const confirmUpgrade = () => {
-    // Here you would handle the actual upgrade process
-    console.log(
-      `Upgrading to ${upgradeType} with categories:`,
-      selectedCategories
-    );
+    if (!upgradeType) return;
+
+    // Call the mutation to upgrade the plan
+    upgradeMutation.mutate({
+      newPlan: upgradeType,
+      categories: selectedCategories,
+      token: user.token ?? "",
+    });
+
+    // Close dialog on success (handled in the mutation's onSuccess)
     setOpenDialog(false);
   };
 
@@ -75,7 +111,7 @@ export default function UpgradePage() {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             {/* Starter Plan */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
@@ -125,55 +161,8 @@ export default function UpgradePage() {
                 </div>
               </div>
             </motion.div>
+
             {/* Shelves Plan */}
-            {/* <motion.div
-              className="border rounded-lg overflow-hidden bg-white"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="bg-gray-50 p-4 flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                  <Layers className="h-4 w-4 text-gray-600" />
-                </div>
-                <h3 className="font-semibold">Shelves</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products up to 10 different categories
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Add products to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Stay available to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">
-                <div className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium text-center">
-                  Upgrade to Shelves
-                </div>
-              </div>
-            </motion.div> */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
               initial={{ opacity: 0, y: 20 }}
@@ -195,13 +184,13 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 100 products
+                      Select <strong>1</strong> product category
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Showcase products in your own counter
+                      Showcase products in your own shelves
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -217,7 +206,7 @@ export default function UpgradePage() {
               <div className="p-4 pt-0">
                 <motion.button
                   className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium"
-                  onClick={() => handleUpgrade("Counter")}
+                  onClick={() => handleUpgrade("Shelf")}
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                 >
@@ -248,7 +237,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 100 products
+                      Select <strong>3</strong> product categories
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -301,7 +290,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Categorize products up to 500 products
+                      Select <strong>5</strong> product categories
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -457,11 +446,13 @@ export default function UpgradePage() {
                 </div>
 
                 <p className="text-sm text-gray-500 mb-4">
-                  Please select two categories for your {upgradeType} upgrade:
+                  Please select {getMaxCategories()}{" "}
+                  {getMaxCategories() === 1 ? "category" : "categories"} for
+                  your {upgradeType} upgrade:
                 </p>
 
                 <div className="grid grid-cols-1 gap-3">
-                  {categories.map((category) => (
+                  {allCategories.map((category) => (
                     <div key={category} className="flex items-center space-x-2">
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <div
@@ -470,7 +461,7 @@ export default function UpgradePage() {
                               ? "bg-blue-600 border-blue-600"
                               : "border-gray-300"
                           } ${
-                            selectedCategories.length >= 2 &&
+                            selectedCategories.length >= getMaxCategories() &&
                             !selectedCategories.includes(category)
                               ? "opacity-50 cursor-not-allowed"
                               : ""
@@ -478,7 +469,8 @@ export default function UpgradePage() {
                           onClick={() => {
                             if (
                               !(
-                                selectedCategories.length >= 2 &&
+                                selectedCategories.length >=
+                                  getMaxCategories() &&
                                 !selectedCategories.includes(category)
                               )
                             ) {
@@ -518,22 +510,36 @@ export default function UpgradePage() {
 
                   <motion.button
                     className={`px-4 py-2 rounded font-medium ${
-                      selectedCategories.length === 2
+                      selectedCategories.length === getMaxCategories()
                         ? upgradeType === "Counter"
                           ? "bg-orange-500 text-white"
                           : "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-500 cursor-not-allowed"
                     }`}
                     onClick={confirmUpgrade}
-                    disabled={selectedCategories.length !== 2}
+                    disabled={
+                      selectedCategories.length !== getMaxCategories() ||
+                      upgradeMutation.isPending
+                    }
                     whileHover={
-                      selectedCategories.length === 2 ? { scale: 1.03 } : {}
+                      selectedCategories.length === getMaxCategories()
+                        ? { scale: 1.03 }
+                        : {}
                     }
                     whileTap={
-                      selectedCategories.length === 2 ? { scale: 0.97 } : {}
+                      selectedCategories.length === getMaxCategories()
+                        ? { scale: 0.97 }
+                        : {}
                     }
                   >
-                    Confirm Upgrade
+                    {upgradeMutation.isPending ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Processing...
+                      </div>
+                    ) : (
+                      "Confirm Upgrade"
+                    )}
                   </motion.button>
                 </div>
               </div>
