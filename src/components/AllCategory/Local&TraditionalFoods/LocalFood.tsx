@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import image from "@/assets/image/Group 14.png";
 import ProductCard2 from "../../Cards/ProductCard2";
 import { FaChevronRight, FaHome, FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
