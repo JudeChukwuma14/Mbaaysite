@@ -1,10 +1,22 @@
 import React, { useEffect, useState } from "react";
-import image from "@/assets/image/Group 14.png";
 import ProductCard2 from "../../Cards/ProductCard2";
 import { getAllProduct } from "@/utils/productApi";
 import { FaChevronRight, FaHome, FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { motion } from 'framer-motion';
+import CN from "@/assets/image/Condiments.jpg";
+import CI from "@/assets/image/CookingIngredients.jpg";
+import CR from "@/assets/image/CulturalRegional.jpg";
+import ES from "@/assets/image/EthicallySourcedS.jpg";
+import SP from "@/assets/image/SpiceE.jpg";
+import HW from "@/assets/image/HealthWellnessSE.jpg";
+import MR from "@/assets/image/MarinadesRubs.jpg";
+import SPE from "@/assets/image/SaltPepper.jpg";
+import SK from "@/assets/image/SpiceKits.jpg";
+import SC from "@/assets/image/SeasoningCuisines.jpg";
+import SD from "@/assets/image/SpecialDietary.jpg";
+import PU from "@/assets/image/PopularUses.jpg";
+
 interface Product {
   _id: string;
   name: string;
@@ -68,52 +80,52 @@ const Spices: React.FC = () => {
   }
 
   const ImagePart: Subcategory[] = [
-    { image: image, text: "Condiments", link: "/Conditments" },
-    { image: image, text: "Cooking Ingredients", link: "/CookingIngredients" },
+    { image: CN, text: "Condiments", link: "/Conditments" },
+    { image: CI, text: "Cooking Ingredients", link: "/CookingIngredients" },
     {
-      image: image,
+      image: CR,
       text: "Cultural & Regional Spices",
       link: "/CulturalRegional",
     },
     {
-      image: image,
+      image: ES,
       text: "Ethically Sourced & Organic Products",
       link: "/EthincallySourced",
     },
-    { image: image, text: "Spices", link: "/Spices-i" },
+    { image: SP, text: "Spices", link: "/Spices-i" },
     {
-      image: image,
+      image: HW,
       text: "Health & Wellness Spices",
       link: "/HealthWellnessSpices",
     },
-    { image: image, text: "Marinades & Rubs", link: "/Marinades" },
+    { image: MR, text: "Marinades & Rubs", link: "/Marinades" },
     {
-      image: image,
+      image: SPE,
       text: "Salt & Pepper Varieties",
       link: "/SaltPepper",
     },
     {
-      image: image,
+      image: SK,
       text: "Spice Kits & Gift Sets",
       link: "/SpiceKits",
     },
     {
-      image: image,
+      image: SC,
       text: "Seasoning for Specific Cuisines",
       link: "/Seasoning",
     },
     {
-      image: image,
+      image: SD,
       text: "Special Dietary",
       link: "/SpecialDietary",
     },
-    { image: image, text: "Popular Uses", link: "/PopularUses" },
+    { image: PU, text: "Popular Uses", link: "/PopularUses" },
   ];
 
 
   return (
     <div className="min-h-screen ">
-      <div className="container px-4  lg:px-8 py-8 mx-auto">
+      <div className="container px-4 py-8 mx-auto lg:px-8">
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

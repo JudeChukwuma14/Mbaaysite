@@ -5,6 +5,20 @@ import { getAllProduct } from "@/utils/productApi";
 import { FaChevronRight, FaHome, FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { motion } from 'framer-motion';
+import MT from "@/assets/image/MenTraditional.jpg";
+import WT from "@/assets/image/WF.jpg";
+import CT from "@/assets/image/ChildrenTraditionalWear.jpg";
+import UT from "@/assets/image/UnisexTraditional.jpg";
+import MC from "@/assets/image/ModernClothing.jpg";
+import FW from "@/assets/image/Footwear.jpg";
+import CW from "@/assets/image/CulturalAccessories.jpg";
+import FT from "@/assets/image/FabricsTextiles.jpg";
+import CF from "@/assets/image/CulturalFootwear.jpg";
+import CC from "@/assets/image/CulturalFestival.jpg";
+import BT from "@/assets/image/BespokeTailoredClothing.jpg";
+import SE from "@/assets/image/SustainableEthical.jpg";
+import TE from "@/assets/image/TraditionalEmbroidery.jpg";
+
 
 interface Product {
   _id: string;
@@ -68,30 +82,30 @@ const TranditionalFabrics: React.FC = () => {
     );
   }
   const ImagePart: Subcategory[] = [
-    { image: image, text: "Men’s Traditional Wear", link: "/MenTraditional" },
-    { image: image, text: "Women’s Traditional Wear", link: "/WomenTranditional" },
-    { image: image, text: "Children’s Traditional Wear", link: "/ChildrenTranditional" },
-    { image: image, text: "Unisex Traditional Clothing", link: "/UnisexTranditional" },
-    { image: image, text: "Modern Clothing with Traditional Influence", link: "/FashionSpecific" },
-    { image: image, text: "Footwear & Shoes", link: "/Footwear" },
-    { image: image, text: "Cultural Accessories & Adornments", link: "/CulturalAccessories" },
-    { image: image, text: "Fabrics & Textiles", link: "/FabricsTextiles" },
-    { image: image, text: "Cultural Footwear for Specific Occasions", link: "/CulturalFootwear" },
-    { image: image, text: "Cultural & Festival Clothing", link: "/FestivalClothing" },
-    { image: image, text: "Bespoke & Tailored Clothing", link: "/TailoredClothing" },
-    { image: image, text: "Sustainable & Ethical Fashion", link: "/EthicalFashion" },
-    { image: image, text: "Traditional Embroidery & Design Work", link: "/TraditionalEmbroidery" },
-    { image: image, text: "Fashion for Specific Cultures & Regions", link: "/FashionSpecific" },
-    { image: image, text: "Seasonal & Special Occasion Fashion", link: "/OccasionFashion" },
-    { image: image, text: "Other Functional Categories", link: "/FunctionalCategories" },
-    { image: image, text: "By Country or Region", link: "/CountryRegional" },
-    { image: image, text: "By Fabric Type", link: "/FabricType" },
+    { image: MT, text: "Men’s Traditional Wear", link: "/MenTraditional" },
+    { image: WT, text: "Women’s Traditional Wear", link: "/WomenTranditional" },
+    { image: CT, text: "Children’s Traditional Wear", link: "/ChildrenTranditional" },
+    { image: UT, text: "Unisex Traditional Clothing", link: "/UnisexTranditional" },
+    { image: MC, text: "Modern Clothing with Traditional Influence", link: "/FashionSpecific" },
+    { image: FW, text: "Footwear & Shoes", link: "/Footwear" },
+    { image: CW, text: "Cultural Accessories & Adornments", link: "/CulturalAccessories" },
+    { image: FT, text: "Fabrics & Textiles", link: "/FabricsTextiles" },
+    { image: CF, text: "Cultural Footwear for Specific Occasions", link: "/CulturalFootwear" },
+    { image: CC, text: "Cultural & Festival Clothing", link: "/FestivalClothing" },
+    { image: BT, text: "Bespoke & Tailored Clothing", link: "/TailoredClothing" },
+    { image: SE, text: "Sustainable & Ethical Fashion", link: "/EthicalFashion" },
+    { image: TE, text: "Traditional Embroidery & Design Work", link: "/TraditionalEmbroidery" },
+    { image: "https://i.pinimg.com/736x/7c/e3/35/7ce335d63349b362f296d2baf349b0a8.jpg", text: "Fashion for Specific Cultures & Regions", link: "/FashionSpecific" },
+    { image: "https://i.pinimg.com/736x/f5/d7/73/f5d773960221be5a9dd9b7bf4f71e434.jpg", text: "Seasonal & Special Occasion Fashion", link: "/OccasionFashion" },
+    { image: image, text: "Functional Categories", link: "/FunctionalCategories" },
+    { image: "https://i.pinimg.com/736x/cd/10/e3/cd10e33d00a056c3ffefff163806b445.jpg", text: "Country or Region", link: "/CountryRegional" },
+    { image: "https://i.pinimg.com/736x/9a/32/35/9a32356f97a46ca1f7d223b80aa7b6d5.jpg", text: "Fabric Type", link: "/FabricType" },
   ];
 
 
   return (
     <div className="min-h-screen ">
-      <div className="container px-4  lg:px-8 py-8 mx-auto">
+      <div className="container px-4 py-8 mx-auto lg:px-8">
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

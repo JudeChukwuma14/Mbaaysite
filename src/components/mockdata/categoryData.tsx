@@ -3,6 +3,10 @@ import jewelry from "@/assets/image/Jewelry.jpg";
 import book from "@/assets/image/book.jpg";
 import Homedecor from "@/assets/image/Home Décor.jpg";
 import Vintage from "@/assets/image/Vintage Furniture.jpg";
+import TC from "@/assets/image/TraditionalClothing.jpg";
+import LF from "@/assets/image/LocalTraditional.jpg";
+import SP from "@/assets/image/SpicesCondiments.jpg";
+import PLS from "@/assets/image/PlantSeeds.jpg";
 
 export const categories = [
   {
@@ -655,7 +659,7 @@ export const categories = [
   },
   {
     name: "Plant and Seeds",
-    image: "/plants.jpg",
+    image: PLS,
     link: "/plantseed",
     subcategories: [
       {
@@ -795,7 +799,7 @@ export const categories = [
   },
   {
     name: "Spices, Condiments, and Seasonings",
-    image: "/spices.jpg",
+    image: SP,
     link: "/spices",
     subcategories: [
       {
@@ -920,7 +924,7 @@ export const categories = [
   },
   {
     name: "Local & Traditional Foods",
-    image: "/local_traditional_foods.jpg",
+    image: LF,
     link: "/localfood",
     subcategories: [
       {
@@ -1067,7 +1071,7 @@ export const categories = [
   },
   {
     name: "Traditional Clothing & Fabrics",
-    image: "/local_traditional_foods.jpg",
+    image: TC,
     link: "/tranditionalFabrics",
     subcategories: [
       {

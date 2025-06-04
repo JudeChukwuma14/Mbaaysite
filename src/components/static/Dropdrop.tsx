@@ -1,24 +1,8 @@
-"use client"
+
 
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { ChevronDown, ChevronUp } from "lucide-react"
-
-// Assuming this is your category data structure
-// interface SubCategory {
-//   title: string
-//   link: string
-//   items: string[]
-// }
-
-// interface Category {
-//   name: string
-//   link: string
-//   image: string
-//   subcategories: SubCategory[]
-// }
-
-// Import your categories data
 import { categories } from "../mockdata/categoryData"
 
 export default function Dropdown() {

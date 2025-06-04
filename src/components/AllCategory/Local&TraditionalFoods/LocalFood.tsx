@@ -68,29 +68,29 @@ const LocalFood: React.FC = () => {
   }
 
   const ImagePart: Subcategory[] = [
-    { image: image, text: "Staple Foods", link: "/StapleFoods" },
-    { image: image, text: "Specialty Grains & Legumes", link: "/SpecialtyGrains" },
-    { image: image, text: "Traditional Snacks & Street Foods", link: "/TraditionalSnacks" },
-    { image: image, text: "Indigenous Baked Goods", link: "/IndigenousBake" },
-    { image: image, text: "Traditional Soups & Stews", link: "/TraditionalSoup" },
-    { image: image, text: "Fermented & Preserved Foods", link: "/FermentedFood" },
-    { image: image, text: "Local Beverages", link: "/LocalBeverages" },
-    { image: image, text: "Regional & Ethnic Foods", link: "/RegionalEthnicFood" },
-    { image: image, text: "Ethnic Sauces, Spices & Seasonings", link: "/EthinicSauces" },
-    { image: image, text: "Culturally Specific Food Categories", link: "/CulturallySpecific" },
-    { image: image, text: "Traditional Sweets & Desserts", link: "/TraditionalSweet" },
-    { image: image, text: "Packaged & Ready-to-Eat Foods", link: "/PackagedReadyFood" },
-    { image: image, text: "Traditional Oils & Fats", link: "/TraditionalOil" },
-    { image: image, text: "Local Grains & Flours", link: "/LocalGrains" },
-    { image: image, text: "Fermented & Pickled Foods", link: "/PickledFood" },
-    { image: image, text: "Cultural Holiday & Festival Foods", link: "/FestivalFood" },
-    { image: image, text: "Meal Plans & Subscription Boxes", link: "/MealPlans" },
+    { image: "https://i.pinimg.com/736x/8c/24/3c/8c243cc8e49925b96f1cac71cd39de6d.jpg", text: "Staple Foods", link: "/StapleFoods" },
+    { image: "https://i.pinimg.com/736x/f7/f9/70/f7f970ab5863f61dccbf537c778bbb44.jpg", text: "Specialty Grains & Legumes", link: "/SpecialtyGrains" },
+    { image: "https://i.pinimg.com/736x/d4/45/72/d44572a1377ff38b905ee0f1f2e93836.jpg", text: "Traditional Snacks & Street Foods", link: "/TraditionalSnacks" },
+    { image: "https://i.pinimg.com/736x/ab/05/6a/ab056ac4af088946df08d582c48e1f25.jpg", text: "Indigenous Baked Goods", link: "/IndigenousBake" },
+    { image: "https://i.pinimg.com/736x/bd/41/fc/bd41fcca77a123f8051bcb4694752f51.jpg", text: "Traditional Soups & Stews", link: "/TraditionalSoup" },
+    { image: "https://i.pinimg.com/736x/1b/38/26/1b3826d79f7bc7f45f4a07fc31df459e.jpg", text: "Fermented & Preserved Foods", link: "/FermentedFood" },
+    { image: "https://i.pinimg.com/736x/39/d4/32/39d432048883f46dfe0a4e92bdea2d05.jpg", text: "Local Beverages", link: "/LocalBeverages" },
+    { image: "https://i.pinimg.com/736x/68/c3/01/68c30124e1c273f0594322210684035c.jpg", text: "Regional & Ethnic Foods", link: "/RegionalEthnicFood" },
+    { image: "https://i.pinimg.com/736x/d7/50/08/d750084792b2e3dfa183e81356d1af41.jpg", text: "Ethnic Sauces, Spices & Seasonings", link: "/EthinicSauces" },
+    { image: "https://i.pinimg.com/736x/ec/84/be/ec84bedee518ce4d22c2ed4f1babc762.jpg", text: "Culturally Specific Food Categories", link: "/CulturallySpecific" },
+    { image: "https://i.pinimg.com/736x/69/b1/84/69b184f5da8171481bf9116831421f05.jpg", text: "Traditional Sweets & Desserts", link: "/TraditionalSweet" },
+    { image: "https://i.pinimg.com/736x/48/21/4b/48214b21418ba149b90c9a3589a65245.jpg", text: "Packaged & Ready-to-Eat Foods", link: "/PackagedReadyFood" },
+    { image: "https://i.pinimg.com/736x/aa/5d/80/aa5d80dc85227846af3eafcb19830a52.jpg", text: "Traditional Oils & Fats", link: "/TraditionalOil" },
+    { image: "https://i.pinimg.com/736x/96/89/43/9689436d5d44b6732d214229a3dd9e6d.jpg", text: "Local Grains & Flours", link: "/LocalGrains" },
+    { image: "https://i.pinimg.com/736x/2d/6c/01/2d6c01b64bddcf654ad429b4dcc00624.jpg", text: "Fermented & Pickled Foods", link: "/PickledFood" },
+    { image: "https://i.pinimg.com/736x/15/21/cd/1521cdb184809bc64671c11f21470ade.jpg", text: "Cultural Holiday & Festival Foods", link: "/FestivalFood" },
+    { image: "https://i.pinimg.com/736x/9f/64/b9/9f64b9e23d2eefd6112e3598c2bf7e53.jpg", text: "Meal Plans & Subscription Boxes", link: "/MealPlans" },
   ];
 
 
   return (
     <div className="min-h-screen">
-      <div className="container px-4  lg:px-8 py-8 mx-auto">
+      <div className="container px-4 py-8 mx-auto lg:px-8">
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
