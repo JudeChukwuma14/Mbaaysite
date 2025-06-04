@@ -1,36 +1,16 @@
-import { useEffect, useState } from "react";
-import { Heart } from "lucide-react";
 import { getAllVendor } from "@/utils/vendorApi";
-import { Country, type ICountry } from "country-state-city";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom"; // Added for VendorCard's Link
 import Spinner from "../Common/Spinner";
+import VendorCard from "../VendorCard";
 
-// Define the VendorProfile interface based on the API response
 interface VendorProfile {
   _id: string;
   storeName: string;
-  storePhone: string;
-  storeType: string;
-  email: string;
-  businessLogo: string;
-  city: string;
-  country: string; // ISO code (e.g., "ng", "us")
-  state: string;
-  address1: string;
-  avatar: string;
-  verificationStatus: string;
+  avatar?: string; // Made optional
+  businessLogo?: string; // Made optional
   craftCategories: string[];
-  createdAt: string;
 }
-
-// Map of ISO country codes to full names
-const countryMap: Record<string, string> = Country.getAllCountries().reduce(
-  (map, country: ICountry) => {
-    map[country.isoCode.toLowerCase()] = country.name;
-    return map;
-  },
-  {} as Record<string, string>
-);
 
 const AllVendor = () => {
   const [vendors, setVendors] = useState<VendorProfile[]>([]);
@@ -56,8 +36,26 @@ const AllVendor = () => {
     fetchVendors();
   }, []);
 
+  const createInitialAvatar = (name: string) => {
+    // Get first letter and ensure it's uppercase
+    const firstLetter = name.trim().charAt(0).toUpperCase();
+    // Color options (you can customize these)
+    const colors = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
+    const color = colors[firstLetter.charCodeAt(0) % colors.length];
+
+    // Create SVG with just the first letter
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'>
+      <rect width='100' height='100' fill='${color}' rx='50' />
+      <text x='50%' y='50%' font-size='60' fill='white' 
+            font-weight='bold'
+            text-anchor='middle' dominant-baseline='middle'>${firstLetter}</text>
+    </svg>`;
+
+    return `data:image/svg+xml;base64,${btoa(svg)}`;
+  };
+
   // Pagination logic
-  const itemsPerPage = 12;
+  const itemsPerPage = 30;
   const totalPages = Math.ceil(vendors.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -107,56 +105,18 @@ const AllVendor = () => {
       {/* Vendor Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 2xl:grid-cols-8 md:gap-6 2xl:gap-8">
         {currentItems.map((vendor) => (
-          <div
-            key={vendor._id}
-            className="bg-[#d9d9d9] rounded-lg overflow-hidden flex flex-col"
-          >
-            <div className="flex items-center justify-between p-4 2xl:p-3">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center w-6 h-6 text-sm font-bold text-white bg-red-600 rounded-full">
-                  {vendor.storeName.charAt(0)}
-                </div>
-                <span className="font-medium text-gray-800 truncate 2xl:text-sm">
-                  {vendor.storeName}
-                </span>
-              </div>
-              <div className="flex gap-1 sm:gap-2">
-                <button
-                  aria-label="Follow vendor"
-                  className="p-1.5 sm:p-2 bg-white rounded-full shadow-md hover:bg-gray-200 transition-colors"
-                >
-                  <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-600" />
-                </button>
-              </div>
-            </div>
-            <Link to={`/veiws-profile/${vendor._id}`}>
-              <div className="relative flex-1 px-4 pb-4 2xl:px-3 2xl:pb-3">
-                <div className="relative overflow-hidden aspect-square">
-                  <img
-                    src={
-                      vendor.businessLogo ||
-                      "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
-                    }
-                    alt={`${vendor.storeName} logo`}
-                    loading="lazy"
-                    className="absolute inset-0 object-cover object-center w-full h-full"
-                  />
-                </div>
-                <div className="absolute p-3 bg-white shadow-lg bottom-4 left-4 right-4 2xl:p-2">
-                  <h2 className="text-base font-semibold text-gray-800 truncate sm:text-lg 2xl:text-base">
-                    {vendor.storeName}
-                  </h2>
-                  <p className="text-sm text-gray-600 truncate 2xl:text-xs">
-                    {vendor.city},{" "}
-                    {countryMap[vendor.country.toLowerCase()] || vendor.country}
-                  </p>
-                  <p className="text-xs text-gray-500 truncate 2xl:text-[10px]">
-                    {vendor.craftCategories.join(", ") || "No categories"}
-                  </p>
-                </div>
-              </div>
-            </Link>
-          </div>
+          <Link to={`/veiws-profile/${vendor._id}`}>
+            <VendorCard
+              key={vendor._id}
+              backgroundImage={
+                vendor.businessLogo ||
+                "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
+              }
+              avatar={vendor.avatar || createInitialAvatar(vendor.storeName || "V")}
+              name={vendor.storeName}
+              craft={vendor.craftCategories.join(", ") || "No categories"}
+            />
+          </Link>
         ))}
       </div>
 
@@ -179,11 +139,10 @@ const AllVendor = () => {
                 key={index}
                 onClick={() => typeof page === "number" && setCurrentPage(page)}
                 disabled={typeof page !== "number"}
-                className={`h-9 min-w-[2.25rem] px-3 py-2 text-sm font-medium rounded-md transition-colors ${
-                  currentPage === page
-                    ? "bg-orange-500 text-white hover:bg-orange-600"
-                    : "bg-gray-200 hover:bg-gray-300"
-                } ${typeof page !== "number" ? "cursor-default" : "cursor-pointer"}`}
+                className={`h-9 min-w-[2.25rem] px-3 py-2 text-sm font-medium rounded-md transition-colors ${currentPage === page
+                  ? "bg-orange-500 text-white hover:bg-orange-600"
+                  : "bg-gray-200 hover:bg-gray-300"
+                  } ${typeof page !== "number" ? "cursor-default" : "cursor-pointer"}`}
                 aria-label={
                   typeof page === "number" ? `Go to page ${page}` : undefined
                 }

@@ -53,11 +53,10 @@ interface Product {
 interface VendorProfile {
   _id: string;
   storeName: string;
-  country: string;
-  city: string;
   avatar: string;
   businessLogo: string;
   id: string;
+  craftCategories: string[];
 }
 
 const HomeArea: React.FC = () => {
@@ -276,29 +275,21 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {getVender.slice(0, 5).map((profile, index) => {
-            // Verify the store name is correct
-            console.log(`Vendor ${index}:`, profile.storeName);
-
+          {getVender.slice(0, 5).map((profile) => {
             const avatarUrl = profile.avatar
               ? profile.avatar
-              : createInitialAvatar(profile.storeName || "V"); // Fallback to "V" if no name
-
-            // Verify the generated avatar URL
-            console.log(`Avatar ${index}:`, avatarUrl);
-
+              : createInitialAvatar(profile.storeName || "V");
             return (
               <Link
                 to={`/veiws-profile/${profile._id}`}>
                 <VendorCard
-                  key={index}
+                  key={profile._id}
                   name={profile.storeName}
-                  location={profile.country}
-                  profession={profile.city}
+                  craft={profile.craftCategories[0]}
                   avatar={avatarUrl}
                   backgroundImage={
                     profile?.businessLogo ||
-                    "https://img.freepik.com/free-photo/portrait-man-with-kaleidoscope-effect_23-2148261310.jpg?t=st=1744827001~exp=1744830601~hmac=4cbd73162b20719ef34d33ab04807c4ad11606b990b62e2580c103325c8292e3&w=1380"
+                    "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
                   }
                 />
               </Link>

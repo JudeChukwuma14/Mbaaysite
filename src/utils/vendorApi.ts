@@ -23,7 +23,7 @@ export const LoginVendorAPI = async (userData: any) => {
     return response.data;
   } catch (error: any) {
     console.error("Signup Error:", error.response?.data || error);
-    throw error.response?.data?.message || "Failed to create account";
+    throw error.response?.data?.message || "Check your network connection";
   }
 };
 
