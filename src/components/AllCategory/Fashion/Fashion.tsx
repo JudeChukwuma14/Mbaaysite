@@ -170,7 +170,7 @@ import EW from "@/assets/image/ethnicwear.jpg"
 import { motion } from "framer-motion"
 
 // // Mock components - replace with your actual components
-const ProductCard2 = ({ image, name, price, rating, label }: any) => (
+const ProductCard2 = ({ image, name, price,  label }: any) => (
   <div className="overflow-hidden transition-shadow duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
     <div className="overflow-hidden aspect-square">
       <img
@@ -305,7 +305,7 @@ const Fashion: React.FC = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="container px-4  lg:px-8 py-8 mx-auto">
+        <div className="container px-4 py-8 mx-auto lg:px-8">
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="flex items-center justify-center w-24 h-24 mb-6 bg-red-100 rounded-full">
               <FaRegSadTear className="text-4xl text-red-400" />
@@ -327,7 +327,7 @@ const Fashion: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container px-4  lg:px-8 py-8 mx-auto">
+      <div className="container px-4 py-8 mx-auto lg:px-8">
         <motion.nav
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
