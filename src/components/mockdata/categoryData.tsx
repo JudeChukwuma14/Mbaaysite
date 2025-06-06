@@ -902,7 +902,7 @@ export const categories = [
       },
       {
         link: "/SpecialDietary",
-        title: "Special Dietary Categories",
+        title: "Special Dietary",
         items: [
           "Gluten-free Spices",
           "Vegan Condiments",
