@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff, ShoppingCart, Package, Layers } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { motion } from "framer-motion";
-import { ChartOptions } from "chart.js";
+import type { ChartOptions } from "chart.js";
 import {
   Chart as ChartJS,
   LineElement,
@@ -12,6 +12,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { get_single_vendor } from "@/utils/vendorApi";
+import { useQuery } from "@tanstack/react-query";
 
 ChartJS.register(
   LineElement,
@@ -28,9 +32,16 @@ const Dashboard = () => {
   const [rowsPerPage] = useState(5);
   const [selectedMonths, setSelectedMonths] = useState(1);
 
+  const user = useSelector((state: RootState) => state.vendor);
+
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
   const totalOrders = 3234;
   const productsSold = 1455;
-  const accountType = "Starter";
+  const accountType = vendors?.storeType || "Loading...";
 
   const orders = [
     {

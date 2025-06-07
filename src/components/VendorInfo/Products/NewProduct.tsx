@@ -6,15 +6,17 @@ import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { uploadVendorProduct } from "@/utils/VendorProductApi";
-import { toast } from "react-hot-toast";
-import type { RootState } from "@/redux/store";
 import CategorySelector from "./CategorySelector";
 import CategorySpecificUI from "./categorySpecificUi";
 import DescriptionSection from "./descriptionSection";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
-import CurrencyInput from "./CurrencyInput";
 import ReturnPolicyPopup from "./ReturnPolicyPopup";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ChevronDown } from "lucide-react";
+
+import CurrencyInput from "./CurrencyInput";
 
 interface ProductData {
   productName: string;
@@ -42,14 +44,10 @@ interface ProductData {
 }
 
 const NewProduct = () => {
-  const user = useSelector((state: RootState) => state.vendor);
-
-  // Fetch vendor data with real-time updates
-  const { data: vendors, isLoading: vendorLoading } = useQuery({
+  const user = useSelector((state: any) => state.vendor);
+  const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
-    refetchOnWindowFocus: true, // Refetch when window gains focus
-    staleTime: 0, // Always consider data stale to ensure fresh data
   });
 
   const subCategories: Record<string, string[]> = {
@@ -99,15 +97,19 @@ const NewProduct = () => {
 
   const [productName, setProductName] = useState("");
   const [value, setValue] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [activeCategory, setActiveCategory] = useState("");
-  const [subCategory, setSubCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([
+    defaultCategory,
+    "Jewelry and Gemstones",
+  ]);
+  const [activeCategory, setActiveCategory] = useState(defaultCategory);
+  const [subCategory, setSubCategory] = useState(defaultSubCategory);
   const [subSubCategory, setSubSubCategory] = useState("");
   const [quantity, setQuantity] = useState("0");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
   const [productImages, setProductImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  // const [returnPolicy] = useState<File | null>(null);
   const [descriptionFileName, setDescriptionFileName] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -120,22 +122,16 @@ const NewProduct = () => {
     file?: File;
   } | null>(null);
   const [showReturnPolicyPopup, setShowReturnPolicyPopup] = useState(false);
+  const [vendorPlan] = useState<"Shelves" | "Counter" | "Shop" | "Premium">(
+    "Counter"
+  );
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [vendorCountry, setVendorCountry] = useState("United States");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
-
-  // Get vendor plan from the fetched vendor data
-  const vendorPlan = vendors?.vendorPlan || "Starter";
-
-  // Determine if vendor is upgraded based on their plan
-  const isUpgraded =
-    vendorPlan === "Shelf" ||
-    vendorPlan === "Counter" ||
-    vendorPlan === "Shop" ||
-    vendorPlan === "Premium";
 
   const categoryThemes: Record<
     string,
@@ -187,29 +183,6 @@ const NewProduct = () => {
       accent: "indigo-700",
     },
   };
-
-  // Initialize categories and active category based on vendor plan and craft categories
-  useEffect(() => {
-    if (
-      vendors &&
-      vendors.craftCategories &&
-      vendors.craftCategories.length > 0
-    ) {
-      setSelectedCategories(vendors.craftCategories);
-      setActiveCategory(vendors.craftCategories[0]);
-
-      // Set default subcategory for the first category
-      const firstCategory = vendors.craftCategories[0];
-      if (subCategories[firstCategory]) {
-        setSubCategory(subCategories[firstCategory][0]);
-      }
-    } else if (!isUpgraded) {
-      // For non-upgraded users, set default categories
-      setSelectedCategories([defaultCategory, "Jewelry and Gemstones"]);
-      setActiveCategory(defaultCategory);
-      setSubCategory(defaultSubCategory);
-    }
-  }, [vendors, isUpgraded]);
 
   useEffect(() => {
     const fetchVendorCountry = async () => {
@@ -304,7 +277,10 @@ const NewProduct = () => {
         };
         reader.readAsText(file);
       } else {
-        toast.error("Please upload a .txt file for description");
+        toast.error("Please upload a .txt file for description", {
+          position: "top-right",
+          autoClose: 4000,
+        });
       }
     }
   };
@@ -358,13 +334,20 @@ const NewProduct = () => {
         productImages: productImages,
       };
       localStorage.setItem("productDraft", JSON.stringify(draftData));
-      toast.success("Draft saved successfully!");
+      toast.success("Draft saved successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
     } catch (error) {
       console.error("Error saving draft:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to save draft. Please fill all required fields."
+          : "Failed to save draft. Please fill all required fields.",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
       );
     } finally {
       setIsLoading(false);
@@ -381,11 +364,8 @@ const NewProduct = () => {
     setProductName("");
     setValue("");
     setDescriptionFileName("");
-    setActiveCategory(selectedCategories[0] || defaultCategory);
-    setSubCategory(
-      subCategories[selectedCategories[0] || defaultCategory]?.[0] ||
-        defaultSubCategory
-    );
+    setActiveCategory(defaultCategory);
+    setSubCategory(defaultSubCategory);
     setSubSubCategory("");
     setQuantity("0");
     setSku("");
@@ -395,7 +375,11 @@ const NewProduct = () => {
     setYoutubeUrl("");
     setYoutubeEmbedUrl("");
     setUploadedVideoInfo(null);
-    toast.success("Changes discarded successfully");
+    setSelectedCategories([defaultCategory, "Jewelry and Gemstones"]);
+    toast.success("Changes discarded successfully", {
+      position: "top-right",
+      autoClose: 3000,
+    });
   };
 
   const handleSaveDraft = () => saveDraft();
@@ -404,11 +388,8 @@ const NewProduct = () => {
     setProductName("");
     setValue("");
     setDescriptionFileName("");
-    setActiveCategory(selectedCategories[0] || defaultCategory);
-    setSubCategory(
-      subCategories[selectedCategories[0] || defaultCategory]?.[0] ||
-        defaultSubCategory
-    );
+    setActiveCategory(defaultCategory);
+    setSubCategory(defaultSubCategory);
     setSubSubCategory("");
     setQuantity("0");
     setSku("");
@@ -418,6 +399,7 @@ const NewProduct = () => {
     setYoutubeUrl("");
     setYoutubeEmbedUrl("");
     setUploadedVideoInfo(null);
+    setSelectedCategories([defaultCategory, "Jewelry and Gemstones"]);
     setIsDirty(false);
   };
 
@@ -463,16 +445,27 @@ const NewProduct = () => {
         formData.append("product_video", youtubeEmbedUrl);
       }
 
-      await uploadVendorProduct(user.token ?? "", formData);
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      await uploadVendorProduct(user.token, formData);
       localStorage.removeItem("productDraft");
-      toast.success("Product added successfully!");
+      toast.success("Product added successfully!", {
+        position: "top-right",
+        autoClose: 3000,
+      });
       resetForm();
     } catch (error) {
       console.error("Error adding product:", error);
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to add product. Please try again."
+          : "Failed to add product. Please try again.",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
       );
     } finally {
       setIsLoading(false);
@@ -489,17 +482,39 @@ const NewProduct = () => {
     return categoryThemes[activeCategory];
   };
 
-  // Show loading state while vendor data is being fetched
-  if (vendorLoading) {
-    return (
-      <div className="min-h-screen p-6 space-y-6 bg-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading vendor information...</p>
-        </div>
-      </div>
-    );
-  }
+  const isUpgraded =
+    vendorPlan === "Shelves" ||
+    vendorPlan === "Counter" ||
+    vendorPlan === "Shop" ||
+    vendorPlan === "Premium";
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest(".relative")) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    if (showCategoryDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showCategoryDropdown]);
+
+  useEffect(() => {
+    // Set initial category based on vendor's craftCategories
+    if (vendors?.craftCategories && vendors.craftCategories.length > 0) {
+      const firstCategory = vendors.craftCategories[0];
+      setActiveCategory(firstCategory);
+      const firstSubCategory = subCategories[firstCategory]?.[0] || "";
+      setSubCategory(firstSubCategory);
+      setSelectedCategories(vendors.craftCategories);
+    }
+  }, [vendors?.craftCategories]);
 
   return (
     <motion.div
@@ -508,27 +523,81 @@ const NewProduct = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <ToastContainer />
       <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6">
-        <div>
+        <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">New Product</h1>
-          <p className="text-sm text-gray-500">
-            Current Plan:{" "}
-            <span className="font-medium text-blue-600">{vendorPlan}</span>
-            {isUpgraded && vendors?.craftCategories && (
-              <span className="ml-2">
-                | Categories: {vendors.craftCategories.join(", ")}
-              </span>
-            )}
-          </p>
+
+          {/* Category Dropdown - only show if vendor has multiple categories */}
+          {vendors?.craftCategories && vendors.craftCategories.length > 1 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+              >
+                <span>Categories ({vendors.craftCategories.length})</span>
+                <motion.div
+                  animate={{ rotate: showCategoryDropdown ? 180 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </motion.div>
+              </button>
+
+              <AnimatePresence>
+                {showCategoryDropdown && (
+                  <motion.div
+                    className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="p-2">
+                      <div className="text-xs text-gray-500 mb-2 px-2">
+                        Your Categories:
+                      </div>
+                      {vendors.craftCategories.map(
+                        (category: string, index: number) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setActiveCategory(category);
+                              const firstSubCategory =
+                                subCategories[category]?.[0] || "";
+                              setSubCategory(firstSubCategory);
+                              setSubSubCategory("");
+                              setShowCategoryDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm flex items-center justify-between ${
+                              activeCategory === category
+                                ? "bg-blue-50 text-blue-600"
+                                : ""
+                            }`}
+                          >
+                            <span>{category}</span>
+                            {activeCategory === category && (
+                              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                                Active
+                              </span>
+                            )}
+                          </button>
+                        )
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
+
         {selectedCategories.length > 0 && !isUpgraded && (
           <CategorySelector
             selectedCategories={selectedCategories}
             activeCategory={activeCategory}
             handleCategoryChange={handleCategoryChange}
-            vendorPlan={
-              vendorPlan as "Shelves" | "Counter" | "Shop" | "Premium"
-            }
+            vendorPlan={vendorPlan}
             selectedSubCategory={subCategory}
             setSelectedSubCategory={setSubCategory}
             selectedSubSubCategory={subSubCategory}
@@ -578,9 +647,7 @@ const NewProduct = () => {
                 selectedCategories={selectedCategories}
                 activeCategory={activeCategory}
                 handleCategoryChange={handleCategoryChange}
-                vendorPlan={
-                  vendorPlan as "Shelves" | "Counter" | "Shop" | "Premium"
-                }
+                vendorPlan={vendorPlan}
                 selectedSubCategory={subCategory}
                 setSelectedSubCategory={setSubCategory}
                 selectedSubSubCategory={subSubCategory}

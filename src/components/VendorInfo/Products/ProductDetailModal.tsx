@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -18,33 +20,6 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "list",
-  "bullet",
-  "link",
-  "clean",
-];
-
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, false] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ list: "ordered" }, { list: "bullet" }],
-    ["link"],
-    ["clean"],
-  ],
-  clipboard: {
-    matchVisual: false,
-  },
-};
 
 interface Product {
   _id: string;
@@ -383,6 +358,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     });
   };
 
+  const handleDescriptionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const { value } = e.target;
+    setEditedProduct({
+      ...editedProduct,
+      description: value,
+    });
+    // Auto-resize textarea
+    e.target.style.height = "auto";
+    e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
+  };
+
   const handleImageChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     index: number
@@ -456,8 +444,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const toggleEdit = () => {
     if (isEditing) {
-      // If we're exiting edit mode without saving, we don't reset the form
-      // because we want to keep the localStorage changes
     }
     setIsEditing(!isEditing);
   };
@@ -668,21 +654,28 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       >
                         Description
                       </label>
-                      <ReactQuill
-                        theme="snow"
+                      <motion.textarea
                         id="description"
+                        name="description"
                         placeholder="Product Description"
                         value={editedProduct.description || ""}
-                        onChange={(value) =>
-                          setEditedProduct({
-                            ...editedProduct,
-                            description: value,
-                          })
-                        }
-                        formats={formats}
-                        modules={modules}
-                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        onChange={handleDescriptionChange}
+                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base resize-none min-h-[100px] max-h-[200px]"
+                        style={{ minHeight: "100px" }}
+                        rows={4}
                       />
+                      <div className="text-xs text-gray-500 mt-1 flex justify-between">
+                        <span>
+                          Characters: {(editedProduct.description || "").length}
+                        </span>
+                        <span>
+                          Words:{" "}
+                          {editedProduct.description?.trim()
+                            ? editedProduct.description.trim().split(/\s+/)
+                                .length
+                            : 0}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ) : (

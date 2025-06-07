@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
@@ -66,6 +68,8 @@ export default function EditVendorProfile() {
   const [showEditDropdown, setShowEditDropdown] = useState(false);
   const [activePopup, setActivePopup] = useState<PopupType>(null);
   const [actualPassword, setActualPassword] = useState("Password123");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
 
   // Form states for popups
   const [newPassword, setNewPassword] = useState("");
@@ -83,6 +87,7 @@ export default function EditVendorProfile() {
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.vendor);
 
@@ -108,22 +113,24 @@ export default function EditVendorProfile() {
 
   // Load images from local storage on component mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedProfileImage = localStorage.getItem(PROFILE_IMAGE_KEY);
-      const storedBannerImage = localStorage.getItem(BANNER_IMAGE_KEY);
-      // const storedLogoImage = localStorage.getItem(LOGO_IMAGE_KEY);
+    if (typeof window !== "undefined" && !imagesLoaded) {
+      try {
+        const storedProfileImage = localStorage.getItem(PROFILE_IMAGE_KEY);
+        const storedBannerImage = localStorage.getItem(BANNER_IMAGE_KEY);
 
-      if (storedProfileImage) {
-        setProfileImage(storedProfileImage);
+        if (storedProfileImage) {
+          setProfileImage(storedProfileImage);
+        }
+        if (storedBannerImage) {
+          setBannerImage(storedBannerImage);
+        }
+
+        setImagesLoaded(true);
+      } catch (error) {
+        console.error("Error loading images from localStorage:", error);
       }
-      if (storedBannerImage) {
-        setBannerImage(storedBannerImage);
-      }
-      // if (storedLogoImage) {
-      //   setLogoImage(storedLogoImage);
-      // }
     }
-  }, []);
+  }, [imagesLoaded]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -135,6 +142,13 @@ export default function EditVendorProfile() {
         !editButtonRef.current.contains(event.target as Node)
       ) {
         setShowEditDropdown(false);
+      }
+
+      if (
+        categoryDropdownRef.current &&
+        !categoryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowCategoryDropdown(false);
       }
     };
 
@@ -151,7 +165,6 @@ export default function EditVendorProfile() {
       dropdownRef.current.style.top = `${
         buttonRect.bottom + window.scrollY + 5
       }px`;
-      // Position the dropdown to the right of the button
       dropdownRef.current.style.left = `${
         buttonRect.right - dropdownRef.current.offsetWidth + window.scrollX
       }px`;
@@ -161,7 +174,22 @@ export default function EditVendorProfile() {
   // Function to save image to local storage
   const saveImageToLocalStorage = (imageData: string, storageKey: string) => {
     if (typeof window !== "undefined") {
-      localStorage.setItem(storageKey, imageData);
+      try {
+        localStorage.setItem(storageKey, imageData);
+      } catch (error) {
+        console.error(
+          `Error saving image to localStorage (${storageKey}):`,
+          error
+        );
+        // If localStorage fails (e.g., quota exceeded), notify the user
+        toast.error(
+          "Failed to save image locally. Your browser storage might be full.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+          }
+        );
+      }
     }
   };
 
@@ -197,6 +225,7 @@ export default function EditVendorProfile() {
         );
         return;
       }
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const imageData = reader.result as string;
@@ -229,7 +258,6 @@ export default function EditVendorProfile() {
             break;
 
           case "logo":
-            // setLogoImage(imageData);
             saveImageToLocalStorage(imageData, LOGO_IMAGE_KEY);
 
             // Create FormData and upload logo image
@@ -350,8 +378,6 @@ export default function EditVendorProfile() {
       Object.entries(profile).forEach(([key, value]) => {
         formData.append(key, value);
       });
-
-      // Images are now uploaded separately via mutations
 
       // Add return policy if it exists
       if (returnPolicy) {
@@ -537,20 +563,31 @@ export default function EditVendorProfile() {
   // Function to clear images from local storage and state
   const clearImages = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(PROFILE_IMAGE_KEY);
-      localStorage.removeItem(BANNER_IMAGE_KEY);
-      localStorage.removeItem(LOGO_IMAGE_KEY);
+      try {
+        localStorage.removeItem(PROFILE_IMAGE_KEY);
+        localStorage.removeItem(BANNER_IMAGE_KEY);
+        localStorage.removeItem(LOGO_IMAGE_KEY);
 
-      setProfileImage(null);
-      setBannerImage(null);
-      // setLogoImage(null);0
+        setProfileImage(null);
+        setBannerImage(null);
 
-      toast.success("All images have been cleared", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+        toast.success("All images have been cleared", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      } catch (error) {
+        console.error("Error clearing images from localStorage:", error);
+        toast.error("Failed to clear images", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
     }
   };
+
+  // Get craft categories and determine if dropdown should show
+  const craftCategories = vendors?.craftCategories || [];
+  const hasMultipleCategories = craftCategories.length > 1;
 
   return (
     <motion.div
@@ -648,7 +685,6 @@ export default function EditVendorProfile() {
                   </label>
                 </div>
                 <div className="flex flex-col">
-                  {/* Removed the company name display */}
                   <div className="flex items-center gap-4 text-sm">
                     <div>
                       <div className="font-semibold">12</div>
@@ -673,9 +709,11 @@ export default function EditVendorProfile() {
               <h3 className="mb-2 text-sm text-gray-500">Account Type</h3>
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-lg">
-                  <span className="font-semibold text-orange-500">S</span>
+                  <span className="font-semibold text-orange-500">
+                    {vendors?.storeType?.charAt?.(0).toUpperCase()}
+                  </span>
                 </div>
-                <div className="font-semibold">Starter</div>
+                <div className="font-semibold">{vendors?.storeType}</div>
               </div>
               <div className="mt-2">
                 <span className="px-3 py-1 text-xs text-white bg-orange-500 rounded-full">
@@ -852,11 +890,65 @@ export default function EditVendorProfile() {
             variants={itemVariants}
             className="p-6 bg-white rounded-lg shadow-sm"
           >
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center gap-2">
-                <span>{vendors?.craftCategories?.[0]}</span>
+            <h2 className="mb-4 font-semibold">Business Category</h2>
+            <div className="relative" ref={categoryDropdownRef}>
+              <div
+                className={`flex items-center justify-between p-3 border rounded-lg ${
+                  hasMultipleCategories
+                    ? "cursor-pointer hover:bg-gray-50"
+                    : "cursor-default"
+                }`}
+                onClick={() =>
+                  hasMultipleCategories &&
+                  setShowCategoryDropdown(!showCategoryDropdown)
+                }
+              >
+                <div className="flex items-center gap-2">
+                  <span>{craftCategories[0] || "No category selected"}</span>
+                  {hasMultipleCategories && (
+                    <span className="px-2 py-1 text-xs text-blue-600 bg-blue-100 rounded-full">
+                      +{craftCategories.length - 1} more
+                    </span>
+                  )}
+                </div>
+                {hasMultipleCategories && (
+                  <motion.div
+                    animate={{ rotate: showCategoryDropdown ? 180 : 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ChevronDown className="w-5 h-5 text-gray-500" />
+                  </motion.div>
+                )}
               </div>
-              <ChevronDown className="w-5 h-5 text-gray-500" />
+
+              {/* Category Dropdown */}
+              <AnimatePresence>
+                {showCategoryDropdown && hasMultipleCategories && (
+                  <motion.div
+                    className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="py-1">
+                      {craftCategories.map((category: any, index: any) => (
+                        <div
+                          key={index}
+                          className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                        >
+                          <span>{category}</span>
+                          {index === 0 && (
+                            <span className="px-2 py-1 text-xs text-green-600 bg-green-100 rounded-full">
+                              Primary
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           </motion.div>
 
@@ -994,12 +1086,12 @@ export default function EditVendorProfile() {
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-xl font-semibold">Change Password</h2>
-                      <button
+                      <motion.button
                         onClick={closePopup}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </div>
                     <div className="space-y-4">
                       <div>
@@ -1047,12 +1139,12 @@ export default function EditVendorProfile() {
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-xl font-semibold">Change Location</h2>
-                      <button
+                      <motion.button
                         onClick={closePopup}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </div>
                     <div className="space-y-4">
                       <div>
@@ -1113,12 +1205,12 @@ export default function EditVendorProfile() {
                       <h2 className="text-xl font-semibold">
                         Change Account Details
                       </h2>
-                      <button
+                      <motion.button
                         onClick={closePopup}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </div>
                     <div className="space-y-4">
                       <div>
@@ -1192,12 +1284,12 @@ export default function EditVendorProfile() {
                       <h2 className="text-xl font-semibold">
                         Change Email Address
                       </h2>
-                      <button
+                      <motion.button
                         onClick={closePopup}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </div>
                     <div className="space-y-4">
                       <div>
@@ -1236,12 +1328,12 @@ export default function EditVendorProfile() {
                       <h2 className="text-xl font-semibold">
                         Change Store Details
                       </h2>
-                      <button
+                      <motion.button
                         onClick={closePopup}
                         className="text-gray-500 hover:text-gray-700"
                       >
                         <X className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                     </div>
                     <div className="space-y-4">
                       <div>

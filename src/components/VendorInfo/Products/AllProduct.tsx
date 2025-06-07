@@ -1,4 +1,8 @@
-import { useState } from "react";
+"use client";
+
+import type React from "react";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { Doughnut } from "react-chartjs-2";
@@ -7,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getVendorProducts } from "@/utils/VendorProductApi";
 import { useSelector } from "react-redux";
 import ProductDetailModal from "./ProductDetailModal";
+import { get_single_vendor } from "@/utils/vendorApi";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -41,8 +46,34 @@ const AllProduct: React.FC = () => {
     queryFn: () => getVendorProducts(user.token),
   });
 
-  const totalPages = Math.ceil((products?.length || 0) / rowsPerPage);
-  const paginatedProducts = products?.slice(
+  const { data: vendors } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, status]);
+
+  const handleFilter = () => {
+    setCurrentPage(1); // Reset to first page when filtering
+    console.log(`Category: ${category}, Status: ${status}`);
+  };
+
+  // Filter products based on category and status
+  const filteredProducts =
+    products?.filter((product: Product) => {
+      const categoryMatch = !category || product.category === category;
+      const statusMatch =
+        !status ||
+        (status === "Stock" && product.inventory > 0) ||
+        (status === "Out-Of-Stock" && product.inventory <= 0);
+
+      return categoryMatch && statusMatch;
+    }) || [];
+
+  const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
+  const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
@@ -53,10 +84,6 @@ const AllProduct: React.FC = () => {
 
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  const handleFilter = () => {
-    console.log(`Category: ${category}, Status: ${status}`);
   };
 
   const handleProductClick = (product: Product, id: any) => {
@@ -122,9 +149,12 @@ const AllProduct: React.FC = () => {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="">Category</option>
-          <option value="Fashion">Fashion</option>
-          <option value="Electronics">Electronics</option>
+          <option value="">All Categories</option>
+          {vendors?.craftCategories?.map((cat: string) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
         </motion.select>
         <motion.select
           className="border p-2 rounded border-orange-500 outline-orange-500"
