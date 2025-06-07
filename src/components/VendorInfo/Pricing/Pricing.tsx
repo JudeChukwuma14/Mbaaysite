@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
-  ChevronLeft,
   X,
   Layers,
   LayoutGrid,
@@ -13,23 +12,42 @@ import {
   Sparkles,
   LucideListStart,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  upgradePlan,
+  getCraftCategories,
+  type UpgradePlanPayload,
+} from "@/utils/upgradeApi";
 import { useSelector } from "react-redux";
-import type { RootState } from "@/redux/store";
-import { useUpgradeVendorPlan } from "@/utils/upgradeApi";
+import { get_single_vendor } from "@/utils/vendorApi";
 
 export default function UpgradePage() {
-  // Track selected categories for the current selection
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [upgradeType, setUpgradeType] = useState<
     "Shelf" | "Counter" | "Shop" | null
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  // Get user token from Redux
-  const user = useSelector((state: RootState) => state.vendor);
+  const user = useSelector((state: any) => state.vendor);
+  const queryClient = useQueryClient();
 
-  // All available categories
+  const { data: vendor } = useQuery({
+    queryKey: ["vendor"],
+    queryFn: () => get_single_vendor(user.token),
+  });
+
+  const { data: userCraftCategories = [] } = useQuery({
+    queryKey: ["userCraftCategories"],
+    queryFn: () => getCraftCategories(user.token),
+    enabled: !!user.token,
+  });
+
+  // Plan hierarchy for progression
+  const planHierarchy = ["Starter", "Shelf", "Counter", "Shop"];
+
+  // Hardcoded categories
   const allCategories = [
     "Beauty and Wellness",
     "Jewelry and Gemstones",
@@ -39,62 +57,175 @@ export default function UpgradePage() {
     "Plant and Seeds",
     "Spices, Condiments, and Seasonings",
     "Local & Traditional Foods",
-    "Traditional Clothing & Fabrics",
+    "Fashion",
   ];
 
-  // TanStack Query mutation for upgrading plan
-  const upgradeMutation = useUpgradeVendorPlan();
+  // Replace the existing maxCategories object with this function
+  const getMaxCategories = (currentPlan: string, targetPlan: string) => {
+    const baseCategoriesForPlan = {
+      Shelf: 1,
+      Counter: 1,
+      Shop: 2,
+    };
 
-  // Get max categories allowed for the current upgrade type
-  const getMaxCategories = () => {
-    switch (upgradeType) {
-      case "Shelf":
-        return 1;
-      case "Counter":
-        return 3;
-      case "Shop":
-        return 5;
-      default:
-        return 0;
-    }
+    const currentPlanIndex = planHierarchy.indexOf(currentPlan);
+    const targetPlanIndex = planHierarchy.indexOf(targetPlan);
+
+    // Calculate how many tiers are being skipped
+    const tiersSkipped = targetPlanIndex - currentPlanIndex - 1;
+
+    // Base categories for the target plan + bonus for skipped tiers
+    const baseCategories =
+      baseCategoriesForPlan[targetPlan as keyof typeof baseCategoriesForPlan] ||
+      0;
+    const bonusCategories = Math.max(0, tiersSkipped);
+
+    return Math.min(baseCategories + bonusCategories, 5); // Cap at 5 total categories
   };
 
-  // Handle category selection in the modal
+  // Get max categories safely handling null upgradeType
+  const getMaxCategoriesSafe = () => {
+    if (!upgradeType) return 0;
+    return getMaxCategories(vendor?.storeType || "Starter", upgradeType);
+  };
+
+  // Filter out categories that user already has from getCraftCategories
+  const availableCategories = allCategories.filter(
+    (category) => !userCraftCategories.includes(category)
+  );
+
   const handleCategoryChange = (category: string) => {
     if (selectedCategories.includes(category)) {
       setSelectedCategories(selectedCategories.filter((c) => c !== category));
     } else {
-      const maxCategories = getMaxCategories();
-      if (selectedCategories.length < maxCategories) {
+      const maxCats = getMaxCategoriesSafe();
+      if (upgradeType && selectedCategories.length < maxCats) {
         setSelectedCategories([...selectedCategories, category]);
       }
     }
   };
 
-  // Open the upgrade dialog
   const handleUpgrade = (type: "Shelf" | "Counter" | "Shop") => {
     setUpgradeType(type);
+    setSelectedCategories([]);
     setOpenDialog(true);
-    setSelectedCategories([]); // Reset selections when opening dialog
   };
 
-  // Confirm the upgrade and call the API
+  const { mutate, isPending } = useMutation({
+    mutationFn: (payload: Omit<UpgradePlanPayload, "token">) =>
+      upgradePlan({ ...payload, token: user.token }),
+    onSuccess: () => {
+      toast.success(`Successfully upgraded to ${upgradeType} plan!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setOpenDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+      queryClient.invalidateQueries({ queryKey: ["userCraftCategories"] });
+    },
+    onError: (error: any) => {
+      toast.error(`Error: ${error.message || "Failed to upgrade plan"}`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    },
+  });
+
   const confirmUpgrade = () => {
-    if (!upgradeType) return;
-
-    // Call the mutation to upgrade the plan
-    upgradeMutation.mutate({
+    if (!upgradeType || !user.token) {
+      toast.error("Authentication token is missing", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      return;
+    }
+    mutate({
+      currentPlan: vendor?.storeType || "Starter",
       newPlan: upgradeType,
-      categories: selectedCategories,
-      token: user.token ?? "",
+      newCategories: selectedCategories,
     });
-
-    // Close dialog on success (handled in the mutation's onSuccess)
-    setOpenDialog(false);
   };
+
+  const renderPlanButton = (plan: string) => {
+    // The renderPlanButton function already handles this correctly, but let's add a comment to make it clearer
+    // and ensure the styling is consistent for all previous plans
+    const currentPlan = vendor?.storeType || "Starter";
+    const currentPlanIndex = planHierarchy.indexOf(currentPlan);
+    const targetPlanIndex = planHierarchy.indexOf(plan);
+
+    // Current plan
+    if (plan === currentPlan) {
+      return (
+        <div className="w-full text-center py-2 bg-gray-100 rounded text-sm font-medium">
+          Current Plan
+        </div>
+      );
+    }
+
+    // Higher tier plans (can upgrade to any of them)
+    if (targetPlanIndex > currentPlanIndex) {
+      return (
+        <motion.button
+          className="w-full text-center py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors"
+          onClick={() => handleUpgrade(plan as "Shelf" | "Counter" | "Shop")}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          Upgrade to {plan}
+        </motion.button>
+      );
+    }
+
+    // In the renderPlanButton function, update the "Previous plans" section:
+
+    // Previous plans (inactive)
+    if (targetPlanIndex < currentPlanIndex) {
+      return (
+        <div className="w-full text-center py-2 bg-gray-200 rounded text-sm font-medium text-gray-500 cursor-not-allowed">
+          Previous Plan
+        </div>
+      );
+    }
+
+    // Fallback (shouldn't reach here)
+    return (
+      <div className="w-full text-center py-2 bg-gray-200 rounded text-sm font-medium text-gray-500 cursor-not-allowed">
+        {plan}
+      </div>
+    );
+  };
+
+  // Calculate bonus message and max categories for the dialog
+  const getUpgradeInfo = () => {
+    if (!upgradeType) return { maxCategories: 0, message: "" };
+
+    const currentPlan = vendor?.storeType || "Starter";
+    const currentPlanIndex = planHierarchy.indexOf(currentPlan);
+    const targetPlanIndex = planHierarchy.indexOf(upgradeType);
+    const tiersSkipped = targetPlanIndex - currentPlanIndex - 1;
+    const maxCats = getMaxCategories(currentPlan, upgradeType);
+
+    let message = "";
+    if (tiersSkipped > 0) {
+      message = `🎉 Bonus! You're skipping ${tiersSkipped} tier${
+        tiersSkipped > 1 ? "s" : ""
+      }, so you get ${tiersSkipped} extra categor${
+        tiersSkipped > 1 ? "ies" : "y"
+      }!`;
+    } else {
+      message = `Standard upgrade: ${maxCats} categor${
+        maxCats > 1 ? "ies" : "y"
+      } for ${upgradeType} plan.`;
+    }
+
+    return { maxCategories: maxCats, message };
+  };
+
+  const upgradeInfo = getUpgradeInfo();
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <ToastContainer />
       <main className="flex-1 py-12 px-4">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -107,11 +238,11 @@ export default function UpgradePage() {
               Upgrade Your Class Option for more Features
             </h1>
             <p className="text-sm text-gray-500 mt-1">
-              Current Account: Starter
+              Current Account: {vendor?.storeType}
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Starter Plan */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
@@ -155,14 +286,10 @@ export default function UpgradePage() {
                   </li>
                 </ul>
               </div>
-              <div className="p-4 pt-0">
-                <div className="w-full text-center py-2 bg-gray-100 rounded text-sm font-medium">
-                  Current Plan
-                </div>
-              </div>
+              <div className="p-4 pt-0">{renderPlanButton("Starter")}</div>
             </motion.div>
 
-            {/* Shelves Plan */}
+            {/* Shelf Plan */}
             <motion.div
               className="border rounded-lg overflow-hidden bg-white"
               initial={{ opacity: 0, y: 20 }}
@@ -177,20 +304,20 @@ export default function UpgradePage() {
                 <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
                   <Layers className="h-4 w-4 text-gray-600" />
                 </div>
-                <h3 className="font-semibold">Shelves</h3>
+                <h3 className="font-semibold">Shelf</h3>
               </div>
               <div className="p-4">
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Select <strong>1</strong> product category
+                      Categorize products up to 100 products
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Showcase products in your own shelves
+                      Showcase products in your own shelf
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -203,16 +330,7 @@ export default function UpgradePage() {
                   </li>
                 </ul>
               </div>
-              <div className="p-4 pt-0">
-                <motion.button
-                  className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded font-medium"
-                  onClick={() => handleUpgrade("Shelf")}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  Upgrade to Shelves
-                </motion.button>
-              </div>
+              <div className="p-4 pt-0">{renderPlanButton("Shelf")}</div>
             </motion.div>
 
             {/* Counter Plan */}
@@ -237,7 +355,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Select <strong>3</strong> product categories
+                      Categorize products up to 100 products
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -256,16 +374,7 @@ export default function UpgradePage() {
                   </li>
                 </ul>
               </div>
-              <div className="p-4 pt-0">
-                <motion.button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium"
-                  onClick={() => handleUpgrade("Counter")}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  Upgrade to Counter
-                </motion.button>
-              </div>
+              <div className="p-4 pt-0">{renderPlanButton("Counter")}</div>
             </motion.div>
 
             {/* Shop Plan */}
@@ -290,7 +399,7 @@ export default function UpgradePage() {
                   <li className="flex items-start gap-2">
                     <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
                     <span className="text-sm">
-                      Select <strong>5</strong> product categories
+                      Categorize products up to 500
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
@@ -311,16 +420,7 @@ export default function UpgradePage() {
                   </li>
                 </ul>
               </div>
-              <div className="p-4 pt-0">
-                <motion.button
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-medium"
-                  onClick={() => handleUpgrade("Shop")}
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                >
-                  Upgrade to Shop
-                </motion.button>
-              </div>
+              <div className="p-4 pt-0">{renderPlanButton("Shop")}</div>
             </motion.div>
 
             {/* Premium Plan - Coming Soon */}
@@ -334,7 +434,6 @@ export default function UpgradePage() {
                 boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
               }}
             >
-              {/* Coming Soon Overlay */}
               <motion.div
                 className="absolute inset-0 bg-black/60 z-10 flex flex-col items-center justify-center"
                 initial={{ opacity: 0 }}
@@ -402,27 +501,9 @@ export default function UpgradePage() {
               </div>
             </motion.div>
           </div>
-
-          <motion.div
-            className="mt-12 text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-          >
-            <Link to="/app">
-              <motion.button
-                className="text-blue-600 text-sm flex items-center gap-1 mx-auto"
-                whileHover={{ x: -3 }}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back to Home
-              </motion.button>
-            </Link>
-          </motion.div>
         </div>
       </main>
 
-      {/* Category Selection Dialog */}
       <AnimatePresence>
         {openDialog && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -446,31 +527,40 @@ export default function UpgradePage() {
                 </div>
 
                 <p className="text-sm text-gray-500 mb-4">
-                  Please select {getMaxCategories()}{" "}
-                  {getMaxCategories() === 1 ? "category" : "categories"} for
-                  your {upgradeType} upgrade:
+                  Please select{" "}
+                  {upgradeInfo.maxCategories === 1
+                    ? "1 category"
+                    : `${upgradeInfo.maxCategories} categories`}{" "}
+                  for your {upgradeType} upgrade:
                 </p>
 
+                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                  <p className="text-xs text-blue-700">{upgradeInfo.message}</p>
+                </div>
+
                 <div className="grid grid-cols-1 gap-3">
-                  {allCategories.map((category) => (
+                  {availableCategories.map((category) => (
                     <div key={category} className="flex items-center space-x-2">
                       <label className="flex items-center space-x-2 cursor-pointer">
                         <div
                           className={`w-5 h-5 border rounded flex items-center justify-center ${
-                            selectedCategories.includes(category)
+                            selectedCategories?.includes(category)
                               ? "bg-blue-600 border-blue-600"
                               : "border-gray-300"
                           } ${
-                            selectedCategories.length >= getMaxCategories() &&
+                            upgradeType &&
+                            selectedCategories.length >=
+                              upgradeInfo.maxCategories &&
                             !selectedCategories.includes(category)
                               ? "opacity-50 cursor-not-allowed"
                               : ""
                           }`}
                           onClick={() => {
                             if (
+                              upgradeType &&
                               !(
                                 selectedCategories.length >=
-                                  getMaxCategories() &&
+                                  upgradeInfo.maxCategories &&
                                 !selectedCategories.includes(category)
                               )
                             ) {
@@ -510,36 +600,35 @@ export default function UpgradePage() {
 
                   <motion.button
                     className={`px-4 py-2 rounded font-medium ${
-                      selectedCategories.length === getMaxCategories()
-                        ? upgradeType === "Counter"
+                      upgradeType &&
+                      selectedCategories.length === upgradeInfo.maxCategories
+                        ? upgradeType === "Shelf"
                           ? "bg-orange-500 text-white"
                           : "bg-blue-600 text-white"
                         : "bg-gray-200 text-gray-500 cursor-not-allowed"
                     }`}
                     onClick={confirmUpgrade}
                     disabled={
-                      selectedCategories.length !== getMaxCategories() ||
-                      upgradeMutation.isPending
+                      !upgradeType ||
+                      selectedCategories.length !== upgradeInfo.maxCategories ||
+                      isPending
                     }
                     whileHover={
-                      selectedCategories.length === getMaxCategories()
+                      upgradeType &&
+                      selectedCategories.length === upgradeInfo.maxCategories &&
+                      !isPending
                         ? { scale: 1.03 }
                         : {}
                     }
                     whileTap={
-                      selectedCategories.length === getMaxCategories()
+                      upgradeType &&
+                      selectedCategories.length === upgradeInfo.maxCategories &&
+                      !isPending
                         ? { scale: 0.97 }
                         : {}
                     }
                   >
-                    {upgradeMutation.isPending ? (
-                      <div className="flex items-center justify-center">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                        Processing...
-                      </div>
-                    ) : (
-                      "Confirm Upgrade"
-                    )}
+                    {isPending ? "Upgrading..." : "Confirm Upgrade"}
                   </motion.button>
                 </div>
               </div>

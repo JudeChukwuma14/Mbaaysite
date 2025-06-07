@@ -1,8 +1,10 @@
+"use client";
+
 import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import type { RootState } from "@/redux/store";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
 
@@ -31,6 +33,7 @@ interface CategorySelectorProps {
   selectedSubSubCategory: string;
   setSelectedSubSubCategory: (subSubCategory: string) => void;
   categoryData?: MainCategory[];
+  onCategorySelect?: (category: string) => void;
 }
 
 export default function CategorySelector({
@@ -42,6 +45,7 @@ export default function CategorySelector({
   setSelectedSubCategory,
   selectedSubSubCategory,
   setSelectedSubSubCategory,
+  onCategorySelect,
   categoryData = [
     {
       name: "Beauty and Wellness",
@@ -176,8 +180,6 @@ export default function CategorySelector({
             { name: "Leather Jewelry" },
             { name: "Wooden Jewelry" },
             { name: "Personalized & Custom Orders" },
-            // { name: "Custom Engraving" },
-            // { name: "Personalized Gemstone Settings" },
           ],
         },
         {
@@ -1184,37 +1186,70 @@ export default function CategorySelector({
           ],
         },
         {
-          name: "Modern Clothing with Traditional Influence",
+          name: "Contemporary African Fashion",
           subSubCategories: [
             {
-              name: "Contemporary African Fashion (e.g., Ankara Dresses, Kente-inspired Styles, Batik Print Designs)",
+              name: "Ankara Dresses",
             },
-            {
-              name: "Ethnic-Inspired Urban Wear (e.g., Kimonos with Modern Cuts, Fusion Kurtas, Maasai Beadwork Clothing)",
-            },
-            {
-              name: "Fusion Clothing (e.g., Indo-Western Outfits, Afro-Western Styles)",
-            },
-            {
-              name: "Custom-Made Ethnic Fashion (e.g., Tailored Kitenge, Custom Embroidered Kaftans)",
-            },
+            { name: "Kente-inspired Styles" },
+            { name: "Batik Prints Designs" },
           ],
         },
         {
-          name: "Footwear & Shoes",
+          name: "Ethnic-Inspired Urban Wear",
           subSubCategories: [
             {
-              name: "Traditional Shoes & Sandals (e.g., Maasai Sandals, Babouches, Mojaris, Espadrilles)",
+              name: "Kimonos with Modern Cuts",
             },
-            {
-              name: "Leather & Handmade Shoes (e.g., Handcrafted Leather Shoes, Moccasins, Traditional Slippers)",
-            },
-            {
-              name: "Modern Shoes with Cultural Designs (e.g., Sneakers with African Prints, Embroidered Flats)",
-            },
-            {
-              name: "Custom Shoes & Sandals (e.g., Custom-designed Slippers, Ethnic-inspired Footwear)",
-            },
+            { name: "Fusion Kurtas" },
+            { name: "Maasai Beadwork Clothing" },
+          ],
+        },
+        {
+          name: "Fusion Clothing",
+          subSubCategories: [
+            { name: "Indo-Western Outfits" },
+            { name: "Afro-Western Styles" },
+          ],
+        },
+        {
+          name: "Custom-Made Ethnic fashion",
+          subSubCategories: [
+            { name: "Tailored Kitenge" },
+            { name: "Custom Embroidered Kaftans" },
+          ],
+        },
+        {
+          name: "Traditional Shoes & Sandals",
+          subSubCategories: [
+            { name: "Maasai" },
+            { name: "Sandals" },
+            { name: "Babouches" },
+            { name: "Mojaris" },
+            { name: "Espadrilles" },
+          ],
+        },
+        {
+          name: "Leather & Handmade Shoes",
+          subSubCategories: [
+            { name: "Handcrafted Leather Shoes" },
+            { name: "Moccasins" },
+            { name: "Traditonal Slippers" },
+          ],
+        },
+        {
+          name: "Modern Shoes with Cultural Designs",
+          subSubCategories: [
+            { name: "Sneakers" },
+            { name: "African Prints" },
+            { name: "Embroidered Flats" },
+          ],
+        },
+        {
+          name: "Custom Shoes & Sandals",
+          subSubCategories: [
+            { name: "Custom-designed Slippers" },
+            { name: "Ethnic-inspired Footwear" },
           ],
         },
         {
@@ -1574,22 +1609,33 @@ export default function CategorySelector({
     vendorPlan === "Shop" ||
     vendorPlan === "Premium";
   const user = useSelector((state: RootState) => state.vendor);
-  const { data: vendors } = useQuery({
+  const {} = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
 
-  // Determine the vendor's selected category
-  const vendorCategory = vendors?.craftCategories?.[0] || activeCategory;
+  // Use the activeCategory passed from parent (which gets updated from dropdown selection)
+  const currentCategory = activeCategory;
   const activeCategoryObj = categoryData.find(
-    (cat) => cat.name === vendorCategory
+    (cat) => cat.name === currentCategory
   );
 
   // Reset subcategory and sub-subcategory when active category changes
   useEffect(() => {
-    setSelectedSubCategory("");
-    setSelectedSubSubCategory("");
-  }, [vendorCategory, setSelectedSubCategory, setSelectedSubSubCategory]);
+    if (onCategorySelect && currentCategory) {
+      // Find the first subcategory for the new category
+      const firstSubCategory =
+        activeCategoryObj?.subCategories?.[0]?.name || "";
+      setSelectedSubCategory(firstSubCategory);
+      setSelectedSubSubCategory("");
+    }
+  }, [
+    currentCategory,
+    activeCategoryObj,
+    setSelectedSubCategory,
+    setSelectedSubSubCategory,
+    onCategorySelect,
+  ]);
 
   // Reset sub-subcategory when subcategory changes
   useEffect(() => {
@@ -1601,9 +1647,8 @@ export default function CategorySelector({
     return (
       <div className="relative">
         <motion.select
-          className="bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 appearance-none cursor-pointer focus:outline-n
-System: one focus:ring-2 focus:ring-orange-500"
-          value={vendorCategory}
+          className="bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500"
+          value={currentCategory}
           onChange={(e) => handleCategoryChange(e.target.value)}
           disabled // Disable for non-upgraded vendors to prevent changing category
         >
@@ -1638,14 +1683,14 @@ System: one focus:ring-2 focus:ring-orange-500"
           <motion.input
             type="text"
             className="w-full p-3 border rounded-lg bg-gray-100"
-            value={vendorCategory}
+            value={currentCategory}
             readOnly
           />
         </div>
 
         {/* Subcategory Selection */}
         <div className="space-y-2">
-          <label className="block text-sm font-medium">{vendorCategory}</label>
+          <label className="block text-sm font-medium">{currentCategory}</label>
           <div className="relative">
             <motion.select
               className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
