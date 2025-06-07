@@ -12,13 +12,11 @@ interface ImageUploaderProps {
   setImagePreviewUrls: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-// Constants for image validation
 const MIN_IMAGES = 4;
 const MAX_IMAGES = 4;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-// Helper function to format file size
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;
@@ -37,9 +35,7 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  // Validate image file
   const validateImageFile = (file: File): boolean => {
-    // Check file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast.error(
         `Invalid file type: ${file.name}. Please upload JPEG, PNG, or WebP images only.`,
@@ -51,7 +47,6 @@ export default function ImageUploader({
       return false;
     }
 
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       toast.error(
         `Image "${file.name}" is too large (${formatFileSize(
@@ -68,7 +63,6 @@ export default function ImageUploader({
     return true;
   };
 
-  // Handle drag over event
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -276,7 +270,6 @@ export default function ImageUploader({
                 >
                   Click to upload images
                 </p>
-                {/* <p className="text-sm text-gray-500">or drag and drop</p> */}
                 <p className="text-xs text-gray-400 mt-1">
                   Max {formatFileSize(MAX_FILE_SIZE)}
                 </p>

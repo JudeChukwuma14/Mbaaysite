@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,7 +6,6 @@ import type { RootState } from "@/redux/store";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
 
-// Define types for our category structure
 interface SubSubCategory {
   name: string;
 }

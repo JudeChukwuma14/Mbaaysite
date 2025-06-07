@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useRef } from "react";
 import { motion } from "framer-motion";
@@ -26,7 +24,6 @@ export default function DescriptionSection({
 }: DescriptionSectionProps) {
   const descriptionFileRef = useRef<HTMLInputElement>(null);
 
-  // Text formatting functions that replicate text editor functionality
   const handleTextFormatting = (action: string) => {
     const textarea = document.getElementById(
       "product-description"
