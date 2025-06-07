@@ -38,7 +38,6 @@ const craftCategories = [
   "Plant and Seeds",
   "Spices, Condiments and Seasonings",
   "Local & Traditional Foods",
-  "Traditional Clothing and Fabrics",
   "Traditional and Religious Items",
   "Local Food and Drink Products",
 ]
@@ -112,7 +111,7 @@ const Registration: React.FC = () => {
                 <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-orange-500 rounded-2xl lg:mx-0">
                   <Store className="w-8 h-8 text-white" />
                 </div>
-                       <h1 className="mb-4 text-2xl font-bold text-gray-900 lg:text-5xl">
+                <h1 className="mb-4 text-2xl font-bold text-gray-900 lg:text-5xl">
                   Welcome to <span className="text-orange-500">Mbaay.com</span>
                 </h1>
                 <p className="mb-4 text-sm text-center text-gray-600">

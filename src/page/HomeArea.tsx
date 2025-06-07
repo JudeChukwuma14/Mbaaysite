@@ -8,7 +8,7 @@ import { ChevronRight } from "lucide-react";
 
 // Import components
 import Slider from "@/components/Slider";
-import CategoryCard from "@/components/categorycardprops/CategoryCard";
+// import CategoryCard from "@/components/categorycardprops/CategoryCard";
 import FirstCartCard from "@/components/Cards/FirstCartCard";
 import NewCard from "@/components/Cards/NewCard";
 import VendorCard from "@/components/VendorCard";
@@ -30,16 +30,12 @@ import { getAllProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
 
 // Import images
-import Fashion from "../assets/image/Fashion.jpeg";
-import Jewelry from "../assets/image/Jeal.jpeg";
-import Art from "../assets/image/Art.jpeg";
-import wellness from "../assets/image/Wellness.jpg";
-import BookPoetry from "../assets/image/Bookspoetry.jpg";
-import Furniture from "@/assets/image/Furniture.jpg";
+
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
+import CategoriesSection from "@/components/Reuseable/CategoriesSection";
 
 interface Product {
   _id: string;
@@ -65,18 +61,18 @@ const HomeArea: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [getVender, setGetVendor] = useState<VendorProfile[]>([]);
 
-  const categoriesData = [
-    { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
-    { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
-    { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
-    { imageSrc: Furniture, title: "Home Décor", link: "/homedecor" },
-    {
-      imageSrc: wellness,
-      title: "Beauty and wellness",
-      link: "/beautywellness",
-    },
-    { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
-  ];
+  // const categoriesData = [
+  //   { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
+  //   { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
+  //   { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
+  //   { imageSrc: Furniture, title: "Home Décor", link: "/homedecor" },
+  //   {
+  //     imageSrc: wellness,
+  //     title: "Beauty and wellness",
+  //     link: "/beautywellness",
+  //   },
+  //   { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
+  // ];
 
   const createInitialAvatar = (name: string) => {
     // Get first letter and ensure it's uppercase
@@ -157,7 +153,7 @@ const HomeArea: React.FC = () => {
       </section>
 
       {/* Categories Section */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
+      {/* <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
           <span className="font-medium text-orange-500">Category</span>
@@ -183,8 +179,8 @@ const HomeArea: React.FC = () => {
             />
           ))}
         </div>
-      </section>
-
+      </section> */}
+<CategoriesSection/>
       {/* Explore Products */}
 
       <section className="container px-4 mx-auto mb-16 md:px-8">

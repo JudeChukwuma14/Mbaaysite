@@ -1070,9 +1070,9 @@ export const categories = [
     ],
   },
   {
-    name: "Traditional Clothing & Fabrics",
+    name: "Local Drink",
     image: TC,
-    link: "/tranditionalFabrics",
+    link: "/local-drinks",
     subcategories: [
       {
         link: "/MenTraditional",

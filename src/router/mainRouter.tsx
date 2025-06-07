@@ -600,7 +600,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       {
-        path: "/tranditionalFabrics",
+        path: "/local-drinks",
         element: withSuspense(TranditionalFabrics),
       },
       { path: "/art", element: withSuspense(Art) },
