@@ -1,35 +1,64 @@
-
-
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
-import { ChevronDown, ChevronUp } from "lucide-react"
-import { categories } from "../mockdata/categoryData"
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { categories } from "../mockdata/categoryData";
 
 export default function Dropdown() {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
-  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleToggleCategory = (category: string) => {
-    setActiveCategory(activeCategory === category ? null : category)
-    if (hoverTimeout) clearTimeout(hoverTimeout)
-  }
+    setActiveCategory(activeCategory === category ? null : category);
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+  };
 
   const handleMouseEnter = (category: string) => {
-    if (hoverTimeout) clearTimeout(hoverTimeout)
-    setActiveCategory(category)
-  }
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+    setActiveCategory(category);
+  };
 
   const handleMouseLeave = () => {
-    const timeout = setTimeout(() => setActiveCategory(null), 300) // Increased timeout for better UX
-    setHoverTimeout(timeout as NodeJS.Timeout)
-  }
+    const timeout = setTimeout(() => setActiveCategory(null), 300);
+    setHoverTimeout(timeout as NodeJS.Timeout);
+  };
 
   useEffect(() => {
     return () => {
-      if (hoverTimeout) clearTimeout(hoverTimeout)
-    }
-  }, [hoverTimeout])
+      if (hoverTimeout) clearTimeout(hoverTimeout);
+    };
+  }, [hoverTimeout]);
+
+  // Helper function to render items (handles both strings and nested objects)
+  const renderItems = (items: any[], linkPrefix: string) => {
+    return items.map((item) => {
+      if (typeof item === "string") {
+        return (
+          <li key={item} className="cursor-pointer hover:text-black">
+            <Link to={`${linkPrefix}/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+              {item}
+            </Link>
+          </li>
+        );
+      } else if (item.title && item.items) {
+        return (
+          <div key={item.title} className="mt-2">
+            <span className="text-[10px] font-semibold">{item.title}</span>
+            <ul className="ml-2 text-[10px] text-gray-600">
+              {item.items.map((subItem: string) => (
+                <li key={subItem} className="cursor-pointer hover:text-black">
+                  <Link to={`${linkPrefix}/${subItem.toLowerCase().replace(/\s+/g, '-')}`}>
+                    {subItem}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      }
+      return null;
+    });
+  };
 
   return (
     <div className="relative bg-white border-b border-gray-200">
@@ -58,14 +87,7 @@ export default function Dropdown() {
                           </span>
                         </Link>
                         <ul className="text-[10px] text-gray-600">
-                          {sub.items.map((item) => (
-                            <li
-                              key={item}
-                              className="cursor-pointer hover:text-black"
-                            >
-                              {item}
-                            </li>
-                          ))}
+                          {renderItems(sub.items, sub.link)}
                         </ul>
                       </div>
                     ))}
@@ -84,7 +106,6 @@ export default function Dropdown() {
           ))}
         </div>
       </nav>
-
 
       {/* Mobile Navigation */}
       <div className="md:hidden">
@@ -128,15 +149,7 @@ export default function Dropdown() {
                             {sub.title}
                           </Link>
                           <ul className="mt-1 space-y-1">
-                            {sub.items.slice(0, 5).map(
-                              (
-                                item, // Limit items on mobile
-                              ) => (
-                                <li key={item} className="text-xs text-gray-600 hover:text-orange-500">
-                                  <Link to="#">{item}</Link>
-                                </li>
-                              ),
-                            )}
+                            {renderItems(sub.items.slice(0, 5), sub.link)}
                           </ul>
                         </div>
                       ))}
@@ -158,5 +171,5 @@ export default function Dropdown() {
         )}
       </div>
     </div>
-  )
+  );
 }

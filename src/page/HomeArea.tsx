@@ -61,18 +61,6 @@ const HomeArea: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [getVender, setGetVendor] = useState<VendorProfile[]>([]);
 
-  // const categoriesData = [
-  //   { imageSrc: Fashion, title: "Fashion", link: "/fashion" },
-  //   { imageSrc: Jewelry, title: "Jewelry", link: "/jewelry" },
-  //   { imageSrc: Art, title: "Art and Sculpture", link: "/art" },
-  //   { imageSrc: Furniture, title: "Home Décor", link: "/homedecor" },
-  //   {
-  //     imageSrc: wellness,
-  //     title: "Beauty and wellness",
-  //     link: "/beautywellness",
-  //   },
-  //   { imageSrc: BookPoetry, title: "Books and Poetry", link: "/book-poetry" },
-  // ];
 
   const createInitialAvatar = (name: string) => {
     // Get first letter and ensure it's uppercase
@@ -152,35 +140,8 @@ const HomeArea: React.FC = () => {
         <Slider />
       </section>
 
-      {/* Categories Section */}
-      {/* <section className="container px-4 mx-auto mb-16 md:px-8">
-        <div className="flex items-center mb-3">
-          <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
-          <span className="font-medium text-orange-500">Category</span>
-        </div>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
-            Browse By Category
-          </h2>
-          <Link
-            to="/"
-            className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
-          >
-            View All <ChevronRight size={16} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-          {categoriesData.map((category, index) => (
-            <CategoryCard
-              key={index}
-              imageSrc={category.imageSrc}
-              title={category.title}
-              link={category.link}
-            />
-          ))}
-        </div>
-      </section> */}
-<CategoriesSection/>
+
+      <CategoriesSection />
       {/* Explore Products */}
 
       <section className="container px-4 mx-auto mb-16 md:px-8">

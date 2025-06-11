@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getAllProduct} from "@/utils/productApi";
+import { getAllProduct } from "@/utils/productApi";
 import {
   FaChevronRight,
   FaHome,
@@ -9,15 +9,6 @@ import {
 } from "react-icons/fa";
 import { motion, Variants } from "framer-motion";
 import NewArrival from "@/components/Cards/NewArrival";
-import VintageTextiles from "@/assets/image/VintageTextiles.jpg";
-import VintageClothing from "@/assets/image/VintageClothing.jpg";
-import VintageHomeDecor from "@/assets/image/VintageHomeDecor.jpg";
-import VintageInstruments from "@/assets/image/VintageInstruments.jpg";
-import VintageArt from "@/assets/image/VintageArt.jpg";
-import VintageFurniture from "@/assets/image/VintageFurniture.jpg";
-import VintageHandicrafts from "@/assets/image/VintageHandicrafts.jpg";
-import VintageReligious from "@/assets/image/VintageR.jpg";
-import VintageStorage from "@/assets/image/VintageStorage.jpg";
 
 // Define interfaces for type safety
 interface Product {
@@ -25,7 +16,7 @@ interface Product {
   name: string;
   price: number;
   images: string[];
-  createdAt: string;
+  createdAt?: string;
   category: string;
   sub_category?: string;
   sub_category2?: string;
@@ -39,15 +30,10 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-  { image: VintageTextiles, link: "/vintage-textiles", text: "Vintage Textiles and Fabrics" },
-  { image: VintageClothing, link: "/vintage-clothing", text: "Vintage Clothing" },
-  { image: VintageHomeDecor, link: "/vintage-home-decor", text: "Vintage Home Decor" },
-  { image: VintageInstruments, link: "/vintage-instruments", text: "Vintage Instruments" },
-  { image: VintageArt, link: "/vintage-art", text: "Vintage Art" },
-  { image: VintageFurniture, link: "/vintage-furniture", text: "Vintage Furniture" },
-  { image: VintageHandicrafts, link: "/vintage-handicrafts", text: "Vintage Handicrafts" },
-  { image: VintageReligious, link: "/vintage-religious", text: "Vintage Religious and Spiritual Items" },
-  { image: VintageStorage, link: "/vintage-storage", text: "Vintage Storage" },
+  { image: "https://i.pinimg.com/736x/1b/46/51/1b4651a63d04892434940d1a7fe1e5c4.jpg", text: "Vintage Jewelry", link: "/vintage-jewelry" },
+  { image: "https://i.pinimg.com/736x/bb/b1/69/bbb1694f4176b6cc2af031b87ef24c45.jpg", text: "Religious & Spiritual Jewelry", link: "/religious-jewelry" },
+  { image: "https://i.pinimg.com/736x/b3/e6/4d/b3e64d880d83ac1032eb6f35295429c9.jpg", text: "Cultural Gemstones", link: "/cultural-gemstones" },
+  { image: "https://i.pinimg.com/736x/e9/ff/ab/e9ffab23a31618920c2117f2660dc2ef.jpg", text: "Festive & Ritual Jewelry", link: "/festive-jewelry" },
 ];
 
 // Animation variants for containers
@@ -87,7 +73,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <p className="max-w-md mb-6 text-gray-600">{message}</p>
     <Link
       to="/shop"
-      className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
       aria-label="Continue shopping"
     >
       <FaShoppingCart aria-hidden="true" />
@@ -106,14 +92,14 @@ const EmptyState: React.FC = () => (
   >
     <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
     <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-      No Vintage Products Found
+      No Vintage & Antique Jewelry Products Found
     </h2>
     <p className="max-w-md mb-6 text-gray-600">
       No products are available in this category. Browse our shop to find your favorite products!
     </p>
     <Link
       to="/shop"
-      className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
       aria-label="Continue shopping"
     >
       <FaShoppingCart aria-hidden="true" />
@@ -125,9 +111,9 @@ const EmptyState: React.FC = () => (
 // Reusable Subcategory Card Component
 const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
   <motion.div variants={childVariants}>
-    <Link to={link} className="focus:outline-none focus:ring-2 focus:ring-orange-400">
+    <Link to={link} className="rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400">
       <div className="flex flex-col items-center justify-center group">
-        <div className="flex items-center justify-center w-24 h-24 mb-2 overflow-hidden bg-gray-100 rounded-full shadow-md md:w-32 md:h-32">
+        <div className="flex items-center justify-center w-24 h-24 mb-3 overflow-hidden bg-gray-100 rounded-full shadow-md sm:w-28 sm:h-28 md:w-32 md:h-32">
           <img
             src={image}
             alt={text}
@@ -136,7 +122,7 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-        <p className="text-sm font-medium text-center text-gray-800 group-hover:text-orange-500">
+        <p className="text-sm font-medium text-center text-gray-800 group-hover:text-orange-600 line-clamp-2">
           {text}
         </p>
       </div>
@@ -144,7 +130,7 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
   </motion.div>
 );
 
-const Vintage: React.FC = () => {
+const VintageJewelry: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -161,13 +147,13 @@ const Vintage: React.FC = () => {
 
         const filtered = allProducts.filter(
           (product: Product) =>
-            product.category?.toLowerCase() === "vintage"
+            product.category?.toLowerCase() === "vintage & antique jewelry"
         );
 
         setProducts(filtered);
       } catch (err) {
         console.error("Error fetching products:", err);
-        setError("Failed to fetch products. Please try again later.");
+        setError("Failed to fetch vintage jewelry. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -182,7 +168,8 @@ const Vintage: React.FC = () => {
       products
         .sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b.createdAt || "").getTime() -
+            new Date(a.createdAt || "").getTime()
         )
         .slice(0, 10), // Limit to 10 products for 2 rows on xl screens
     [products]
@@ -208,14 +195,14 @@ const Vintage: React.FC = () => {
         >
           <Link
             to="/"
-            className="flex items-center gap-1 transition-colors hover:text-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="flex items-center gap-1 transition-colors rounded hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
             aria-label="Home"
           >
             <FaHome aria-hidden="true" />
             Home
           </Link>
           <FaChevronRight className="text-xs" aria-hidden="true" />
-          <span className="font-medium text-gray-800">Vintage</span>
+          <span className="font-medium text-gray-800">Vintage & Antique Jewelry</span>
         </motion.nav>
 
         {/* Subcategories */}
@@ -278,4 +265,4 @@ const Vintage: React.FC = () => {
   );
 };
 
-export default Vintage;
+export default VintageJewelry;

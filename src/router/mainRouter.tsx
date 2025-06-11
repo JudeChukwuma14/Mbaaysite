@@ -128,17 +128,14 @@ const Spices = lazy(
 const Jewelry = lazy(
   () => import("@/components/AllCategory/Jewelry&Gemstones/Jewelry")
 );
-const TranditionalFabrics = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/TranditionalFabrics"
-    )
-);
+
 const Vintage = lazy(
   () => import("@/components/AllCategory/VintageStocks/Vintage")
 );
-
-const Art = lazy(() => import("@/components/AllCategory/Art/ArtPage"))
+const VintageJewelry = lazy(
+  () => import("@/components/AllCategory/VintageAntiqueJewelry/VintageAntique")
+);
+const Art = lazy(() => import("@/components/AllCategory/Art&Sculptures/ArtPage"))
 
 // BeautyWellness Subcategory Page
 const Skincare = lazy(
@@ -502,24 +499,6 @@ const SpecialDietary = lazy(() => import("@/components/AllCategory/SpicesCondime
 const SpiceKits = lazy(() => import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/SpiceKits"));
 const Spicesi = lazy(() => import("@/components/AllCategory/SpicesCondiments&Seasonings/subcategory/Spices"));
 
-//  traditionalFabrics subcategory
-const ChildrenTranditional = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/ChildrenTranditional"));
-const CountryRegional = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CountryRegion"));
-const CulturalAccessories = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalAccessories"));
-const CulturalFootwear = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalFootwear"));
-const EthicalFashion = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/EthicalFashion"));
-const FabricsTextiles = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricsTextiles"));
-const FabricTypes = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricType"));
-const FashionSpecific = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FashionSpecific"));
-const FestivalClothing = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FestivalClothing"));
-const Footwear = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/Footwear"));
-const FunctionalCategories = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FunctionalCategories"));
-const MenTraditional = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/MenTraditional"));
-const OccasionFashion = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/OccasionFashion"));
-const TailoredClothing = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TailoredClothing"));
-const TraditionalEmbroidery = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TraditionalEmbroidery"));
-const UnisexTranditional = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/UnisexTranditional"));
-const WomenTranditional = lazy(() => import("@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/WomenTranditional"));
 
 // Fashion Subcategory
 const Accessories = lazy(() => import("@/components/AllCategory/Fashion/subcategory/Accessories"))
@@ -598,11 +577,8 @@ const routesConfig: RouteObject[] = [
       { path: "/spices", element: withSuspense(Spices) },
       { path: "/jewelry", element: withSuspense(Jewelry) },
       { path: "/vintage", element: withSuspense(Vintage) },
+      { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
-      {
-        path: "/local-drinks",
-        element: withSuspense(TranditionalFabrics),
-      },
       { path: "/art", element: withSuspense(Art) },
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
@@ -739,24 +715,7 @@ const routesConfig: RouteObject[] = [
       { path: "/SpiceKits", element: withSuspense(SpiceKits) },
       { path: "/Spices-i", element: withSuspense(Spicesi) },
 
-      // traditionalFabrics subcategory
-      { path: "/ChildrenTranditional", element: withSuspense(ChildrenTranditional) },
-      { path: "/CountryRegional", element: withSuspense(CountryRegional) },
-      { path: "/CulturalAccessories", element: withSuspense(CulturalAccessories) },
-      { path: "/CulturalFootwear", element: withSuspense(CulturalFootwear) },
-      { path: "/EthicalFashion", element: withSuspense(EthicalFashion) },
-      { path: "/FabricsTextiles", element: withSuspense(FabricsTextiles) },
-      { path: "/FabricType", element: withSuspense(FabricTypes) },
-      { path: "/FashionSpecific", element: withSuspense(FashionSpecific) },
-      { path: "/FestivalClothing", element: withSuspense(FestivalClothing) },
-      { path: "/Footwear", element: withSuspense(Footwear) },
-      { path: "/FunctionalCategories", element: withSuspense(FunctionalCategories) },
-      { path: "/MenTraditional", element: withSuspense(MenTraditional) },
-      { path: "/OccasionFashion", element: withSuspense(OccasionFashion) },
-      { path: "/TailoredClothing", element: withSuspense(TailoredClothing) },
-      { path: "/TraditionalEmbroidery", element: withSuspense(TraditionalEmbroidery) },
-      { path: "/UnisexTranditional", element: withSuspense(UnisexTranditional) },
-      { path: "/WomenTranditional", element: withSuspense(WomenTranditional) },
+
 
       // Local & Traditional Foods Subcategory
       { path: "/CulturallySpecific", element: withSuspense(CulturallySpecific) },
