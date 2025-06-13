@@ -12,7 +12,7 @@ import ErrorPage from "@/components/Error/ErrorPage";
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
-const Cart = lazy(() => import("@/components/Cart"));
+const Cart = lazy(() => import("@/components/Payment/Cart"));
 const ProductDetail = lazy(() => import("@/components/ProductDetail"));
 const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
@@ -26,7 +26,7 @@ const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
   () => import("@/components/profileMangement/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
+const CheckOut = lazy(() => import("@/components/Payment/CheckOut"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -116,9 +116,8 @@ const BookPoetry = lazy(
 const HomeDecor = lazy(
   () => import("@/components/AllCategory/HomeDécor&Accessories/HomeDecor")
 );
-const LocalFood = lazy(
-  () => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood")
-);
+const LocalFood = lazy(() => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood"));
+const LocalFoodsDrinks = lazy(() => import("@/components/AllCategory/LocalFoodandDrinksProducts/LocalFoodsDrinks"));
 const PlantSeed = lazy(
   () => import("@/components/AllCategory/Plant&Seeds/PlantSeed")
 );
@@ -129,13 +128,10 @@ const Jewelry = lazy(
   () => import("@/components/AllCategory/Jewelry&Gemstones/Jewelry")
 );
 
-const Vintage = lazy(
-  () => import("@/components/AllCategory/VintageStocks/Vintage")
-);
-const VintageJewelry = lazy(
-  () => import("@/components/AllCategory/VintageAntiqueJewelry/VintageAntique")
-);
+const Vintage = lazy(() => import("@/components/AllCategory/VintageStocks/Vintage"));
+const VintageJewelry = lazy(() => import("@/components/AllCategory/VintageAntiqueJewelry/VintageAntique"));
 const Art = lazy(() => import("@/components/AllCategory/Art&Sculptures/ArtPage"))
+const Traditionalitems =lazy(() => import("@/components/AllCategory/TraditionalandReligiousItems/TranditionalReligiousItems"))
 
 // BeautyWellness Subcategory Page
 const Skincare = lazy(
@@ -566,6 +562,7 @@ const routesConfig: RouteObject[] = [
       { path: "/random-product", element: withSuspense(RandomProductPage) },
       { path: "/more-vendor", element: withSuspense(AllVendor) },
       { path: "/veiws-profile/:id", element: withSuspense(VendorProfileProduct), errorElement: <ErrorPage /> },
+      { path: "/checkout", element: withSuspense(CheckOut) },
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
@@ -573,12 +570,14 @@ const routesConfig: RouteObject[] = [
       { path: "/book-poetry", element: withSuspense(BookPoetry) },
       { path: "/homedecor", element: withSuspense(HomeDecor) },
       { path: "/localfood", element: withSuspense(LocalFood) },
+      { path: "/localfooddrinks", element: withSuspense(LocalFoodsDrinks) },
       { path: "/plantseed", element: withSuspense(PlantSeed) },
       { path: "/spices", element: withSuspense(Spices) },
       { path: "/jewelry", element: withSuspense(Jewelry) },
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
+      { path: "/traditional-items", element: withSuspense(Traditionalitems) },
       { path: "/art", element: withSuspense(Art) },
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
@@ -774,7 +773,6 @@ const routesConfig: RouteObject[] = [
       },
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
-      { path: "/dashboard/checkout", element: withSuspense(CheckOut) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
       { path: "/dashboard/user-index", element: withSuspense(userIndex) },
     ],

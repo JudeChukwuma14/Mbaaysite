@@ -6,20 +6,20 @@ import { useEffect, useRef, useState } from 'react';
 
 // Categories data array
 const categoriesData = [
-    { imageSrc: "https://img.freepik.com/free-photo/funereal-cockatoo-calyptorhynchus-funereus-illustrated-by-elizabeth-gould_53876-65555.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Art and Sculpture', link: '/art' },
-    { imageSrc: "https://i.pinimg.com/736x/09/c6/2d/09c62d72e596d2b4787b1f2c1afe1d1c.jpg", title: 'Beauty and Wellness', link: '/beautywellness' },
-    { imageSrc: "https://i.pinimg.com/736x/41/59/c3/4159c3130c611456e97cb861d35a5858.jpg", title: 'Books and Poetry', link: '/book-poetry' },
-    { imageSrc: "https://i.pinimg.com/736x/3f/90/28/3f9028655d750fce1ec5e8e5d059a431.jpg", title: 'Fashion', link: '/fashion' },
-    { imageSrc: "https://i.pinimg.com/736x/0d/a9/c0/0da9c03185a9e8ef8cdf67f6196bf4f4.jpg", title: 'Furniture', link: '/furniture' },
-    { imageSrc: "https://i.pinimg.com/736x/01/ad/73/01ad73f4506cf99c2c3c065545013880.jpg", title: 'Jewelry and Gemstones', link: '/jewelry' },
-    { imageSrc: "https://i.pinimg.com/736x/20/aa/2c/20aa2cc0317fa7fe4b555ccad125651b.jpg", title: 'Vintage and Antique Jewelry', link: '/vintage-jewelry' },
-    { imageSrc: "https://i.pinimg.com/736x/ef/28/60/ef2860d2ac4d31a20613198afcf78a94.jpg", title: 'Home Décor and Accessories', link: '/homedecor' },
-    { imageSrc: "https://img.freepik.com/free-photo/vintage-wooden-radios-cloth_23-2148695299.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Vintage Stocks', link: '/vintage' },
-    { imageSrc: "https://i.pinimg.com/736x/70/76/48/707648d88478a6bf29d6a7643ab74dec.jpg", title: 'Plant and Seeds', link: '/plantseed' },
-    { imageSrc: "https://i.pinimg.com/736x/0e/70/ca/0e70ca1f4b145087c1bd23fb4f6aeb91.jpg", title: 'Spices, Condiments and Seasonings', link: '/spices' },
-    { imageSrc: "https://i.pinimg.com/736x/9a/b8/19/9ab81906c6e93c501a8fb4a5397eb62d.jpg", title: 'Local & Traditional Foods', link: '/localfood' },
-    { imageSrc: "https://img.freepik.com/free-photo/metallic-items-second-hand-market_23-2149338422.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Traditional and Religious Items', link: '/traditional-items' },
-    { imageSrc: "https://i.pinimg.com/736x/a2/8b/90/a28b90cd971ba4a8ce9711eba8070b45.jpg", title: 'Local Food and Drink Products', link: '/local-drinks' },
+  { imageSrc: "https://img.freepik.com/free-photo/funereal-cockatoo-calyptorhynchus-funereus-illustrated-by-elizabeth-gould_53876-65555.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Art and Sculpture', link: '/art' },
+  { imageSrc: "https://i.pinimg.com/736x/09/c6/2d/09c62d72e596d2b4787b1f2c1afe1d1c.jpg", title: 'Beauty and Wellness', link: '/beautywellness' },
+  { imageSrc: "https://i.pinimg.com/736x/41/59/c3/4159c3130c611456e97cb861d35a5858.jpg", title: 'Books and Poetry', link: '/book-poetry' },
+  { imageSrc: "https://i.pinimg.com/736x/3f/90/28/3f9028655d750fce1ec5e8e5d059a431.jpg", title: 'Fashion', link: '/fashion' },
+  { imageSrc: "https://i.pinimg.com/736x/0d/a9/c0/0da9c03185a9e8ef8cdf67f6196bf4f4.jpg", title: 'Furniture', link: '/furniture' },
+  { imageSrc: "https://i.pinimg.com/736x/ef/28/60/ef2860d2ac4d31a20613198afcf78a94.jpg", title: 'Home Décor and Accessories', link: '/homedecor' },
+  { imageSrc: "https://i.pinimg.com/736x/01/ad/73/01ad73f4506cf99c2c3c065545013880.jpg", title: 'Jewelry and Gemstones', link: '/jewelry' },
+  { imageSrc: "https://i.pinimg.com/736x/9a/b8/19/9ab81906c6e93c501a8fb4a5397eb62d.jpg", title: 'Local & Traditional Foods', link: '/localfood' },
+  { imageSrc: "https://i.pinimg.com/736x/a2/8b/90/a28b90cd971ba4a8ce9711eba8070b45.jpg", title: 'Local Food and Drink Products', link: '/localfooddrinks' },
+  { imageSrc: "https://i.pinimg.com/736x/70/76/48/707648d88478a6bf29d6a7643ab74dec.jpg", title: 'Plant and Seeds', link: '/plantseed' },
+  { imageSrc: "https://i.pinimg.com/736x/0e/70/ca/0e70ca1f4b145087c1bd23fb4f6aeb91.jpg", title: 'Spices, Condiments and Seasonings', link: '/spices' },
+  { imageSrc: "https://img.freepik.com/free-photo/metallic-items-second-hand-market_23-2149338422.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Traditional and Religious Items', link: '/traditional-items' },
+  { imageSrc: "https://img.freepik.com/free-photo/vintage-wooden-radios-cloth_23-2148695299.jpg?ga=GA1.1.642372306.1746340677&semt=ais_hybrid&w=740", title: 'Vintage Stocks', link: '/vintage' },
+  { imageSrc: "https://i.pinimg.com/736x/20/aa/2c/20aa2cc0317fa7fe4b555ccad125651b.jpg", title: 'Vintage and Antique Jewelry', link: '/vintage-jewelry' },
 ];
 
 
@@ -104,11 +104,10 @@ const CategoriesSection = () => {
           <button
             onClick={scrollLeft}
             disabled={!canScrollLeft}
-            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-300 ${
-              canScrollLeft
-                ? "hover:bg-orange-50 hover:border-orange-200 text-gray-700 hover:text-orange-500"
-                : "text-gray-300 cursor-not-allowed"
-            }`}
+            className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-300 ${canScrollLeft
+              ? "hover:bg-orange-50 hover:border-orange-200 text-gray-700 hover:text-orange-500"
+              : "text-gray-300 cursor-not-allowed"
+              }`}
           >
             <ChevronLeft size={20} />
           </button>
@@ -119,11 +118,10 @@ const CategoriesSection = () => {
           <button
             onClick={scrollRight}
             disabled={!canScrollRight}
-            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-300 ${
-              canScrollRight
-                ? "hover:bg-orange-50 hover:border-orange-200 text-gray-700 hover:text-orange-500"
-                : "text-gray-300 cursor-not-allowed"
-            }`}
+            className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-white shadow-lg border border-gray-200 flex items-center justify-center transition-all duration-300 ${canScrollRight
+              ? "hover:bg-orange-50 hover:border-orange-200 text-gray-700 hover:text-orange-500"
+              : "text-gray-300 cursor-not-allowed"
+              }`}
           >
             <ChevronRight size={20} />
           </button>
@@ -155,9 +153,9 @@ const CategoriesSection = () => {
       </div>
 
       {/* Mobile Scroll Hint */}
-      <div className="mt-4 text-center md:hidden">
+      {/* <div className="mt-4 text-center md:hidden">
         <p className="text-xs text-gray-500">← Swipe to see more categories →</p>
-      </div>
+      </div> */}
     </section>
   )
 }

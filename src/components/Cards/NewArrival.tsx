@@ -9,6 +9,8 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { convertPrice } from "@/utils/currencyCoverter";
+import { getSessionId } from "@/utils/session";
+import { addToCart } from "@/utils/cartApi";
 
 
 interface Product {
@@ -28,20 +30,26 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   const dispatch = useDispatch();
   const { currency, language } = useSelector((state: RootState) => state.settings);
 
-  const handleAddToCartClick = (e: React.MouseEvent) => {
+  const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    const sessionId = getSessionId()
 
-    dispatch(
-      addItem({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        image: product.images[0] || product.poster,
-      })
-    );
-    toast.success(`${product.name} added to cart!`);
+    try {
+      await addToCart(sessionId, product._id, 1)
+      dispatch(
+        addItem({
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.images[0] || product.poster,
+        })
+      );
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+
+    }
   };
 
   const handleAddWishlist = (e: React.MouseEvent) => {

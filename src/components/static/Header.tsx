@@ -63,7 +63,7 @@ const Header: React.FC = () => {
     setCountrySearch("");
   };
 
- const firstLetter = vendor?.storeName
+  const firstLetter = vendor?.storeName
     ? vendor.storeName.charAt(0).toUpperCase()
     : vendor?.id
       ? "V"
@@ -228,6 +228,14 @@ const Header: React.FC = () => {
           >
             {vendor ? "Vendor Dashboard" : "Become a Vendor"}
           </Link>
+          {vendor && (
+            <Link
+              to="/app/all-post"
+              className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
+            >
+              Community
+            </Link>
+          )}
           <Link
             to="/auctionview"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
@@ -429,6 +437,15 @@ const Header: React.FC = () => {
             >
               {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>
+            {vendor && (
+              <Link
+                to="/app/all-post"
+                className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
+                onClick={toggleMenu}
+              >
+                Community
+              </Link>
+            )}
             <Link
               to="/auctionview"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"

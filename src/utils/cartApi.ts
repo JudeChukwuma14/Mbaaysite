@@ -1,47 +1,57 @@
-import axios from 'axios';
+// src/api/cartApi.ts
+import axios from "axios";
 
-const API_BASE_URL = 'https://mbayy-be.onrender.com/api/v1';
+const API_URL = "https://mbayy-be.onrender.com/api/v1";
 
-export const api = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-export const addToCart = async (sessionId: string, productId: string, quantity: number) => {
+export const addToCart = async (
+  sessionId: string,
+  productId: string,
+  quantity: number
+) => {
   try {
-    const response = await api.post('/products/addtocart', { sessionId, productId, quantity });
+    const response = await axios.post(
+      `${API_URL}/products/addtocart`,
+      { sessionId, productId, quantity },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to add to cart');
+  } catch (error) {
+    throw new Error("Failed to add item to cart");
   }
 };
 
+
 export const getCart = async (sessionId: string) => {
   try {
-    const response = await api.get(`/cart/get/${sessionId}`);
-    console.log('getCart response:', response.data); // Debug response
-    return response.data.items || response.data; // Adjust based on API response structure
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to fetch cart');
+    const response = await axios.get(`${API_URL}/products/get/${sessionId}`);
+    return response.data.cart.items; // Return only the items array
+  } catch (error) {
+    throw new Error("Failed to fetch cart");
   }
 };
 
 export const removeFromCart = async (sessionId: string, productId: string) => {
   try {
-    const response = await api.patch('/products/removefromcart', { sessionId, productId });
+    const response = await axios.patch(
+      `${API_URL}/products/removefromcart`,
+      { sessionId, productId },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to remove from cart');
+  } catch (error) {
+    throw new Error("Failed to remove item from cart");
   }
 };
 
 export const updateCartQuantity = async (sessionId: string, productId: string, quantity: number) => {
   try {
-    const response = await api.patch('/products/update-quantity', { sessionId, productId, quantity });
+    const response = await axios.patch(
+      `${API_URL}/products/update-quantity`,
+      { sessionId, productId, quantity },
+      { headers: { "Content-Type": "application/json" } }
+    );
     return response.data;
-  } catch (error: any) {
-    throw new Error(error.response?.data?.message || 'Failed to update cart quantity');
+  } catch (error) {
+    throw new Error("Failed to update cart quantity");
   }
 };

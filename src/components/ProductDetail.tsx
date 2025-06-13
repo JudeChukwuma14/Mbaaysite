@@ -1,6 +1,4 @@
-"use client"
 
-import type React from "react"
 import { useState, useEffect, useRef } from "react"
 import { useParams, Link } from "react-router-dom"
 import { AiOutlineHeart } from "react-icons/ai"
