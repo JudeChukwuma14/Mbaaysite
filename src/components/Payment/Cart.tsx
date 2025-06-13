@@ -7,6 +7,8 @@ import { motion } from "framer-motion";
 import { getSessionId } from "@/utils/session";
 import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartQuantity } from "@/utils/cartApi";
+import { Link } from "react-router-dom";
+
 
 interface CartItem {
   id: string;
@@ -31,7 +33,7 @@ const Cart: React.FC = () => {
         console.log("...Cart", items)
         if (!items || !Array.isArray(items)) {
           toast.error("No cart items found.");
-          dispatch(setCartItems([])); 
+          dispatch(setCartItems([]));
           return;
         }
         const mappedItems: CartItem[] = items.map((item: any) => ({
@@ -44,7 +46,7 @@ const Cart: React.FC = () => {
         dispatch(setCartItems(mappedItems));
       } catch (error) {
         toast.error("Failed to load cart. Please try again.");
-        dispatch(setCartItems([])); 
+        dispatch(setCartItems([]));
       }
     };
     fetchCart();
@@ -258,11 +260,12 @@ const Cart: React.FC = () => {
           <span>Total:</span>
           <span>${total}</span>
         </div>
-        <button
-          className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
-        >
-          Proceed to Checkout
-        </button>
+        <Link to="/checkout">
+          <button
+            className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
+          >
+            Proceed to Checkout
+          </button></Link>
       </motion.div>
     </motion.div>
   );

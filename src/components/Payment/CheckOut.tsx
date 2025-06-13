@@ -1,5 +1,6 @@
+// src/components/CheckoutForm.tsx
 import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, UseFormRegister, Control, FieldErrors } from "react-hook-form";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -9,9 +10,14 @@ import { FaCreditCard, FaPaypal } from "react-icons/fa";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
+import { useDispatch, useSelector } from "react-redux";
+import { applyCoupon } from "@/redux/slices/cartSlice";
+import { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; 
 
-// TypeScript interface for form data
+// Form data interface
 interface FormValues {
   firstName: string;
   lastName: string;
@@ -26,15 +32,16 @@ interface FormValues {
   postalCode: string;
   saveInfo: boolean;
   paymentMethod: "credit" | "paypal" | "cash";
+  couponCode?: string; // Added for coupon input
 }
 
-// TypeScript interface for react-select city options
+// City option interface for react-select
 interface CityOption {
   value: string;
   label: string;
 }
 
-// Animation variants for Framer Motion
+// Animation variants
 const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -42,10 +49,7 @@ const cardVariants: Variants = {
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const inputVariants: Variants = {
@@ -58,12 +62,12 @@ const errorVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
-// Common input styles
+// Input styles
 const inputStyles = `w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`;
 const errorInputStyles = `border-red-500 bg-red-50`;
 const normalInputStyles = `border-gray-200 bg-gray-50 focus:bg-white`;
 
-// Sub-component: Billing Details
+// Billing Details component
 function BillingDetails({
   register,
   control,
@@ -73,9 +77,9 @@ function BillingDetails({
   cityOptions,
   isCityLoading,
 }: {
-  register: any;
-  control: any;
-  errors: any;
+  register: UseFormRegister<FormValues>;
+  control: Control<FormValues>;
+  errors: FieldErrors<FormValues>;
   selectedCountry: string;
   selectedRegion: string;
   cityOptions: CityOption[];
@@ -97,7 +101,6 @@ function BillingDetails({
       </div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-        {/* Name Fields */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="firstName" className="block mb-1 text-sm font-medium text-gray-700">
@@ -136,7 +139,6 @@ function BillingDetails({
           </motion.div>
         </div>
 
-        {/* Company Name */}
         <motion.div variants={inputVariants}>
           <label htmlFor="companyName" className="block mb-1 text-sm font-medium text-gray-700">
             Company Name (Optional)
@@ -150,7 +152,6 @@ function BillingDetails({
           />
         </motion.div>
 
-        {/* Email and Phone */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">
@@ -163,10 +164,7 @@ function BillingDetails({
               placeholder="your@email.com"
               {...register("email", {
                 required: "Email is required",
-                pattern: {
-                  value: /\S+@\S+\.\S+/,
-                  message: "Invalid email",
-                },
+                pattern: { value: /\S+@\S+\.\S+/, message: "Invalid email" },
               })}
             />
             {errors.email && (
@@ -204,7 +202,6 @@ function BillingDetails({
           </motion.div>
         </div>
 
-        {/* Country, Region, City */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <motion.div variants={inputVariants}>
             <label htmlFor="country" className="block mb-1 text-sm font-medium text-gray-700">
@@ -266,7 +263,9 @@ function BillingDetails({
                 <Select
                   options={cityOptions}
                   value={cityOptions.find((option) => option.value === field.value) || null}
-                  onChange={(option: SingleValue<CityOption>) => field.onChange(option ? option.value : "")}
+                  onChange={(option: SingleValue<CityOption>) =>
+                    field.onChange(option ? option.value : "")
+                  }
                   placeholder="Select a city"
                   isDisabled={isCityLoading || !selectedCountry || !selectedRegion}
                   isLoading={isCityLoading}
@@ -295,7 +294,11 @@ function BillingDetails({
                     }),
                     option: (base, state) => ({
                       ...base,
-                      backgroundColor: state.isSelected ? "#f97316" : state.isFocused ? "#fed7aa" : "white",
+                      backgroundColor: state.isSelected
+                        ? "#f97316"
+                        : state.isFocused
+                        ? "#fed7aa"
+                        : "white",
                       color: state.isSelected ? "white" : "#1f2937",
                     }),
                   }}
@@ -309,13 +312,12 @@ function BillingDetails({
             )}
             {!isCityLoading && cityOptions.length === 0 && selectedCountry && selectedRegion && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-gray-600">
-                No cities found.
+                No cities found. Please check your country and state.
               </motion.p>
             )}
           </motion.div>
         </div>
 
-        {/* Street Address */}
         <motion.div variants={inputVariants}>
           <label htmlFor="streetAddress" className="block mb-1 text-sm font-medium text-gray-700">
             Street Address*
@@ -334,7 +336,6 @@ function BillingDetails({
           )}
         </motion.div>
 
-        {/* Apartment and Postal Code */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="apartment" className="block mb-1 text-sm font-medium text-gray-700">
@@ -368,7 +369,6 @@ function BillingDetails({
           </motion.div>
         </div>
 
-        {/* Save Info Checkbox */}
         <motion.div
           variants={inputVariants}
           className="p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100"
@@ -395,18 +395,16 @@ function BillingDetails({
   );
 }
 
-// Sub-component: Payment Details
+// Payment Details component
 function PaymentDetails({
   register,
   activePaymentMethod,
   setActivePaymentMethod,
   isSubmitting,
 }: {
-  register: any;
-  errors: any;
+  register: UseFormRegister<FormValues>;
   activePaymentMethod: "credit" | "paypal" | "cash";
   setActivePaymentMethod: (method: "credit" | "paypal" | "cash") => void;
-  selectedPaymentMethod: string;
   isSubmitting: boolean;
 }) {
   const paymentMethods = [
@@ -431,23 +429,24 @@ function PaymentDetails({
       </div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-        {/* Payment Method Tabs */}
         <div className="border-b-2 border-gray-200">
           <div className="flex flex-wrap">
             {paymentMethods.map(({ method, label, icon: Icon }) => (
               <motion.button
                 key={method}
                 type="button"
-                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${activePaymentMethod === method
+                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${
+                  activePaymentMethod === method
                     ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
+                }`}
                 onClick={() => {
                   setActivePaymentMethod(method as "credit" | "paypal" | "cash");
                   register("paymentMethod").onChange({ target: { value: method } });
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                disabled={isSubmitting}
               >
                 <Icon className="w-5 h-5" />
                 {label}
@@ -456,7 +455,6 @@ function PaymentDetails({
           </div>
         </div>
 
-        {/* Payment Method Details */}
         <div>
           {activePaymentMethod === "credit" && (
             <motion.div
@@ -504,11 +502,10 @@ function PaymentDetails({
           )}
         </div>
 
-        {/* Submit Button */}
         <motion.div
           className="flex justify-end mt-6"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
+          whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
         >
           <button
             type="submit"
@@ -530,18 +527,18 @@ function PaymentDetails({
   );
 }
 
-// Main Component
+// Main CheckoutForm component
 export default function CheckoutForm() {
-  // State for form and interactions
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activePaymentMethod, setActivePaymentMethod] = useState<"credit" | "paypal" | "cash">("credit");
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
-  const [couponLoading, setCouponLoading] = useState(false);
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isCityLoading, setIsCityLoading] = useState(false);
+  const [couponLoading, setCouponLoading] = useState(false); // Separate state for coupon
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
 
-  // react-hook-form setup
   const {
     register,
     handleSubmit,
@@ -549,6 +546,7 @@ export default function CheckoutForm() {
     watch,
     formState: { errors },
     resetField,
+    setValue,
   } = useForm<FormValues>({
     defaultValues: {
       firstName: "",
@@ -564,15 +562,20 @@ export default function CheckoutForm() {
       postalCode: "",
       saveInfo: false,
       paymentMethod: "credit",
+      couponCode: "",
     },
   });
 
-  // Watch form fields for changes
   const selectedCountry = watch("country");
   const selectedRegion = watch("region");
-  const selectedPaymentMethod = watch("paymentMethod");
+  const couponCode = watch("couponCode");
 
-  // Fetch cities using country-state-city package
+  // Sync Redux coupon with form
+  useEffect(() => {
+    setValue("couponCode", cartCoupon || "");
+  }, [cartCoupon, setValue]);
+
+  // Fetch cities based on country and region
   useEffect(() => {
     if (!selectedCountry || !selectedRegion) {
       setCityOptions([]);
@@ -584,16 +587,25 @@ export default function CheckoutForm() {
     setTimeout(() => {
       try {
         const country = Country.getAllCountries().find((c) => c.name === selectedCountry);
-        if (!country) throw new Error("Country not found");
+        if (!country) {
+          toast.error("Country not found. Please try again.");
+          setCityOptions([]);
+          return;
+        }
 
         const states = State.getStatesOfCountry(country.isoCode);
         const state = states.find((s) => s.name === selectedRegion);
-        if (!state) throw new Error("State not found");
+        if (!state) {
+          toast.error("State not found. Please try again.");
+          setCityOptions([]);
+          return;
+        }
 
         const cities = City.getCitiesOfState(country.isoCode, state.isoCode);
         setCityOptions(cities.map((city) => ({ value: city.name, label: city.name })));
       } catch (error) {
         console.error("Failed to load cities:", error);
+        toast.error("Failed to load cities. Please try again.");
         setCityOptions([]);
       } finally {
         setIsCityLoading(false);
@@ -601,27 +613,89 @@ export default function CheckoutForm() {
     }, 500);
   }, [selectedCountry, selectedRegion, resetField]);
 
-  // Form submission handler
-  const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Form submitted:", data);
-    setIsSubmitting(false);
-    alert("Order placed successfully!");
-  };
-
-  // Coupon application
-  const handleApplyCoupon = () => {
-    if (!couponCode) return;
+  // Handle coupon application
+  const handleApplyCoupon = (code: string) => {
+    if (!code) {
+      toast.error("Please enter a coupon code.");
+      return;
+    }
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty. Add items before applying a coupon.");
+      return;
+    }
     setCouponLoading(true);
     setTimeout(() => {
-      if (couponCode.toLowerCase() === "discount10") {
-        setCouponApplied(true);
+      if (code.toUpperCase() === "SUMMER10") {
+        dispatch(applyCoupon({ code: "SUMMER10", discount: 0.1 }));
+        toast.success("Coupon applied! 10% off");
       } else {
-        alert("Invalid coupon code");
+        toast.error("Invalid coupon code");
       }
       setCouponLoading(false);
     }, 1000);
+  };
+
+  // Handle form submission
+  const onSubmit = async (data: FormValues) => {
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty. Please add items before checking out.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const tax = subtotal * 0.085; // 8.5% tax
+      const discount = useSelector((state: RootState) => state.cart.discount) * subtotal;
+      const total = subtotal + tax - discount;
+
+      const orderData = {
+        billingDetails: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyName: data.companyName,
+          email: data.email,
+          phone: data.phone,
+          address: {
+            country: data.country,
+            region: data.region,
+            city: data.city,
+            streetAddress: data.streetAddress,
+            apartment: data.apartment,
+            postalCode: data.postalCode,
+          },
+          saveInfo: data.saveInfo,
+        },
+        paymentMethod: data.paymentMethod,
+        cartItems: cartItems.map((item) => ({
+          productId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image,
+        })),
+        pricing: {
+          subtotal: subtotal.toFixed(2),
+          shipping: 0,
+          tax: tax.toFixed(2),
+          discount: discount.toFixed(2),
+          total: total.toFixed(2),
+        },
+        couponCode: cartCoupon || "",
+      };
+
+      // TODO: Replace with actual API call (e.g., POST /api/v1/orders)
+      console.log("Order submitted:", orderData);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      toast.success("Order placed successfully!");
+      navigate("/order-confirmation"); // Redirect to confirmation page
+    } catch (error) {
+      console.error("Order submission failed:", error);
+      toast.error("Failed to place order. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -654,10 +728,8 @@ export default function CheckoutForm() {
             />
             <PaymentDetails
               register={register}
-              errors={errors}
               activePaymentMethod={activePaymentMethod}
               setActivePaymentMethod={setActivePaymentMethod}
-              selectedPaymentMethod={selectedPaymentMethod}
               isSubmitting={isSubmitting}
             />
           </form>
@@ -670,11 +742,11 @@ export default function CheckoutForm() {
           className="lg:col-span-1"
         >
           <OrderSummary
-            couponCode={couponCode}
-            setCouponCode={setCouponCode}
-            couponApplied={couponApplied}
+            couponCode={couponCode || ""}
+            setCouponCode={(code) => setValue("couponCode", code)}
+            couponApplied={!!cartCoupon && cartCoupon.toUpperCase() === "SUMMER10"}
             couponLoading={couponLoading}
-            handleApplyCoupon={handleApplyCoupon}
+            handleApplyCoupon={() => handleApplyCoupon(couponCode || "")}
           />
         </motion.div>
       </div>
