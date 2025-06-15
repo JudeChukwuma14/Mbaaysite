@@ -1,7 +1,4 @@
-"use client";
-
 import type React from "react";
-
 interface CurrencyInputProps {
   value: string;
   onChange: (value: string) => void;

@@ -1,7 +1,3 @@
-"use client";
-
-import type React from "react";
-
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
