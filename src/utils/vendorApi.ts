@@ -41,9 +41,8 @@ export const get_single_vendor = async (token: string | null) => {
   }
 };
 
-
 // forgot-password
-export const forgotPassword = async(email:string)=>{
+export const forgotPassword = async (email: string) => {
   try {
     const response = await api.post("/forgotpassword", { email });
     return response.data;
@@ -51,17 +50,21 @@ export const forgotPassword = async(email:string)=>{
     console.error("Forgot Password Error:", error.response?.data || error);
     throw error.response?.data?.message || "Failed to send reset link";
   }
-}
+};
 
-export const ResetPassword = async()=>{
+export const CreateNewPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+) => {
   try {
-    const response = await api.post("/resetpassword");
+    const response = await api.post("/resetpassword", { email,otp, newPassword });
     return response.data;
   } catch (error: any) {
     console.error("Reset Password Error:", error.response?.data || error);
     throw error.response?.data?.message || "Failed to reset password";
   }
-}
+};
 
 // export const get_single_vendor = async (token: string | null) => {
 //   if (!token) {

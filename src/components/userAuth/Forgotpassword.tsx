@@ -32,7 +32,7 @@ const Forgotpassword: React.FC = () => {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/forgotpasswordmessage")
+      navigate("/restpassword"); // Navigate to reset password page
     } catch (error: unknown) {
       toast.error(
         (error as Error)?.message || "Failed to send reset link. Please try again.",
@@ -94,7 +94,7 @@ const Forgotpassword: React.FC = () => {
                 {isLoading ? (
                   <div className="w-6 h-6 border-b-2 border-white rounded-full animate-spin"></div>
                 ) : (
-                  "Request reset password link"
+                  "Reset Password"
                 )}
               </button>
             </form>
