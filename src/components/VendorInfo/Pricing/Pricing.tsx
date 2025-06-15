@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -15,11 +13,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  upgradePlan,
-  getCraftCategories,
-  type UpgradePlanPayload,
-} from "@/utils/upgradeApi";
+import { upgradePlan, type UpgradePlanPayload } from "@/utils/upgradeApi";
 import { useSelector } from "react-redux";
 import { get_single_vendor } from "@/utils/vendorApi";
 
@@ -38,12 +32,6 @@ export default function UpgradePage() {
     queryFn: () => get_single_vendor(user.token),
   });
 
-  const { data: userCraftCategories = [] } = useQuery({
-    queryKey: ["userCraftCategories"],
-    queryFn: () => getCraftCategories(user.token),
-    enabled: !!user.token,
-  });
-
   // Plan hierarchy for progression
   const planHierarchy = ["Starter", "Shelf", "Counter", "Shop"];
 
@@ -57,7 +45,7 @@ export default function UpgradePage() {
     "Plant and Seeds",
     "Spices, Condiments, and Seasonings",
     "Local & Traditional Foods",
-    "Fashion",
+    "Traditional Clothing & Fabrics",
   ];
 
   // Replace the existing maxCategories object with this function
@@ -89,9 +77,9 @@ export default function UpgradePage() {
     return getMaxCategories(vendor?.storeType || "Starter", upgradeType);
   };
 
-  // Filter out categories that user already has from getCraftCategories
+  // Filter out categories that vendor already has in their craftCategories
   const availableCategories = allCategories.filter(
-    (category) => !userCraftCategories.includes(category)
+    (category) => !vendor?.craftCategories?.includes(category)
   );
 
   const handleCategoryChange = (category: string) => {
@@ -121,7 +109,6 @@ export default function UpgradePage() {
       });
       setOpenDialog(false);
       queryClient.invalidateQueries({ queryKey: ["vendor"] });
-      queryClient.invalidateQueries({ queryKey: ["userCraftCategories"] });
     },
     onError: (error: any) => {
       toast.error(`Error: ${error.message || "Failed to upgrade plan"}`, {

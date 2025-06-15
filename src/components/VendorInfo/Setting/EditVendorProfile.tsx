@@ -16,6 +16,7 @@ import {
 } from "../../../utils/editvendorApi";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { useCreateRecipientCode } from "@/hook/useRecipientCode";
 
 interface VendorProfile {
   companyName: string;
@@ -31,14 +32,158 @@ interface VendorProfile {
 // Define popup types
 type PopupType = "password" | "location" | "account" | "email" | "store" | null;
 
-// Bank logos mapping
+// Enhanced bank data with logos - this will be replaced by Paystack API
 const bankLogos: Record<string, string> = {
-  "Zenith Bank": "/placeholder.svg?height=30&width=30",
-  "First Bank": "/placeholder.svg?height=30&width=30",
-  GTBank: "/placeholder.svg?height=30&width=30",
-  "Access Bank": "/placeholder.svg?height=30&width=30",
-  UBA: "/placeholder.svg?height=30&width=30",
+  // ====== COMMERCIAL BANKS ======
+  "Access Bank": "/placeholder.svg?height=30&width=30&text=Access",
+  "Citibank Nigeria": "/placeholder.svg?height=30&width=30&text=Citi",
+  "Ecobank Nigeria": "/placeholder.svg?height=30&width=30&text=Ecobank",
+  "Fidelity Bank": "/placeholder.svg?height=30&width=30&text=Fidelity",
+  "First Bank of Nigeria": "/placeholder.svg?height=30&width=30&text=FirstBank",
+  "First City Monument Bank": "/placeholder.svg?height=30&width=30&text=FCMB",
+  "Globus Bank": "/placeholder.svg?height=30&width=30&text=Globus",
+  "Guaranty Trust Bank": "/placeholder.svg?height=30&width=30&text=GTBank",
+  "Heritage Bank": "/placeholder.svg?height=30&width=30&text=Heritage",
+  "Jaiz Bank": "/placeholder.svg?height=30&width=30&text=Jaiz",
+  "Keystone Bank": "/placeholder.svg?height=30&width=30&text=Keystone",
+  "Parallex Bank": "/placeholder.svg?height=30&width=30&text=Parallex",
+  "Polaris Bank": "/placeholder.svg?height=30&width=30&text=Polaris",
+  "PremiumTrust Bank": "/placeholder.svg?height=30&width=30&text=PremiumTrust",
+  "Providus Bank": "/placeholder.svg?height=30&width=30&text=Providus",
+  "Stanbic IBTC Bank": "/placeholder.svg?height=30&width=30&text=Stanbic",
+  "Sterling Bank": "/placeholder.svg?height=30&width=30&text=Sterling",
+  "SunTrust Bank": "/placeholder.svg?height=30&width=30&text=SunTrust",
+  TAJBank: "/placeholder.svg?height=30&width=30&text=TAJBank",
+  "Titan Trust Bank": "/placeholder.svg?height=30&width=30&text=Titan",
+  "Union Bank of Nigeria": "/placeholder.svg?height=30&width=30&text=Union",
+  "United Bank for Africa": "/placeholder.svg?height=30&width=30&text=UBA",
+  "Wema Bank": "/placeholder.svg?height=30&width=30&text=Wema",
+  "Zenith Bank": "/placeholder.svg?height=30&width=30&text=Zenith",
+
+  // ====== ONLINE/DIGITAL BANKS & MFBs ======
+  "ALAT by Wema": "/placeholder.svg?height=30&width=30&text=ALAT",
+  "Carbon (One Finance)": "/placeholder.svg?height=30&width=30&text=Carbon",
+  "Chipper Cash": "/placeholder.svg?height=30&width=30&text=Chipper",
+  Eyowo: "/placeholder.svg?height=30&width=30&text=Eyowo",
+  "FairMoney Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=FairMoney",
+  "FinaTrust Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=FinaTrust",
+  "Hackman Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=Hackman",
+  "Kuda Bank": "/placeholder.svg?height=30&width=30&text=Kuda",
+  "Lotus Bank": "/placeholder.svg?height=30&width=30&text=Lotus",
+  "Moniepoint Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=Moniepoint",
+  "Mint Finex MFB": "/placeholder.svg?height=30&width=30&text=Mint",
+  NowNow: "/placeholder.svg?height=30&width=30&text=NowNow",
+  "OPay Digital Bank": "/image/bank/Opay.png",
+  "PalmPay Digital Bank": "/placeholder.svg?height=30&width=30&text=PalmPay",
+  "Rubies Bank": "/placeholder.svg?height=30&width=30&text=Rubies",
+  "Sparkle Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=Sparkle",
+  "VFD Microfinance Bank": "/placeholder.svg?height=30&width=30&text=VFD",
+
+  // ====== PAYMENT SERVICE BANKS (PSBs) ======
+  "9PSB": "/placeholder.svg?height=30&width=30&text=9PSB",
+  "Momo PSB": "/placeholder.svg?height=30&width=30&text=MomoPSB",
+  "Smartcash PSB": "/placeholder.svg?height=30&width=30&text=Smartcash",
+
+  // ====== BRICKS & MORTAR MICROFINANCE BANKS ======
+  "AB Microfinance Bank": "/placeholder.svg?height=30&width=30&text=AB",
+  "Accion Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Accion",
+  "Baobab Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Baobab",
+  "CEMCS Microfinance Bank": "/placeholder.svg?height=30&width=30&text=CEMCS",
+  "Finca Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Finca",
+  "Fortis Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Fortis",
+  "Hasal Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Hasal",
+  "Infinity Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=Infinity",
+  "LAPO Microfinance Bank": "/placeholder.svg?height=30&width=30&text=LAPO",
+  "Mutual Trust Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=MutualTrust",
+  "NPF Microfinance Bank": "/placeholder.svg?height=30&width=30&text=NPF",
+  "Peace Microfinance Bank": "/placeholder.svg?height=30&width=30&text=Peace",
+  "QuickFund Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=QuickFund",
+  "RenMoney Microfinance Bank":
+    "/placeholder.svg?height=30&width=30&text=RenMoney",
+  "Seedvest Microfinance Bank": "/image/bank/",
 };
+
+// Enhanced bank codes with all categories
+export const bankCodes = [
+  // ====== COMMERCIAL BANKS ======
+  { name: "Access Bank", code: "044", type: "Commercial" },
+  { name: "Citibank Nigeria", code: "023", type: "Commercial" },
+  { name: "Ecobank Nigeria", code: "050", type: "Commercial" },
+  { name: "Fidelity Bank", code: "070", type: "Commercial" },
+  { name: "First Bank of Nigeria", code: "011", type: "Commercial" },
+  { name: "First City Monument Bank", code: "214", type: "Commercial" },
+  { name: "Globus Bank", code: "00103", type: "Commercial" },
+  { name: "Guaranty Trust Bank", code: "058", type: "Commercial" },
+  { name: "Heritage Bank", code: "030", type: "Commercial" },
+  { name: "Jaiz Bank", code: "301", type: "Commercial" },
+  { name: "Keystone Bank", code: "082", type: "Commercial" },
+  { name: "Parallex Bank", code: "104", type: "Commercial" },
+  { name: "Polaris Bank", code: "076", type: "Commercial" },
+  { name: "PremiumTrust Bank", code: "105", type: "Commercial" },
+  { name: "Providus Bank", code: "101", type: "Commercial" },
+  { name: "Stanbic IBTC Bank", code: "221", type: "Commercial" },
+  { name: "Sterling Bank", code: "232", type: "Commercial" },
+  { name: "SunTrust Bank", code: "100", type: "Commercial" },
+  { name: "TAJBank", code: "302", type: "Commercial" },
+  { name: "Titan Trust Bank", code: "102", type: "Commercial" },
+  { name: "Union Bank of Nigeria", code: "032", type: "Commercial" },
+  { name: "United Bank for Africa", code: "033", type: "Commercial" },
+  { name: "Wema Bank", code: "035", type: "Commercial" },
+  { name: "Zenith Bank", code: "057", type: "Commercial" },
+
+  // ====== DIGITAL BANKS ======
+  { name: "ALAT by Wema", code: "035", type: "Digital" },
+  { name: "Carbon (One Finance)", code: "565", type: "Digital" },
+  { name: "Chipper Cash", code: "100022", type: "Digital" },
+  { name: "Eyowo", code: "50126", type: "Digital" },
+  { name: "Kuda Bank", code: "50211", type: "Digital" },
+  { name: "Lotus Bank", code: "303", type: "Digital" },
+  { name: "NowNow", code: "050", type: "Digital" },
+  { name: "OPay Digital Bank", code: "999992", type: "Digital" },
+  { name: "PalmPay Digital Bank", code: "999991", type: "Digital" },
+  { name: "Rubies Bank", code: "125", type: "Digital" },
+
+  // ====== MICROFINANCE BANKS ======
+  { name: "FairMoney Microfinance Bank", code: "090", type: "Microfinance" },
+  { name: "FinaTrust Microfinance Bank", code: "107", type: "Microfinance" },
+  { name: "Hackman Microfinance Bank", code: "51251", type: "Microfinance" },
+  { name: "Moniepoint Microfinance Bank", code: "50515", type: "Microfinance" },
+  { name: "Mint Finex MFB", code: "50304", type: "Microfinance" },
+  { name: "Sparkle Microfinance Bank", code: "51310", type: "Microfinance" },
+  { name: "VFD Microfinance Bank", code: "566", type: "Microfinance" },
+  { name: "AB Microfinance Bank", code: "090197", type: "Microfinance" },
+  { name: "Accion Microfinance Bank", code: "090134", type: "Microfinance" },
+  { name: "Baobab Microfinance Bank", code: "090118", type: "Microfinance" },
+  { name: "CEMCS Microfinance Bank", code: "50823", type: "Microfinance" },
+  { name: "Finca Microfinance Bank", code: "090107", type: "Microfinance" },
+  { name: "Fortis Microfinance Bank", code: "50162", type: "Microfinance" },
+  { name: "Hasal Microfinance Bank", code: "090121", type: "Microfinance" },
+  { name: "Infinity Microfinance Bank", code: "090157", type: "Microfinance" },
+  { name: "LAPO Microfinance Bank", code: "090259", type: "Microfinance" },
+  {
+    name: "Mutual Trust Microfinance Bank",
+    code: "090161",
+    type: "Microfinance",
+  },
+  { name: "NPF Microfinance Bank", code: "090194", type: "Microfinance" },
+  { name: "Peace Microfinance Bank", code: "090292", type: "Microfinance" },
+  { name: "QuickFund Microfinance Bank", code: "090261", type: "Microfinance" },
+  { name: "RenMoney Microfinance Bank", code: "090198", type: "Microfinance" },
+  { name: "Seedvest Microfinance Bank", code: "090112", type: "Microfinance" },
+
+  // ====== PAYMENT SERVICE BANKS (PSBs) ======
+  { name: "9PSB", code: "120001", type: "PSB" },
+  { name: "Momo PSB", code: "120003", type: "PSB" },
+  { name: "Smartcash PSB", code: "120002", type: "PSB" },
+];
 
 // Local storage keys
 const PROFILE_IMAGE_KEY = "vendor_profile_image";
@@ -70,6 +215,7 @@ export default function EditVendorProfile() {
   const [actualPassword, setActualPassword] = useState("Password123");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
+  const [selectedBankCode, setSelectedBankCode] = useState("");
 
   // Form states for popups
   const [newPassword, setNewPassword] = useState("");
@@ -93,25 +239,30 @@ export default function EditVendorProfile() {
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
-    queryFn: () => get_single_vendor(user.token),
+    queryFn: () => {
+      if (!user.token) {
+        throw new Error("No token available");
+      }
+      return get_single_vendor(user.token);
+    },
   });
 
-  // Mutations for image uploads
+  // Mutations for image uploads and recipient code
   const uploadAvatarMutation = useUploadAvatar();
   const uploadBusinessLogoMutation = useUploadBusinessLogo();
+  const createRecipientCodeMutation = useCreateRecipientCode();
 
   const [profile, setProfile] = useState<VendorProfile>({
     companyName: "PreciousLtd Limited",
     email: "preciousltd@gmail.com",
     phone: "+234 805743214",
     bio: "",
-    accountName: "OGHOGHO PRECIOUS IHECHIUWU",
-    accountNumber: "2784956623",
-    bankName: "Zenith Bank",
+    accountName: "",
+    accountNumber: "",
+    bankName: "",
     returnPolicy: "",
   });
 
-  // Load images from local storage on component mount
   useEffect(() => {
     if (typeof window !== "undefined" && !imagesLoaded) {
       try {
@@ -132,7 +283,17 @@ export default function EditVendorProfile() {
     }
   }, [imagesLoaded]);
 
-  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (vendors) {
+      setProfile((prev) => ({
+        ...prev,
+        accountName: vendors.accountName || "",
+        accountNumber: vendors.accountNumber || "",
+        bankName: vendors.bankName || "",
+      }));
+    }
+  }, [vendors]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -158,7 +319,6 @@ export default function EditVendorProfile() {
     };
   }, []);
 
-  // Calculate dropdown position when it's shown
   useEffect(() => {
     if (showEditDropdown && editButtonRef.current && dropdownRef.current) {
       const buttonRect = editButtonRef.current.getBoundingClientRect();
@@ -171,7 +331,6 @@ export default function EditVendorProfile() {
     }
   }, [showEditDropdown]);
 
-  // Function to save image to local storage
   const saveImageToLocalStorage = (imageData: string, storageKey: string) => {
     if (typeof window !== "undefined") {
       try {
@@ -181,7 +340,6 @@ export default function EditVendorProfile() {
           `Error saving image to localStorage (${storageKey}):`,
           error
         );
-        // If localStorage fails (e.g., quota exceeded), notify the user
         toast.error(
           "Failed to save image locally. Your browser storage might be full.",
           {
@@ -238,10 +396,12 @@ export default function EditVendorProfile() {
             // Create FormData and upload profile image
             const profileFormData = new FormData();
             profileFormData.append("avatar", file);
-            uploadAvatarMutation.mutate({
-              data: profileFormData,
-              token: user.token,
-            });
+            if (user.token) {
+              uploadAvatarMutation.mutate({
+                data: profileFormData,
+                token: user.token,
+              });
+            }
             break;
 
           case "banner":
@@ -251,10 +411,12 @@ export default function EditVendorProfile() {
             // Create FormData and upload banner image
             const bannerFormData = new FormData();
             bannerFormData.append("businessLogo", file);
-            uploadBusinessLogoMutation.mutate({
-              data: bannerFormData,
-              token: user.token,
-            });
+            if (user.token) {
+              uploadBusinessLogoMutation.mutate({
+                data: bannerFormData,
+                token: user.token,
+              });
+            }
             break;
 
           case "logo":
@@ -263,10 +425,12 @@ export default function EditVendorProfile() {
             // Create FormData and upload logo image
             const logoFormData = new FormData();
             logoFormData.append("avatar", file);
-            uploadAvatarMutation.mutate({
-              data: logoFormData,
-              token: user.token,
-            });
+            if (user.token) {
+              uploadAvatarMutation.mutate({
+                data: logoFormData,
+                token: user.token,
+              });
+            }
             break;
         }
       };
@@ -307,6 +471,7 @@ export default function EditVendorProfile() {
       case "account":
         setActivePopup("account");
         setAccountNumber("");
+        setSelectedBankCode("");
         setFoundAccountName("");
         setFoundBankName("");
         break;
@@ -349,18 +514,6 @@ export default function EditVendorProfile() {
         newErrors.phone = "Phone number is required";
       }
 
-      if (!profile.accountName.trim()) {
-        newErrors.accountName = "Account name is required";
-      }
-
-      if (!profile.accountNumber.trim()) {
-        newErrors.accountNumber = "Account number is required";
-      }
-
-      if (!profile.bankName.trim()) {
-        newErrors.bankName = "Bank name is required";
-      }
-
       // If there are validation errors, stop submission
       if (Object.keys(newErrors).length > 0) {
         setErrors(newErrors);
@@ -380,7 +533,7 @@ export default function EditVendorProfile() {
       });
 
       // Add return policy if it exists
-      if (returnPolicy) {
+      if (returnPolicy && user.token) {
         formData.append("returnPolicy", returnPolicy);
         upload_return_policy(user.token, formData).then((res) => {
           console.log(res);
@@ -403,7 +556,7 @@ export default function EditVendorProfile() {
     }
   };
 
-  // Handle account number search
+  // Enhanced account search with Paystack API
   const searchAccount = async () => {
     if (!accountNumber.trim()) {
       toast.error("Please enter an account number", {
@@ -413,26 +566,82 @@ export default function EditVendorProfile() {
       return;
     }
 
-    setIsSearchingAccount(true);
-
-    try {
-      // Simulate API call to search for account details
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock response
-      setFoundAccountName("JOHN DOE");
-      setFoundBankName("FIRST BANK");
-
-      toast.success("Account details found", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } catch (error) {
-      console.error("Error searching account:", error);
-      toast.error("Failed to find account details", {
+    if (accountNumber.length !== 10) {
+      toast.error("Account number must be exactly 10 digits", {
         position: "top-right",
         autoClose: 4000,
       });
+      return;
+    }
+
+    if (!selectedBankCode) {
+      toast.error("Please select a bank", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+      return;
+    }
+
+    // Use Paystack key directly
+    const paystackKey = "sk_live_8e60afeb1befc22f297e02606b679decd84dbeb4"; // Replace with your actual key
+
+    setIsSearchingAccount(true);
+    setFoundAccountName("");
+    setFoundBankName("");
+
+    try {
+      const verifyResponse = await fetch(
+        `https://api.paystack.co/bank/resolve?account_number=${accountNumber}&bank_code=${selectedBankCode}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${paystackKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (verifyResponse.ok) {
+        const verifyData = await verifyResponse.json();
+        if (
+          verifyData?.status &&
+          verifyData?.data &&
+          verifyData?.data?.account_name
+        ) {
+          const selectedBank = bankCodes.find(
+            (bank) => bank?.code === selectedBankCode
+          );
+          setFoundAccountName(verifyData?.data?.account_name);
+          setFoundBankName(selectedBank?.name || "");
+
+          toast.success("Account verified successfully!", {
+            position: "top-right",
+            autoClose: 3000,
+          });
+        } else {
+          toast.error(
+            "Account not found. Please verify the account number and bank selection.",
+            {
+              position: "top-right",
+              autoClose: 4000,
+            }
+          );
+        }
+      } else {
+        toast.error("Account verification failed. Please check your details.", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+      }
+    } catch (error) {
+      console.error("Error verifying account:", error);
+      toast.error(
+        "Network error occurred. Please check your connection and try again.",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
+      );
     } finally {
       setIsSearchingAccount(false);
     }
@@ -535,29 +744,31 @@ export default function EditVendorProfile() {
     closePopup();
   };
 
-  // Handle account details change
-  const handleAccountChange = () => {
-    if (!accountNumber || !foundAccountName || !foundBankName) {
-      toast.error("Please search for a valid account", {
+  // Enhanced account change handler with recipient code creation
+  const handleAccountChange = async () => {
+    if (!accountNumber || !foundAccountName || !selectedBankCode) {
+      toast.error("Please search for a valid account first", {
         position: "top-right",
         autoClose: 4000,
       });
       return;
     }
 
-    // Update account details
-    setProfile({
-      ...profile,
-      accountNumber,
-      accountName: foundAccountName,
-      bankName: foundBankName,
-    });
+    try {
+      await createRecipientCodeMutation.mutateAsync({
+        token: user.token!,
+        accountData: {
+          account_number: accountNumber,
+          bank_code: selectedBankCode,
+          name: foundAccountName,
+        },
+      });
 
-    toast.success("Account details updated successfully", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    closePopup();
+      closePopup();
+    } catch (error) {
+      console.error("Error saving account details:", error);
+      // The error toast is already handled in the mutation
+    }
   };
 
   // Function to clear images from local storage and state
@@ -588,6 +799,10 @@ export default function EditVendorProfile() {
   // Get craft categories and determine if dropdown should show
   const craftCategories = vendors?.craftCategories || [];
   const hasMultipleCategories = craftCategories.length > 1;
+
+  // Check if account details exist to determine button text
+  const hasAccountDetails =
+    profile.accountName && profile.accountNumber && profile.bankName;
 
   return (
     <motion.div
@@ -780,7 +995,9 @@ export default function EditVendorProfile() {
                           className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
                           onClick={() => handleEditOption("account")}
                         >
-                          Change Account Details
+                          {hasAccountDetails
+                            ? "Update Account Details"
+                            : "Add Account Details"}
                         </button>
                         <button
                           className="w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
@@ -862,17 +1079,11 @@ export default function EditVendorProfile() {
                     className="w-full p-2 border rounded-lg cursor-not-allowed bg-gray-50"
                     readOnly
                   />
-                  <button
+                  <motion.button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute text-gray-500 -translate-y-1/2 right-3 top-1/2 hover:text-gray-700"
-                  >
-                    {/* {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
-                    ) : (
-                      <Eye className="w-5 h-5" />
-                    )} */}
-                  </button>
+                  ></motion.button>
                 </div>
                 <button
                   type="button"
@@ -952,7 +1163,7 @@ export default function EditVendorProfile() {
             </div>
           </motion.div>
 
-          {/* Payment Details */}
+          {/* Enhanced Payment Details Section */}
           <motion.div
             variants={itemVariants}
             className="p-6 bg-white rounded-lg shadow-sm"
@@ -967,6 +1178,9 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.accountName}
                   readOnly
+                  placeholder={
+                    !profile.accountName ? "No account name added" : ""
+                  }
                   className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.accountName ? "border-red-500" : ""
                   }`}
@@ -985,6 +1199,9 @@ export default function EditVendorProfile() {
                   type="text"
                   value={profile.accountNumber}
                   readOnly
+                  placeholder={
+                    !profile.accountNumber ? "No account number added" : ""
+                  }
                   className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.accountNumber ? "border-red-500" : ""
                   }`}
@@ -1001,19 +1218,27 @@ export default function EditVendorProfile() {
                 </label>
                 <div className="relative">
                   <div className="flex items-center w-full gap-2 p-2 border rounded-lg cursor-not-allowed bg-gray-50">
-                    {profile.bankName && bankLogos[profile.bankName] && (
+                    {profile?.bankName && (
                       <img
-                        src={bankLogos[profile.bankName] || "/placeholder.svg"}
-                        alt={profile.bankName}
-                        className="object-contain w-6 h-6"
+                        src={
+                          bankLogos[profile?.bankName] ||
+                          "/images/banks/default-bank.png"
+                        }
+                        alt={profile?.bankName}
+                        className="w-6 h-6 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            "/images/banks/default-bank.png";
+                        }}
                       />
                     )}
                     <motion.input
                       type="text"
-                      value={profile.bankName}
+                      value={profile?.bankName}
                       readOnly
+                      placeholder={!profile?.bankName ? "No bank selected" : ""}
                       className={`flex-1 outline-none bg-gray-50 cursor-not-allowed ${
-                        errors.bankName ? "text-red-500" : ""
+                        errors?.bankName ? "text-red-500" : ""
                       }`}
                     />
                   </div>
@@ -1027,7 +1252,9 @@ export default function EditVendorProfile() {
                 className="text-sm text-purple-600 hover:text-purple-700"
                 onClick={() => handleEditOption("account")}
               >
-                Change account details
+                {hasAccountDetails
+                  ? "Update account details"
+                  : "Add account details"}
               </button>
             </div>
           </motion.div>
@@ -1064,7 +1291,7 @@ export default function EditVendorProfile() {
         </div>
       </div>
 
-      {/* Popups */}
+      {/* Enhanced Popups */}
       <AnimatePresence>
         {activePopup && (
           <motion.div
@@ -1182,7 +1409,7 @@ export default function EditVendorProfile() {
                       </div>
                       <div className="flex justify-end gap-2 mt-6">
                         <button
-                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                           onClick={closePopup}
                         >
                           Cancel
@@ -1198,12 +1425,14 @@ export default function EditVendorProfile() {
                   </>
                 )}
 
-                {/* Account Change Popup */}
+                {/* Enhanced Account Change Popup */}
                 {activePopup === "account" && (
                   <>
                     <div className="flex items-center justify-between mb-4">
                       <h2 className="text-xl font-semibold">
-                        Change Account Details
+                        {hasAccountDetails
+                          ? "Update Account Details"
+                          : "Add Account Details"}
                       </h2>
                       <motion.button
                         onClick={closePopup}
@@ -1217,60 +1446,204 @@ export default function EditVendorProfile() {
                         <label className="block mb-1 text-sm text-gray-500">
                           Account Number
                         </label>
-                        <div className="flex gap-2">
-                          <motion.input
-                            type="text"
-                            value={accountNumber}
-                            onChange={(e) => setAccountNumber(e.target.value)}
-                            className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
-                          />
-                          <button
-                            className="flex items-center gap-1 px-3 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-                            onClick={searchAccount}
-                            disabled={isSearchingAccount}
-                          >
-                            {isSearchingAccount ? (
-                              "Searching..."
-                            ) : (
-                              <>
-                                <Search className="w-4 h-4" />
-                                Search
-                              </>
-                            )}
-                          </button>
-                        </div>
+                        <motion.input
+                          type="text"
+                          value={accountNumber}
+                          onChange={(e) => {
+                            const value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 10);
+                            setAccountNumber(value);
+                            // Clear previous results when account number changes
+                            if (value !== accountNumber) {
+                              setFoundAccountName("");
+                              setFoundBankName("");
+                            }
+                          }}
+                          placeholder="Enter 10-digit account number"
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                          maxLength={10}
+                        />
+                        <p className="mt-1 text-xs text-gray-500">
+                          {accountNumber.length > 0 &&
+                            accountNumber.length < 10 &&
+                            `${10 - accountNumber.length} more digits required`}
+                        </p>
                       </div>
 
-                      {foundAccountName && (
-                        <div className="p-3 rounded-lg bg-gray-50">
-                          <p className="text-sm font-medium">
-                            Account Name:{" "}
-                            <span className="text-gray-700">
-                              {foundAccountName}
-                            </span>
-                          </p>
-                          <p className="text-sm font-medium">
-                            Bank:{" "}
-                            <span className="text-gray-700">
-                              {foundBankName}
-                            </span>
-                          </p>
-                        </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          Select Bank
+                        </label>
+                        <motion.select
+                          value={selectedBankCode}
+                          onChange={(e) => {
+                            setSelectedBankCode(e.target.value);
+                            // Clear previous results when bank changes
+                            setFoundAccountName("");
+                            setFoundBankName("");
+                          }}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
+                        >
+                          <option value="">Choose your bank</option>
+                          {bankCodes.map((bank) => (
+                            <option key={bank.code} value={bank.code}>
+                              {bank.name} ({bank.type})
+                            </option>
+                          ))}
+                        </motion.select>
+                      </div>
+
+                      <div className="flex justify-center">
+                        <button
+                          className={`flex items-center gap-2 px-4 py-2 text-white rounded-lg transition-colors ${
+                            accountNumber.length === 10 &&
+                            selectedBankCode &&
+                            !isSearchingAccount
+                              ? "bg-blue-500 hover:bg-blue-600"
+                              : "bg-gray-400 cursor-not-allowed"
+                          }`}
+                          onClick={searchAccount}
+                          disabled={
+                            accountNumber.length !== 10 ||
+                            !selectedBankCode ||
+                            isSearchingAccount
+                          }
+                        >
+                          {isSearchingAccount ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white rounded-full border-t-transparent animate-spin"></div>
+                              Verifying Account...
+                            </>
+                          ) : (
+                            <>
+                              <Search className="w-4 h-4" />
+                              Verify Account
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* Account verification results */}
+                      {foundAccountName && foundBankName && (
+                        <motion.div
+                          className="p-4 rounded-lg bg-green-50 border border-green-200"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{
+                                  delay: 0.2,
+                                  type: "spring",
+                                  stiffness: 200,
+                                }}
+                              >
+                                ✓
+                              </motion.div>
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-sm font-semibold text-green-800 mb-2">
+                                Account Verified Successfully
+                              </h4>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-green-600 font-medium">
+                                    Account Name:
+                                  </span>
+                                  <span className="text-sm text-green-800 font-semibold">
+                                    {foundAccountName}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-green-600 font-medium">
+                                    Bank:
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {bankLogos[foundBankName] && (
+                                      <img
+                                        src={
+                                          bankLogos[foundBankName] ||
+                                          "/placeholder.svg"
+                                        }
+                                        alt={foundBankName}
+                                        className="w-4 h-4 object-contain"
+                                      />
+                                    )}
+                                    <span className="text-sm text-green-800 font-semibold">
+                                      {foundBankName}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-green-600 font-medium">
+                                    Account Number:
+                                  </span>
+                                  <span className="text-sm text-green-800 font-mono">
+                                    {accountNumber}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
                       )}
+
+                      {/* Error state for failed verification */}
+                      {accountNumber.length === 10 &&
+                        !foundAccountName &&
+                        !isSearchingAccount && (
+                          <motion.div
+                            className="p-3 rounded-lg bg-red-50 border border-red-200"
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-red-600 text-xs">✗</span>
+                              </div>
+                              <p className="text-sm text-red-700">
+                                Account verification failed. Please check the
+                                account number and try again.
+                              </p>
+                            </div>
+                          </motion.div>
+                        )}
 
                       <div className="flex justify-end gap-2 mt-6">
                         <button
-                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                           onClick={closePopup}
                         >
                           Cancel
                         </button>
                         <button
-                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                            foundAccountName && foundBankName
+                              ? "bg-orange-500 text-white hover:bg-orange-600"
+                              : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          } ${
+                            createRecipientCodeMutation.isPending
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
                           onClick={handleAccountChange}
-                          disabled={!foundAccountName}
+                          disabled={
+                            !foundAccountName ||
+                            !foundBankName ||
+                            createRecipientCodeMutation.isPending
+                          }
                         >
-                          Update Account
+                          {createRecipientCodeMutation.isPending
+                            ? "Creating..."
+                            : hasAccountDetails
+                            ? "Update Account"
+                            : "Add Account"}
                         </button>
                       </div>
                     </div>
