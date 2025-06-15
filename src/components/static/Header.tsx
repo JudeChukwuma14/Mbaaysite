@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -10,13 +8,21 @@ import {
   FaBars,
   FaTimes,
 } from "react-icons/fa";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
-import Dropdown from "./Dropdrop";
+
 import { searchProducts } from "@/utils/productApi";
+import { useTranslation } from "react-i18next";
+import i18next from "@/utils/i18n";
+import { setSettings } from "@/redux/slices/settingsSlice";
+import { Country, type ICountry } from "country-state-city";
+import Dropdown from "./Dropdrop";
+import { convertPrice, getCurrencyByCountry, getLanguageByCountry } from "@/utils/currencyCoverter";
 
 const Header: React.FC = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
   const [word, setWord] = useState("");
   const [items, setItems] = useState<
     { _id: string; name: string; price: number }[]
@@ -25,12 +31,46 @@ const Header: React.FC = () => {
   const [problem, setProblem] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
+  const countryDropdownRef = useRef<HTMLDivElement>(null);
 
-  const user = useSelector((state: RootState) => state.user.user);
-  const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  
-  const firstLetter = user?.name ? user.name.charAt(0).toUpperCase() : "";
+  const user = useSelector((state: RootState) => state.user?.user || null);
+  const vendor = useSelector((state: RootState) => state.vendor?.vendor || null);
+  const settings = useSelector((state: RootState) => state.settings);
+
+  const countries = Country.getAllCountries();
+  const filteredCountries = countries.filter((country) =>
+    country.name.toLowerCase().includes(countrySearch.toLowerCase())
+  );
+
+  const handleCountryChange = (country: ICountry) => {
+    const language = getLanguageByCountry(country.isoCode);
+    const currency = getCurrencyByCountry(country.isoCode);
+    i18next.changeLanguage(language, (err) => {
+      if (err) console.error("Language change failed:", err);
+      else console.log("Language changed to:", language);
+    });
+    dispatch(
+      setSettings({
+        language,
+        currency,
+        countryCode: country.isoCode,
+      })
+    );
+    setIsCountryOpen(false);
+    setCountrySearch("");
+  };
+
+  const firstLetter = vendor?.storeName
+    ? vendor.storeName.charAt(0).toUpperCase()
+    : vendor?.id
+      ? "V"
+      : user?.name
+        ? user.name.charAt(0).toUpperCase()
+        : "";
+  const dashboardLink = vendor ? "/app" : "/dashboard";
 
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
@@ -47,7 +87,6 @@ const Header: React.FC = () => {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleSearch = () => setSearchOpen(!searchOpen);
 
-  // Close search results when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -55,6 +94,13 @@ const Header: React.FC = () => {
         !searchRef.current.contains(event.target as Node)
       ) {
         setItems([]);
+      }
+      if (
+        countryDropdownRef.current &&
+        !countryDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsCountryOpen(false);
+        setCountrySearch("");
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -80,30 +126,86 @@ const Header: React.FC = () => {
     return () => clearTimeout(timer);
   }, [word]);
 
+  useEffect(() => {
+    console.log("Current language:", i18next.language);
+    console.log("Translation for 'welcome':", t("welcome"));
+  }, [t]);
+
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-md">
-      {/* Top bar */}
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
-        <p className="hidden font-medium md:block">
-          Welcome to Mbaay Global Marketplaces
+        <p className="font-medium ">
+          {t("welcome")}{" "}
+          {vendor?.storeName
+            ? `, ${vendor.storeName}`
+            : vendor?.id
+              ? ", Vendor"
+              : user?.name
+                ? `, ${user.name}`
+                : t("global_marketplaces")}!
         </p>
-        <div className="flex gap-6">
+        <div className="flex items-center gap-6">
           <Link
             to="/random-product"
-            className="font-medium transition-colors duration-200 hover:underline"
+            className="hidden font-medium transition-colors duration-200 md:block hover:underline"
           >
-            Shop Now
+            {t("shop_now")}
           </Link>
-          <Link
-            to="/language"
-            className="font-medium transition-colors duration-200 hover:underline"
-          >
-            English
-          </Link>
+          <div className="relative" ref={countryDropdownRef}>
+            <button
+              onClick={() => setIsCountryOpen(!isCountryOpen)}
+              className="flex items-center gap-2 font-medium transition-colors duration-200 hover:underline"
+              aria-label={`Select country, current: ${settings.countryCode}`}
+            >
+              {countries.find((c) => c.isoCode === settings.countryCode)?.name ||
+                "Select Country"}
+              <svg
+                className={`w-4 h-4 transform ${isCountryOpen ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            {isCountryOpen && (
+              <div className="absolute right-0 z-10 w-64 mt-2 overflow-y-auto text-black bg-white rounded-md shadow-lg top-full max-h-96">
+                <div className="p-2">
+                  <input
+                    type="text"
+                    value={countrySearch}
+                    onChange={(e) => setCountrySearch(e.target.value)}
+                    placeholder={t("select_country")}
+                    className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    autoFocus
+                  />
+                </div>
+                {filteredCountries.length > 0 ? (
+                  filteredCountries.map((country) => (
+                    <button
+                      key={country.isoCode}
+                      onClick={() => handleCountryChange(country)}
+                      className="block w-full px-4 py-2 text-sm text-left hover:bg-gray-100"
+                    >
+                      {country.name} ({getCurrencyByCountry(country.isoCode)})
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    No countries found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Main header */}
       <div className="flex items-center justify-between p-4 bg-black md:px-10">
         <Link to="/" className="flex items-center">
           <img
@@ -126,6 +228,14 @@ const Header: React.FC = () => {
           >
             {vendor ? "Vendor Dashboard" : "Become a Vendor"}
           </Link>
+          {vendor && (
+            <Link
+              to="/app/all-post"
+              className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
+            >
+              Community
+            </Link>
+          )}
           <Link
             to="/auctionview"
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
@@ -135,7 +245,6 @@ const Header: React.FC = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          {/* Search input */}
           <div
             className="relative hidden sm:block md:w-64 lg:w-80"
             ref={searchRef}
@@ -168,7 +277,10 @@ const Header: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{item.name}</span>
                         <span className="font-semibold text-orange-600">
-                          ${item.price.toFixed(2)}
+                          {convertPrice(item.price, "USD", settings.currency).toLocaleString(settings.language, {
+                            style: "currency",
+                            currency: settings.currency,
+                          })}
                         </span>
                       </div>
                     </Link>
@@ -183,7 +295,6 @@ const Header: React.FC = () => {
             )}
           </div>
 
-          {/* Mobile search icon */}
           <button
             onClick={toggleSearch}
             className="text-white transition-colors duration-200 sm:hidden hover:text-orange-500"
@@ -193,10 +304,9 @@ const Header: React.FC = () => {
           </button>
 
           <div className="flex items-center gap-2">
-            {/* Wishlist */}
             <Link
               to="/dashboard/wishlist"
-              className="relative hidden p-2 transition-colors duration-200 rounded-full md:block "
+              className="relative hidden p-2 transition-colors duration-200 rounded-full md:block"
               aria-label="Wishlist"
             >
               <FaHeart size={20} className="text-white" />
@@ -207,10 +317,9 @@ const Header: React.FC = () => {
               )}
             </Link>
 
-            {/* Cart */}
             <Link
               to="/cart"
-              className="relative p-2 transition-colors duration-200 rounded-full "
+              className="relative p-2 transition-colors duration-200 rounded-full"
               aria-label="Shopping Cart"
             >
               <FaShoppingCart size={20} className="text-white" />
@@ -220,10 +329,13 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-            {/* User icon or first letter */}
-            <div className="ml-5">
+
+            <div className="ml-2">
               {firstLetter ? (
-                <Link to="/dashboard">
+                <Link
+                  to={dashboardLink}
+                  aria-label={vendor ? "Vendor Dashboard" : "User Dashboard"}
+                >
                   <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
                     {firstLetter}
                   </div>
@@ -231,7 +343,7 @@ const Header: React.FC = () => {
               ) : (
                 <Link
                   to="/selectpath"
-                  className="px-3 py-2 text-white transition-colors duration-300 border border-orange-600 hover:border-white"
+                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bordering-white hover:bg-orange-600"
                 >
                   Get started
                 </Link>
@@ -239,7 +351,6 @@ const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Mobile menu icon */}
           <button
             onClick={toggleMenu}
             className="p-1 transition-colors duration-200 rounded-md md:hidden hover:bg-gray-800"
@@ -254,7 +365,6 @@ const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile search field */}
       {searchOpen && (
         <div className="p-4 bg-white border-t sm:hidden" ref={searchRef}>
           <div className="relative">
@@ -291,7 +401,10 @@ const Header: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{item.name}</span>
                       <span className="font-semibold text-orange-600">
-                        ${item.price.toFixed(2)}
+                        {convertPrice(item.price, "USD", settings.currency).toLocaleString(settings.language, {
+                          style: "currency",
+                          currency: settings.currency,
+                        })}
                       </span>
                     </div>
                   </Link>
@@ -307,7 +420,6 @@ const Header: React.FC = () => {
         </div>
       )}
 
-      {/* Mobile nav */}
       {menuOpen && (
         <div className="bg-white shadow-md lg:hidden">
           <nav className="flex flex-col divide-y divide-gray-100">
@@ -321,9 +433,19 @@ const Header: React.FC = () => {
             <Link
               to={vendor ? "/app" : "/signup-vendor"}
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
+              onClick={toggleMenu}
             >
               {vendor ? "Vendor Dashboard" : "Become a Vendor"}
             </Link>
+            {vendor && (
+              <Link
+                to="/app/all-post"
+                className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
+                onClick={toggleMenu}
+              >
+                Community
+              </Link>
+            )}
             <Link
               to="/auctionview"
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
@@ -331,7 +453,6 @@ const Header: React.FC = () => {
             >
               Auction
             </Link>
-
             <Link
               to="/dashboard/wishlist"
               className="flex items-center gap-2 px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500 md:hidden"

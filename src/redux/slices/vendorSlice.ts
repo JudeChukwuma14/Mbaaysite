@@ -4,13 +4,10 @@ interface Vendor {
   id: string;
   storeName: string;
   email: string;
-  userName: string;
   address1: string;
-  address2: string;
   country: string;
   city: string;
   state: string;
-  postcode: string;
   storePhone: string;
   craftCategories: string[];
 }
@@ -43,6 +40,7 @@ const vendorSlice = createSlice({
     },
   },
 });
+
 
 export const { setVendor, logoutVendor } = vendorSlice.actions;
 export default vendorSlice.reducer;

@@ -23,7 +23,7 @@ export const LoginVendorAPI = async (userData: any) => {
     return response.data;
   } catch (error: any) {
     console.error("Signup Error:", error.response?.data || error);
-    throw error.response?.data?.message || "Failed to create account";
+    throw error.response?.data?.message || "Check your network connection";
   }
 };
 
@@ -41,6 +41,22 @@ export const get_single_vendor = async (token: string | null) => {
   }
 };
 
+// export const get_single_vendor = async (token: string | null) => {
+//   if (!token) {
+//     throw new Error("No token provided");
+//   }
+//   try {
+//     const response = await api.get("/find_one_vendor", {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
+//     return response.data.data;
+//   } catch (error: any) {
+//     console.error("Fetch Vendor Profile Error:", error.response?.data || error);
+//     throw error.response?.data?.message || "Failed to fetch vendor profile";
+//   }
+// };
 export const upload_return_policy = async (token: string | null, data: any) => {
   try {
     const response = await api.post("/upload_return_policy", data, {

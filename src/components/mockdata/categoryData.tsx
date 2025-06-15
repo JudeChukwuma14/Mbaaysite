@@ -3,6 +3,10 @@ import jewelry from "@/assets/image/Jewelry.jpg";
 import book from "@/assets/image/book.jpg";
 import Homedecor from "@/assets/image/Home Décor.jpg";
 import Vintage from "@/assets/image/Vintage Furniture.jpg";
+import TC from "@/assets/image/TraditionalClothing.jpg";
+import LF from "@/assets/image/LocalTraditional.jpg";
+import SP from "@/assets/image/SpicesCondiments.jpg";
+import PLS from "@/assets/image/PlantSeeds.jpg";
 
 export const categories = [
   {
@@ -655,7 +659,7 @@ export const categories = [
   },
   {
     name: "Plant and Seeds",
-    image: "/plants.jpg",
+    image: PLS,
     link: "/plantseed",
     subcategories: [
       {
@@ -795,7 +799,7 @@ export const categories = [
   },
   {
     name: "Spices, Condiments, and Seasonings",
-    image: "/spices.jpg",
+    image: SP,
     link: "/spices",
     subcategories: [
       {
@@ -898,7 +902,7 @@ export const categories = [
       },
       {
         link: "/SpecialDietary",
-        title: "Special Dietary Categories",
+        title: "Special Dietary",
         items: [
           "Gluten-free Spices",
           "Vegan Condiments",
@@ -920,7 +924,7 @@ export const categories = [
   },
   {
     name: "Local & Traditional Foods",
-    image: "/local_traditional_foods.jpg",
+    image: LF,
     link: "/localfood",
     subcategories: [
       {
@@ -1066,157 +1070,128 @@ export const categories = [
     ],
   },
   {
-    name: "Traditional Clothing & Fabrics",
-    image: "/local_traditional_foods.jpg",
-    link: "/tranditionalFabrics",
+    name: "Fashion Clothing & Fabrics",
+    image: TC,
+    link: "/traditional-fashion",
     subcategories: [
       {
-        link: "/MenTraditional",
-        title: "Men’s Traditional Wear",
-        items: ["Dashikis", "Boubous", "Kente Cloth", "Sherwanis", "Kimono"],
+        link: "/traditional-clothing",
+        title: "Traditional Clothing",
+        items: [
+          { title: "Men’s Traditional Wear", items: ["Dashikis", "Agbada, Buba & Sokoto", "Boubous", "Kente Cloth Attire", "Sherwanis", "Kimono"] },
+          { title: "Women’s Traditional Wear", items: ["Kaftans", "Kanga", "Sari", "Abaya", "Gele", "Kimono"] },
+          { title: "Children’s Traditional Wear", items: ["Cultural Dresses", "Mini Dashikis", "Cheongsam", "Traditional Girls' and Boys’ Wear"] },
+          { title: "Unisex Traditional Wear", items: ["Sarongs", "Robes", "Ponchos", "Caftans"] },
+        ],
       },
       {
-        link: "/WomenTranditional",
-        title: "Women’s Traditional Wear",
-        items: ["Kaftans", "Kanga", "Sari", "Abaya", "Gele", "Kimono"],
-      },
-      {
-        link: "/ChildrenTranditional",
-        title: "Children’s Traditional Wear",
-        items: ["Mini Dashikis", "Cheongsam", "Cultural Dresses"],
-      },
-      {
-        link: "/UnisexTranditional",
-        title: "Unisex Traditional Clothing",
-        items: ["Sarongs", "Robes", "Ponchos", "Caftans"],
-      },
-      {
-        link: "/FashionSpecific",
+        link: "/modern-traditional",
         title: "Modern Clothing with Traditional Influence",
         items: [
-          "Contemporary African Fashion",
-          "Ethnic-Inspired Urban Wear",
-          "Fusion Clothing",
-          "Custom-Made Ethnic Fashion",
+          { title: "Contemporary African Fashion", items: ["Ankara Dresses", "Kente-Inspired Styles", "Batik Print Designs"] },
+          { title: "Ethnic-Inspired Urban Wear", items: ["Modern Kimonos", "Fusion Kurtas", "Maasai Beadwork-Inspired Outfits"] },
+          { title: "Fusion Clothing", items: ["Indo-Western Outfits", "Afro-Western Styles"] },
+          { title: "Custom-Made Ethnic Fashion", items: ["Tailored Kitenge", "Custom Embroidered Kaftans"] },
         ],
       },
       {
-        link: "/Footwear",
+        link: "/footwear",
         title: "Footwear & Shoes",
         items: [
-          "Traditional Shoes & Sandals",
-          "Leather & Handmade Shoes",
-          "Modern Shoes with Cultural Designs",
-          "Custom Shoes & Sandals",
+          { title: "Traditional Shoes & Sandals", items: ["Maasai Sandals", "Babouches", "Mojaris", "Espadrilles"] },
+          { title: "Leather & Handmade Shoes", items: ["Handcrafted Leather Shoes", "Moccasins", "Traditional Slippers"] },
+          { title: "Modern Shoes with Cultural Designs", items: ["African Print Sneakers", "Embroidered Flats"] },
+          { title: "Custom Shoes & Sandals", items: ["Ethnic-Inspired Footwear", "Made-to-Order Traditional Sandals"] },
         ],
       },
       {
-        link: "/CulturalAccessories",
+        link: "/accessories",
         title: "Cultural Accessories & Adornments",
         items: [
-          "Headwear & Scarves",
-          "Belts & Sashes",
-          "Jewelry & Adornments",
-          "Bags & Pouches",
+          { title: "Headwear & Scarves", items: ["Turbans", "Head Wraps", "Geles", "Kufi Caps", "Hijabs"] },
+          { title: "Belts & Sashes", items: ["Kente Sashes", "Obi Belts", "Traditional Leather Belts"] },
+          { title: "Jewelry & Adornments", items: ["Beaded Necklaces", "Waist Beads", "Tribal Earrings"] },
+          { title: "Bags & Pouches", items: ["Handmade Leather Bags", "Beaded Clutches", "Cultural Tote Bags"] },
         ],
       },
       {
-        link: "/FabricsTextiles",
+        link: "/fabrics",
         title: "Fabrics & Textiles",
         items: [
-          "Handwoven & Local Fabrics",
-          "Printed Fabrics",
-          "Embroidered & Handmade Textiles",
-          "Natural & Organic Fabrics",
+          { title: "Handwoven & Local Fabrics", items: ["Kente Cloth", "Batik", "Adire", "Shweshwe"] },
+          { title: "Printed Fabrics", items: ["Ankara", "Wax Prints", "African Prints", "Ikat"] },
+          { title: "Embroidered & Handmade Textiles", items: ["Aso-Oke", "Kantha Stitch", "Brocade"] },
+          { title: "Natural & Organic Fabrics", items: ["Cotton", "Silk", "Wool", "Linen"] },
         ],
       },
       {
-        link: "/CulturalFootwear",
+        link: "/occasion-footwear",
         title: "Cultural Footwear for Specific Occasions",
         items: [
-          "Wedding Footwear",
-          "Festival & Ceremony Footwear",
-          "Casual Ethnic Footwear",
+          { title: "Wedding Footwear", items: ["Bridal Slippers", "Beaded Sandals", "Embroidered Wedding Shoes"] },
+          { title: "Festival & Ceremony Footwear", items: ["Festival Sandals", "Special Occasion Moccasins"] },
+          { title: "Casual Ethnic Footwear", items: ["Beaded Flip-Flops", "Everyday Traditional Sandals"] },
         ],
       },
       {
-        link: "/FestivalClothing",
+        link: "/festival-clothing",
         title: "Cultural & Festival Clothing",
         items: [
-          "Wedding Attire",
-          "Festival & Ceremony Outfits",
-          "Religious Clothing",
+          { title: "Wedding Attire", items: ["Traditional Wedding Dresses", "Groom’s Outfits", "Wedding Kente Styles"] },
+          { title: "Festival & Ceremony Outfits", items: ["Eid Outfits", "Diwali Sarees", "Traditional New Year Costumes"] },
+          { title: "Religious Clothing", items: ["Traditional Muslim Attire", "Hindu Wedding Saris", "Christian Choir Robes"] },
         ],
       },
       {
-        link: "/TailoredClothing",
+        link: "/bespoke",
         title: "Bespoke & Tailored Clothing",
-        items: ["Custom Tailored Traditional Wear", "Made-to-Order Shoes"],
+        items: [
+          "Custom Tailored Traditional Wear",
+          "Tailor-made Sherwanis",
+          "Made-to-Measure Dashikis",
+          "Custom Gele",
+          "Handcrafted Cultural Shoes",
+        ],
       },
       {
-        link: "/EthicalFashion",
+        link: "/sustainable",
         title: "Sustainable & Ethical Fashion",
-        items: ["Eco-friendly Clothing", "Fair Trade Clothing & Shoes"],
+        items: [
+          "Eco-friendly Clothing",
+          "Organic Cotton Outfits",
+          "Recycled Fabrics",
+          "Fair Trade Shoes & Apparel",
+          "Handwoven Sustainable Fabrics",
+        ],
       },
       {
-        link: "/TraditionalEmbroidery",
+        link: "/embroidery",
         title: "Traditional Embroidery & Design Work",
         items: [
-          "Hand-Embroidered Clothing",
-          "Block Printing & Hand-Painted Designs",
-          "Beadwork & Embellishments",
+          "Hand-Embroidered Clothing (Zardozi, Chikankari, Maasai Beadwork)",
+          "Block Printing & Hand-Painted Designs (Batik, Tie-Dye, Kalamkari)",
+          "Beadwork & Embellishments (Beaded Necklines, Footwear Embellishments)",
         ],
       },
       {
-        link: "/CountryRegional",
-        title: "Fashion for Specific Cultures & Regions",
+        link: "/regional-fashion",
+        title: "Fashion by Culture & Region",
         items: [
-          "African Fashion",
-          "Asian Fashion",
-          "Middle Eastern Fashion",
-          "Latin American Fashion",
-          "Caribbean Fashion",
+          { title: "African Fashion", items: ["South African Shweshwe", "Nigerian Aso-Oke", "Moroccan Caftans"] },
+          { title: "Asian Fashion", items: ["Indian Lehenga", "Japanese Yukata", "Chinese Qipao"] },
+          { title: "Middle Eastern Fashion", items: ["Kaftans", "Abayas", "Thobes"] },
+          { title: "Latin American Fashion", items: ["Peruvian Ponchos", "Mexican Huipils", "Guatemalan Weavings"] },
+          { title: "Caribbean Fashion", items: ["Carnival Costumes", "Rastafarian Clothing", "Dominican Linen Outfits"] },
         ],
       },
       {
-        link: "/OccasionFashion",
+        link: "/seasonal-fashion",
         title: "Seasonal & Special Occasion Fashion",
-        items: ["Summer Ethnic Wear", "Winter Ethnic Wear"],
-      },
-      {
-        link: "/FunctionalCategories",
-        title: "Functional Categories",
         items: [
-          "New Arrivals",
-          "Best Sellers",
-          "Limited Edition & Seasonal Fashion",
-          "Discounted & Sale Products",
-        ],
-      },
-      {
-        link: "/CountryRegional",
-        title: "Country or Region",
-        items: [
-          "Africa",
-          "Asia",
-          "Middle East",
-          "Latin America",
-          "Caribbean",
-          "Europe",
-        ],
-      },
-      {
-        link: "/FabricType",
-        title: "Fabric Type",
-        items: [
-          "Cotton",
-          "Silk",
-          "Wool",
-          "Linen",
-          "Leather",
-          "Synthetic Blends",
+          { title: "Summer Ethnic Wear", items: ["Lightweight Caftans", "Cotton Sarongs"] },
+          { title: "Winter Ethnic Wear", items: ["Woolen Ponchos", "Knitted Shawls", "Traditional Wool Slippers"] },
         ],
       },
     ],
-  },
+  }
 ];

@@ -14,7 +14,6 @@ import {
   Reply,
   Pin,
   X,
-  // Check,
   Video,
   Play,
   Pause,
@@ -570,20 +569,20 @@ export default function ChatInterface() {
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Chat List Sidebar */}
-      <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="w-80 border-r bg-white">
+      <motion.div initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-white border-r w-80">
         <div className="p-4 border-b">
-          <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold">Chats</h1>
-            <motion.button className="p-2 hover:bg-gray-100 rounded-full">
+            <motion.button className="p-2 rounded-full hover:bg-gray-100">
               <Plus className="w-5 h-5" />
             </motion.button>
           </div>
           <div className="relative">
-            <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
             <input
               type="text"
               placeholder="Search message"
-              className="w-full pl-10 pr-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
         </div>
@@ -602,18 +601,18 @@ export default function ChatInterface() {
                 <div className="relative">
                   <img src={chat.avatar || "/placeholder.svg"} alt={chat.name} className="w-12 h-12 rounded-full" />
                   {chat.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                   )}
                 </div>
                 <div className="flex-1 text-left">
-                  <div className="flex justify-between items-start">
+                  <div className="flex items-start justify-between">
                     <div>
                       <p className="font-semibold">{chat.name}</p>
                       <span className="text-xs text-orange-500">{chat.isVendor ? "Vendor" : "Customer"}</span>
                     </div>
                     <span className="text-xs text-gray-500">{chat.timestamp}</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">{chat.lastMessage}</p>
+                  <p className="mt-1 text-sm text-gray-500">{chat.lastMessage}</p>
                 </div>
               </motion.button>
             ))}
@@ -622,13 +621,13 @@ export default function ChatInterface() {
       </motion.div>
 
       {/* Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex flex-col flex-1">
         {/* Chat Header */}
         {activeChatDetails && (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="p-4 border-b bg-white flex items-center gap-3"
+            className="flex items-center gap-3 p-4 bg-white border-b"
           >
             <div className="relative">
               <img
@@ -637,7 +636,7 @@ export default function ChatInterface() {
                 className="w-10 h-10 rounded-full"
               />
               {activeChatDetails.isOnline && (
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               )}
             </div>
             <div>
@@ -649,7 +648,7 @@ export default function ChatInterface() {
 
         {/* Pinned Message */}
         {pinnedMessage && (
-          <div className="bg-orange-100 p-2 flex items-center justify-between">
+          <div className="flex items-center justify-between p-2 bg-orange-100">
             <div className="flex items-center gap-2">
               <Pin className="w-4 h-4 text-orange-500" />
               <p className="text-sm text-orange-700 truncate">{pinnedMessage.content}</p>
@@ -661,10 +660,10 @@ export default function ChatInterface() {
         )}
 
         {/* Feedback Message */}
-        {feedbackMessage && <div className="bg-green-100 p-2 text-center text-green-800">{feedbackMessage}</div>}
+        {feedbackMessage && <div className="p-2 text-center text-green-800 bg-green-100">{feedbackMessage}</div>}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 p-4 overflow-y-auto">
           <AnimatePresence>
             {activeMessages
               .filter((msg) => msg.deletedFor !== "everyone" && msg.deletedFor !== "me")
@@ -686,7 +685,7 @@ export default function ChatInterface() {
                   )}
                   <div className={`max-w-[70%] ${msg.isVendor ? "order-2" : "order-1"}`}>
                     {msg.replyTo && (
-                      <div className="bg-gray-100 p-2 rounded-t-lg text-sm text-gray-600 mb-1">
+                      <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 rounded-t-lg">
                         Replying to: {activeMessages.find((m) => m.id === msg.replyTo)?.content.slice(0, 50)}...
                       </div>
                     )}
@@ -703,21 +702,21 @@ export default function ChatInterface() {
                           ) : file.type === "video" ? (
                             <div className="relative">
                               <div
-                                className="relative cursor-pointer rounded-lg overflow-hidden bg-black"
+                                className="relative overflow-hidden bg-black rounded-lg cursor-pointer"
                                 onClick={() => handlePlayVideo(file.url)}
                               >
                                 <video src={file.url} className="w-full" poster={file.url} />
                                 <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40">
                                   <Play className="w-12 h-12 text-white" />
                                 </div>
-                                <div className="absolute bottom-2 left-2 text-white text-sm">{file.duration}</div>
-                                <div className="absolute bottom-2 right-2 text-white text-sm">
+                                <div className="absolute text-sm text-white bottom-2 left-2">{file.duration}</div>
+                                <div className="absolute text-sm text-white bottom-2 right-2">
                                   {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                 </div>
                               </div>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2 bg-white/10 p-2 rounded">
+                            <div className="flex items-center gap-2 p-2 rounded bg-white/10">
                               <Paperclip className="w-4 h-4" />
                               <span>
                                 {file.name} ({formatFileSize(file.size)})
@@ -747,58 +746,58 @@ export default function ChatInterface() {
                       }`}
                     >
                       {msg.timestamp}
-                      {msg.isEdited && <span className="text-gray-400 ml-1">(edited)</span>}
+                      {msg.isEdited && <span className="ml-1 text-gray-400">(edited)</span>}
                       <div className="flex gap-2 ml-2">
-                        <button onClick={() => handleReply(msg.id)} className="hover:text-orange-500 group relative">
+                        <button onClick={() => handleReply(msg.id)} className="relative hover:text-orange-500 group">
                           <Reply className="w-4 h-4" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                             Reply
                           </span>
                         </button>
                         <button
                           onClick={() => handleCopyText(msg.content)}
-                          className="hover:text-orange-500 group relative"
+                          className="relative hover:text-orange-500 group"
                         >
                           <Copy className="w-4 h-4" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                             Copy
                           </span>
                         </button>
-                        <button onClick={() => handleForward(msg.id)} className="hover:text-orange-500 group relative">
+                        <button onClick={() => handleForward(msg.id)} className="relative hover:text-orange-500 group">
                           <Forward className="w-4 h-4" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                             Forward
                           </span>
                         </button>
                         {!msg.isVendor && (
                           <>
-                            <button onClick={() => handleEdit(msg.id)} className="hover:text-orange-500 group relative">
+                            <button onClick={() => handleEdit(msg.id)} className="relative hover:text-orange-500 group">
                               <Edit className="w-4 h-4" />
-                              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                                 Edit
                               </span>
                             </button>
                             <button
                               onClick={() => handleDeleteClick(msg.id)}
-                              className="hover:text-orange-500 group relative"
+                              className="relative hover:text-orange-500 group"
                             >
                               <Trash className="w-4 h-4" />
-                              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                                 Delete
                               </span>
                             </button>
                           </>
                         )}
-                        <button onClick={() => handlePin(msg.id)} className="hover:text-orange-500 group relative">
+                        <button onClick={() => handlePin(msg.id)} className="relative hover:text-orange-500 group">
                           <Pin className="w-4 h-4" />
-                          <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                             {msg.isPinned ? "Unpin" : "Pin"}
                           </span>
                         </button>
                       </div>
                     </div>
                   </div>
-                  {!msg.isVendor && <img src="/placeholder.svg" alt="You" className="w-8 h-8 rounded-full order-3" />}
+                  {!msg.isVendor && <img src="/placeholder.svg" alt="You" className="order-3 w-8 h-8 rounded-full" />}
                 </motion.div>
               ))}
           </AnimatePresence>
@@ -807,7 +806,7 @@ export default function ChatInterface() {
 
         {/* Reply Preview */}
         {replyingTo && (
-          <div className="bg-gray-100 p-2 flex items-center justify-between">
+          <div className="flex items-center justify-between p-2 bg-gray-100">
             <p className="text-sm text-gray-600">
               Replying to: {activeMessages.find((m) => m.id === replyingTo)?.content.slice(0, 50)}...
             </p>
@@ -821,43 +820,43 @@ export default function ChatInterface() {
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="p-4 border-t bg-white relative"
+          className="relative p-4 bg-white border-t"
         >
           <div className="flex items-center gap-2">
             <motion.input type="file" ref={fileInputRef} className="hidden" onChange={handleFileUpload} />
             <motion.input type="file" ref={videoInputRef} className="hidden" accept="video/*" onChange={handleVideoUpload} />
-            <motion.button onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-gray-100 rounded-full">
+            <motion.button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-full hover:bg-gray-100">
               <Paperclip className="w-5 h-5 text-gray-500" />
             </motion.button>
-            <motion.button onClick={() => videoInputRef.current?.click()} className="p-2 hover:bg-gray-100 rounded-full">
+            <motion.button onClick={() => videoInputRef.current?.click()} className="p-2 rounded-full hover:bg-gray-100">
               <Video className="w-5 h-5 text-gray-500" />
             </motion.button>
 
-            <div className="flex-1 relative">
+            <div className="relative flex-1">
               <input
                 type="text"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={editingMessageId ? "Edit message..." : "Write Something..."}
-                className="w-full pl-4 pr-10 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full py-2 pl-4 pr-10 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
                 onKeyPress={(e) => e.key === "Enter" && (editingMessageId ? handleSaveEdit() : handleSendMessage())}
               />
               <motion.button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="absolute right-10 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full"
+                className="absolute p-1 transform -translate-y-1/2 rounded-full right-10 top-1/2 hover:bg-gray-200"
               >
                 <Smile className="w-5 h-5 text-gray-500" />
               </motion.button>
               <motion.button
                 onClick={editingMessageId ? handleSaveEdit : handleSendMessage}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-orange-600 bg-orange-500 rounded-full text-white"
+                className="absolute p-1 text-white transform -translate-y-1/2 bg-orange-500 rounded-full right-2 top-1/2 hover:bg-orange-600"
               >
                 <SendIcon className="w-5 h-5" />
               </motion.button>
             </div>
             {/* <button
               onClick={editingMessageId ? handleSaveEdit : handleSendMessage}
-              className="p-2 bg-orange-500 hover:bg-orange-600 rounded-full text-white"
+              className="p-2 text-white bg-orange-500 rounded-full hover:bg-orange-600"
             >
               {editingMessageId ? <Check className="w-5 h-5" /> : <SendIcon className="w-5 h-5" />}
             </button> */}
@@ -865,7 +864,7 @@ export default function ChatInterface() {
 
           {/* Emoji Picker */}
           {showEmojiPicker && (
-            <div className="absolute bottom-full right-0 mb-2 bg-white border rounded-lg shadow-lg">
+            <div className="absolute right-0 mb-2 bg-white border rounded-lg shadow-lg bottom-full">
               <EmojiPicker
                 onEmojiClick={(emojiObject) => handleEmojiSelect(emojiObject.emoji)}
                 autoFocusSearch={false}
@@ -878,11 +877,11 @@ export default function ChatInterface() {
 
       {/* Delete Dialog */}
       {deleteDialog.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Delete message?</h3>
-            <p className="text-sm text-gray-600 mb-4">You can delete messages for everyone or just for yourself.</p>
-            <div className="space-y-2 mb-6">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-6 bg-white rounded-lg w-96">
+            <h3 className="mb-4 text-lg font-semibold">Delete message?</h3>
+            <p className="mb-4 text-sm text-gray-600">You can delete messages for everyone or just for yourself.</p>
+            <div className="mb-6 space-y-2">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -926,18 +925,18 @@ export default function ChatInterface() {
 
       {/* Enhanced Video Player */}
       {videoPlayer.isOpen && videoPlayer.videoUrl && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 w-full max-w-4xl aspect-video relative">
-            <div className="absolute top-2 right-2 flex items-center gap-2 z-10">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
+          <div className="relative w-full max-w-4xl p-4 bg-white rounded-lg aspect-video">
+            <div className="absolute z-10 flex items-center gap-2 top-2 right-2">
               <motion.button
                 onClick={() => handleSaveVideo(videoPlayer.videoUrl!)}
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white"
+                className="p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700"
               >
                 <Save className="w-5 h-5" />
               </motion.button>
               <motion.button
                 onClick={handleCloseVideoPlayer}
-                className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white"
+                className="p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700"
               >
                 <X className="w-5 h-5" />
               </motion.button>
@@ -946,33 +945,33 @@ export default function ChatInterface() {
               <video
                 ref={videoRef}
                 src={videoPlayer.videoUrl}
-                className="w-full h-full rounded-lg object-contain"
+                className="object-contain w-full h-full rounded-lg"
                 onClick={handlePlayPause}
                 controls
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+              <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <button
                       onClick={handlePlayPause}
-                      className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white"
+                      className="p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700"
                     >
                       {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
                     </button>
                     <button
                       onClick={handleToggleMute}
-                      className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white"
+                      className="p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700"
                     >
                       {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                     </button>
-                    <div className="text-white text-sm">
+                    <div className="text-sm text-white">
                       {formatTime(currentTime)} / {formatTime(duration)}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <motion.button
                       onClick={handleToggleFullscreen}
-                      className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full text-white"
+                      className="p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700"
                     >
                       <Maximize className="w-5 h-5" />
                     </motion.button>
@@ -986,15 +985,15 @@ export default function ChatInterface() {
 
       {/* Forward Dialog */}
       {forwardDialog.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Forward Message</h3>
-            <div className="max-h-96 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="p-6 bg-white rounded-lg w-96">
+            <h3 className="mb-4 text-lg font-semibold">Forward Message</h3>
+            <div className="overflow-y-auto max-h-96">
               {chats.map((chat) => (
                 <button
                   key={chat.id}
                   onClick={() => handleForwardMessage(chat.id)}
-                  className="w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-lg"
+                  className="flex items-center w-full gap-3 p-3 rounded-lg hover:bg-gray-100"
                 >
                   <img src={chat.avatar || "/placeholder.svg"} alt={chat.name} className="w-10 h-10 rounded-full" />
                   <div className="flex-1 text-left">
@@ -1005,7 +1004,7 @@ export default function ChatInterface() {
                 </button>
               ))}
             </div>
-            <div className="mt-4 flex justify-end">
+            <div className="flex justify-end mt-4">
               <button
                 onClick={() => setForwardDialog({ isOpen: false, messageId: null })}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
