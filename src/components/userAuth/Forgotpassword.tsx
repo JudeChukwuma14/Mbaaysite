@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import background from "../../assets/image/bg2.jpeg";
 import logo from "../../assets/image/MBLogo.png";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
+import { forgotPassword } from "@/utils/vendorApi";
+import { useNavigate } from "react-router-dom";
 
 // Define the shape of the form data
 interface ForgotPasswordFormData {
@@ -15,7 +16,7 @@ interface ForgotPasswordFormData {
 
 const Forgotpassword: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false); // TypeScript: boolean state
-
+  const navigate = useNavigate(); // React Router: for navigation
   const {
     register,
     handleSubmit,
@@ -25,21 +26,21 @@ const Forgotpassword: React.FC = () => {
   const onSubmit: SubmitHandler<ForgotPasswordFormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await axios.post("/forgot-password", data);
-      if (response.status === 200) {
-        toast.success("Password reset link sent to your email!", {
+      const response = await forgotPassword(data.email)
+      console.log(response);
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      navigate("/forgotpasswordmessage")
+    } catch (error: unknown) {
+      toast.error(
+        (error as Error)?.message || "Failed to send reset link. Please try again.",
+        {
           position: "top-right",
-          autoClose: 3000,
-        });
-      }
-    }catch (error: unknown) {
-              toast.error(
-                (error as Error)?.message || "Failed to send reset link. Please try again.",
-                {
-                  position: "top-right",
-                  autoClose: 4000,
-                }
-              );
+          autoClose: 4000,
+        }
+      );
     } finally {
       setIsLoading(false);
     }

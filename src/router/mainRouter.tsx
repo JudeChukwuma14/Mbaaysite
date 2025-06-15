@@ -539,6 +539,7 @@ const TraditionalSweet = lazy(() => import("@/components/AllCategory/Local&Tradi
 // PAYMENT
 const SuccessPayment = lazy(() => import("@/components/Payment/PaymentSuccess"))
 const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"))
+const PaymentCallback = lazy(() => import("@/components/Payment/PaymentCallback"))
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -829,7 +830,7 @@ const routesConfig: RouteObject[] = [
     path: "forgotpasswordmessage",
     element: withSuspense(ForgotpasswordMessage),
   },
-  { path: "forgotpassword", element: withSuspense(ForgotPassword) },
+  { path: "forgot-password", element: withSuspense(ForgotPassword) },
   { path: "restpassword", element: withSuspense(ResetPassword) },
   { path: "/verify-otp/:userId", element: withSuspense(OtpVerify), errorElement: <ErrorPage /> },
   { path: "sendlink", element: withSuspense(SendLink) },
@@ -841,7 +842,8 @@ const routesConfig: RouteObject[] = [
 
   // Payment 
   { path: "/success", element: withSuspense(SuccessPayment) },
-  { path: "/falied", element: withSuspense(FaliedPayment) },
+  { path: "/failed", element: withSuspense(FaliedPayment) },
+    { path: "/payment-callback", element: withSuspense(PaymentCallback) },
 
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
