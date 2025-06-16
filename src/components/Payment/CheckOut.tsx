@@ -9,7 +9,7 @@ import { FaCreditCard } from "react-icons/fa";
 import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { useDispatch, useSelector } from "react-redux";
-import { applyCoupon, removeCoupon, setCartItems } from "@/redux/slices/cartSlice";
+import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
 import { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
@@ -28,10 +28,10 @@ interface FormValues {
   country: string;
   region: string;
   city: string;
-  streetAddress: string;
+  postalCode?: string;
   apartment?: string;
   couponCode?: string;
-  paymentOption: "before" | "after";
+  paymentOption: "Pay Before Delivery" | "Pay After Delivery";
 }
 
 interface CityOption {
@@ -136,7 +136,7 @@ function BillingDetails({
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <motion.div variants={inputVariants}>
             <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">
               Email Address*
@@ -187,6 +187,20 @@ function BillingDetails({
                 {errors.phoneNumber.message}
               </motion.p>
             )}
+          </motion.div>
+
+          <motion.div variants={inputVariants}>
+            <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
+             Postal Code (Optional)
+            </label>
+            <input
+              id="postalCode"
+              type="text"
+              className={`${inputStyles} ${normalInputStyles}`}
+              placeholder="00112"
+              {...register("postalCode")}
+              aria-invalid="false"
+            />
           </motion.div>
         </div>
 
@@ -304,26 +318,6 @@ function BillingDetails({
             )}
           </motion.div>
         </div>
-
-        <motion.div variants={inputVariants}>
-          <label htmlFor="streetAddress" className="block mb-1 text-sm font-medium text-gray-700">
-            Street Address*
-          </label>
-          <input
-            id="streetAddress"
-            type="text"
-            className={`${inputStyles} ${errors.streetAddress ? errorInputStyles : normalInputStyles}`}
-            placeholder="123 Main St"
-            {...register("streetAddress", { required: "Street address is required" })}
-            aria-invalid={errors.streetAddress ? "true" : "false"}
-          />
-          {errors.streetAddress && (
-            <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-              {errors.streetAddress.message}
-            </motion.p>
-          )}
-        </motion.div>
-
         <motion.div variants={inputVariants}>
           <label htmlFor="apartment" className="block mb-1 text-sm font-medium text-gray-700">
             Apartment, Suite, etc. (Optional)
@@ -485,12 +479,12 @@ export default function CheckoutForm() {
       email: "",
       phoneNumber: "",
       country: "",
+      postalCode: "",
       region: "",
       city: "",
-      streetAddress: "",
       apartment: "",
       couponCode: "",
-      paymentOption: "before",
+      paymentOption: "Pay Before Delivery"
     },
   });
 
@@ -574,11 +568,11 @@ export default function CheckoutForm() {
       const pricing = calculatePricing(cartItems, discountRate);
 
       const address = [
-        data.streetAddress,
         data.apartment ? `Apt ${data.apartment}` : "",
         data.city,
         data.region,
         data.country,
+        data.postalCode ? `Postal Code: ${data.postalCode}` : "",
       ]
         .filter(Boolean)
         .join(", ");
@@ -593,7 +587,7 @@ export default function CheckoutForm() {
         apartment: data.apartment || "",
         city: data.city,
         region: data.region,
-        streetAddress: data.streetAddress,
+        postalCode: data.postalCode || "",
         couponCode: cartCoupon || "",
         paymentOption: data.paymentOption,
         cartItems: cartItems.map((item) => ({
@@ -614,21 +608,24 @@ export default function CheckoutForm() {
 
       const response = await submitOrder(sessionId, orderData);
       toast.success("Order placed successfully!");
-      // Clear cart and coupon on successful order
-      dispatch(setCartItems([]));
-      dispatch(removeCoupon());
-      if (data.paymentOption === "before" && response.paymentUrl) {
-        window.location.href = response.paymentUrl;
+
+      if (data.paymentOption === "Pay Before Delivery") {
+        if (response.authorization_url) {
+          window.location.href = response.authorization_url; // Redirect to Paystack
+        } else {
+          throw new Error("Payment initialization failed: No authorization URL provided");
+        }
       } else {
         navigate("/success", { state: { orderId: response.orderId, orderData } });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Order submission failed:", error);
-      // Error toast is handled in orderApi.ts interceptor
+      toast.error(error.message || "Failed to place order. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="container px-4 py-8 mx-auto max-w-7xl">

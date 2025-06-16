@@ -902,7 +902,7 @@ const routesConfig: RouteObject[] = [
       { path: "/SpiceKits", element: withSuspense(SpiceKits) },
       { path: "/Spices-i", element: withSuspense(Spicesi) },
 
-     
+
 
       // Local & Traditional Foods Subcategory
       {
@@ -1008,7 +1008,7 @@ const routesConfig: RouteObject[] = [
               <ProductDetailModal
                 product={null}
                 isOpen={false}
-                onClose={() => {}}
+                onClose={() => { }}
                 productId={""}
               />
             )),
@@ -1037,9 +1037,9 @@ const routesConfig: RouteObject[] = [
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
   // Payment 
-  { path: "/success", element: withSuspense(SuccessPayment) },
+  { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
   { path: "/failed", element: withSuspense(FaliedPayment) },
-    { path: "/payment-callback", element: withSuspense(PaymentCallback) },
+  { path: "/payment_callback", element: withSuspense(PaymentCallback) },
 
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found

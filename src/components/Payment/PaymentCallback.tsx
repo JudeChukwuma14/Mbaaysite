@@ -15,7 +15,10 @@ export default function PaymentCallback() {
             const reference = searchParams.get("reference");
             if (!reference) {
                 toast.error("Invalid payment reference");
-                navigate("/failed");
+                navigate("/failed", {
+                    state: { errorCode: "ERR_NO_REFERENCE", errorMessage: "No payment reference provided." },
+                });
+                setIsLoading(false);
                 return;
             }
 
@@ -23,13 +26,19 @@ export default function PaymentCallback() {
                 const { status, orderId, orderDetails } = await getPaymentStatus(reference);
                 if (status === "success") {
                     toast.success("Payment verified successfully!");
-                    navigate("/success", { state: { orderId, orderData: orderDetails } });
+                    navigate(`/${orderId}/success`, { state: { orderId, orderData: orderDetails } });
                 } else {
                     toast.error("Payment failed. Please try again.");
                     navigate("/failed", { state: { orderId, orderData: orderDetails } });
                 }
             } catch (error) {
-                navigate("/failed");
+                toast.error("Failed to verify payment status.");
+                navigate("/failed", {
+                    state: {
+                        errorCode: "ERR_PAYMENT_STATUS_FETCH",
+                        errorMessage: "Unable to verify payment status. Please try again later.",
+                    },
+                });
             } finally {
                 setIsLoading(false);
             }

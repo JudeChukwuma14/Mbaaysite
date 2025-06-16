@@ -27,17 +27,19 @@ export interface OrderData {
   apartment: string;
   city: string;
   region: string;
-  streetAddress: string;
+  postalCode: string;
   couponCode: string;
-  paymentOption: "before" | "after";
+  paymentOption: "Pay Before Delivery" | "Pay After Delivery";
   cartItems: OrderCartItem[];
   pricing: OrderPricing;
 }
 
 interface CheckoutResponse {
   orderId: string;
-  paymentUrl?: string;
+  authorization_url?: string; // Updated to match Paystack response
+  reference?: string; // Added to store the reference
   status: string;
+  message?: string; // Added to handle backend message
 }
 
 interface PaymentStatusResponse {
@@ -66,7 +68,7 @@ api.interceptors.response.use(
     } else {
       toast.error(message);
     }
-    console.error("API Error:", error);
+    console.error("API Error:", error.message);
     return Promise.reject(error);
   }
 );
@@ -79,6 +81,7 @@ export const submitOrder = async (
     const response = await api.post(`/order_checkout/${sessionId}`, orderData);
     return response.data;
   } catch (error: any) {
+    console.error("Order Submission Error:......", error.message);
     throw new Error(error.response?.data?.message || "Failed to place order");
   }
 };
@@ -92,6 +95,8 @@ export const getPaymentStatus = async (
     });
     return response.data;
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || "Failed to verify payment");
+    throw new Error(
+      error.response?.data?.message || "Failed to verify payment"
+    );
   }
 };

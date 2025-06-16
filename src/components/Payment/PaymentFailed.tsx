@@ -53,7 +53,7 @@ export default function PaymentFailed({
           setOrderDetails(orderDetails || null);
           setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
           setEmail(orderDetails?.email || defaultEmail);
-          setPaymentMethod(orderDetails?.paymentOption === "before" ? "Credit Card" : "Cash on Delivery");
+          setPaymentMethod(orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery");
           setErrorCode(defaultErrorCode);
           setErrorMessage(defaultErrorMessage);
         })
