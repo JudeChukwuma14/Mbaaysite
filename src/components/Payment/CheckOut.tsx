@@ -21,8 +21,8 @@ import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
 
 interface FormValues {
-  firstName: string;
-  lastName: string;
+  first_name: string;
+  last_name: string;
   email: string;
   phoneNumber: string;
   country: string;
@@ -98,39 +98,39 @@ function BillingDetails({
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
-            <label htmlFor="firstName" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="first_name" className="block mb-1 text-sm font-medium text-gray-700">
               First Name*
             </label>
             <input
-              id="firstName"
+              id="first_name"
               type="text"
-              className={`${inputStyles} ${errors.firstName ? errorInputStyles : normalInputStyles}`}
+              className={`${inputStyles} ${errors.first_name ? errorInputStyles : normalInputStyles}`}
               placeholder="John"
-              {...register("firstName", { required: "First name is required" })}
-              aria-invalid={errors.firstName ? "true" : "false"}
+              {...register("first_name", { required: "First name is required" })}
+              aria-invalid={errors.first_name ? "true" : "false"}
             />
-            {errors.firstName && (
+            {errors.first_name && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.firstName.message}
+                {errors.first_name.message}
               </motion.p>
             )}
           </motion.div>
 
           <motion.div variants={inputVariants}>
-            <label htmlFor="lastName" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="last_name" className="block mb-1 text-sm font-medium text-gray-700">
               Last Name*
             </label>
             <input
-              id="lastName"
+              id="last_name"
               type="text"
-              className={`${inputStyles} ${errors.lastName ? errorInputStyles : normalInputStyles}`}
+              className={`${inputStyles} ${errors.last_name ? errorInputStyles : normalInputStyles}`}
               placeholder="Doe"
-              {...register("lastName", { required: "Last name is required" })}
-              aria-invalid={errors.lastName ? "true" : "false"}
+              {...register("last_name", { required: "Last name is required" })}
+              aria-invalid={errors.last_name ? "true" : "false"}
             />
-            {errors.lastName && (
+            {errors.last_name && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.lastName.message}
+                {errors.last_name.message}
               </motion.p>
             )}
           </motion.div>
@@ -475,8 +475,8 @@ export default function CheckoutForm() {
     setValue,
   } = useForm<FormValues>({
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       email: "",
       phoneNumber: "",
       country: "",
@@ -578,8 +578,8 @@ export default function CheckoutForm() {
         .join(", ");
 
       const orderData: OrderData = {
-        firstName: data.firstName,
-        lastName: data.lastName,
+        first_name: data.first_name,
+        last_name: data.last_name,
         email: data.email,
         phoneNumber: data.phoneNumber,
         address,
