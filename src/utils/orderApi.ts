@@ -1,3 +1,4 @@
+// src/utils/orderApi.ts
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -14,6 +15,7 @@ interface OrderPricing {
   shipping: number;
   tax: string;
   discount: string;
+  commission: string; // Added commission
   total: string;
 }
 
@@ -36,10 +38,10 @@ export interface OrderData {
 
 interface CheckoutResponse {
   orderId: string;
-  authorization_url?: string; // Updated to match Paystack response
-  reference?: string; // Added to store the reference
+  authorization_url?: string;
+  reference?: string;
   status: string;
-  message?: string; // Added to handle backend message
+  message?: string;
 }
 
 interface PaymentStatusResponse {
@@ -53,7 +55,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Global error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -68,7 +69,7 @@ api.interceptors.response.use(
     } else {
       toast.error(message);
     }
-    console.error("API Error:", error.message);
+    console.error("API Error:", error.message, error.response?.data);
     return Promise.reject(error);
   }
 );
@@ -79,9 +80,9 @@ export const submitOrder = async (
 ): Promise<CheckoutResponse> => {
   try {
     const response = await api.post(`/order_checkout/${sessionId}`, orderData);
-    return response.data;
+    return response.data.data || response.data; // Handle nested data
   } catch (error: any) {
-    console.error("Order Submission Error:......", error.message);
+    console.error("Order Submission Error:", error.message, error.response?.data);
     throw new Error(error.response?.data?.message || "Failed to place order");
   }
 };
@@ -93,8 +94,9 @@ export const getPaymentStatus = async (
     const response = await api.get(`/payment_callback`, {
       params: { reference },
     });
-    return response.data;
+    return response.data.data || response.data; // Handle nested data
   } catch (error: any) {
+    console.error("Payment Status Error:", error.message, error.response?.data);
     throw new Error(
       error.response?.data?.message || "Failed to verify payment"
     );

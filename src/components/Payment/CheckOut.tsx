@@ -1,3 +1,4 @@
+// src/components/CheckoutForm.tsx
 import { useState, useEffect } from "react";
 import { useForm, Controller, UseFormRegister, Control, FieldErrors } from "react-hook-form";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
@@ -18,7 +19,6 @@ import { CiDeliveryTruck } from "react-icons/ci";
 import { getSessionId } from "@/utils/session";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
-
 
 interface FormValues {
   firstName: string;
@@ -169,7 +169,7 @@ function BillingDetails({
               rules={{ required: "Phone number is required" }}
               render={({ field }) => (
                 <PhoneInput
-                  country="us"
+                  country="ng"
                   value={field.value}
                   onChange={field.onChange}
                   containerClass="w-full"
@@ -191,7 +191,7 @@ function BillingDetails({
 
           <motion.div variants={inputVariants}>
             <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
-             Postal Code (Optional)
+              Postal Code (Optional)
             </label>
             <input
               id="postalCode"
@@ -343,13 +343,13 @@ function PaymentDetails({
   isSubmitting,
 }: {
   register: UseFormRegister<FormValues>;
-  activePaymentOption: "before" | "after";
-  setActivePaymentOption: (option: "before" | "after") => void;
+  activePaymentOption: "Pay Before Delivery" | "Pay After Delivery";
+  setActivePaymentOption: (option: "Pay Before Delivery" | "Pay After Delivery") => void;
   isSubmitting: boolean;
 }) {
   const paymentOptions = [
-    { option: "before", label: "Pay Now", icon: FaCreditCard },
-    { option: "after", label: "Pay on Delivery", icon: CiDeliveryTruck },
+    { option: "Pay Before Delivery", label: "Pay Now", icon: FaCreditCard },
+    { option: "Pay After Delivery", label: "Pay on Delivery", icon: CiDeliveryTruck },
   ];
 
   return (
@@ -374,12 +374,13 @@ function PaymentDetails({
               <motion.button
                 key={option}
                 type="button"
-                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${activePaymentOption === option
-                  ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
+                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${
+                  activePaymentOption === option
+                    ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                }`}
                 onClick={() => {
-                  setActivePaymentOption(option as "before" | "after");
+                  setActivePaymentOption(option as "Pay Before Delivery" | "Pay After Delivery");
                   register("paymentOption").onChange({ target: { value: option } });
                 }}
                 whileHover={{ scale: 1.02 }}
@@ -395,7 +396,7 @@ function PaymentDetails({
         </div>
 
         <div>
-          {activePaymentOption === "before" && (
+          {activePaymentOption === "Pay Before Delivery" && (
             <motion.div
               variants={inputVariants}
               initial="hidden"
@@ -406,11 +407,11 @@ function PaymentDetails({
                 <FaCreditCard className="w-5 h-5 text-blue-600" />
                 <span className="font-semibold text-blue-800">Pay Now</span>
               </div>
-              <p className="text-blue-700">Pay securely using Credit Card or PayPal.</p>
+              <p className="text-blue-700">Pay securely using your preferred payment method via Paystack.</p>
             </motion.div>
           )}
 
-          {activePaymentOption === "after" && (
+          {activePaymentOption === "Pay After Delivery" && (
             <motion.div
               variants={inputVariants}
               initial="hidden"
@@ -454,7 +455,7 @@ function PaymentDetails({
 
 export default function CheckoutForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activePaymentOption, setActivePaymentOption] = useState<"before" | "after">("before");
+  const [activePaymentOption, setActivePaymentOption] = useState<"Pay Before Delivery" | "Pay After Delivery">("Pay Before Delivery");
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isCityLoading, setIsCityLoading] = useState(false);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -484,7 +485,7 @@ export default function CheckoutForm() {
       city: "",
       apartment: "",
       couponCode: "",
-      paymentOption: "Pay Before Delivery"
+      paymentOption: "Pay Before Delivery",
     },
   });
 
@@ -543,7 +544,6 @@ export default function CheckoutForm() {
       return;
     }
     setCouponLoading(true);
-    // TODO: Replace with actual API call to validate coupon server-side
     setTimeout(() => {
       if (code.toUpperCase() === "SUMMER10") {
         dispatch(applyCoupon({ code: "SUMMER10", discount: 0.1 }));
@@ -602,6 +602,7 @@ export default function CheckoutForm() {
           shipping: pricing.shipping,
           tax: pricing.tax.toFixed(2),
           discount: pricing.discount.toFixed(2),
+          commission: pricing.commission.toFixed(2), // Added commission
           total: pricing.total.toFixed(2),
         },
       };
@@ -616,16 +617,22 @@ export default function CheckoutForm() {
           throw new Error("Payment initialization failed: No authorization URL provided");
         }
       } else {
-        navigate("/success", { state: { orderId: response.orderId, orderData } });
+        // Pay After Delivery: Redirect to success page
+        navigate(`/${response.orderId}/success`, { state: { orderId: response.orderId, orderData } });
       }
     } catch (error: any) {
       console.error("Order submission failed:", error);
       toast.error(error.message || "Failed to place order. Please try again.");
+      navigate("/failed", {
+        state: {
+          errorCode: "ERR_ORDER_SUBMISSION",
+          errorMessage: error.message || "Failed to place order.",
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="container px-4 py-8 mx-auto max-w-7xl">

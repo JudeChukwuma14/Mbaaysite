@@ -1,8 +1,8 @@
+// src/components/OrderSummary.tsx
 import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { motion } from "framer-motion";
-
 import { Loader2 } from "lucide-react";
 import { calculatePricing } from "@/utils/pricingUtils";
 import ImageWithFallback from "../Reuseable/ImageWithFallback";
@@ -96,10 +96,14 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
               </div>
               {pricing.discount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Discount</span>
+                  <span className="text-gray-600">Discount ({couponCode})</span>
                   <span className="font-medium text-green-600">-${pricing.discount.toFixed(2)}</span>
                 </div>
               )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Mbaay Commission (2%)</span>
+                <span className="font-medium text-gray-800">${pricing.commission.toFixed(2)}</span>
+              </div>
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800">Total</span>
                 <span className="font-semibold text-gray-800">${pricing.total.toFixed(2)}</span>

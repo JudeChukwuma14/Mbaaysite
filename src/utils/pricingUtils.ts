@@ -1,35 +1,35 @@
-interface CartItem {
-  id: string;
-  price: number;
-  quantity: number;
-}
-
-interface Pricing {
+// src/utils/pricingUtils.ts
+export interface Pricing {
   subtotal: number;
   shipping: number;
   tax: number;
   discount: number;
-  total: number;
+  commission: number; // Added commission
+  total: number; // Total after commission
 }
 
 export const calculatePricing = (
-  cartItems: CartItem[],
-  discountRate: number = 0
+  cartItems: { id: string; name: string; price: number; quantity: number; image: string }[],
+  discountRate: number
 ): Pricing => {
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const shipping = 0; // Free shipping
-  const tax = subtotal * 0.085; // 8.5% tax
+  const taxRate = 0.1; // 10% tax (adjust as needed)
+  const tax = subtotal * taxRate;
   const discount = subtotal * discountRate;
-  const total = subtotal + shipping + tax - discount;
+  const totalBeforeCommission = subtotal + tax - discount;
+  const commissionRate = 0.02; // 2% commission for Mbaay
+  const commission = totalBeforeCommission * commissionRate;
+  const total = totalBeforeCommission - commission;
 
   return {
     subtotal,
-    shipping,
+    shipping: 0, // Free shipping as per your code
     tax,
     discount,
-    total,
+    commission,
+    total: Math.max(total, 0), // Ensure total is non-negative
   };
 };

@@ -1,7 +1,8 @@
+// src/components/PaymentSuccess.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle, Download, Home, ShoppingBag, Copy, Loader2 } from "lucide-react";
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { getPaymentStatus, OrderData } from "@/utils/orderApi";
 import ImageWithFallback from "../Reuseable/ImageWithFallback";
 
@@ -36,30 +37,67 @@ export default function PaymentSuccess({
   const [isLoading, setIsLoading] = useState(false);
   const { state } = useLocation();
   const [searchParams] = useSearchParams();
+  const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("PaymentSuccess state:", state, "sessionId:", sessionId); // Debug log
     const reference = searchParams.get("reference");
     if (reference && !state?.orderData) {
       setIsLoading(true);
       getPaymentStatus(reference)
         .then(({ orderId, orderDetails }) => {
-          setOrderNumber(orderId);
+          setOrderNumber(orderId || sessionId || defaultOrderNumber);
           setOrderDetails(orderDetails || null);
           setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
           setEmail(orderDetails?.email || defaultEmail);
-          setPaymentMethod(orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery");
+          setPaymentMethod(
+            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
+          );
         })
-        .catch(() => navigate("/failed"))
+        .catch((error) => {
+          console.error("PaymentSuccess error:", error);
+          navigate("/failed", {
+            state: {
+              errorCode: "ERR_PAYMENT_STATUS_FETCH",
+              errorMessage: "Failed to load order details.",
+            },
+          });
+        })
         .finally(() => setIsLoading(false));
     } else if (state?.orderData && state?.orderId) {
-      setOrderNumber(state.orderId);
+      setOrderNumber(state.orderId || sessionId || defaultOrderNumber);
       setOrderDetails(state.orderData);
       setAmount(`$${state.orderData.pricing.total}`);
       setEmail(state.orderData.email);
-      setPaymentMethod(state.orderData.paymentOption === "before" ? "Credit Card" : "Cash on Delivery");
+      setPaymentMethod(
+        state.orderData.paymentOption === "before" ? "Credit Card" : "Cash on Delivery"
+      );
+    } else if (sessionId) {
+      // Fallback: Fetch order details using sessionId
+      setIsLoading(true);
+      getPaymentStatus(sessionId) // Adjust if API doesn't support sessionId
+        .then(({ orderId, orderDetails }) => {
+          setOrderNumber(orderId || sessionId);
+          setOrderDetails(orderDetails || null);
+          setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
+          setEmail(orderDetails?.email || defaultEmail);
+          setPaymentMethod(
+            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
+          );
+        })
+        .catch((error) => {
+          console.error("PaymentSuccess fallback error:", error);
+          navigate("/failed", {
+            state: {
+              errorCode: "ERR_ORDER_FETCH",
+              errorMessage: "Failed to load order details.",
+            },
+          });
+        })
+        .finally(() => setIsLoading(false));
     }
-  }, [searchParams, state, navigate, defaultAmount, defaultEmail]);
+  }, [searchParams, state, sessionId, navigate, defaultOrderNumber, defaultAmount, defaultEmail]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -152,7 +190,7 @@ export default function PaymentSuccess({
 
           {orderDetails?.cartItems && (
             <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Ordered Items</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Purchased Items</h3>
               <ul className="space-y-4">
                 {orderDetails.cartItems.map((item) => (
                   <li key={item.productId} className="flex items-center gap-4">
@@ -164,7 +202,8 @@ export default function PaymentSuccess({
                     <div>
                       <div className="text-sm font-medium text-gray-800">{item.name}</div>
                       <div className="text-sm text-gray-600">
-                        ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                        ${item.price.toFixed(2)} x {item.quantity} = $
+                        {(item.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
                   </li>
@@ -175,7 +214,7 @@ export default function PaymentSuccess({
 
           {orderDetails?.pricing && (
             <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Pricing Summary</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
@@ -188,11 +227,13 @@ export default function PaymentSuccess({
                 {orderDetails.pricing.discount !== "0.00" && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Discount ({orderDetails.couponCode})</span>
-                    <span className="font-medium text-green-600">-${orderDetails.pricing.discount}</span>
+                    <span className="font-medium text-green-600">
+                      -${orderDetails.pricing.discount}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="font-medium text-gray-800">Total</span>
+                  <span className="font-medium text-gray-800">Total Paid</span>
                   <span className="font-semibold text-gray-800">${orderDetails.pricing.total}</span>
                 </div>
               </div>

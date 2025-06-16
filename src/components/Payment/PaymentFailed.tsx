@@ -1,7 +1,8 @@
+// src/components/PaymentFailed.tsx
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { XCircle, AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { getPaymentStatus, OrderData } from "@/utils/orderApi";
 import ImageWithFallback from "../Reuseable/ImageWithFallback";
 
@@ -39,31 +40,48 @@ export default function PaymentFailed({
   const [errorCode, setErrorCode] = useState(defaultErrorCode);
   const [errorMessage, setErrorMessage] = useState(defaultErrorMessage);
   const [searchParams] = useSearchParams();
+  const { state } = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const navigate = useNavigate();
 
   useEffect(() => {
+    console.log("PaymentFailed state:", state); // Debug log
     const reference = searchParams.get("reference");
-    if (reference) {
+    if (reference && !state?.orderData) {
       setIsLoading(true);
       getPaymentStatus(reference)
         .then(({ orderId, orderDetails }) => {
-          setOrderNumber(orderId);
+          setOrderNumber(orderId || defaultOrderNumber);
           setOrderDetails(orderDetails || null);
           setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
           setEmail(orderDetails?.email || defaultEmail);
-          setPaymentMethod(orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery");
-          setErrorCode(defaultErrorCode);
-          setErrorMessage(defaultErrorMessage);
+          setPaymentMethod(
+            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
+          );
+          setErrorCode(state?.errorCode || defaultErrorCode);
+          setErrorMessage(state?.errorMessage || defaultErrorMessage);
         })
-        .catch(() => {
-          setErrorCode("ERR_PAYMENT_STATUS_FETCH");
-          setErrorMessage("Failed to fetch payment status. Please try again later.");
+        .catch((error) => {
+          console.error("PaymentFailed error:", error);
+          setErrorCode(state?.errorCode || "ERR_PAYMENT_STATUS_FETCH");
+          setErrorMessage(
+            state?.errorMessage || "Failed to fetch payment status. Please try again later."
+          );
         })
         .finally(() => setIsLoading(false));
+    } else if (state?.orderData || state?.errorCode) {
+      setOrderNumber(state.orderId || defaultOrderNumber);
+      setOrderDetails(state.orderData || null);
+      setAmount(`$${state.orderData?.pricing.total || defaultAmount}`);
+      setEmail(state.orderData?.email || defaultEmail);
+      setPaymentMethod(
+        state.orderData?.paymentOption === "before" ? "Credit Card" : "Cash on Delivery"
+      );
+      setErrorCode(state.errorCode || defaultErrorCode);
+      setErrorMessage(state.errorMessage || defaultErrorMessage);
     }
-  }, [searchParams, defaultAmount, defaultEmail]);
+  }, [searchParams, state, defaultOrderNumber, defaultAmount, defaultEmail, defaultErrorCode, defaultErrorMessage]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -155,7 +173,7 @@ export default function PaymentFailed({
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <div className="mb-1 text-sm text-gray-500">Amount</div>
+              <div className="mb-1 text-sm text-gray-500">Attempted Amount</div>
               <div className="text-lg font-semibold text-gray-800">{amount}</div>
             </div>
             <div>
@@ -174,7 +192,7 @@ export default function PaymentFailed({
 
           {orderDetails?.cartItems && (
             <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Ordered Items</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Attempted Items</h3>
               <ul className="space-y-4">
                 {orderDetails.cartItems.map((item) => (
                   <li key={item.productId} className="flex items-center gap-4">
@@ -186,7 +204,8 @@ export default function PaymentFailed({
                     <div>
                       <div className="text-sm font-medium text-gray-800">{item.name}</div>
                       <div className="text-sm text-gray-600">
-                        ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                        ${item.price.toFixed(2)} x {item.quantity} = $
+                        {(item.price * item.quantity).toFixed(2)}
                       </div>
                     </div>
                   </li>
@@ -197,7 +216,7 @@ export default function PaymentFailed({
 
           {orderDetails?.pricing && (
             <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Pricing Summary</h3>
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
@@ -210,11 +229,13 @@ export default function PaymentFailed({
                 {orderDetails.pricing.discount !== "0.00" && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Discount ({orderDetails.couponCode})</span>
-                    <span className="font-medium text-green-600">-${orderDetails.pricing.discount}</span>
+                    <span className="font-medium text-green-600">
+                      -${orderDetails.pricing.discount}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="font-medium text-gray-800">Total</span>
+                  <span className="font-medium text-gray-800">Total Attempted</span>
                   <span className="font-semibold text-gray-800">${orderDetails.pricing.total}</span>
                 </div>
               </div>
