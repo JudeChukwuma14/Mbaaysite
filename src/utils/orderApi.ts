@@ -23,7 +23,7 @@ export interface OrderData {
   first_name: string;
   last_name: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   address: string;
   country: string;
   apartment: string;

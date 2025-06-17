@@ -24,7 +24,7 @@ interface FormValues {
   first_name: string;
   last_name: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   country: string;
   region: string;
   city: string;
@@ -160,11 +160,11 @@ function BillingDetails({
           </motion.div>
 
           <motion.div variants={inputVariants}>
-            <label htmlFor="phoneNumber" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="phone" className="block mb-1 text-sm font-medium text-gray-700">
               Phone Number*
             </label>
             <Controller
-              name="phoneNumber"
+              name="phone"
               control={control}
               rules={{ required: "Phone number is required" }}
               render={({ field }) => (
@@ -177,14 +177,14 @@ function BillingDetails({
                   buttonClass="!h-11 !border-r !border-gray-300 !bg-white !rounded-l-md"
                   dropdownClass="!z-50"
                   inputProps={{
-                    "aria-invalid": errors.phoneNumber ? "true" : "false",
+                    "aria-invalid": errors.phone ? "true" : "false",
                   }}
                 />
               )}
             />
-            {errors.phoneNumber && (
+            {errors.phone && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.phoneNumber.message}
+                {errors.phone.message}
               </motion.p>
             )}
           </motion.div>
@@ -478,7 +478,7 @@ export default function CheckoutForm() {
       first_name: "",
       last_name: "",
       email: "",
-      phoneNumber: "",
+      phone: "",
       country: "",
       postalCode: "",
       region: "",
@@ -581,7 +581,7 @@ export default function CheckoutForm() {
         first_name: data.first_name,
         last_name: data.last_name,
         email: data.email,
-        phoneNumber: data.phoneNumber,
+        phone: data.phone,
         address,
         country: data.country,
         apartment: data.apartment || "",
