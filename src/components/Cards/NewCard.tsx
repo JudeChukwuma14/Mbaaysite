@@ -7,7 +7,7 @@ export default function NewCard() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(0);
 
-  const songs = ["/music/sound.mp3"]; // Store audio in public/music/
+  const songs = ["https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"]; // Store audio in public/music/
 
   useEffect(() => {
     if (audioRef.current) {

@@ -11,7 +11,7 @@ import ProtectedVendor from "./ProtectedVendor";
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
-const Cart = lazy(() => import("@/components/Cart"));
+const Cart = lazy(() => import("@/components/Payment/Cart"));
 const ProductDetail = lazy(() => import("@/components/ProductDetail"));
 const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
@@ -25,7 +25,7 @@ const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
   () => import("@/components/profileMangement/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
+const CheckOut = lazy(() => import("@/components/Payment/CheckOut"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -103,7 +103,8 @@ const userIndex = lazy(() => import("@/components/profileMangement/Index"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
-
+const AllVendor = lazy(() => import("@/components/Reuseable/AllVendor"))
+const VendorProfileProduct = lazy(() => import("@/components/Reuseable/VendorProfileProduct"))
 // All Category Links
 const Fashion = lazy(() => import("@/components/AllCategory/Fashion/Fashion"));
 const Furniture = lazy(
@@ -118,9 +119,8 @@ const BookPoetry = lazy(
 const HomeDecor = lazy(
   () => import("@/components/AllCategory/HomeDécor&Accessories/HomeDecor")
 );
-const LocalFood = lazy(
-  () => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood")
-);
+const LocalFood = lazy(() => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood"));
+const LocalFoodsDrinks = lazy(() => import("@/components/AllCategory/LocalFoodandDrinksProducts/LocalFoodsDrinks"));
 const PlantSeed = lazy(
   () => import("@/components/AllCategory/Plant&Seeds/PlantSeed")
 );
@@ -130,17 +130,10 @@ const Spices = lazy(
 const Jewelry = lazy(
   () => import("@/components/AllCategory/Jewelry&Gemstones/Jewelry")
 );
-const TranditionalFabrics = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/TranditionalFabrics"
-    )
-);
-const Vintage = lazy(
-  () => import("@/components/AllCategory/VintageStocks/Vintage")
-);
+
 
 const Art = lazy(() => import("@/components/AllCategory/Art/ArtPage"));
+
 
 // BeautyWellness Subcategory Page
 const Skincare = lazy(
@@ -824,6 +817,7 @@ const TraditionalSweet = lazy(
     )
 );
 
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -834,15 +828,19 @@ const routesConfig: RouteObject[] = [
   {
     path: "/",
     element: <WebLayout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: withSuspense(Home) },
       { path: "/about", element: withSuspense(About) },
       { path: "/contact", element: withSuspense(Contact) },
       { path: "/cart", element: withSuspense(Cart) },
-      { path: "/product-details/:id", element: withSuspense(ProductDetail) },
-      { path: "/product/:id", element: withSuspense(ProductInfo) },
+      { path: "/product-details/:id", element: withSuspense(ProductDetail), errorElement: <ErrorPage /> },
+      { path: "/product/:id", element: withSuspense(ProductInfo), errorElement: <ErrorPage /> },
       { path: "/auctionview", element: withSuspense(AuctionView) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
+      { path: "/more-vendor", element: withSuspense(AllVendor) },
+      { path: "/veiws-profile/:id", element: withSuspense(VendorProfileProduct), errorElement: <ErrorPage /> },
+      { path: "/checkout", element: withSuspense(CheckOut) },
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
@@ -850,15 +848,18 @@ const routesConfig: RouteObject[] = [
       { path: "/book-poetry", element: withSuspense(BookPoetry) },
       { path: "/homedecor", element: withSuspense(HomeDecor) },
       { path: "/localfood", element: withSuspense(LocalFood) },
+      { path: "/localfooddrinks", element: withSuspense(LocalFoodsDrinks) },
       { path: "/plantseed", element: withSuspense(PlantSeed) },
       { path: "/spices", element: withSuspense(Spices) },
       { path: "/jewelry", element: withSuspense(Jewelry) },
       { path: "/vintage", element: withSuspense(Vintage) },
+      { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       {
         path: "/tranditionalFabrics",
         element: withSuspense(TranditionalFabrics),
       },
+
       { path: "/art", element: withSuspense(Art) },
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
@@ -993,6 +994,7 @@ const routesConfig: RouteObject[] = [
         path: "/HealthWellnessSpices",
         element: withSuspense(HealthWellnessSpices),
       },
+
       { path: "/Marinades", element: withSuspense(Marinades) },
       { path: "/PopularUses", element: withSuspense(PopularUses) },
       { path: "/SaltPepper", element: withSuspense(SaltPepper) },
@@ -1084,6 +1086,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/dashboard",
     element: <Layout />,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: withSuspense(EditProfile) },
       { path: "/dashboard/orderlist", element: withSuspense(OrderList) },
@@ -1094,7 +1097,6 @@ const routesConfig: RouteObject[] = [
       },
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
-      { path: "/dashboard/checkout", element: withSuspense(CheckOut) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
       { path: "/dashboard/user-index", element: withSuspense(userIndex) },
     ],
@@ -1102,6 +1104,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/app",
     element: <ProtectedVendor />,
+
     children: [
       {
         element: <VendorLayout />,
@@ -1119,6 +1122,7 @@ const routesConfig: RouteObject[] = [
             path: "edit-vendor-profile",
             element: withSuspense(EditVendorProfile),
           },
+
           { path: "kyc-verification", element: withSuspense(KycVerification) },
           { path: "inbox", element: withSuspense(Inbox) },
           { path: "all-post", element: withSuspense(AllPost) },
@@ -1129,6 +1133,7 @@ const routesConfig: RouteObject[] = [
           {
             path: "comunity-detail/:communityid",
             element: withSuspense(CommunityDetailPage),
+
           },
           {
             path: "products-detail/:productid",
@@ -1144,6 +1149,7 @@ const routesConfig: RouteObject[] = [
         ],
       },
     ],
+
   },
   { path: "signin", element: withSuspense(Login) },
   { path: "signup", element: withSuspense(Signup) },
@@ -1155,7 +1161,7 @@ const routesConfig: RouteObject[] = [
   },
   { path: "forgotpassword", element: withSuspense(ForgotPassword) },
   { path: "restpassword", element: withSuspense(ResetPassword) },
-  { path: "/verify-otp/:userId", element: withSuspense(OtpVerify) },
+  { path: "/verify-otp/:userId", element: withSuspense(OtpVerify), errorElement: <ErrorPage /> },
   { path: "sendlink", element: withSuspense(SendLink) },
   { path: "numberforgotpass", element: withSuspense(Number) },
   { path: "updatepassword", element: withSuspense(Updatepassword) },
@@ -1163,6 +1169,11 @@ const routesConfig: RouteObject[] = [
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
-  { path: "*", element: withSuspense(Error) }, // 404 page not found
+  // Payment 
+  { path: "/success", element: withSuspense(SuccessPayment) },
+  { path: "/falied", element: withSuspense(FaliedPayment) },
+
+
+  { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
 ];
 export const mainRouter = createBrowserRouter(routesConfig);

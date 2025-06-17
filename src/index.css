@@ -39,6 +39,34 @@
   font-size: 50px;
 }
 
+
+/* Hide scrollbar for webkit browsers */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+/* Custom smooth scrolling */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced hover effects */
+@layer components {
+  .category-card {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
+  .category-card:hover {
+    @apply transform scale-105;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

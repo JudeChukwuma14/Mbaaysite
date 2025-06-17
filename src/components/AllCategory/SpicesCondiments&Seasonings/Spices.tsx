@@ -1,9 +1,28 @@
-import React, { useEffect, useState } from "react";
-import image from "@/assets/image/Group 14.png";
-import ProductCard2 from "../../Cards/ProductCard2";
-import { getAllProduct } from "@/utils/productApi";
-import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import { getAllProduct } from "@/utils/productApi";
+import {
+  FaChevronRight,
+  FaHome,
+  FaRegSadTear,
+  FaShoppingCart,
+} from "react-icons/fa";
+import { motion, Variants } from "framer-motion";
+import NewArrival from "@/components/Cards/NewArrival";
+import Condiments from "@/assets/image/Condiments.jpg";
+import CookingIngredients from "@/assets/image/CookingIngredients.jpg";
+import CulturalRegional from "@/assets/image/CulturalRegional.jpg";
+import EthicallySourced from "@/assets/image/EthicallySourcedS.jpg";
+import SpicesImage from "@/assets/image/SpiceE.jpg";
+import HealthWellnessSpices from "@/assets/image/HealthWellnessSE.jpg";
+import MarinadesRubs from "@/assets/image/MarinadesRubs.jpg";
+import SaltPepper from "@/assets/image/SaltPepper.jpg";
+import SpiceKits from "@/assets/image/SpiceKits.jpg";
+import SeasoningCuisines from "@/assets/image/SeasoningCuisines.jpg";
+import SpecialDietary from "@/assets/image/SpecialDietary.jpg";
+import PopularUses from "@/assets/image/PopularUses.jpg";
+
+// Define interfaces for type safety
 interface Product {
   _id: string;
   name: string;
@@ -20,164 +39,248 @@ interface Subcategory {
   link: string;
   text: string;
 }
+
+// Static subcategories
+const SUBCATEGORIES: Subcategory[] = [
+  { image: Condiments, text: "Condiments", link: "/condiments" },
+  { image: CookingIngredients, text: "Cooking Ingredients", link: "/cooking-ingredients" },
+  { image: CulturalRegional, text: "Cultural & Regional Spices", link: "/cultural-regional" },
+  { image: EthicallySourced, text: "Ethically Sourced & Organic Products", link: "/ethically-sourced" },
+  { image: SpicesImage, text: "Spices", link: "/spices" },
+  { image: HealthWellnessSpices, text: "Health & Wellness Spices", link: "/health-wellness-spices" },
+  { image: MarinadesRubs, text: "Marinades & Rubs", link: "/marinades-rubs" },
+  { image: SaltPepper, text: "Salt & Pepper Varieties", link: "/salt-pepper" },
+  { image: SpiceKits, text: "Spice Kits & Gift Sets", link: "/spice-kits" },
+  { image: SeasoningCuisines, text: "Seasoning for Specific Cuisines", link: "/seasoning-cuisines" },
+  { image: SpecialDietary, text: "Special Dietary", link: "/special-dietary" },
+  { image: PopularUses, text: "Popular Uses", link: "/popular-uses" },
+];
+
+// Animation variants for containers
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      when: "beforeChildren",
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+// Animation variants for child elements (subcategories, products, heading)
+const childVariants: Variants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.3 },
+  },
+};
+
+// Reusable Error Message Component
+const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+    className="flex flex-col items-center justify-center py-16 text-center"
+  >
+    <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
+    <h2 className="mb-2 text-2xl font-semibold text-gray-800">Something Went Wrong</h2>
+    <p className="max-w-md mb-6 text-gray-600">{message}</p>
+    <Link
+      to="/shop"
+      className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      aria-label="Continue shopping"
+    >
+      <FaShoppingCart aria-hidden="true" />
+      Continue Shopping
+    </Link>
+  </motion.div>
+);
+
+// Reusable Empty State Component
+const EmptyState: React.FC = () => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+    className="flex flex-col items-center justify-center py-16 text-center"
+  >
+    <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
+    <h2 className="mb-2 text-2xl font-semibold text-gray-800">
+      No Spices, Condiments, and Seasonings Products Found
+    </h2>
+    <p className="max-w-md mb-6 text-gray-600">
+      No products are available in this category. Browse our shop to find your favorite products!
+    </p>
+    <Link
+      to="/shop"
+      className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      aria-label="Continue shopping"
+    >
+      <FaShoppingCart aria-hidden="true" />
+      Continue Shopping
+    </Link>
+  </motion.div>
+);
+
+// Reusable Subcategory Card Component
+const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
+  <motion.div variants={childVariants}>
+    <Link to={link} className="focus:outline-none focus:ring-2 focus:ring-orange-400">
+      <div className="flex flex-col items-center justify-center group">
+        <div className="flex items-center justify-center w-24 h-24 mb-2 overflow-hidden bg-gray-100 rounded-full shadow-md md:w-32 md:h-32">
+          <img
+            src={image}
+            alt={text}
+            width={300}
+            height={300}
+            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+        <p className="text-sm font-medium text-center text-gray-800 group-hover:text-orange-500">
+          {text}
+        </p>
+      </div>
+    </Link>
+  </motion.div>
+);
+
 const Spices: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const result = await getAllProduct();
         const allProducts = Array.isArray(result)
-          ? (result as Product[])
+          ? result
           : result.products || [];
 
-       //
         const filtered = allProducts.filter(
           (product: Product) =>
-            product.category?.toLowerCase() ===
-            "spices, condiments, and seasonings"
+            product.category?.toLowerCase() === "spices, condiments, and seasonings"
         );
 
         setProducts(filtered);
       } catch (err) {
         console.error("Error fetching products:", err);
-        setError("Failed to fetch products. Please try again.");
+        setError("Failed to fetch products. Please try again later.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProducts();
   }, []);
 
+  // Memoize sorted products for two rows (10 products)
+  const sortedProducts = useMemo(
+    () =>
+      products
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+        .slice(0, 10), // Limit to 10 products for 2 rows on xl screens
+    [products]
+  );
+
   if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
-        <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
-        <p className="max-w-md mb-6 text-gray-500">{error}</p>
-        <Link
-          to="/shop"
-          className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
-        >
-          <FaShoppingCart />
-          Continue Shopping
-        </Link>
-      </div>
-    );
+    return <ErrorMessage message={error} />;
   }
 
-  const ImagePart: Subcategory[] = [
-    { image: image, text: "Condiments", link: "/Conditments" },
-    { image: image, text: "Cooking Ingredients", link: "/CookingIngredients" },
-    {
-      image: image,
-      text: "Cultural & Regional Spices",
-      link: "/CulturalRegional",
-    },
-    {
-      image: image,
-      text: "Ethically Sourced & Organic Products",
-      link: "/EthincallySourced",
-    },
-    { image: image, text: "Spices", link: "/Spices-i" },
-    {
-      image: image,
-      text: "Health & Wellness Spices",
-      link: "/HealthWellnessSpices",
-    },
-    { image: image, text: "Marinades & Rubs", link: "/Marinades" },
-    {
-      image: image,
-      text: "Salt & Pepper Varieties",
-      link: "/SaltPepper",
-    },
-    {
-      image: image,
-      text: "Spice Kits & Gift Sets",
-      link: "/SpiceKits",
-    },
-    {
-      image: image,
-      text: "Seasoning for Specific Cuisines",
-      link: "/Seasoning",
-    },
-    {
-      image: image,
-      text: "Special Dietary",
-      link: "/SpecialDietary",
-    },
-    { image: image, text: "Popular Uses", link: "/PopularUses" },
-  ];
-
   return (
-    <div>
-      <div className="py-3 pl-10 mb-10">
-        <h3 className="text-xl font-semibold">
-          <Link to="/">Home</Link> / Spices, Condiments, and Seasonings
-        </h3>
-      </div>
-      <div className="mb-8">
-        <div className="grid grid-cols-2 gap-4 px-4 md:grid-cols-3 lg:grid-cols-5">
-          {ImagePart.map((item, index) => (
-            <Link to={item.link} key={index}>
-              <div className="flex flex-col items-center justify-center">
-                <div className="flex items-center justify-center w-32 h-32 mb-2 overflow-hidden bg-gray-100 rounded-full shadow-lg">
-                  <img
-                    src={item.image}
-                    alt={item.text}
-                    width={300}
-                    height={300}
-                    className="object-cover w-full h-full transition-transform duration-300 transform hover:scale-105"
-                  />
-                </div>
-                <p className="text-center">{item.text}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-      <div>
-        {products.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
-            <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-              No Spices, Condiments, and Seasonings Product Found
-            </h2>
-            <p className="max-w-md mb-6 text-gray-500">
-              No products are available in this category. Browse our shop to
-              find your favorite products!
-            </p>
-            <Link
-              to="/random-product"
-              className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="min-h-screen bg-gray-50"
+    >
+      <div className="container px-4 py-8 mx-auto sm:px-6 lg:px-8">
+        {/* Breadcrumb Navigation */}
+        <motion.nav
+          variants={containerVariants}
+          className="flex items-center gap-2 mb-8 text-sm text-gray-600"
+          aria-label="Breadcrumb"
+        >
+          <Link
+            to="/"
+            className="flex items-center gap-1 transition-colors hover:text-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            aria-label="Home"
+          >
+            <FaHome aria-hidden="true" />
+            Home
+          </Link>
+          <FaChevronRight className="text-xs" aria-hidden="true" />
+          <span className="font-medium text-gray-800">Spices, Condiments & Seasonings</span>
+        </motion.nav>
+
+        {/* Subcategories */}
+        <motion.section
+          variants={containerVariants}
+          className="mb-12"
+          aria-labelledby="subcategories-heading"
+        >
+          <h2 id="subcategories-heading" className="sr-only">
+            Subcategories
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {SUBCATEGORIES.map((item, index) => (
+              <SubcategoryCard key={index} {...item} />
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Products Section */}
+        <motion.section
+          variants={containerVariants}
+          aria-labelledby="products-heading"
+        >
+          <motion.h2
+            id="products-heading"
+            variants={childVariants}
+            className="mb-6 text-2xl font-bold text-gray-800 sm:text-3xl"
+          >
+            Featured Products
+          </motion.h2>
+          {isLoading ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-center py-16"
             >
-              <FaShoppingCart />
-              Continue Shopping
-            </Link>
-          </div>
-        ) : (
-          <div className="grid items-center grid-cols-1 gap-4 px-4 py-8 md:grid-cols-3 lg:grid-cols-5">
-            {products
-              .sort(
-                (a, b) =>
-                  new Date(b.createdAt).getTime() -
-                  new Date(a.createdAt).getTime()
-              )
-              .slice(0, 10)
-              .map((product) => (
-                <ProductCard2
-                  key={product._id}
-                  image={product.images[0] || ""}
-                  name={product.name}
-                  price={product.price.toString()}
-                  rating={4} // Replace with actual rating if available
-                  label="sales!" // Replace with dynamic label if applicable
-                />
+              <div className="w-12 h-12 border-4 border-orange-500 rounded-full animate-spin border-t-transparent"></div>
+            </motion.div>
+          ) : products.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {sortedProducts.map((product) => (
+                <motion.div key={product._id} variants={childVariants}>
+                  <NewArrival
+                    product={{
+                      ...product,
+                      id: product._id,
+                      poster: product.images[0] || "",
+                    }}
+                  />
+                </motion.div>
               ))}
-          </div>
-        )}
+            </div>
+          )}
+        </motion.section>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

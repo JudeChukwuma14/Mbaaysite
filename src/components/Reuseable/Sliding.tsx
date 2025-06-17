@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import image1 from "../../assets/image/img1.jpg";
 import image2 from "../../assets/image/img2.jpg";
-import image3 from "../../assets/image/img3.jpg";
 import image4 from "@/assets/image/world.jpg";
 import image5 from "@/assets/image/kira hand.jpg";
-import image6 from "@/assets/image/china.jpg";
 import image7 from "@/assets/image/Hand.jpg";
+import image8 from "@/assets/image/Fam1.jpg"
+import image9 from "@/assets/image/Fam2.jpg"
+import image10 from "@/assets/image/Fam4.jpg"
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -16,7 +16,7 @@ import { Link } from "react-router-dom";
 const Sliding: React.FC = () => {
   const [slides] = useState([
     {
-      img: image1,
+      img: image8,
       text: "Reconnect with Your Roots—Shop Artisanal & Cultural Creations.",
     },
     {
@@ -24,7 +24,7 @@ const Sliding: React.FC = () => {
       text: "Authentic. Ethical. Handmade. A Piece of Home, Wherever You Are.",
     },
     {
-      img: image3,
+      img: image9,
       text: "Bridging Cultures, One Handcrafted Piece at a Time",
     },
     {
@@ -36,7 +36,7 @@ const Sliding: React.FC = () => {
       text: "Honoring Heritage Through Handcrafted Excellence.",
     },
     {
-      img: image6,
+      img: image10,
       text: "From Our Hands to Your Heart—Authentic Cultural Goods.",
     },
     {
