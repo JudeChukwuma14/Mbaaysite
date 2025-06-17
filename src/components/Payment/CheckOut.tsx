@@ -6,42 +6,39 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Select, { SingleValue } from "react-select";
 import { motion, Variants } from "framer-motion";
-import { FaCreditCard, FaPaypal } from "react-icons/fa";
-import { CiDeliveryTruck } from "react-icons/ci";
+import { FaCreditCard } from "react-icons/fa";
 import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { useDispatch, useSelector } from "react-redux";
-import { applyCoupon } from "@/redux/slices/cartSlice";
+import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
 import { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
+import { CiDeliveryTruck } from "react-icons/ci";
+import { getSessionId } from "@/utils/session";
+import { submitOrder, OrderData } from "@/utils/orderApi";
+import { calculatePricing } from "@/utils/pricingUtils";
 
-// Form data interface
 interface FormValues {
-  firstName: string;
-  lastName: string;
-  companyName?: string;
+  first_name: string;
+  last_name: string;
   email: string;
-  phone: string;
+  phoneNumber: string;
   country: string;
   region: string;
   city: string;
-  streetAddress: string;
+  postalCode?: string;
   apartment?: string;
-  postalCode: string;
-  saveInfo: boolean;
-  paymentMethod: "credit" | "paypal" | "cash";
-  couponCode?: string; // Added for coupon input
+  couponCode?: string;
+  paymentOption: "Pay Before Delivery" | "Pay After Delivery";
 }
 
-// City option interface for react-select
 interface CityOption {
   value: string;
   label: string;
 }
 
-// Animation variants
 const cardVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
@@ -62,12 +59,10 @@ const errorVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
 };
 
-// Input styles
 const inputStyles = `w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`;
 const errorInputStyles = `border-red-500 bg-red-50`;
 const normalInputStyles = `border-gray-200 bg-gray-50 focus:bg-white`;
 
-// Billing Details component
 function BillingDetails({
   register,
   control,
@@ -103,56 +98,45 @@ function BillingDetails({
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
-            <label htmlFor="firstName" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="first_name" className="block mb-1 text-sm font-medium text-gray-700">
               First Name*
             </label>
             <input
-              id="firstName"
+              id="first_name"
               type="text"
-              className={`${inputStyles} ${errors.firstName ? errorInputStyles : normalInputStyles}`}
+              className={`${inputStyles} ${errors.first_name ? errorInputStyles : normalInputStyles}`}
               placeholder="John"
-              {...register("firstName", { required: "First name is required" })}
+              {...register("first_name", { required: "First name is required" })}
+              aria-invalid={errors.first_name ? "true" : "false"}
             />
-            {errors.firstName && (
+            {errors.first_name && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.firstName.message}
+                {errors.first_name.message}
               </motion.p>
             )}
           </motion.div>
 
           <motion.div variants={inputVariants}>
-            <label htmlFor="lastName" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="last_name" className="block mb-1 text-sm font-medium text-gray-700">
               Last Name*
             </label>
             <input
-              id="lastName"
+              id="last_name"
               type="text"
-              className={`${inputStyles} ${errors.lastName ? errorInputStyles : normalInputStyles}`}
+              className={`${inputStyles} ${errors.last_name ? errorInputStyles : normalInputStyles}`}
               placeholder="Doe"
-              {...register("lastName", { required: "Last name is required" })}
+              {...register("last_name", { required: "Last name is required" })}
+              aria-invalid={errors.last_name ? "true" : "false"}
             />
-            {errors.lastName && (
+            {errors.last_name && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.lastName.message}
+                {errors.last_name.message}
               </motion.p>
             )}
           </motion.div>
         </div>
 
-        <motion.div variants={inputVariants}>
-          <label htmlFor="companyName" className="block mb-1 text-sm font-medium text-gray-700">
-            Company Name (Optional)
-          </label>
-          <input
-            id="companyName"
-            type="text"
-            className={`${inputStyles} ${normalInputStyles}`}
-            placeholder="Your Company Ltd."
-            {...register("companyName")}
-          />
-        </motion.div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <motion.div variants={inputVariants}>
             <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">
               Email Address*
@@ -166,6 +150,7 @@ function BillingDetails({
                 required: "Email is required",
                 pattern: { value: /\S+@\S+\.\S+/, message: "Invalid email" },
               })}
+              aria-invalid={errors.email ? "true" : "false"}
             />
             {errors.email && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
@@ -175,30 +160,47 @@ function BillingDetails({
           </motion.div>
 
           <motion.div variants={inputVariants}>
-            <label htmlFor="phone" className="block mb-1 text-sm font-medium text-gray-700">
+            <label htmlFor="phoneNumber" className="block mb-1 text-sm font-medium text-gray-700">
               Phone Number*
             </label>
             <Controller
-              name="phone"
+              name="phoneNumber"
               control={control}
               rules={{ required: "Phone number is required" }}
               render={({ field }) => (
                 <PhoneInput
-                  country="us"
+                  country="ng"
                   value={field.value}
                   onChange={field.onChange}
                   containerClass="w-full"
                   inputClass="!w-full !h-11 !pl-14 !border !border-gray-300 !rounded-md !shadow-sm !bg-white !text-sm focus:!outline-none focus:!ring-2 focus:!ring-orange-500 focus:!border-orange-500"
                   buttonClass="!h-11 !border-r !border-gray-300 !bg-white !rounded-l-md"
                   dropdownClass="!z-50"
+                  inputProps={{
+                    "aria-invalid": errors.phoneNumber ? "true" : "false",
+                  }}
                 />
               )}
             />
-            {errors.phone && (
+            {errors.phoneNumber && (
               <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.phone.message}
+                {errors.phoneNumber.message}
               </motion.p>
             )}
+          </motion.div>
+
+          <motion.div variants={inputVariants}>
+            <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
+              Postal Code (Optional)
+            </label>
+            <input
+              id="postalCode"
+              type="text"
+              className={`${inputStyles} ${normalInputStyles}`}
+              placeholder="00112"
+              {...register("postalCode")}
+              aria-invalid="false"
+            />
           </motion.div>
         </div>
 
@@ -216,6 +218,7 @@ function BillingDetails({
                   value={field.value}
                   onChange={(val) => field.onChange(val)}
                   className={`${inputStyles} ${errors.country ? errorInputStyles : normalInputStyles}`}
+                  aria-invalid={errors.country ? "true" : "false"}
                 />
               )}
             />
@@ -241,6 +244,7 @@ function BillingDetails({
                   onChange={(val) => field.onChange(val)}
                   className={`${inputStyles} ${errors.region ? errorInputStyles : normalInputStyles}`}
                   disableWhenEmpty={true}
+                  aria-invalid={errors.region ? "true" : "false"}
                 />
               )}
             />
@@ -294,14 +298,11 @@ function BillingDetails({
                     }),
                     option: (base, state) => ({
                       ...base,
-                      backgroundColor: state.isSelected
-                        ? "#f97316"
-                        : state.isFocused
-                        ? "#fed7aa"
-                        : "white",
+                      backgroundColor: state.isSelected ? "#f97316" : state.isFocused ? "#fed7aa" : "white",
                       color: state.isSelected ? "white" : "#1f2937",
                     }),
                   }}
+                  aria-invalid={errors.city ? "true" : "false"}
                 />
               )}
             />
@@ -317,100 +318,38 @@ function BillingDetails({
             )}
           </motion.div>
         </div>
-
         <motion.div variants={inputVariants}>
-          <label htmlFor="streetAddress" className="block mb-1 text-sm font-medium text-gray-700">
-            Street Address*
+          <label htmlFor="apartment" className="block mb-1 text-sm font-medium text-gray-700">
+            Apartment, Suite, etc. (Optional)
           </label>
           <input
-            id="streetAddress"
+            id="apartment"
             type="text"
-            className={`${inputStyles} ${errors.streetAddress ? errorInputStyles : normalInputStyles}`}
-            placeholder="123 Main St"
-            {...register("streetAddress", { required: "Street address is required" })}
+            className={`${inputStyles} ${normalInputStyles}`}
+            placeholder="Apt 4B"
+            {...register("apartment")}
+            aria-invalid="false"
           />
-          {errors.streetAddress && (
-            <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-              {errors.streetAddress.message}
-            </motion.p>
-          )}
-        </motion.div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <motion.div variants={inputVariants}>
-            <label htmlFor="apartment" className="block mb-1 text-sm font-medium text-gray-700">
-              Apartment, Suite, etc. (Optional)
-            </label>
-            <input
-              id="apartment"
-              type="text"
-              className={`${inputStyles} ${normalInputStyles}`}
-              placeholder="Apt 4B"
-              {...register("apartment")}
-            />
-          </motion.div>
-
-          <motion.div variants={inputVariants}>
-            <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
-              Postal Code*
-            </label>
-            <input
-              id="postalCode"
-              type="text"
-              className={`${inputStyles} ${errors.postalCode ? errorInputStyles : normalInputStyles}`}
-              placeholder="10001"
-              {...register("postalCode", { required: "Postal code is required" })}
-            />
-            {errors.postalCode && (
-              <motion.p variants={errorVariants} className="mt-1 text-xs text-red-600">
-                {errors.postalCode.message}
-              </motion.p>
-            )}
-          </motion.div>
-        </div>
-
-        <motion.div
-          variants={inputVariants}
-          className="p-4 border-2 border-gray-200 rounded-lg bg-gradient-to-r from-gray-50 to-gray-100"
-        >
-          <div className="flex items-start space-x-3">
-            <input
-              id="saveInfo"
-              type="checkbox"
-              className="w-4 h-4 mt-1 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-              {...register("saveInfo")}
-            />
-            <div>
-              <label htmlFor="saveInfo" className="text-sm font-medium text-gray-800">
-                Save for faster checkout
-              </label>
-              <p className="mt-1 text-xs text-gray-600">
-                Your data will be used to process your order.
-              </p>
-            </div>
-          </div>
         </motion.div>
       </motion.div>
     </motion.div>
   );
 }
 
-// Payment Details component
 function PaymentDetails({
   register,
-  activePaymentMethod,
-  setActivePaymentMethod,
+  activePaymentOption,
+  setActivePaymentOption,
   isSubmitting,
 }: {
   register: UseFormRegister<FormValues>;
-  activePaymentMethod: "credit" | "paypal" | "cash";
-  setActivePaymentMethod: (method: "credit" | "paypal" | "cash") => void;
+  activePaymentOption: "Pay Before Delivery" | "Pay After Delivery";
+  setActivePaymentOption: (option: "Pay Before Delivery" | "Pay After Delivery") => void;
   isSubmitting: boolean;
 }) {
-  const paymentMethods = [
-    { method: "credit", label: "Credit Card", icon: FaCreditCard },
-    { method: "paypal", label: "PayPal", icon: FaPaypal },
-    { method: "cash", label: "Cash on Delivery", icon: CiDeliveryTruck },
+  const paymentOptions = [
+    { option: "Pay Before Delivery", label: "Pay Now", icon: FaCreditCard },
+    { option: "Pay After Delivery", label: "Pay on Delivery", icon: CiDeliveryTruck },
   ];
 
   return (
@@ -423,30 +362,31 @@ function PaymentDetails({
           <div className="p-2 bg-orange-100 rounded-lg">
             <FaCreditCard className="w-5 h-5 text-orange-600 md:w-6 md:h-6" />
           </div>
-          Payment Method
+          Payment Option
         </h2>
-        <p className="mt-2 text-sm text-gray-600">Select your preferred payment method</p>
+        <p className="mt-2 text-sm text-gray-600">Select when you prefer to pay</p>
       </div>
 
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         <div className="border-b-2 border-gray-200">
           <div className="flex flex-wrap">
-            {paymentMethods.map(({ method, label, icon: Icon }) => (
+            {paymentOptions.map(({ option, label, icon: Icon }) => (
               <motion.button
-                key={method}
+                key={option}
                 type="button"
                 className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${
-                  activePaymentMethod === method
+                  activePaymentOption === option
                     ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
                     : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                 }`}
                 onClick={() => {
-                  setActivePaymentMethod(method as "credit" | "paypal" | "cash");
-                  register("paymentMethod").onChange({ target: { value: method } });
+                  setActivePaymentOption(option as "Pay Before Delivery" | "Pay After Delivery");
+                  register("paymentOption").onChange({ target: { value: option } });
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={isSubmitting}
+                aria-label={`Select ${label} payment option`}
               >
                 <Icon className="w-5 h-5" />
                 {label}
@@ -456,7 +396,7 @@ function PaymentDetails({
         </div>
 
         <div>
-          {activePaymentMethod === "credit" && (
+          {activePaymentOption === "Pay Before Delivery" && (
             <motion.div
               variants={inputVariants}
               initial="hidden"
@@ -465,28 +405,13 @@ function PaymentDetails({
             >
               <div className="flex items-center gap-2">
                 <FaCreditCard className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-800">Credit Card Payment</span>
+                <span className="font-semibold text-blue-800">Pay Now</span>
               </div>
-              <p className="text-blue-700">Processed securely at checkout.</p>
+              <p className="text-blue-700">Pay securely using your preferred payment method via Paystack.</p>
             </motion.div>
           )}
 
-          {activePaymentMethod === "paypal" && (
-            <motion.div
-              variants={inputVariants}
-              initial="hidden"
-              animate="visible"
-              className="p-4 text-sm bg-gray-100 border border-blue-200 rounded-lg"
-            >
-              <div className="flex items-center gap-2">
-                <FaPaypal className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-800">PayPal</span>
-              </div>
-              <p className="text-blue-700">Redirected to PayPal for secure payment.</p>
-            </motion.div>
-          )}
-
-          {activePaymentMethod === "cash" && (
+          {activePaymentOption === "Pay After Delivery" && (
             <motion.div
               variants={inputVariants}
               initial="hidden"
@@ -495,7 +420,7 @@ function PaymentDetails({
             >
               <div className="flex items-center gap-2">
                 <CiDeliveryTruck className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-800">Cash on Delivery</span>
+                <span className="font-semibold text-blue-800">Pay on Delivery</span>
               </div>
               <p className="text-blue-700">Pay with cash when your order arrives.</p>
             </motion.div>
@@ -511,6 +436,7 @@ function PaymentDetails({
             type="submit"
             disabled={isSubmitting}
             className="w-full px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto"
+            aria-label="Place order"
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -527,17 +453,17 @@ function PaymentDetails({
   );
 }
 
-// Main CheckoutForm component
 export default function CheckoutForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activePaymentMethod, setActivePaymentMethod] = useState<"credit" | "paypal" | "cash">("credit");
+  const [activePaymentOption, setActivePaymentOption] = useState<"Pay Before Delivery" | "Pay After Delivery">("Pay Before Delivery");
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isCityLoading, setIsCityLoading] = useState(false);
-  const [couponLoading, setCouponLoading] = useState(false); // Separate state for coupon
+  const [couponLoading, setCouponLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
+  const discountRate = useSelector((state: RootState) => state.cart.discount);
 
   const {
     register,
@@ -549,20 +475,17 @@ export default function CheckoutForm() {
     setValue,
   } = useForm<FormValues>({
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      companyName: "",
+      first_name: "",
+      last_name: "",
       email: "",
-      phone: "",
+      phoneNumber: "",
       country: "",
+      postalCode: "",
       region: "",
       city: "",
-      streetAddress: "",
       apartment: "",
-      postalCode: "",
-      saveInfo: false,
-      paymentMethod: "credit",
       couponCode: "",
+      paymentOption: "Pay Before Delivery",
     },
   });
 
@@ -570,12 +493,10 @@ export default function CheckoutForm() {
   const selectedRegion = watch("region");
   const couponCode = watch("couponCode");
 
-  // Sync Redux coupon with form
   useEffect(() => {
     setValue("couponCode", cartCoupon || "");
   }, [cartCoupon, setValue]);
 
-  // Fetch cities based on country and region
   useEffect(() => {
     if (!selectedCountry || !selectedRegion) {
       setCityOptions([]);
@@ -613,7 +534,6 @@ export default function CheckoutForm() {
     }, 500);
   }, [selectedCountry, selectedRegion, resetField]);
 
-  // Handle coupon application
   const handleApplyCoupon = (code: string) => {
     if (!code) {
       toast.error("Please enter a coupon code.");
@@ -629,13 +549,13 @@ export default function CheckoutForm() {
         dispatch(applyCoupon({ code: "SUMMER10", discount: 0.1 }));
         toast.success("Coupon applied! 10% off");
       } else {
+        dispatch(removeCoupon());
         toast.error("Invalid coupon code");
       }
       setCouponLoading(false);
     }, 1000);
   };
 
-  // Handle form submission
   const onSubmit = async (data: FormValues) => {
     if (cartItems.length === 0) {
       toast.error("Your cart is empty. Please add items before checking out.");
@@ -644,29 +564,32 @@ export default function CheckoutForm() {
 
     setIsSubmitting(true);
     try {
-      const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const tax = subtotal * 0.085; // 8.5% tax
-      const discount = useSelector((state: RootState) => state.cart.discount) * subtotal;
-      const total = subtotal + tax - discount;
+      const sessionId = getSessionId();
+      const pricing = calculatePricing(cartItems, discountRate);
 
-      const orderData = {
-        billingDetails: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          companyName: data.companyName,
-          email: data.email,
-          phone: data.phone,
-          address: {
-            country: data.country,
-            region: data.region,
-            city: data.city,
-            streetAddress: data.streetAddress,
-            apartment: data.apartment,
-            postalCode: data.postalCode,
-          },
-          saveInfo: data.saveInfo,
-        },
-        paymentMethod: data.paymentMethod,
+      const address = [
+        data.apartment ? `Apt ${data.apartment}` : "",
+        data.city,
+        data.region,
+        data.country,
+        data.postalCode ? `Postal Code: ${data.postalCode}` : "",
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const orderData: OrderData = {
+        first_name: data.first_name,
+        last_name: data.last_name,
+        email: data.email,
+        phoneNumber: data.phoneNumber,
+        address,
+        country: data.country,
+        apartment: data.apartment || "",
+        city: data.city,
+        region: data.region,
+        postalCode: data.postalCode || "",
+        couponCode: cartCoupon || "",
+        paymentOption: data.paymentOption,
         cartItems: cartItems.map((item) => ({
           productId: item.id,
           name: item.name,
@@ -675,24 +598,37 @@ export default function CheckoutForm() {
           image: item.image,
         })),
         pricing: {
-          subtotal: subtotal.toFixed(2),
-          shipping: 0,
-          tax: tax.toFixed(2),
-          discount: discount.toFixed(2),
-          total: total.toFixed(2),
+          subtotal: pricing.subtotal.toFixed(2),
+          shipping: pricing.shipping,
+          tax: pricing.tax.toFixed(2),
+          discount: pricing.discount.toFixed(2),
+          commission: pricing.commission.toFixed(2), // Added commission
+          total: pricing.total.toFixed(2),
         },
-        couponCode: cartCoupon || "",
       };
 
-      // TODO: Replace with actual API call (e.g., POST /api/v1/orders)
-      console.log("Order submitted:", orderData);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
+      const response = await submitOrder(sessionId, orderData);
       toast.success("Order placed successfully!");
-      navigate("/order-confirmation"); // Redirect to confirmation page
-    } catch (error) {
+
+      if (data.paymentOption === "Pay Before Delivery") {
+        if (response.authorization_url) {
+          window.location.href = response.authorization_url; // Redirect to Paystack
+        } else {
+          throw new Error("Payment initialization failed: No authorization URL provided");
+        }
+      } else {
+        // Pay After Delivery: Redirect to success page
+        navigate(`/${response.orderId}/success`, { state: { orderId: response.orderId, orderData } });
+      }
+    } catch (error: any) {
       console.error("Order submission failed:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error(error.message || "Failed to place order. Please try again.");
+      navigate("/failed", {
+        state: {
+          errorCode: "ERR_ORDER_SUBMISSION",
+          errorMessage: error.message || "Failed to place order.",
+        },
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -728,8 +664,8 @@ export default function CheckoutForm() {
             />
             <PaymentDetails
               register={register}
-              activePaymentMethod={activePaymentMethod}
-              setActivePaymentMethod={setActivePaymentMethod}
+              activePaymentOption={activePaymentOption}
+              setActivePaymentOption={setActivePaymentOption}
               isSubmitting={isSubmitting}
             />
           </form>

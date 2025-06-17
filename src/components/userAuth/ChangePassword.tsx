@@ -5,48 +5,42 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
+import { CreateNewPassword } from "@/utils/vendorApi";
+import { useNavigate } from "react-router-dom";
 
 interface ResetPasswordFormData {
+  email: string;
+  otp: string;
   newPassword: string;
-  confirmPassword: string;
 }
 
 const ResetPassword: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { errors },
-    watch,
   } = useForm<ResetPasswordFormData>();
 
   const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data) => {
     setIsLoading(true);
     try {
       // Call API to reset password
-      const response = await axios.post("/reset-password", data);
-      if (response.status === 200) {
-        toast.success("Password reset successfully!", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        // Redirect to the login page
-      }
-    }  catch (error: unknown) {
-          toast.error(
-            (error as Error)?.message || "Failed to Reset Password",
-            {
-              position: "top-right",
-              autoClose: 4000,
-            }
-          );
+      const response = await CreateNewPassword(data.email, data.otp, data.newPassword);
+      toast.success(response.message, {
+        position: "top-right",
+        autoClose: 3000,
+      })
+      navigate("/login-vendor");
+    } catch (err) {
+      toast.error((err as Error)?.message || String(err), {
+            position: "top-right",
+            autoClose: 4000,
+          });
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +73,40 @@ const ResetPassword: React.FC = () => {
               <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="relative mb-4">
                   <input
+                    type="email"
+                    placeholder="Enter email address"
+                    className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "Invalid email address",
+                      },
+                    })}
+                  />
+                  {errors.email && (
+                    <p className="text-red-500 text-[10px] mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+                <div className="relative mb-4">
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
+                    {...register("otp", {
+                      required: "OTP is required",
+                    })}
+                  />
+                  {errors.otp && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.otp.message}
+                    </p>
+                  )}
+                </div>
+                <div className="relative mb-4">
+                  <input
                     type={showPassword ? "text" : "password"}
                     placeholder="New password"
                     className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
@@ -102,30 +130,6 @@ const ResetPassword: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="relative mb-4">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Re-type password"
-                    className="w-full p-3 border border-gray-300 focus:outline-none focus:border-orange-500"
-                    {...register("confirmPassword", {
-                      required: "Confirm Password is required",
-                      validate: (value) =>
-                        value === watch("newPassword") ||
-                        "Passwords do not match",
-                    })}
-                  />
-                  <span
-                    className="absolute text-gray-500 cursor-pointer right-5 top-5"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
-                  </span>
-                  {errors.confirmPassword && (
-                    <p className="text-red-500 text-[10px] mt-1">
-                      {errors.confirmPassword.message}
-                    </p>
-                  )}
-                </div>
                 <button
                   type="submit"
                   className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
@@ -139,7 +143,7 @@ const ResetPassword: React.FC = () => {
                 </button>
               </form>
               <div className="mt-4 text-center">
-                <a href="#" className="text-black hover:underline">
+                <a href="/" className="text-black hover:underline">
                   Cancel
                 </a>
               </div>

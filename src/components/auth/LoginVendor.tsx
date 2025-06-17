@@ -182,18 +182,24 @@ const LoginVendor: React.FC = () => {
 
               <div className="mt-4 text-left">
                 <a href="#" className="text-orange-500 hover:underline">
-                  <Link to={"/signin"}>Login as a user?</Link>
+                  <Link to={"/signin"}>Login as a user</Link>
                 </a>
               </div>
-
-              <div className="block my-2 text-left lg:hidden">
-                <span className="text-gray-600">Don't have an account? </span>
-                <Link
-                  to={"/signup-vendor"}
-                  className="text-blue-500 hover:underline"
-                >
-                  Sign up now!
-                </Link>
+              <div className="flex items-center justify-between mb-4">
+                <div className="block my-2 text-left lg:hidden">
+                  <span className="text-gray-600">Don't have an account? </span>
+                  <Link
+                    to={"/signup-vendor"}
+                    className="text-blue-500 hover:underline"
+                  >
+                    Sign up now!
+                  </Link>
+                </div>
+                <div className="text-left ">
+                  <a href="#" className="text-blue-500 hover:underline">
+                    <Link to={"/forgot-password"}>Forgot Password ?</Link>
+                  </a>
+                </div>
               </div>
             </div>
           </div>

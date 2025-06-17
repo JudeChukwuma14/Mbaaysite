@@ -8,6 +8,12 @@ import Layout from "@/components/profileMangement/Layout";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
 import ProtectedVendor from "./ProtectedVendor";
+
+import AuctionProduct from "@/components/VendorInfo/Products/AuctionProduct";
+import ErrorPage from "@/components/Error/ErrorPage";
+import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
+import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
+
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -555,109 +561,6 @@ const Spicesi = lazy(
     )
 );
 
-//  traditionalFabrics subcategory
-const ChildrenTranditional = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/ChildrenTranditional"
-    )
-);
-const CountryRegional = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CountryRegion"
-    )
-);
-const CulturalAccessories = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalAccessories"
-    )
-);
-const CulturalFootwear = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/CulturalFootwear"
-    )
-);
-const EthicalFashion = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/EthicalFashion"
-    )
-);
-const FabricsTextiles = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricsTextiles"
-    )
-);
-const FabricTypes = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FabricType"
-    )
-);
-const FashionSpecific = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FashionSpecific"
-    )
-);
-const FestivalClothing = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FestivalClothing"
-    )
-);
-const Footwear = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/Footwear"
-    )
-);
-const FunctionalCategories = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/FunctionalCategories"
-    )
-);
-const MenTraditional = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/MenTraditional"
-    )
-);
-const OccasionFashion = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/OccasionFashion"
-    )
-);
-const TailoredClothing = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TailoredClothing"
-    )
-);
-const TraditionalEmbroidery = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/TraditionalEmbroidery"
-    )
-);
-const UnisexTranditional = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/UnisexTranditional"
-    )
-);
-const WomenTranditional = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalClothing&Fabrics/subcategory/WomenTranditional"
-    )
-);
 
 // Fashion Subcategory
 const Accessories = lazy(
@@ -818,6 +721,11 @@ const TraditionalSweet = lazy(
 );
 
 
+// PAYMENT
+const SuccessPayment = lazy(() => import("@/components/Payment/PaymentSuccess"))
+const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"))
+const PaymentCallback = lazy(() => import("@/components/Payment/PaymentCallback"))
+
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -855,10 +763,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
-      {
-        path: "/tranditionalFabrics",
-        element: withSuspense(TranditionalFabrics),
-      },
+
 
       { path: "/art", element: withSuspense(Art) },
       // BeautyWellness Subcategory Page
@@ -1003,39 +908,7 @@ const routesConfig: RouteObject[] = [
       { path: "/SpiceKits", element: withSuspense(SpiceKits) },
       { path: "/Spices-i", element: withSuspense(Spicesi) },
 
-      // traditionalFabrics subcategory
-      {
-        path: "/ChildrenTranditional",
-        element: withSuspense(ChildrenTranditional),
-      },
-      { path: "/CountryRegional", element: withSuspense(CountryRegional) },
-      {
-        path: "/CulturalAccessories",
-        element: withSuspense(CulturalAccessories),
-      },
-      { path: "/CulturalFootwear", element: withSuspense(CulturalFootwear) },
-      { path: "/EthicalFashion", element: withSuspense(EthicalFashion) },
-      { path: "/FabricsTextiles", element: withSuspense(FabricsTextiles) },
-      { path: "/FabricType", element: withSuspense(FabricTypes) },
-      { path: "/FashionSpecific", element: withSuspense(FashionSpecific) },
-      { path: "/FestivalClothing", element: withSuspense(FestivalClothing) },
-      { path: "/Footwear", element: withSuspense(Footwear) },
-      {
-        path: "/FunctionalCategories",
-        element: withSuspense(FunctionalCategories),
-      },
-      { path: "/MenTraditional", element: withSuspense(MenTraditional) },
-      { path: "/OccasionFashion", element: withSuspense(OccasionFashion) },
-      { path: "/TailoredClothing", element: withSuspense(TailoredClothing) },
-      {
-        path: "/TraditionalEmbroidery",
-        element: withSuspense(TraditionalEmbroidery),
-      },
-      {
-        path: "/UnisexTranditional",
-        element: withSuspense(UnisexTranditional),
-      },
-      { path: "/WomenTranditional", element: withSuspense(WomenTranditional) },
+
 
       // Local & Traditional Foods Subcategory
       {
@@ -1141,7 +1014,7 @@ const routesConfig: RouteObject[] = [
               <ProductDetailModal
                 product={null}
                 isOpen={false}
-                onClose={() => {}}
+                onClose={() => { }}
                 productId={""}
               />
             )),
@@ -1159,7 +1032,7 @@ const routesConfig: RouteObject[] = [
     path: "forgotpasswordmessage",
     element: withSuspense(ForgotpasswordMessage),
   },
-  { path: "forgotpassword", element: withSuspense(ForgotPassword) },
+  { path: "forgot-password", element: withSuspense(ForgotPassword) },
   { path: "restpassword", element: withSuspense(ResetPassword) },
   { path: "/verify-otp/:userId", element: withSuspense(OtpVerify), errorElement: <ErrorPage /> },
   { path: "sendlink", element: withSuspense(SendLink) },
@@ -1170,8 +1043,9 @@ const routesConfig: RouteObject[] = [
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
   // Payment 
-  { path: "/success", element: withSuspense(SuccessPayment) },
-  { path: "/falied", element: withSuspense(FaliedPayment) },
+  { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
+  { path: "/failed", element: withSuspense(FaliedPayment) },
+  { path: "/payment_callback", element: withSuspense(PaymentCallback) },
 
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found

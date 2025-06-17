@@ -1,34 +1,96 @@
-"use client"
-
-import { useState } from "react"
-import { motion } from "framer-motion"
-import { XCircle, AlertTriangle, RefreshCw, Home, HelpCircle, ChevronDown, ChevronUp } from "lucide-react"
-import { Link } from "react-router-dom"
+// src/components/PaymentFailed.tsx
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { XCircle, AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { getPaymentStatus, OrderData } from "@/utils/orderApi";
+import ImageWithFallback from "../Reuseable/ImageWithFallback";
 
 interface PaymentFailedProps {
-  orderNumber?: string
-  amount?: string
-  date?: string
-  email?: string
-  paymentMethod?: string
-  errorCode?: string
-  errorMessage?: string
+  orderNumber?: string;
+  amount?: string;
+  date?: string;
+  email?: string;
+  paymentMethod?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  orderData?: OrderData;
 }
 
 export default function PaymentFailed({
-  orderNumber = "ORD-7829354",
-  amount = "$249.99",
-  date = new Date().toLocaleDateString("en-US", {
+  orderNumber: defaultOrderNumber = "ORD-7829354",
+  amount: defaultAmount = "$249.99",
+  date: defaultDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
     day: "numeric",
   }),
-  email = "customer@example.com",
-  paymentMethod = "Visa •••• 4242",
-  errorCode = "ERR_PAYMENT_DECLINED",
-  errorMessage = "Your payment was declined by your bank. Please try a different payment method or contact your bank for more information.",
+  email: defaultEmail = "customer@example.com",
+  paymentMethod: defaultPaymentMethod = "Visa •••• 4242",
+  errorCode: defaultErrorCode = "ERR_PAYMENT_DECLINED",
+  errorMessage: defaultErrorMessage = "Your payment was declined by your bank. Please try a different payment method or contact your bank for more information.",
+  orderData: defaultOrderData,
 }: PaymentFailedProps) {
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<OrderData | null>(defaultOrderData || null);
+  const [orderNumber, setOrderNumber] = useState(defaultOrderNumber);
+  const [amount, setAmount] = useState(defaultAmount);
+  const [email, setEmail] = useState(defaultEmail);
+  const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
+  const [errorCode, setErrorCode] = useState(defaultErrorCode);
+  const [errorMessage, setErrorMessage] = useState(defaultErrorMessage);
+  const [searchParams] = useSearchParams();
+  const { state } = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [countdown, setCountdown] = useState(5);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log("PaymentFailed state:", state); // Debug log
+    const reference = searchParams.get("reference");
+    if (reference && !state?.orderData) {
+      setIsLoading(true);
+      getPaymentStatus(reference)
+        .then(({ orderId, orderDetails }) => {
+          setOrderNumber(orderId || defaultOrderNumber);
+          setOrderDetails(orderDetails || null);
+          setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
+          setEmail(orderDetails?.email || defaultEmail);
+          setPaymentMethod(
+            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
+          );
+          setErrorCode(state?.errorCode || defaultErrorCode);
+          setErrorMessage(state?.errorMessage || defaultErrorMessage);
+        })
+        .catch((error) => {
+          console.error("PaymentFailed error:", error);
+          setErrorCode(state?.errorCode || "ERR_PAYMENT_STATUS_FETCH");
+          setErrorMessage(
+            state?.errorMessage || "Failed to fetch payment status. Please try again later."
+          );
+        })
+        .finally(() => setIsLoading(false));
+    } else if (state?.orderData || state?.errorCode) {
+      setOrderNumber(state.orderId || defaultOrderNumber);
+      setOrderDetails(state.orderData || null);
+      setAmount(`$${state.orderData?.pricing.total || defaultAmount}`);
+      setEmail(state.orderData?.email || defaultEmail);
+      setPaymentMethod(
+        state.orderData?.paymentOption === "before" ? "Credit Card" : "Cash on Delivery"
+      );
+      setErrorCode(state.errorCode || defaultErrorCode);
+      setErrorMessage(state.errorMessage || defaultErrorMessage);
+    }
+  }, [searchParams, state, defaultOrderNumber, defaultAmount, defaultEmail, defaultErrorCode, defaultErrorMessage]);
+
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      navigate("/");
+    }
+  }, [countdown, navigate]);
 
   const commonIssues = [
     {
@@ -47,12 +109,20 @@ export default function PaymentFailed({
       title: "Card expired or invalid",
       description: "Your card may be expired or the card number was entered incorrectly.",
     },
-  ]
+  ];
+
+  if (isLoading) {
+    return (
+      <div className="container px-4 py-8 mx-auto text-center max-w-7xl">
+        <Loader2 className="w-8 h-8 mx-auto text-red-600 animate-spin" />
+        <p className="mt-4 text-gray-600">Loading order details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-red-50 to-white">
       <div className="w-full max-w-md overflow-hidden bg-white shadow-xl rounded-2xl">
-        {/* Failed Header */}
         <div className="p-6 text-center bg-red-500">
           <motion.div
             initial={{ scale: 0 }}
@@ -80,7 +150,6 @@ export default function PaymentFailed({
           </motion.p>
         </div>
 
-        {/* Error Details */}
         <div className="p-6">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -104,12 +173,12 @@ export default function PaymentFailed({
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <div className="mb-1 text-sm text-gray-500">Amount</div>
+              <div className="mb-1 text-sm text-gray-500">Attempted Amount</div>
               <div className="text-lg font-semibold text-gray-800">{amount}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Date</div>
-              <div className="text-gray-800">{date}</div>
+              <div className="text-gray-800">{defaultDate}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Email</div>
@@ -121,7 +190,58 @@ export default function PaymentFailed({
             </div>
           </div>
 
-          {/* Common Issues Accordion */}
+          {orderDetails?.cartItems && (
+            <div className="mb-6">
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Attempted Items</h3>
+              <ul className="space-y-4">
+                {orderDetails.cartItems.map((item) => (
+                  <li key={item.productId} className="flex items-center gap-4">
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.name}
+                      className="object-cover w-12 h-12 rounded"
+                    />
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">{item.name}</div>
+                      <div className="text-sm text-gray-600">
+                        ${item.price.toFixed(2)} x {item.quantity} = $
+                        {(item.price * item.quantity).toFixed(2)}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {orderDetails?.pricing && (
+            <div className="mb-6">
+              <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Subtotal</span>
+                  <span className="font-medium text-gray-800">${orderDetails.pricing.subtotal}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tax</span>
+                  <span className="font-medium text-gray-800">${orderDetails.pricing.tax}</span>
+                </div>
+                {orderDetails.pricing.discount !== "0.00" && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Discount ({orderDetails.couponCode})</span>
+                    <span className="font-medium text-green-600">
+                      -${orderDetails.pricing.discount}
+                    </span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-2 border-t border-gray-200">
+                  <span className="font-medium text-gray-800">Total Attempted</span>
+                  <span className="font-semibold text-gray-800">${orderDetails.pricing.total}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -131,6 +251,8 @@ export default function PaymentFailed({
             <button
               onClick={() => setShowDetails(!showDetails)}
               className="flex items-center justify-between w-full py-3 text-left border-t border-b border-gray-100"
+              aria-expanded={showDetails}
+              aria-controls="common-issues"
             >
               <span className="font-medium text-gray-800">Common reasons for payment failure</span>
               {showDetails ? (
@@ -141,7 +263,7 @@ export default function PaymentFailed({
             </button>
 
             {showDetails && (
-              <div className="pt-3 pb-1 text-sm">
+              <div id="common-issues" className="pt-3 pb-1 text-sm">
                 <ul className="space-y-3">
                   {commonIssues.map((issue, index) => (
                     <li key={index} className="pb-3 border-b border-gray-100 last:border-0">
@@ -164,6 +286,7 @@ export default function PaymentFailed({
               <Link
                 to="/checkout"
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-white transition-colors bg-red-500 rounded-lg hover:bg-red-600"
+                aria-label="Try payment again"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Try Again
@@ -171,6 +294,7 @@ export default function PaymentFailed({
               <Link
                 to="/checkout/payment-methods"
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
+                aria-label="Change payment method"
               >
                 Change Payment Method
               </Link>
@@ -178,25 +302,23 @@ export default function PaymentFailed({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t border-gray-100 bg-gray-50">
           <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center text-sm text-gray-600 transition-colors hover:text-gray-900">
+            <Link
+              to="/"
+              className="flex items-center text-sm text-gray-600 transition-colors hover:text-gray-900"
+              aria-label="Return to home"
+            >
               <Home className="w-4 h-4 mr-1" />
               Return to Home
             </Link>
-            <Link
-              to="/support"
-              className="flex items-center text-sm text-gray-600 transition-colors hover:text-gray-900"
-            >
-              <HelpCircle className="w-4 h-4 mr-1" />
-              Get Help
-            </Link>
+            <div className="text-sm text-gray-500">
+              Redirecting in <span className="font-medium">{countdown}s</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Additional Information */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -211,5 +333,5 @@ export default function PaymentFailed({
         </p>
       </motion.div>
     </div>
-  )
+  );
 }
