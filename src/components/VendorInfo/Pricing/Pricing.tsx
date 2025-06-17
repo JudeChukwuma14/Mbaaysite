@@ -39,13 +39,20 @@ export default function UpgradePage() {
   const allCategories = [
     "Beauty and Wellness",
     "Jewelry and Gemstones",
+    "Vintage & Antique Jewelry",
     "Books and Poetry",
     "Home Décor and Accessories",
     "Vintage Stocks",
     "Plant and Seeds",
     "Spices, Condiments, and Seasonings",
     "Local & Traditional Foods",
-    "Traditional Clothing & Fabrics",
+    "Fashion Clothing & Fabrics",
+    "Art & Sculptures",
+    "Handmade Furniture",
+    "Traditional Musical Instruments (Religious & Ceremonial)",
+    "Local Food and Drinks Products",
+    "Music & Beats",
+    "Drama, Plays & Short Skits",
   ];
 
   // Replace the existing maxCategories object with this function
