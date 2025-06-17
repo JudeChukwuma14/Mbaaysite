@@ -1,104 +1,42 @@
 // src/components/PaymentSuccess.tsx
 import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { CheckCircle, Download, Home, ShoppingBag, Copy, Loader2 } from "lucide-react";
-import { Link, useLocation, useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { getPaymentStatus, OrderData } from "@/utils/orderApi";
-import ImageWithFallback from "../Reuseable/ImageWithFallback";
+import { CheckCircle, Download, Home, Copy } from "lucide-react";
+import { jsPDF } from "jspdf";
+import { OrderData } from "@/utils/orderApi";
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
 
-interface PaymentSuccessProps {
-  orderNumber?: string;
-  amount?: string;
-  date?: string;
-  email?: string;
-  paymentMethod?: string;
-  orderData?: OrderData;
+interface LocationState {
+  orderId: string;
+  orderData: OrderData;
 }
 
-export default function PaymentSuccess({
-  orderNumber: defaultOrderNumber = "ORD-7829354",
-  amount: defaultAmount = "$249.99",
-  date: defaultDate = new Date().toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }),
-  email: defaultEmail = "customer@example.com",
-  paymentMethod: defaultPaymentMethod = "Visa •••• 4242",
-  orderData: defaultOrderData,
-}: PaymentSuccessProps) {
+export default function PaymentSuccess() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { state } = location as { state: LocationState };
+  const { orderId, orderData } = state || {};
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState(5);
-  const [orderDetails, setOrderDetails] = useState<OrderData | null>(defaultOrderData || null);
-  const [orderNumber, setOrderNumber] = useState(defaultOrderNumber);
-  const [amount, setAmount] = useState(defaultAmount);
-  const [email, setEmail] = useState(defaultEmail);
-  const [paymentMethod, setPaymentMethod] = useState(defaultPaymentMethod);
-  const [isLoading, setIsLoading] = useState(false);
-  const { state } = useLocation();
-  const [searchParams] = useSearchParams();
-  const { sessionId } = useParams<{ sessionId: string }>();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    console.log("PaymentSuccess state:", state, "sessionId:", sessionId); // Debug log
-    const reference = searchParams.get("reference");
-    if (reference && !state?.orderData) {
-      setIsLoading(true);
-      getPaymentStatus(reference)
-        .then(({ orderId, orderDetails }) => {
-          setOrderNumber(orderId || sessionId || defaultOrderNumber);
-          setOrderDetails(orderDetails || null);
-          setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
-          setEmail(orderDetails?.email || defaultEmail);
-          setPaymentMethod(
-            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
-          );
-        })
-        .catch((error) => {
-          console.error("PaymentSuccess error:", error);
-          navigate("/failed", {
-            state: {
-              errorCode: "ERR_PAYMENT_STATUS_FETCH",
-              errorMessage: "Failed to load order details.",
-            },
-          });
-        })
-        .finally(() => setIsLoading(false));
-    } else if (state?.orderData && state?.orderId) {
-      setOrderNumber(state.orderId || sessionId || defaultOrderNumber);
-      setOrderDetails(state.orderData);
-      setAmount(`$${state.orderData.pricing.total}`);
-      setEmail(state.orderData.email);
-      setPaymentMethod(
-        state.orderData.paymentOption === "before" ? "Credit Card" : "Cash on Delivery"
-      );
-    } else if (sessionId) {
-      // Fallback: Fetch order details using sessionId
-      setIsLoading(true);
-      getPaymentStatus(sessionId) // Adjust if API doesn't support sessionId
-        .then(({ orderId, orderDetails }) => {
-          setOrderNumber(orderId || sessionId);
-          setOrderDetails(orderDetails || null);
-          setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
-          setEmail(orderDetails?.email || defaultEmail);
-          setPaymentMethod(
-            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
-          );
-        })
-        .catch((error) => {
-          console.error("PaymentSuccess fallback error:", error);
-          navigate("/failed", {
-            state: {
-              errorCode: "ERR_ORDER_FETCH",
-              errorMessage: "Failed to load order details.",
-            },
-          });
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [searchParams, state, sessionId, navigate, defaultOrderNumber, defaultAmount, defaultEmail]);
+  // Fallback if state is missing
+  if (!orderId || !orderData) {
+    return (
+      <div className="container px-4 py-8 mx-auto text-center max-w-7xl">
+        <h1 className="text-2xl font-bold text-red-600">Error</h1>
+        <p className="mt-4 text-gray-600">Order information is missing. Please contact support.</p>
+        <Button onClick={() => navigate("/")} className="mt-4">
+          Return to Home
+        </Button>
+      </div>
+    );
+  }
 
+  const { cartItems, pricing, first_name, last_name, email, address, paymentOption } = orderData;
+
+  // Countdown redirect
   useEffect(() => {
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
@@ -108,20 +46,44 @@ export default function PaymentSuccess({
     }
   }, [countdown, navigate]);
 
+  // Copy order number
   const copyOrderNumber = () => {
-    navigator.clipboard.writeText(orderNumber);
+    navigator.clipboard.writeText(orderId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (isLoading) {
-    return (
-      <div className="container px-4 py-8 mx-auto text-center max-w-7xl">
-        <Loader2 className="w-8 h-8 mx-auto text-green-600 animate-spin" />
-        <p className="mt-4 text-gray-600">Loading order details...</p>
-      </div>
-    );
-  }
+  // Generate and download PDF
+  const downloadReceipt = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text(`Order Receipt - Order ID: ${orderId}`, 20, 20);
+    doc.setFontSize(12);
+    doc.text(`Customer: ${first_name} ${last_name}`, 20, 30);
+    doc.text(`Email: ${email}`, 20, 40);
+    doc.text(`Address: ${address}`, 20, 50);
+    doc.text(`Payment Option: ${paymentOption}`, 20, 60);
+    doc.text("Items:", 20, 70);
+
+    let yPos = 80;
+    cartItems.forEach((item, index) => {
+      doc.text(
+        `${index + 1}. ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`,
+        20,
+        yPos
+      );
+      yPos += 10;
+    });
+
+    yPos += 10;
+    doc.text(`Subtotal: $${pricing.subtotal}`, 20, yPos);
+    doc.text(`Tax: $${pricing.tax}`, 20, yPos + 10);
+    doc.text(`Discount: -$${pricing.discount}`, 20, yPos + 20);
+    doc.text(`Commission: $${pricing.commission}`, 20, yPos + 30);
+    doc.text(`Total: $${pricing.total}`, 20, yPos + 40);
+
+    doc.save(`order_${orderId}_receipt.pdf`);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-green-50 to-white">
@@ -166,17 +128,23 @@ export default function PaymentSuccess({
                 {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <div className="text-lg font-semibold text-gray-800">{orderNumber}</div>
+            <div className="text-lg font-semibold text-gray-800">{orderId}</div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <div className="mb-1 text-sm text-gray-500">Amount Paid</div>
-              <div className="text-lg font-semibold text-gray-800">{amount}</div>
+              <div className="text-lg font-semibold text-gray-800">${pricing.total}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Date</div>
-              <div className="text-gray-800">{defaultDate}</div>
+              <div className="text-gray-800">
+                {new Date().toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Email</div>
@@ -184,61 +152,56 @@ export default function PaymentSuccess({
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Payment Method</div>
-              <div className="text-gray-800">{paymentMethod}</div>
+              <div className="text-gray-800">
+                {paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}
+              </div>
             </div>
           </div>
 
-          {orderDetails?.cartItems && (
-            <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Purchased Items</h3>
-              <ul className="space-y-4">
-                {orderDetails.cartItems.map((item) => (
-                  <li key={item.productId} className="flex items-center gap-4">
-                    <ImageWithFallback
-                      src={item.image}
-                      alt={item.name}
-                      className="object-cover w-12 h-12 rounded"
-                    />
-                    <div>
-                      <div className="text-sm font-medium text-gray-800">{item.name}</div>
-                      <div className="text-sm text-gray-600">
-                        ${item.price.toFixed(2)} x {item.quantity} = $
-                        {(item.price * item.quantity).toFixed(2)}
-                      </div>
+          <div className="mb-6">
+            <h3 className="mb-3 text-sm font-medium text-gray-700">Purchased Items</h3>
+            <ul className="space-y-4">
+              {cartItems.map((item) => (
+                <li key={item.productId} className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-gray-200 rounded" /> {/* Placeholder for ImageWithFallback */}
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">{item.name}</div>
+                    <div className="text-sm text-gray-600">
+                      ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
                     </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {orderDetails?.pricing && (
-            <div className="mb-6">
-              <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium text-gray-800">${orderDetails.pricing.subtotal}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Tax</span>
-                  <span className="font-medium text-gray-800">${orderDetails.pricing.tax}</span>
-                </div>
-                {orderDetails.pricing.discount !== "0.00" && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Discount ({orderDetails.couponCode})</span>
-                    <span className="font-medium text-green-600">
-                      -${orderDetails.pricing.discount}
-                    </span>
                   </div>
-                )}
-                <div className="flex justify-between pt-2 border-t border-gray-200">
-                  <span className="font-medium text-gray-800">Total Paid</span>
-                  <span className="font-semibold text-gray-800">${orderDetails.pricing.total}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mb-6">
+            <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Subtotal</span>
+                <span className="font-medium text-gray-800">${pricing.subtotal}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Tax</span>
+                <span className="font-medium text-gray-800">${pricing.tax}</span>
+              </div>
+              {pricing.discount !== "0.00" && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Discount</span>
+                  <span className="font-medium text-green-600">-${pricing.discount}</span>
                 </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-gray-600">Mbaay Commission</span>
+                <span className="font-medium text-gray-800">${pricing.commission}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-gray-200">
+                <span className="font-medium text-gray-800">Total Paid</span>
+                <span className="font-semibold text-gray-800">${pricing.total}</span>
               </div>
             </div>
-          )}
+          </div>
 
           <div className="pt-6 space-y-4 border-t border-gray-100">
             <motion.div
@@ -259,21 +222,19 @@ export default function PaymentSuccess({
               className="flex flex-col gap-3 sm:flex-row"
             >
               <Link
-                to={`/order-details/${orderNumber}`}
+                to={`/order-details/${orderId}`}
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-white transition-colors bg-green-500 rounded-lg hover:bg-green-600"
-                aria-label="View order details"
               >
-                <ShoppingBag className="w-4 h-4 mr-2" />
                 View Order Details
               </Link>
-              <Link
-                to="/download-receipt"
+              <Button
+                onClick={downloadReceipt}
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
-                aria-label="Download receipt"
+                variant="outline"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Download Receipt
-              </Link>
+              </Button>
             </motion.div>
           </div>
         </div>
@@ -283,7 +244,6 @@ export default function PaymentSuccess({
             <Link
               to="/"
               className="flex items-center text-sm text-gray-600 transition-colors hover:text-gray-900"
-              aria-label="Return to home"
             >
               <Home className="w-4 h-4 mr-1" />
               Return to Home

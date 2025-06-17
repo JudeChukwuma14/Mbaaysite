@@ -9,3 +9,9 @@ export const getSessionId = (): string => {
   }
   return sessionId;
 };
+
+export const clearSessionId = (): string => {
+  const newSessionId = uuidv4();
+  localStorage.setItem("sessionId", newSessionId);
+  return newSessionId;
+};

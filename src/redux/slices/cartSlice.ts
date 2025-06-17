@@ -61,9 +61,19 @@ const cartSlice = createSlice({
       state.couponCode = "";
       state.discount = 0;
     },
+    clearCart(state) {
+      state.items = [];
+    },
   },
 });
 
-export const { addItem, removeItem, updateQuantity, setCartItems, applyCoupon, removeCoupon  } =
-  cartSlice.actions;
+export const {
+  addItem,
+  removeItem,
+  updateQuantity,
+  setCartItems,
+  applyCoupon,
+  removeCoupon,
+  clearCart,
+} = cartSlice.actions;
 export default cartSlice.reducer;
