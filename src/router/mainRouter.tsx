@@ -132,7 +132,23 @@ const Jewelry = lazy(
 );
 
 
-const Art = lazy(() => import("@/components/AllCategory/Art/ArtPage"));
+const Art = lazy(() => import("@/components/AllCategory/Art&Sculptures/ArtPage"));
+// Art Subcategory Page
+const Paintings = lazy(
+  () => import("@/components/AllCategory/Art&Sculptures/subcategory/Paintings")
+);
+const WallArts = lazy(()=> import("@/components/AllCategory/Art&Sculptures/subcategory/WallArts"));
+const Sculptures = lazy(
+  () => import("@/components/AllCategory/Art&Sculptures/subcategory/Sculptures")
+);
+const TraditionalCraft = lazy(
+  () =>
+    import("@/components/AllCategory/Art&Sculptures/subcategory/TraditionalCraft")
+);
+const ReligiousCulturalArt = lazy(
+  () =>
+    import("@/components/AllCategory/Art&Sculptures/subcategory/ReligiousCulturalArt")
+);
 
 
 // BeautyWellness Subcategory Page
@@ -757,9 +773,16 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage", element: withSuspense(Vintage) },
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
-
-
       { path: "/art", element: withSuspense(Art) },
+
+      // Art Subcategory Page
+      {path: "/paintings", element: withSuspense(Paintings) },
+      {path: "/wall-art", element: withSuspense(WallArts) },
+      {path: "/sculptures", element: withSuspense(Sculptures) },
+      {path: "/traditional-craft", element: withSuspense(TraditionalCraft) },
+      {path: "/traditional-artifacts", element: withSuspense(ReligiousCulturalArt) },
+
+      
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
       { path: "/haircare", element: withSuspense(Haircare) },

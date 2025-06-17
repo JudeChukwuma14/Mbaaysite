@@ -33,9 +33,8 @@ const SUBCATEGORIES: Subcategory[] = [
     { image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg", text: "Paintings", link: "/paintings" },
     { image: "https://i.pinimg.com/736x/6f/46/86/6f4686892acc50bcb9561349090bd231.jpg", text: "Wall Art", link: "/wall-art" },
     { image: "https://i.pinimg.com/736x/ee/2c/a8/ee2ca86391336c0998fc5125a8131f61.jpg", text: "Sculptures", link: "/sculptures" },
-    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Traditional Designs", link: "/traditional-designs" },
+    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Traditional Designs", link: "/traditional-craft" },
     { image: "https://i.pinimg.com/736x/d3/aa/74/d3aa74015ecae82fc958a12fd4d414e6.jpg", text: "Religious & Cultural Art", link: "/traditional-artifacts" },
-    { image: "https://i.pinimg.com/736x/79/88/ab/7988abea54676c1b0158c8032c44d3f5.jpg", text: "Outdoor Art", link: "/outdoor-art" },
 ];
 
 // Animation variants for containers
