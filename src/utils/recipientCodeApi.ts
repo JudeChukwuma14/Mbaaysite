@@ -5,6 +5,7 @@ const BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
 export interface CreateRecipientCodePayload {
   account_number: string;
   bank_code: string;
+  bankName: string;
   name: string;
 }
 
@@ -24,7 +25,7 @@ export const createRecipientCode = async (
       }
     );
 
-    console.log("API Response:", response.data);
+    console.log(response);
 
     if (!response.data.recipient_code) {
       console.error("Recipient code missing in response:", response.data);
@@ -33,7 +34,7 @@ export const createRecipientCode = async (
 
     return {
       ...response.data,
-      bankName: accountData.name,
+      bankName: accountData.bankName, // Corrected to use bankName instead of name
     };
   } catch (error) {
     console.error("API Error Details:", error);
