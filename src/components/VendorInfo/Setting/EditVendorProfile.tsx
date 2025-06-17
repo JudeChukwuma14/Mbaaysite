@@ -1,5 +1,3 @@
-"use client";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
@@ -199,6 +197,32 @@ const formatFileSize = (bytes: number) => {
   return (bytes / (1024 * 1024)).toFixed(2) + "MB";
 };
 
+// Helper function to get bank logo from bank name
+const getBankLogo = (bankName: string): string => {
+  if (!bankName) return "/images/banks/default-bank.png";
+
+  // First try exact match
+  if (bankLogos[bankName]) {
+    return bankLogos[bankName];
+  }
+
+  // Try partial matches for common variations
+  const normalizedBankName = bankName.toLowerCase().trim();
+
+  for (const [key, logo] of Object.entries(bankLogos)) {
+    const normalizedKey = key.toLowerCase();
+    if (
+      normalizedKey.includes(normalizedBankName) ||
+      normalizedBankName.includes(normalizedKey)
+    ) {
+      return logo;
+    }
+  }
+
+  // Return default if no match found
+  return "/images/banks/default-bank.png";
+};
+
 export default function EditVendorProfile() {
   const [showPassword, setShowPassword] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -253,9 +277,9 @@ export default function EditVendorProfile() {
   const createRecipientCodeMutation = useCreateRecipientCode();
 
   const [profile, setProfile] = useState<VendorProfile>({
-    companyName: "PreciousLtd Limited",
-    email: "preciousltd@gmail.com",
-    phone: "+234 805743214",
+    companyName: "",
+    email: "",
+    phone: "",
     bio: "",
     accountName: "",
     accountNumber: "",
@@ -287,9 +311,12 @@ export default function EditVendorProfile() {
     if (vendors) {
       setProfile((prev) => ({
         ...prev,
-        accountName: vendors.accountName || "",
-        accountNumber: vendors.accountNumber || "",
-        bankName: vendors.bankName || "",
+        companyName: vendors.storeName || prev.companyName,
+        email: vendors.email || prev.email,
+        phone: vendors.storePhone || prev.phone,
+        accountName: vendors.accountName || prev.accountName,
+        accountNumber: vendors.accountNumber || prev.accountNumber,
+        bankName: vendors.bankName || prev.bankName,
       }));
     }
   }, [vendors]);
@@ -470,10 +497,12 @@ export default function EditVendorProfile() {
         break;
       case "account":
         setActivePopup("account");
-        setAccountNumber("");
-        setSelectedBankCode("");
-        setFoundAccountName("");
-        setFoundBankName("");
+        setAccountNumber(profile.accountNumber || "");
+        setSelectedBankCode(
+          bankCodes.find((bank) => bank.name === profile.bankName)?.code || ""
+        );
+        setFoundAccountName(profile.accountName || "");
+        setFoundBankName(profile.bankName || "");
         break;
       case "email":
         setActivePopup("email");
@@ -614,6 +643,14 @@ export default function EditVendorProfile() {
           setFoundAccountName(verifyData?.data?.account_name);
           setFoundBankName(selectedBank?.name || "");
 
+          // Update profile state with verified account details
+          setProfile((prev) => ({
+            ...prev,
+            accountName: verifyData?.data?.account_name,
+            accountNumber: accountNumber,
+            bankName: selectedBank?.name || "",
+          }));
+
           toast.success("Account verified successfully!", {
             position: "top-right",
             autoClose: 3000,
@@ -746,7 +783,12 @@ export default function EditVendorProfile() {
 
   // Enhanced account change handler with recipient code creation
   const handleAccountChange = async () => {
-    if (!accountNumber || !foundAccountName || !selectedBankCode) {
+    if (
+      !accountNumber ||
+      !foundAccountName ||
+      !selectedBankCode ||
+      !foundBankName
+    ) {
       toast.error("Please search for a valid account first", {
         position: "top-right",
         autoClose: 4000,
@@ -761,7 +803,40 @@ export default function EditVendorProfile() {
           account_number: accountNumber,
           bank_code: selectedBankCode,
           name: foundAccountName,
+          bankName: foundBankName,
         },
+      });
+
+      // Ensure profile state is updated with verified account details
+      const selectedBank = bankCodes.find(
+        (bank) => bank.code === selectedBankCode
+      );
+      setProfile((prev) => ({
+        ...prev,
+        accountName: foundAccountName,
+        accountNumber: accountNumber,
+        bankName: selectedBank?.name || "",
+      }));
+
+      // Persist account details to localStorage (optional, for persistence)
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(
+            "vendor_account_details",
+            JSON.stringify({
+              accountName: foundAccountName,
+              accountNumber: accountNumber,
+              bankName: selectedBank?.name || "",
+            })
+          );
+        } catch (error) {
+          console.error("Error saving account details to localStorage:", error);
+        }
+      }
+
+      toast.success("Account details updated successfully!", {
+        position: "top-right",
+        autoClose: 3000,
       });
 
       closePopup();
@@ -803,6 +878,9 @@ export default function EditVendorProfile() {
   // Check if account details exist to determine button text
   const hasAccountDetails =
     profile.accountName && profile.accountNumber && profile.bankName;
+
+  // Get the current bank logo for display
+  const currentBankLogo = getBankLogo(profile.bankName);
 
   return (
     <motion.div
@@ -925,7 +1003,7 @@ export default function EditVendorProfile() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 bg-orange-100 rounded-lg">
                   <span className="font-semibold text-orange-500">
-                    {vendors?.storeType?.charAt?.(0).toUpperCase()}
+                    {vendors?.storeType?.charAt?.(0)?.toUpperCase()}
                   </span>
                 </div>
                 <div className="font-semibold">{vendors?.storeType}</div>
@@ -1024,7 +1102,7 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="text"
-                  value={vendors?.storeName}
+                  value={profile.companyName}
                   readOnly
                   className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.companyName ? "border-red-500" : ""
@@ -1042,7 +1120,7 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="email"
-                  value={vendors?.email}
+                  value={profile.email}
                   readOnly
                   className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.email ? "border-red-500" : ""
@@ -1058,7 +1136,7 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="tel"
-                  value={vendors?.storePhone}
+                  value={profile.phone}
                   readOnly
                   className={`w-full p-2 border rounded-lg bg-gray-50 cursor-not-allowed ${
                     errors.phone ? "border-red-500" : ""
@@ -1176,7 +1254,7 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="text"
-                  value={profile.accountName}
+                  value={vendors?.bankAccount?.account_name}
                   readOnly
                   placeholder={
                     !profile.accountName ? "No account name added" : ""
@@ -1197,7 +1275,7 @@ export default function EditVendorProfile() {
                 </label>
                 <motion.input
                   type="text"
-                  value={profile.accountNumber}
+                  value={vendors?.bankAccount?.account_number}
                   readOnly
                   placeholder={
                     !profile.accountNumber ? "No account number added" : ""
@@ -1218,13 +1296,10 @@ export default function EditVendorProfile() {
                 </label>
                 <div className="relative">
                   <div className="flex items-center w-full gap-2 p-2 border rounded-lg cursor-not-allowed bg-gray-50">
-                    {profile?.bankName && (
+                    {vendors?.bankAccount?.bankName && (
                       <img
-                        src={
-                          bankLogos[profile?.bankName] ||
-                          "/images/banks/default-bank.png"
-                        }
-                        alt={profile?.bankName}
+                        src={currentBankLogo || "/placeholder.svg"}
+                        alt={profile.bankName}
                         className="w-6 h-6 object-contain"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
@@ -1234,11 +1309,11 @@ export default function EditVendorProfile() {
                     )}
                     <motion.input
                       type="text"
-                      value={profile?.bankName}
+                      value={vendors?.bankAccount?.bankName}
                       readOnly
-                      placeholder={!profile?.bankName ? "No bank selected" : ""}
+                      placeholder={!profile.bankName ? "No bank selected" : ""}
                       className={`flex-1 outline-none bg-gray-50 cursor-not-allowed ${
-                        errors?.bankName ? "text-red-500" : ""
+                        errors.bankName ? "text-red-500" : ""
                       }`}
                     />
                   </div>
@@ -1568,6 +1643,7 @@ export default function EditVendorProfile() {
                                       <img
                                         src={
                                           bankLogos[foundBankName] ||
+                                          "/placeholder.svg" ||
                                           "/placeholder.svg"
                                         }
                                         alt={foundBankName}

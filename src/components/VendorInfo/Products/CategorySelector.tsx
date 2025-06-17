@@ -44,6 +44,7 @@ export default function CategorySelector({
   setSelectedSubSubCategory,
   onCategorySelect,
   categoryData = [
+    //Beauty and Wellness
     {
       name: "Beauty and Wellness",
       subCategories: [
@@ -143,6 +144,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Jewelry and Gemstones
     {
       name: "Jewelry and Gemstones",
       subCategories: [
@@ -240,6 +242,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Books and Poetry
     {
       name: "Books and Poetry",
       subCategories: [
@@ -385,6 +388,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Vintage Stocks
     {
       name: "Vintage Stocks",
       subCategories: [
@@ -480,6 +484,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Home Décor and Accessories
     {
       name: "Home Décor and Accessories",
       subCategories: [
@@ -637,6 +642,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Plant and Seeds
     {
       name: "Plant and Seeds",
       subCategories: [
@@ -769,6 +775,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Spices, Condiments and Seasonings
     {
       name: "Spices, Condiments and Seasonings",
       subCategories: [
@@ -922,6 +929,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Local & Traditional Foods
     {
       name: "Local & Traditional Foods",
       subCategories: [
@@ -1141,8 +1149,9 @@ export default function CategorySelector({
         },
       ],
     },
+    //Fashion Clothing and Fabrics
     {
-      name: "Traditional Clothing and Fabrics",
+      name: "Fashion Clothing and Fabrics",
       subCategories: [
         {
           name: "Men's Traditional Wear",
@@ -1409,6 +1418,7 @@ export default function CategorySelector({
         },
       ],
     },
+    //Traditional and Religious Items
     {
       name: "Traditional and Religious Items",
       subCategories: [
@@ -1526,35 +1536,6 @@ export default function CategorySelector({
           ],
         },
         {
-          name: "Traditional Musical Instruments (Religious & Ceremonial)",
-          subSubCategories: [
-            {
-              name: "Drums & Percussion (e.g., African Djembe Drums, Indian Tabla, Ceremonial Bongos)",
-            },
-            {
-              name: "Wind Instruments (e.g., Tibetan Horns, Shofar, Native American Flutes)",
-            },
-            { name: "String Instruments (e.g., Sitar, Harps, Tambura)" },
-            {
-              name: "Bells & Chimes (e.g., Buddhist Temple Bells, Prayer Chimes, Tibetan Bells)",
-            },
-          ],
-        },
-        {
-          name: "Ritual Offerings & Sacramental Items",
-          subSubCategories: [
-            {
-              name: "Holy Water Containers & Fonts (e.g., Christian Holy Water Fonts, Hindu Water Pots (Kalash))",
-            },
-            {
-              name: "Offering Bowls & Plates (e.g., Tibetan Offering Bowls, Indian Ritual Plates (Thalis))",
-            },
-            {
-              name: "Sacramental Wine & Chalices (e.g., Communion Chalices, Seder Cups)",
-            },
-          ],
-        },
-        {
           name: "Funeral & Ancestral Veneration Items",
           subSubCategories: [
             {
@@ -1593,6 +1574,395 @@ export default function CategorySelector({
             },
             {
               name: "Hand-Painted Religious Icons (e.g., Orthodox Icons, Hindu God Paintings, Buddhist Thangka Paintings)",
+            },
+          ],
+        },
+      ],
+    },
+    //Art & Sculptures
+    {
+      name: "Art & Sculptures",
+      subCategories: [
+        {
+          name: "Paintings",
+          subSubCategories: [
+            { name: "Abstract & Expressionist" },
+            { name: "Cultural & Tribal Art" },
+            { name: "Nature & Landscape" },
+            { name: "Portraits & Figurative" },
+          ],
+        },
+        {
+          name: "Wall Art",
+          subSubCategories: [
+            { name: "Murals" },
+            { name: "Tapestries" },
+            { name: "Framed Fabric Art" },
+          ],
+        },
+        {
+          name: "Sculptures",
+          subSubCategories: [
+            { name: "Wood Carvings" },
+            { name: "Bronze & Metal Sculptures" },
+            { name: "Clay & Terracotta Figurines" },
+            { name: "Stone Carvings" },
+          ],
+        },
+        {
+          name: "Traditional Crafts",
+          subSubCategories: [
+            { name: "Beaded Art" },
+            { name: "Raffia & Bamboo Work" },
+            { name: "Gourd Art" },
+            { name: "Rope & Thread Work" },
+          ],
+        },
+        {
+          name: "Religious & Ritual Art",
+          subSubCategories: [
+            { name: "Spiritual Figures" },
+            { name: "Shrine Accessories" },
+          ],
+        },
+      ],
+    },
+    //Music & Beats
+    {
+      name: "Music & Beats",
+      subCategories: [
+        {
+          name: "Traditional Instruments (Physical Products)",
+          subSubCategories: [
+            { name: "Talking Drums & Bata" },
+            { name: "Kalimba & Thumb Piano" },
+            { name: "Djembe & Conga" },
+            { name: "Flutes & Horns" },
+          ],
+        },
+        {
+          name: "Beats & Audio Downloads",
+          subSubCategories: [
+            { name: "African Percussion Loops" },
+            { name: "Afrobeat/Highlife Instrumentals" },
+            { name: "Ethnic and Cultural Music Tracks" },
+          ],
+        },
+        {
+          name: "Albums & EPs",
+          subSubCategories: [
+            { name: "Local Folk Music Albums" },
+            { name: "Contemporary Afro-Traditional Mixes" },
+          ],
+        },
+        {
+          name: "Live Performance Bookings",
+          subSubCategories: [
+            { name: "Local Musicians" },
+            { name: "Cultural Troupes" },
+          ],
+        },
+      ],
+    },
+    //Drama, Plays & Short Skits
+    {
+      name: "Drama, Plays & Short Skits",
+      subCategories: [
+        {
+          name: "Music & Beats",
+          subSubCategories: [
+            { name: "Beats & Instrumentals (MP3)" },
+            { name: "Albums & Songs (Digital)" },
+            { name: "Physiacl Instruments" },
+          ],
+        },
+        {
+          name: "Drama & Skits",
+          subSubCategories: [
+            {
+              name: "Scripts & Manuscripts (PDF/Doc) (e.g Cultural plays, Festival performances, Moral & Satirical Skits)",
+            },
+            { name: "Recorded Performances (MP4/Streaming)" },
+            { name: "Folks and storytelling session" },
+            { name: "Live Performances / Booking" },
+          ],
+        },
+        {
+          name: "Educational Packs",
+          subSubCategories: [
+            { name: "Drama Kits for Schools" },
+            { name: "Community Theatre Scripts" },
+            { name: "Language Preservation Plays" },
+          ],
+        },
+      ],
+    },
+    //Handmade Furniture
+    {
+      name: "Handmade Furniture",
+      subCategories: [
+        {
+          name: "Seating",
+          subSubCategories: [
+            { name: "Traditional Stools" },
+            { name: "Hand-carved Benches" },
+            { name: "Raffia/Cane Chairs" },
+          ],
+        },
+        {
+          name: "Tables",
+          subSubCategories: [
+            { name: "Low Tables & Coffee Tables" },
+            { name: "Hand-painted Dining Tables" },
+          ],
+        },
+        {
+          name: "Storage",
+          subSubCategories: [
+            { name: "Woven Baskets With Lids" },
+            { name: "Wooden Chests & Cabinets" },
+          ],
+        },
+        {
+          name: "Bedroom Items",
+          subSubCategories: [
+            { name: "Bed Frames (Hand-carved)" },
+            { name: "Side Stools & Nightstands" },
+          ],
+        },
+        {
+          name: "Decor & Utility",
+          subSubCategories: [
+            { name: "Room Dividers" },
+            { name: "Wall Shelves" },
+            { name: "Candle Stands & Artful Lamps" },
+          ],
+        },
+        {
+          name: "Outdoor & Patio",
+          subSubCategories: [
+            { name: "Palm Furniture Sets" },
+            { name: "Bamboo Loungers" },
+          ],
+        },
+      ],
+    },
+    //Vintage & Antigue Jewelry
+    {
+      name: "Vintage & Antigue Jewelry",
+      subCategories: [
+        {
+          name: "Vintage Jewelry",
+          subSubCategories: [
+            { name: "Handcrafted Beaded Necklaces" },
+            { name: "Antique Silver Rings" },
+            { name: "Raffia/Cane Chairs" },
+            { name: "Tribal Earrings" },
+            { name: "Vintage Cuff Bracelets" },
+            { name: "Ethnic Pendants" },
+          ],
+        },
+        {
+          name: "Religious and Spiritual Jewelry",
+          subSubCategories: [
+            { name: "Prayer Beads" },
+            { name: "Symbolic Pendants" },
+            { name: "Chakra Jewelry" },
+            { name: "Healing Crystal Jewelry" },
+          ],
+        },
+        {
+          name: "Cultural Gemstones",
+          subSubCategories: [
+            { name: "Turquoise" },
+            { name: "Amber" },
+            { name: "Coral" },
+            { name: "Onyx" },
+          ],
+        },
+        {
+          name: "Festive and Ritual Jewelry",
+          subSubCategories: [
+            { name: "Wedding Jewelry" },
+            { name: "Festival Jewelry" },
+            { name: "Ritual Adornments" },
+            { name: "Crowning and Headpieces" },
+          ],
+        },
+      ],
+    },
+    //Traditional Musical Instruments (Religious & Ceremonial)
+    {
+      name: "Traditional Musical Instruments (Religious & Ceremonial)",
+      subCategories: [
+        {
+          name: "Drums & Percussion(e.g., African Djembe Drums, Indian Tabla, Ceremonial Bongos)",
+          subSubCategories: [
+            {
+              name: "Wind Instruments(e.g., Tibetan Horns, Shofar, Native American Flutes)",
+            },
+            { name: "String Instruments(e.g., Sitar, Harps, Tambura)" },
+            {
+              name: "Bells & Chimes(e.g., Buddhist Temple Bells, Prayer Chimes, Tibetan Bells)",
+            },
+          ],
+        },
+        {
+          name: "Ritual Offerings & Sacramental Items",
+          subSubCategories: [
+            {
+              name: "Holy Water Containers & Fonts(e.g., Christian Holy Water Fonts, Hindu Water Pots (Kalash))",
+            },
+            {
+              name: "Offering Bowls & Plates(e.g., Tibetan Offering Bowls, Indian Ritual Plates (Thalis))",
+            },
+          ],
+        },
+        {
+          name: "Sacramental Wine & Chalices(e.g., Communion Chalices, Seder Cups)",
+          subSubCategories: [
+            {
+              name: "Funeral & Ancestral Veneration Items",
+            },
+            {
+              name: "Ancestral Shrines(e.g., Chinese Ancestral Shrines, African Ancestral Statues)",
+            },
+          ],
+        },
+        {
+          name: "Funeral Ritual Items(e.g., Incense Burners, Funeral Candles, Prayer Cards)",
+          subSubCategories: [
+            {
+              name: "Memorial Jewelry & Keepsakes(e.g., Ash Pendants, Memorial Bracelets, Ancestral Spirit Beads)",
+            },
+            { name: "Sacred Spaces & Decor" },
+            {
+              name: "Sacred Furnishings(e.g., Meditation Benches, Religious Seating, Prayer Desks)",
+            },
+            {
+              name: "Religious Wall Decor(e.g., Religious Quotes, Sacred Tapestries, Iconography)",
+            },
+            {
+              name: "Sacred Texts & Calligraphy Art(e.g., Quranic Verses, Biblical Quotes, Sanskrit Script)",
+            },
+            { name: "Traditional & Religious Crafts" },
+            {
+              name: "Handcrafted Religious Items(e.g., Cross Stitching, Woven Prayer Mats, Hand-Carved Religious Statues)",
+            },
+            {
+              name: "Cultural Ceremonial Crafts(e.g., Woven Offering Baskets, Clay Diyas, Decorative Candles)",
+            },
+            {
+              name: "Hand-Painted Religious Icons(e.g., Orthodox Icons, Hindu God Paintings, Buddhist Thangka Paintings)",
+            },
+          ],
+        },
+      ],
+    },
+    //Local Food and Drinks Products
+    {
+      name: "Local Food and Drinks Products",
+      subCategories: [
+        {
+          name: "Traditional Snacks & Sweets(e.g., Local Pastries, Regional Confections, Traditional Candies)",
+          subSubCategories: [
+            {
+              name: "Canned & Preserved Foods(e.g., Pickles, Jams, Regional Sauces)",
+            },
+            {
+              name: "Spices & Seasonings(e.g., Local Spice Blends, Specialty Salts, Traditional Marinades)",
+            },
+            {
+              name: "Sauces & Condiments(e.g., Chutneys, Hot Sauces, Dipping Sauces)",
+            },
+            {
+              name: "Dried Fruits & Nuts(e.g., Local Dried Fruits, Specialty Nuts, Trail Mixes)",
+            },
+          ],
+        },
+        {
+          name: "Beverages",
+          subSubCategories: [
+            {
+              name: "Local Soft Drinks & Juices(e.g., Local Fruit Juices, Traditional Sodas, Herbal Drinks)",
+            },
+          ],
+        },
+        {
+          name: "Alcoholic Beverages",
+          subSubCategories: [
+            {
+              name: "Wine(e.g., Local Wines, Craft Beers, Traditional Spirits)",
+            },
+          ],
+        },
+        {
+          name: "Specialty Teas(e.g., Herbal Teas, Traditional Loose Leaf Teas, Specialty Blends)",
+          subSubCategories: [
+            {
+              name: "Coffee & Coffee Products(e.g., Local Coffee Beans, Instant Coffee, Specialty Blends)",
+            },
+            {
+              name: "Infused Waters & Health Drinks(e.g., Infused Herbal Waters, Nutritional Drinks)",
+            },
+          ],
+        },
+        {
+          name: "Tea Products",
+          subSubCategories: [
+            {
+              name: "Loose Leaf Teas(e.g., Local Black Tea, Green Tea, Herbal Infusions)",
+            },
+            {
+              name: "Tea Bags & Pyramid Bags(e.g., Specialty Tea Bags, Traditional Pyramid Tea Bags)",
+            },
+          ],
+        },
+        {
+          name: "Traditional Tea Sets & Accessories",
+          subSubCategories: [
+            {
+              name: "Tea(e.g., Tea Pots, Cups, Tea Infusers)",
+            },
+          ],
+        },
+        {
+          name: "Sweeteners & Additives(e.g., Local Honey, Sugar Alternatives, Flavor Syrups)",
+          subSubCategories: [
+            {
+              name: "Tea Blends & Specialty Mixes(e.g., Chai Mixes, Fruit Tea Blends, Medicinal Herbal Teas)",
+            },
+          ],
+        },
+        {
+          name: "Culinary Ingredients",
+          subSubCategories: [
+            {
+              name: "Grains & Legumes(e.g., Local Rice Varieties, Lentils, Specialty Beans)",
+            },
+            {
+              name: "Oils & Fats(e.g., Local Cooking Oils, Specialty Butter, Ghee)",
+            },
+            {
+              name: "Fresh Produce & Herbs(e.g., Locally Grown Vegetables, Fresh Herbs)",
+            },
+            {
+              name: "Baking Supplies(e.g., Local Flours, Yeast, Baking Mixes)",
+            },
+            {
+              name: "Specialty Foods(e.g., Local Cheese, Regional Meats, Traditional Bread)",
+            },
+            {
+              name: "Meal Kits & Ready-to-Eat Products",
+            },
+            {
+              name: "Regional Meal Kits(e.g., Local Cuisine Cooking Kits, Spice Kits)",
+            },
+            {
+              name: "Frozen & Prepared Meals(e.g., Frozen Local Dishes, Ready-to-Eat Meals)",
+            },
+            {
+              name: "Soups & Broths(e.g., Traditional Soups, Bone Broths, Herbal Broths",
             },
           ],
         },
