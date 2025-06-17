@@ -8,11 +8,10 @@ import Layout from "@/components/profileMangement/Layout";
 import CommunityDetailPage from "@/components/VendorInfo/Community&Res/CommunityDetailPage";
 import VendorLayout from "@/components/VendorInfo/VendorLayout";
 import ProtectedVendor from "./ProtectedVendor";
-
-import AuctionProduct from "@/components/VendorInfo/Products/AuctionProduct";
 import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
+
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
@@ -87,8 +86,8 @@ const CommunitySection = lazy(
 );
 const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"));
 
-const AuctionProduct = lazy(
-  () => import("@/components/VendorInfo/Products/AuctionProduct")
+const VendorAuctionProduct = lazy(
+  () => import("@/components/VendorInfo/Products/VendorAuctionProduct")
 );
 
 const AllPost = lazy(
@@ -1010,7 +1009,7 @@ const routesConfig: RouteObject[] = [
           { path: "order-details", element: withSuspense(OrderDetails) },
           { path: "all-products", element: withSuspense(AllProduct) },
           { path: "new-product", element: withSuspense(NewProduct) },
-          { path: "auction-product", element: withSuspense(AuctionProduct) },
+          { path: "auction-product", element: withSuspense(VendorAuctionProduct) },
           { path: "customers", element: withSuspense(Customer) },
           { path: "Payments", element: withSuspense(Payments) },
           { path: "preview-invoice", element: withSuspense(PreviewInvoice) },
