@@ -1,5 +1,4 @@
 
-
 import { ChevronLeft, ChevronRight } from 'lucide-react'; // Assuming you're using lucide-react for icons
 import CategoryCard from '../categorycardprops/CategoryCard';
 import { useEffect, useRef, useState } from 'react';
@@ -10,7 +9,7 @@ const categoriesData = [
   { imageSrc: "https://i.pinimg.com/736x/09/c6/2d/09c62d72e596d2b4787b1f2c1afe1d1c.jpg", title: 'Beauty and Wellness', link: '/beautywellness' },
   { imageSrc: "https://i.pinimg.com/736x/41/59/c3/4159c3130c611456e97cb861d35a5858.jpg", title: 'Books and Poetry', link: '/book-poetry' },
   { imageSrc: "https://i.pinimg.com/736x/3f/90/28/3f9028655d750fce1ec5e8e5d059a431.jpg", title: 'Fashion', link: '/fashion' },
-  { imageSrc: "https://i.pinimg.com/736x/0d/a9/c0/0da9c03185a9e8ef8cdf67f6196bf4f4.jpg", title: 'Furniture', link: '/furniture' },
+  { imageSrc: "https://i.pinimg.com/736x/0d/a9/c0/0da9c03185a9e8ef8cdf67f6196bf4f4.jpg", title: 'Handmade Furniture', link: '/furniture' },
   { imageSrc: "https://i.pinimg.com/736x/ef/28/60/ef2860d2ac4d31a20613198afcf78a94.jpg", title: 'Home Décor and Accessories', link: '/homedecor' },
   { imageSrc: "https://i.pinimg.com/736x/01/ad/73/01ad73f4506cf99c2c3c065545013880.jpg", title: 'Jewelry and Gemstones', link: '/jewelry' },
   { imageSrc: "https://i.pinimg.com/736x/9a/b8/19/9ab81906c6e93c501a8fb4a5397eb62d.jpg", title: 'Local & Traditional Foods', link: '/localfood' },
