@@ -47,41 +47,9 @@ export default function PaymentCallback() {
       try {
         const response: PaymentStatusResponse = await getPaymentStatus(reference);
         console.log("Payment Status Response:", JSON.stringify(response, null, 2));
-        console.log("Response message:", response.message);
 
         // Check orderId
-        if (!response.orderId || typeof response.orderId !== "string" || response.orderId.trim() === "") {
-          console.warn("Invalid or missing orderId in response:", response);
-          toast.error("Payment verification failed due to missing order information.");
-          navigate("/failed", {
-            state: {
-              errorCode: "ERR_MISSING_ORDER_ID",
-              errorMessage: "Order ID is missing or invalid.",
-            },
-          });
-          return;
-        }
-
-        // Check for success based on message
-        if (response.message === "Payment confirmed and order placed") {
-          // Check orderData
-          if (
-            !response.orderData ||
-            typeof response.orderData !== "object" ||
-            !response.orderData.cartItems ||
-            !response.orderData.pricing
-          ) {
-            console.warn("Invalid or missing orderData in success response:", response);
-            toast.error("Payment verification failed due to incomplete order details.");
-            navigate("/failed", {
-              state: {
-                errorCode: "ERR_MISSING_ORDER_DATA",
-                errorMessage: "Order data is missing or invalid for a successful payment.",
-              },
-            });
-            return;
-          }
-
+        if (response.orderId && typeof response.orderId === "string" && response.orderId.trim() !== "") {
           // Clear cart on successful payment
           handleClearCart();
 
@@ -90,14 +58,14 @@ export default function PaymentCallback() {
             state: { orderId: response.orderId, orderData: response.orderData },
           });
         } else {
-          console.warn("Payment failed with response:", response);
-          toast.error(response.message || "Payment failed. Please try again.");
+          console.warn("Invalid or missing orderId in response:", response);
+          toast.error("Payment failed. Please try again.");
           navigate("/failed", {
             state: {
               orderId: response.orderId || "unknown",
               orderData: response.orderData,
-              errorCode: "ERR_PAYMENT_FAILED",
-              errorMessage: response.message || "Payment was not successful.",
+              errorCode: "ERR_MISSING_ORDER_ID",
+              errorMessage: "Order ID is missing or invalid.",
             },
           });
         }
