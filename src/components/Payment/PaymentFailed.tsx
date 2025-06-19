@@ -32,7 +32,7 @@ export default function PaymentFailed({
   orderData: defaultOrderData,
 }: PaymentFailedProps) {
   const [showDetails, setShowDetails] = useState(false);
-  const [orderDetails, setOrderDetails] = useState<OrderData | null>(defaultOrderData || null);
+  const [orderData, setOrderData] = useState<OrderData | null>(defaultOrderData || null);
   const [orderNumber, setOrderNumber] = useState(defaultOrderNumber);
   const [amount, setAmount] = useState(defaultAmount);
   const [email, setEmail] = useState(defaultEmail);
@@ -51,13 +51,13 @@ export default function PaymentFailed({
     if (reference && !state?.orderData) {
       setIsLoading(true);
       getPaymentStatus(reference)
-        .then(({ orderId, orderDetails }) => {
+        .then(({ orderId, orderData }) => {
           setOrderNumber(orderId || defaultOrderNumber);
-          setOrderDetails(orderDetails || null);
-          setAmount(`$${orderDetails?.pricing.total || defaultAmount}`);
-          setEmail(orderDetails?.email || defaultEmail);
+          setOrderData(orderData || null);
+          setAmount(`$${orderData?.pricing.total || defaultAmount}`);
+          setEmail(orderData?.email || defaultEmail);
           setPaymentMethod(
-            orderDetails?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
+            orderData?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
           );
           setErrorCode(state?.errorCode || defaultErrorCode);
           setErrorMessage(state?.errorMessage || defaultErrorMessage);
@@ -72,7 +72,7 @@ export default function PaymentFailed({
         .finally(() => setIsLoading(false));
     } else if (state?.orderData || state?.errorCode) {
       setOrderNumber(state.orderId || defaultOrderNumber);
-      setOrderDetails(state.orderData || null);
+      setOrderData(state.orderData || null);
       setAmount(`$${state.orderData?.pricing.total || defaultAmount}`);
       setEmail(state.orderData?.email || defaultEmail);
       setPaymentMethod(
@@ -190,11 +190,11 @@ export default function PaymentFailed({
             </div>
           </div>
 
-          {orderDetails?.cartItems && (
+          {orderData?.cartItems && (
             <div className="mb-6">
               <h3 className="mb-3 text-sm font-medium text-gray-700">Attempted Items</h3>
               <ul className="space-y-4">
-                {orderDetails.cartItems.map((item) => (
+                {orderData.cartItems.map((item) => (
                   <li key={item.productId} className="flex items-center gap-4">
                     <ImageWithFallback
                       src={item.image}
@@ -214,29 +214,29 @@ export default function PaymentFailed({
             </div>
           )}
 
-          {orderDetails?.pricing && (
+          {orderData?.pricing && (
             <div className="mb-6">
               <h3 className="mb-3 text-sm font-medium text-gray-700">Payment Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium text-gray-800">${orderDetails.pricing.subtotal}</span>
+                  <span className="font-medium text-gray-800">${orderData.pricing.subtotal}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium text-gray-800">${orderDetails.pricing.tax}</span>
+                  <span className="font-medium text-gray-800">${orderData.pricing.tax}</span>
                 </div>
-                {orderDetails.pricing.discount !== "0.00" && (
+                {orderData.pricing.discount !== "0.00" && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Discount ({orderDetails.couponCode})</span>
+                    <span className="text-gray-600">Discount ({orderData.couponCode})</span>
                     <span className="font-medium text-green-600">
-                      -${orderDetails.pricing.discount}
+                      -${orderData.pricing.discount}
                     </span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="font-medium text-gray-800">Total Attempted</span>
-                  <span className="font-semibold text-gray-800">${orderDetails.pricing.total}</span>
+                  <span className="font-semibold text-gray-800">${orderData.pricing.total}</span>
                 </div>
               </div>
             </div>
