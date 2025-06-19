@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { getPaymentStatus } from "@/utils/orderApi";
+import { getPaymentStatus, PaymentStatusResponse } from "@/utils/orderApi";
 import { clearCart } from "@/redux/slices/cartSlice";
 import { clearSessionId } from "@/utils/session";
 
@@ -16,10 +16,8 @@ export default function PaymentCallback() {
 
   const handleClearCart = () => {
     try {
-      // Reset sessionId to clear server-side cart
       const newSessionId = clearSessionId();
       console.log("Session ID reset to:", newSessionId);
-      // Clear client-side Redux cart
       dispatch(clearCart());
       console.log("Cart cleared successfully");
     } catch (error: any) {
@@ -32,7 +30,7 @@ export default function PaymentCallback() {
     const verifyPayment = async () => {
       const reference = searchParams.get("reference");
       if (!reference) {
-        console.error("No reference provided in URL query");
+        console.error("No reference provided in URL query", { searchParams: Object.fromEntries(searchParams) });
         toast.error("Invalid payment reference");
         navigate("/failed", {
           state: {
@@ -47,8 +45,9 @@ export default function PaymentCallback() {
       console.log("Verifying payment with reference:", reference);
 
       try {
-        const response = await getPaymentStatus(reference);
+        const response: PaymentStatusResponse = await getPaymentStatus(reference);
         console.log("Payment Status Response:", JSON.stringify(response, null, 2));
+        console.log("Response message:", response.message);
 
         // Check orderId
         if (!response.orderId || typeof response.orderId !== "string" || response.orderId.trim() === "") {
@@ -63,20 +62,21 @@ export default function PaymentCallback() {
           return;
         }
 
-        if (response.status === "success") {
-          // Check orderDetails for success case
+        // Check for success based on message
+        if (response.message === "Payment confirmed and order placed") {
+          // Check orderData
           if (
-            !response.orderDetails ||
-            typeof response.orderDetails !== "object" ||
-            !response.orderDetails.cartItems ||
-            !response.orderDetails.pricing
+            !response.orderData ||
+            typeof response.orderData !== "object" ||
+            !response.orderData.cartItems ||
+            !response.orderData.pricing
           ) {
-            console.warn("Invalid or missing orderDetails in success response:", response);
+            console.warn("Invalid or missing orderData in success response:", response);
             toast.error("Payment verification failed due to incomplete order details.");
             navigate("/failed", {
               state: {
-                errorCode: "ERR_MISSING_ORDER_DETAILS",
-                errorMessage: "Order details are missing or invalid for a successful payment.",
+                errorCode: "ERR_MISSING_ORDER_DATA",
+                errorMessage: "Order data is missing or invalid for a successful payment.",
               },
             });
             return;
@@ -87,17 +87,17 @@ export default function PaymentCallback() {
 
           toast.success("Payment verified successfully!");
           navigate(`/${response.orderId}/success`, {
-            state: { orderId: response.orderId, orderData: response.orderDetails },
+            state: { orderId: response.orderId, orderData: response.orderData },
           });
         } else {
           console.warn("Payment failed with response:", response);
-          toast.error("Payment failed. Please try again.");
+          toast.error(response.message || "Payment failed. Please try again.");
           navigate("/failed", {
             state: {
-              orderId: response.orderId,
-              orderData: response.orderDetails,
+              orderId: response.orderId || "unknown",
+              orderData: response.orderData,
               errorCode: "ERR_PAYMENT_FAILED",
-              errorMessage: (response as any).message || "Payment was not successful.",
+              errorMessage: response.message || "Payment was not successful.",
             },
           });
         }
@@ -107,11 +107,12 @@ export default function PaymentCallback() {
           response: error.response?.data,
           status: error.response?.status,
         });
-        toast.error(error.response?.data?.message || "Failed to verify payment status.");
+        const errorMessage = error.response?.data?.message || "Failed to verify payment status.";
+        toast.error(errorMessage);
         navigate("/failed", {
           state: {
             errorCode: "ERR_PAYMENT_STATUS_FETCH",
-            errorMessage: error.response?.data?.message || "Unable to verify payment status.",
+            errorMessage,
           },
         });
       } finally {

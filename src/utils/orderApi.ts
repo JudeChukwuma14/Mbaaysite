@@ -44,10 +44,10 @@ interface CheckoutResponse {
   message?: string;
 }
 
-interface PaymentStatusResponse {
-  status: "success" | "failed";
+export interface PaymentStatusResponse {
+  message: string;
   orderId: string;
-  orderDetails?: OrderData;
+  orderData?: OrderData;
 }
 
 const api = axios.create({
