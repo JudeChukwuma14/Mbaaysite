@@ -21,8 +21,36 @@ export default function PaymentSuccess() {
   const [copied, setCopied] = useState(false);
   const [countdown, setCountdown] = useState(5);
 
-  // Fallback if state is missing
-  if (!orderId || !orderData) {
+  console.log("PaymentSuccess state:", {
+    orderId,
+    orderData: JSON.stringify(orderData, null, 2),
+  });
+
+  // Fallback if state or required data is missing
+  if (
+    !orderId ||
+    !orderData ||
+    !orderData.pricing ||
+    !orderData.pricing.total ||
+    !orderData.cartItems ||
+    orderData.cartItems.length === 0 ||
+    !orderData.first_name ||
+    !orderData.email ||
+    !orderData.address ||
+    !orderData.paymentOption
+  ) {
+    console.error("Invalid state in PaymentSuccess:", {
+      orderId,
+      hasOrderData: !!orderData,
+      hasPricing: !!orderData?.pricing,
+      hasTotal: !!orderData?.pricing?.total,
+      hasCartItems: !!orderData?.cartItems,
+      cartItemsLength: orderData?.cartItems?.length,
+      hasFirstName: !!orderData?.first_name,
+      hasEmail: !!orderData?.email,
+      hasAddress: !!orderData?.address,
+      hasPaymentOption: !!orderData?.paymentOption,
+    });
     return (
       <div className="container px-4 py-8 mx-auto text-center max-w-7xl">
         <h1 className="text-2xl font-bold text-red-600">Error</h1>
@@ -163,7 +191,7 @@ export default function PaymentSuccess() {
             <ul className="space-y-4">
               {cartItems.map((item) => (
                 <li key={item.productId} className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded" /> {/* Placeholder for ImageWithFallback */}
+                  <div className="w-12 h-12 bg-gray-200 rounded" />
                   <div>
                     <div className="text-sm font-medium text-gray-800">{item.name}</div>
                     <div className="text-sm text-gray-600">

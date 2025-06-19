@@ -1065,9 +1065,9 @@ const routesConfig: RouteObject[] = [
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
   // Payment 
-  { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
-  { path: "/failed", element: withSuspense(FaliedPayment) },
-  { path: "/payment_callback", element: withSuspense(PaymentCallback) },
+  { path: "/:sessionId/success", element: withSuspense(SuccessPayment), errorElement: <ErrorPage /> },
+  { path: "/failed", element: withSuspense(FaliedPayment), errorElement: <ErrorPage /> },
+  { path: "/payment_callback", element: withSuspense(PaymentCallback), errorElement: <ErrorPage /> },
 
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
