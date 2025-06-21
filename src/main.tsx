@@ -37,7 +37,7 @@ import { DarkModeProvider } from "./components/Context/DarkModeContext";
 import { I18nextProvider } from "react-i18next";
 import i18next from "./utils/i18n";
 import ErrorBoundary from "./components/Error/ErrorBoundary";
-
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>
