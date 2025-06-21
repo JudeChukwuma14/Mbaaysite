@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/community";
+const API_BASE_URL = "https://mbayy-be.vercel.app/api/v1/community";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

@@ -26,7 +26,6 @@
 
 
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import { mainRouter } from "./router/mainRouter";
 import { ToastContainer } from "react-toastify";

@@ -51,7 +51,7 @@ export interface PaymentStatusResponse {
 }
 
 const api = axios.create({
-  baseURL: "https://mbayy-be.onrender.com/api/v1/order",
+  baseURL: "https://mbayy-be.vercel.app/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
 
