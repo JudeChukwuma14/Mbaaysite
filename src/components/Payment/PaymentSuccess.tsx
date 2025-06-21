@@ -1,5 +1,5 @@
 // src/components/PaymentSuccess.tsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle, Download, Home, Copy } from "lucide-react";
@@ -19,7 +19,6 @@ export default function PaymentSuccess() {
   const { state } = location as { state: LocationState };
   const { orderId, orderData } = state || {};
   const [copied, setCopied] = useState(false);
-  const [countdown, setCountdown] = useState(5);
 
   console.log("PaymentSuccess state:", {
     orderId,
@@ -63,16 +62,6 @@ export default function PaymentSuccess() {
   }
 
   const { cartItems, pricing, first_name, last_name, email, address, paymentOption } = orderData;
-
-  // Countdown redirect
-  useEffect(() => {
-    if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      navigate("/");
-    }
-  }, [countdown, navigate]);
 
   // Copy order number
   const copyOrderNumber = () => {
@@ -276,9 +265,6 @@ export default function PaymentSuccess() {
               <Home className="w-4 h-4 mr-1" />
               Return to Home
             </Link>
-            <div className="text-sm text-gray-500">
-              Redirecting in <span className="font-medium">{countdown}s</span>
-            </div>
           </div>
         </div>
       </div>
