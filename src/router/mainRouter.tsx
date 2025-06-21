@@ -604,31 +604,25 @@ const WomenFashion = lazy(
 );
 
 // Furniture
-const BedroomFurniture = lazy(
+const Seating = lazy(
   () =>
-    import("@/components/AllCategory/Furniture/subcategory/BedroomFurniture")
+    import("@/components/AllCategory/Furniture/subcategory/Seating")
 );
-const ChairsStools = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/ChairsStools")
+const Table = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/Table")
 );
-const Dresser = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/Dresser")
+const Storage = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/Storage")
 );
-const LivingRoom = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/LivingRoom")
+const BedroomItem = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/BedroomItem")
 );
-const OfficeFurniture = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/OfficeFurniture")
+const DecorUtility = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/DecorUtility")
 );
-const OutdoorFurniture = lazy(
+const OutdoorPatio = lazy(
   () =>
-    import("@/components/AllCategory/Furniture/subcategory/OutdoorFurniture")
-);
-const SofasCouches = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/SofasCouches")
-);
-const TablesDesks = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/TablesDesks")
+    import("@/components/AllCategory/Furniture/subcategory/OutdoorPatio")
 );
 
 // Local Food
@@ -958,15 +952,12 @@ const routesConfig: RouteObject[] = [
       { path: "/TraditionalSweet", element: withSuspense(TraditionalSweet) },
 
       // Furniture Subcategory
-      { path: "/BedroomFurniture", element: withSuspense(BedroomFurniture) },
-      { path: "/ChairsStools", element: withSuspense(ChairsStools) },
-      { path: "/Dresser", element: withSuspense(Dresser) },
-      { path: "/LivingRoom", element: withSuspense(LivingRoom) },
-      { path: "/OfficeFurniture", element: withSuspense(OfficeFurniture) },
-      { path: "/OutdoorFurniture", element: withSuspense(OutdoorFurniture) },
-      { path: "/SofasCouches", element: withSuspense(SofasCouches) },
-      { path: "/TablesDesks", element: withSuspense(TablesDesks) },
-
+      { path: "/seating", element: withSuspense(Seating) },
+      { path: "/tables", element: withSuspense(Table) },
+      { path: "/storage", element: withSuspense(Storage) },
+      { path: "/bedroom-items", element: withSuspense(BedroomItem) },
+      { path: "/decor-utility", element: withSuspense(DecorUtility) },
+      { path: "/outdoor-patio", element: withSuspense(OutdoorPatio) },
       // Fashion Subcategory
       { path: "/Accessories", element: withSuspense(Accessories) },
       { path: "/EthnicWear", element: withSuspense(EthnicWear) },

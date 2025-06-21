@@ -16,7 +16,7 @@ interface Product {
     sub_category2?: string;
 }
 
-const Paintings = () => {
+const DecorUtility = () => {
     const { subcategory } = useParams<{ subcategory: string }>();
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState("");
@@ -31,17 +31,16 @@ const Paintings = () => {
 
                 // Define keywords for hair and scalp subcategories
                 const keywords = [
-                    "abstract & expressionist",
-                    "cultural & tribal art",
-                    "nature & landscape",
-                    "portraits & figurative",
+                    "room dividers",
+                    "wall shelves",
+                    "candle stands & artful lamps",
                 ];
                 const filtered = allProducts.filter((product: Product) => {
                     const category = product.category?.toLowerCase() || "";
                     const sub1 = product.sub_category?.toLowerCase() || "";
                     const sub2 = product.sub_category2?.toLowerCase() || "";
                     return (
-                        category === "art" &&
+                        category === "handmade furniture" &&
                         (keywords.includes(sub1) ||
                             keywords.includes(sub2) ||
                             sub1 === subcategory?.toLowerCase() ||
@@ -78,12 +77,12 @@ const Paintings = () => {
 
     return (
         <div className="px-8 py-6">
-            <h2 className="mb-6 text-2xl font-bold">Paintings</h2>
+            <h2 className="mb-6 text-2xl font-bold">Decor Utility</h2>
             {products.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
                     <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
                     <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-                        No Paintings Products Found
+                        No Decor Utility Products Found
                     </h2>
                     <p className="max-w-md mb-6 text-gray-500">
                         No products match your criteria. Browse our shop to find your favorite hair and scalp products!
@@ -120,4 +119,4 @@ const Paintings = () => {
     );
 };
 
-export default Paintings;
+export default DecorUtility;

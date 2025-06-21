@@ -95,7 +95,7 @@ const EmptyState: React.FC = () => (
   >
     <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
     <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-      No Furniture Products Found
+      No Handmade Furniture Products Found
     </h2>
     <p className="max-w-md mb-6 text-gray-600">
       No products are available in this category. Browse our shop to find your favorite products!
@@ -150,7 +150,7 @@ const Furniture: React.FC = () => {
 
         const filtered = allProducts.filter(
           (product: Product) =>
-            product.category?.toLowerCase() === "furniture"
+            product.category?.toLowerCase() === "handmade furniture"
         );
 
         setProducts(filtered);
@@ -204,7 +204,7 @@ const Furniture: React.FC = () => {
             Home
           </Link>
           <FaChevronRight className="text-xs" aria-hidden="true" />
-          <span className="font-medium text-gray-800">Furniture</span>
+          <span className="font-medium text-gray-800">Handmade Furniture</span>
         </motion.nav>
 
         {/* Subcategories */}
