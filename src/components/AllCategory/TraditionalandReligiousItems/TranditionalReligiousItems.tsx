@@ -37,9 +37,10 @@ const SUBCATEGORIES: Subcategory[] = [
   { image: "https://i.pinimg.com/736x/46/94/23/4694235eca57866d75b9b25ae21fdaf9.jpg", text: "Traditional & Ceremonial Clothing", link: "/ceremonial-clothing" },
   { image: "https://i.pinimg.com/736x/8d/e1/43/8de1430a5f272b49ae49c2040c1f1119.jpg", text: "Religious Jewelry & Adornments", link: "/religious-jewelry" },
   { image: "https://i.pinimg.com/736x/9f/85/8f/9f858fb085b9163e8764012727e480d6.jpg", text: "Altars & Shrines", link: "/altars-shrines" },
-  { image: "https://i.pinimg.com/736x/65/3c/6b/653c6ba3e812c1b7015ff472f71e440d.jpg", text: "Ceremonial & Ritual Tools", link: "/ritual-tools" },
+  { image: "https://i.pinimg.com/736x/65/3c/6b/653c6ba3e812c1b7015ff472f71e440d.jpg", text: "Ceremonial & Ritual Tools", link: "/ceremonial-ritual-tools" },
   { image: "https://i.pinimg.com/736x/56/cb/8a/56cb8a80deedea7ba5f3c87a7ba57d5f.jpg", text: "Spiritual Healing & Meditation Items", link: "/spiritual-healing" },
   { image: "https://i.pinimg.com/736x/1a/b7/21/1ab72197d48cd7e5469f2eeb1b80a9b8.jpg", text: "Cultural & Festive Items", link: "/cultural-festive" },
+    { image: "https://i.pinimg.com/736x/ec/2f/95/ec2f95ff9af7625d5fadd4ca39ce3826.jpg", text: "Ritual Tools", link: "/ritual-tools" },
 ];
 
 // Animation variants for containers

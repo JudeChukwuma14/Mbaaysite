@@ -30,10 +30,10 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-  { image: "https://i.pinimg.com/736x/1b/46/51/1b4651a63d04892434940d1a7fe1e5c4.jpg", text: "Vintage Jewelry", link: "/vintage-jewelrys" },
-  { image: "https://i.pinimg.com/736x/bb/b1/69/bbb1694f4176b6cc2af031b87ef24c45.jpg", text: "Religious & Spiritual Jewelry", link: "/religious-jewelry" },
-  { image: "https://i.pinimg.com/736x/b3/e6/4d/b3e64d880d83ac1032eb6f35295429c9.jpg", text: "Cultural Gemstones", link: "/cultural-gemstones" },
-  { image: "https://i.pinimg.com/736x/e9/ff/ab/e9ffab23a31618920c2117f2660dc2ef.jpg", text: "Festive & Ritual Jewelry", link: "/festive-jewelry" },
+  { image: "https://i.pinimg.com/736x/41/56/d1/4156d1c32c5533cbe220f5bd854710db.jpg", text: "Traditional Instruments", link: "/traditional-instruments" },
+  { image: "https://i.pinimg.com/736x/0f/c2/60/0fc260aad4c1863f9002ab7d81464103.jpg", text: "Beats & Audio Downloads", link: "/beats-downloads" },
+  { image: "https://i.pinimg.com/736x/05/eb/76/05eb762a97e52053bf082cfc12c62ec2.jpg", text: "Albums & EPs", link: "/albums-eps" },
+  { image: "https://i.pinimg.com/736x/0b/c4/12/0bc412c5af40c081f283c80fc0048918.jpg", text: "Live Performance Bookings", link: "/live-performances" },
 ];
 
 // Animation variants for containers
@@ -73,7 +73,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <p className="max-w-md mb-6 text-gray-600">{message}</p>
     <Link
       to="/shop"
-      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-300 bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
       aria-label="Continue shopping"
     >
       <FaShoppingCart aria-hidden="true" />
@@ -92,14 +92,14 @@ const EmptyState: React.FC = () => (
   >
     <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
     <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-      No Vintage & Antique Jewelry Products Found
+      No Music Products Found
     </h2>
     <p className="max-w-md mb-6 text-gray-600">
       No products are available in this category. Browse our shop to find your favorite products!
     </p>
     <Link
       to="/shop"
-      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+      className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-300 bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
       aria-label="Continue shopping"
     >
       <FaShoppingCart aria-hidden="true" />
@@ -130,7 +130,7 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
   </motion.div>
 );
 
-const VintageJewelry: React.FC = () => {
+const Music: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -146,14 +146,13 @@ const VintageJewelry: React.FC = () => {
           : result.products || [];
 
         const filtered = allProducts.filter(
-          (product: Product) =>
-            product.category?.toLowerCase() === "vintage & antique jewelry"
+          (product: Product) => product.category?.toLowerCase() === "music"
         );
 
         setProducts(filtered);
       } catch (err) {
         console.error("Error fetching products:", err);
-        setError("Failed to fetch vintage jewelry. Please try again later.");
+        setError("Failed to fetch music products. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -202,7 +201,7 @@ const VintageJewelry: React.FC = () => {
             Home
           </Link>
           <FaChevronRight className="text-xs" aria-hidden="true" />
-          <span className="font-medium text-gray-800">Vintage & Antique Jewelry</span>
+          <span className="font-medium text-gray-800">Music</span>
         </motion.nav>
 
         {/* Subcategories */}
@@ -265,4 +264,4 @@ const VintageJewelry: React.FC = () => {
   );
 };
 
-export default VintageJewelry;
+export default Music;

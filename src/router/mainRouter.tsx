@@ -729,6 +729,99 @@ const TraditionalSweet = lazy(
     )
 );
 
+// vintage Jewerly 
+const FestiveRitualJewelry = lazy(
+  () =>
+    import(
+      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/FestiveRitualJewelry"
+    )
+);
+
+const VintageJewelrys = lazy(
+  () =>
+    import(
+      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/VintageJewelry"
+    )
+);
+const CulturalGemstones = lazy(
+  () =>
+    import(
+      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/CulturalGemstones"
+    )
+);
+const ReligiousSpiritualJewelry = lazy(
+  () =>
+    import(
+      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/ReligiousSpiritualJewelry"
+    )
+);
+
+// TraditionalReligouseitem 
+const TraditionalRi =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/TranditionalReligiousItems"
+    )
+);
+const As =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/As"
+    )
+);
+
+const Cfi =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Cfi"
+    )
+);
+
+const Crt =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Crt"
+    )
+);
+
+const Ras =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/RAS"
+    )
+);
+
+const Rja =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rja"
+    )
+);
+
+const Rt =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rt"
+    )
+);
+
+const Shmi =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Shmi"
+    )
+);
+
+const Tcc =lazy(
+  () =>
+    import(
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Tcc"
+    )
+);
+
+
+
+
 
 // PAYMENT
 const SuccessPayment = lazy(() => import("@/components/Payment/PaymentSuccess"))
@@ -773,6 +866,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       { path: "/art", element: withSuspense(Art) },
+      { path: "/traditional-items", element: withSuspense(TraditionalRi) },
 
       // Art Subcategory Page
       {path: "/paintings", element: withSuspense(Paintings) },
@@ -886,6 +980,12 @@ const routesConfig: RouteObject[] = [
       { path: "/Vintage-Religious", element: withSuspense(VintageReligious) },
       { path: "/Vintage-Storage", element: withSuspense(VintageStorage) },
 
+      // Vintage Jewelry
+
+      {path: "/festive-jewelry", element: withSuspense(FestiveRitualJewelry)},
+      {path: "/Vintage-jewelrys", element: withSuspense(VintageJewelrys)},
+      {path: "/cultural-gemstones", element: withSuspense(CulturalGemstones)},
+      {path: "/religious-jewelry", element: withSuspense(ReligiousSpiritualJewelry)},
       // Plant Seed
 
       { path: "/plant", element: withSuspense(Plant) },
@@ -958,6 +1058,18 @@ const routesConfig: RouteObject[] = [
       { path: "/bedroom-items", element: withSuspense(BedroomItem) },
       { path: "/decor-utility", element: withSuspense(DecorUtility) },
       { path: "/outdoor-patio", element: withSuspense(OutdoorPatio) },
+
+      // TRI
+      { path: "/religious-artifacts", element: withSuspense(Ras) },
+      { path: "/ceremonial-clothing", element: withSuspense(Tcc) },
+      { path: "/religious-jewelry", element: withSuspense(Rja) },
+      { path: "/altars-shrines", element: withSuspense(As) },
+      { path: "/ceremonial-ritual-tools", element: withSuspense(Crt) },
+      { path: "/Spiritual Healing & Meditation Items", element: withSuspense(Shmi) },
+      { path: "/cultural-festive", element: withSuspense(Cfi) },
+      { path: "/ritual-tools", element: withSuspense(Rt) },
+
+            
       // Fashion Subcategory
       { path: "/Accessories", element: withSuspense(Accessories) },
       { path: "/EthnicWear", element: withSuspense(EthnicWear) },
