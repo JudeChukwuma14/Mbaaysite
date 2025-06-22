@@ -30,7 +30,7 @@ const craftCategories = [
   "Art and Sculpture",
   "Beauty and Wellness",
   "Books and Poetry",
-  "Fashion",
+  "Fashion Clothing and Fabrics",
   "Jewelry and Gemstones",
   "Vintage and Antique Jewelry",
   "Home Décor and Accessories",

@@ -98,8 +98,8 @@ const Fashion: React.FC = () => {
   const fashionCategories: Subcategory[] = [
     {
       image: Women,
-      text: "Women's Fashion",
-      link: "/WomenFashion",
+      text: "Traditional Clothing",
+      link: "/fashion-traditional-clothing",
       description: "Trendy styles for every occasion",
     },
     {
