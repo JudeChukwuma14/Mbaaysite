@@ -784,10 +784,10 @@ const Crt =lazy(
     )
 );
 
-const Ras =lazy(
+const ReligiousAS =lazy(
   () =>
     import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/RAS"
+      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/ReligiousAS"
     )
 );
 
@@ -1060,7 +1060,7 @@ const routesConfig: RouteObject[] = [
       { path: "/outdoor-patio", element: withSuspense(OutdoorPatio) },
 
       // TRI
-      { path: "/religious-artifacts", element: withSuspense(Ras) },
+      { path: "/religious-artifacts", element: withSuspense(ReligiousAS) },
       { path: "/ceremonial-clothing", element: withSuspense(Tcc) },
       { path: "/religious-jewelry", element: withSuspense(Rja) },
       { path: "/altars-shrines", element: withSuspense(As) },

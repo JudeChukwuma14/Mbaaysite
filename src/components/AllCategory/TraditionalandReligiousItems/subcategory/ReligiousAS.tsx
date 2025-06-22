@@ -17,7 +17,7 @@ interface Product {
     sub_category2?: string;
 }
 
-const Ras = () => {
+const ReligiousAS = () => {
     const { subcategory } = useParams<{ subcategory: string }>();
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState("");
@@ -125,4 +125,4 @@ const Ras = () => {
     );
 };
 
-export default Ras;
+export default ReligiousAS;
