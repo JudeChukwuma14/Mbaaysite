@@ -72,7 +72,7 @@ const Cart: React.FC = () => {
       await removeFromCart(sessionId, itemId);
       dispatch(removeItem(itemId));
       const removedItem = cartItems.find(item => item.id === itemId);
-      toast.success(`${removedItem ? removedItem.name : "Item"} removed from cart!`);
+      toast.success(`₦{removedItem ? removedItem.name : "Item"} removed from cart!`);
     } catch (error) {
       toast.error("Failed to remove item. Please try again.");
     }
@@ -160,7 +160,7 @@ const Cart: React.FC = () => {
                     />
                     <span className="truncate">{item.name}</span>
                   </td>
-                  <td className="px-4 py-2">${item.price}</td>
+                  <td className="px-4 py-2">₦{item.price}</td>
                   <td className="px-4 py-2">
                     <motion.input
                       type="number"
@@ -171,7 +171,7 @@ const Cart: React.FC = () => {
                       whileFocus={{ scale: 1.1 }}
                     />
                   </td>
-                  <td className="px-4 py-2">${item.price * item.quantity}</td>
+                  <td className="px-4 py-2">₦{item.price * item.quantity}</td>
                   <td className="px-4 py-2">
                     <motion.button
                       onClick={() => handleRemoveItem(item.id)}
@@ -250,15 +250,15 @@ const Cart: React.FC = () => {
         </motion.h2>
         <div className="flex justify-between mb-2">
           <span>Subtotal:</span>
-          <span>${subtotal}</span>
+          <span>₦{subtotal}</span>
         </div>
         <div className="flex justify-between mb-2">
           <span>Shipping:</span>
-          <span>${shipping}</span>
+          <span>₦{shipping}</span>
         </div>
         <div className="flex justify-between font-bold">
           <span>Total:</span>
-          <span>${total}</span>
+          <span>₦{total}</span>
         </div>
         <Link to="/checkout">
           <button

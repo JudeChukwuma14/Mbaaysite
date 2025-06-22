@@ -5,13 +5,15 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { addItem } from "@/redux/slices/cartSlice";
+import { addItem, updateQuantity } from "@/redux/slices/cartSlice";
 import { addWishlistItem } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
 import { getProductsById } from "@/utils/productApi";
 import { Heart, ShoppingCart, Minus, Plus, Star, ChevronRight, Share2 } from "lucide-react";
 import Spinner from "@/components/Common/Spinner";
 import { convertPrice } from "@/utils/currencyCoverter";
+import { getSessionId } from "@/utils/session";
+import { addToCart, updateCartQuantity } from "@/utils/cartApi";
 
 
 interface Product {
@@ -112,17 +114,26 @@ const ProductDetails: React.FC = () => {
       </div>
     );
 
-  const handleAddToCart = () => {
-    dispatch(
-      addItem({
-        id: product._id,
-        name: product.name,
-        price: product.price,
-        quantity,
-        image: product.images[0] || product.poster,
-      })
-    );
-    toast.success(`${product.name} added to cart!`);
+  const handleAddToCart = async () => {
+    const sessionId = getSessionId()
+    try {
+      await addToCart(sessionId, product._id, 1)
+      dispatch(
+        addItem({
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          quantity,
+          image: product.images[0] || product.poster,
+        })
+      );
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      toast.error((error as Error)?.message || String(error), {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
   };
 
   const handleAddToWishlist = () => {
@@ -150,10 +161,24 @@ const ProductDetails: React.FC = () => {
     ...(product.product_video && getYouTubeVideoId(product.product_video) ? [product.product_video] : []),
   ];
 
-  const handleQuantityChange = (action: "decrease" | "increase") => {
-    if (action === "decrease" && quantity > 1) setQuantity(quantity - 1);
-    if (action === "increase" && quantity < product.inventory) setQuantity(quantity + 1);
-  };
+ const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+  if (isNaN(newQuantity) || newQuantity < 1) {
+    toast.error("Please enter a valid quantity (1 or more).");
+    return;
+  }
+  if (newQuantity > product.inventory) {
+    toast.error(`Cannot exceed available stock (${product.inventory}).`);
+    return;
+  }
+  const sessionId = getSessionId();
+  try {
+    await updateCartQuantity(sessionId, itemId, newQuantity);
+    dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+    setQuantity(newQuantity);
+  } catch (error) {
+    toast.error("Failed to update quantity. Please try again.");
+  }
+};
 
   const isVideo = selectedMedia?.includes("youtube.com");
   const isInStock = product.inventory > 0;
@@ -218,9 +243,8 @@ const ProductDetails: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedMedia(media)}
-                  className={`aspect-square overflow-hidden rounded-md border ${
-                    selectedMedia === media ? "border-2 border-orange-600" : "border-gray-200 hover:border-gray-300"
-                  } transition-all`}
+                  className={`aspect-square overflow-hidden rounded-md border ${selectedMedia === media ? "border-2 border-orange-600" : "border-gray-200 hover:border-gray-300"
+                    } transition-all`}
                 >
                   {media.includes("youtube.com") ? (
                     <img
@@ -295,14 +319,13 @@ const ProductDetails: React.FC = () => {
               <div className="flex items-center">
                 <button
                   type="button"
-                  onClick={() => handleQuantityChange("decrease")}
+                  onClick={() => handleUpdateQuantity(product._id, quantity - 1)}
                   disabled={quantity <= 1}
-                  className={`rounded-l-md p-2 border border-r-0 border-gray-300 ${
-                    quantity <= 1 ? "bg-gray-100 text-gray-400" : "bg-white text-gray-600 hover:bg-gray-50"
-                  }`}
+                  className={`rounded-l-md p-2 border border-r-0 border-gray-300 ${quantity <= 1 ? "bg-gray-100 text-gray-400" : "bg-white text-gray-600 hover:bg-gray-50"}`}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
+
                 <input
                   type="text"
                   id="quantity"
@@ -312,13 +335,9 @@ const ProductDetails: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => handleQuantityChange("increase")}
+                  onClick={() => handleUpdateQuantity(product._id, quantity + 1)}
                   disabled={quantity >= product.inventory}
-                  className={`rounded-r-md p-2 border border-l-0 border-gray-300 ${
-                    quantity >= product.inventory
-                      ? "bg-gray-100 text-gray-400"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
-                  }`}
+                  className={`rounded-r-md p-2 border border-l-0 border-gray-300 ${quantity >= product.inventory ? "bg-gray-100 text-gray-400" : "bg-white text-gray-600 hover:bg-gray-50"}`}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -330,11 +349,10 @@ const ProductDetails: React.FC = () => {
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!isInStock}
-                className={`flex-1 flex items-center justify-center px-6 py-3 rounded-md text-base font-medium text-white ${
-                  isInStock
-                    ? "bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                    : "bg-gray-400 cursor-not-allowed"
-                }`}
+                className={`flex-1 flex items-center justify-center px-6 py-3 rounded-md text-base font-medium text-white ${isInStock
+                  ? "bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                  : "bg-gray-400 cursor-not-allowed"
+                  }`}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
                 Add to Cart
@@ -358,21 +376,19 @@ const ProductDetails: React.FC = () => {
             <div className="pt-6 mt-10 border-t border-gray-200">
               <div className="flex border-b border-gray-200">
                 <button
-                  className={`pb-4 px-1 ${
-                    activeTab === "description"
-                      ? "border-b-2 border-orange-600 text-orange-600"
-                      : "text-gray-500 hover:text-gray-700"
-                  } font-medium text-sm`}
+                  className={`pb-4 px-1 ${activeTab === "description"
+                    ? "border-b-2 border-orange-600 text-orange-600"
+                    : "text-gray-500 hover:text-gray-700"
+                    } font-medium text-sm`}
                   onClick={() => setActiveTab("description")}
                 >
                   Description
                 </button>
                 <button
-                  className={`ml-8 pb-4 px-1 ${
-                    activeTab === "reviews"
-                      ? "border-b-2 border-orange-600 text-orange-600"
-                      : "text-gray-500 hover:text-gray-700"
-                  } font-medium text-sm`}
+                  className={`ml-8 pb-4 px-1 ${activeTab === "reviews"
+                    ? "border-b-2 border-orange-600 text-orange-600"
+                    : "text-gray-500 hover:text-gray-700"
+                    } font-medium text-sm`}
                   onClick={() => setActiveTab("reviews")}
                 >
                   Reviews (150)

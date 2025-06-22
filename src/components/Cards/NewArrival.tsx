@@ -1,6 +1,4 @@
-"use client";
 
-import type React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { addItem } from "@/redux/slices/cartSlice";
@@ -48,7 +46,10 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
       );
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
-
+      toast.error((error as Error)?.message || String(error), {
+        position: "top-right",
+        autoClose: 4000,
+      });
     }
   };
 
