@@ -58,7 +58,11 @@ export const CreateNewPassword = async (
   newPassword: string
 ) => {
   try {
-    const response = await api.post("/resetpassword", { email,otp, newPassword });
+    const response = await api.post("/resetpassword", {
+      email,
+      otp,
+      newPassword,
+    });
     return response.data;
   } catch (error: any) {
     console.error("Reset Password Error:", error.response?.data || error);

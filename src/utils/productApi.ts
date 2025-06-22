@@ -19,22 +19,21 @@ export const getAllProduct = async () => {
 };
 
 export const searchProducts = async (word: string) => {
-    try {
-      const response = await api.get("/search", { params: { query: word } });
-      console.log("Searching.....",response.data)
-      return response.data; // Gives back the matching products
-    } catch (error) {
-      console.log("Search failed:", error);
-      throw new Error("Couldn’t find products");
-    }
-  };
-
-
-  export const getProductsById = async(productId:string)=>{
-    try {
-      const response = await api.get(`/${productId}`)
-      return response.data 
-    } catch (error) {
-      console.log(error);
-    }
+  try {
+    const response = await api.get("/search", { params: { query: word } });
+    console.log("Searching.....", response.data);
+    return response.data; // Gives back the matching products
+  } catch (error) {
+    console.log("Search failed:", error);
+    throw new Error("Couldn’t find products");
   }
+};
+
+export const getProductsById = async (productId: string) => {
+  try {
+    const response = await api.get(`/${productId}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
