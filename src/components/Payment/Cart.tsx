@@ -72,7 +72,7 @@ const Cart: React.FC = () => {
       await removeFromCart(sessionId, itemId);
       dispatch(removeItem(itemId));
       const removedItem = cartItems.find(item => item.id === itemId);
-      toast.success(`₦{removedItem ? removedItem.name : "Item"} removed from cart!`);
+      toast.success(`${removedItem ? removedItem.name : "Item"} removed from cart!`);
     } catch (error) {
       toast.error("Failed to remove item. Please try again.");
     }
