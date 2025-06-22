@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CheckCircle, Download, Home, Copy } from "lucide-react";
 import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import { OrderData } from "@/utils/orderApi";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
@@ -73,46 +74,140 @@ export default function PaymentSuccess() {
   // Generate and download PDF
   const downloadReceipt = () => {
     const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text(`Order Receipt - Order ID: ${orderId}`, 20, 20);
-    doc.setFontSize(12);
-    doc.text(`Customer: ${first_name} ${last_name}`, 20, 30);
-    doc.text(`Email: ${email}`, 20, 40);
-    doc.text(`Address: ${address}`, 20, 50);
-    doc.text(`Payment Option: ${paymentOption}`, 20, 60);
-    doc.text("Items:", 20, 70);
 
-    let yPos = 80;
-    cartItems.forEach((item, index) => {
-      doc.text(
-        `${index + 1}. ${item.name} (x${item.quantity}) - $${(item.price * item.quantity).toFixed(2)}`,
-        20,
-        yPos
-      );
-      yPos += 10;
+    // Company Details
+    const companyName = "Mbaay";
+    const companyAddress = "123 Mbaay Street, Lagos, Nigeria";
+    const companyEmail = "support@mbaay.com";
+    const companyPhone = "+234 123 456 7890";
+    const logoUrl = "https://res.cloudinary.com/dw3mr6jpx/image/upload/v1750550594/MBLogo_anmbkb.png";
+
+    // Header: Logo and Company Details
+    try {
+      doc.addImage(logoUrl, "PNG", 20, 10, 40, 40);
+    } catch (error) {
+      console.warn("Failed to load logo:", error);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(51, 51, 51);
+      doc.text(companyName, 20, 20);
+    }
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(107, 114, 128);
+    doc.text(companyAddress, 70, 20);
+    doc.text(`Email: ${companyEmail}`, 70, 25);
+    doc.text(`Phone: ${companyPhone}`, 70, 30);
+
+    // Receipt Title and Order Info
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(234, 88, 12);
+    doc.text("Order Receipt", 20, 55);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(51, 51, 51);
+    doc.text(`Order ID: ${orderId}`, 20, 65);
+    doc.text(`Date: ${new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })}`, 20, 70);
+    doc.text(`Customer: ${first_name} ${last_name}`, 20, 75);
+    doc.text(`Email: ${email}`, 20, 80);
+    doc.text(`Address: ${address}`, 20, 85);
+    doc.text(`Payment Method: ${paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}`, 20, 90);
+
+    // Items Table
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(51, 51, 51);
+    doc.text("Items Purchased", 20, 100);
+
+    const tableData = cartItems.map((item, index) => [
+      (index + 1).toString(),
+      item.name,
+      item.quantity.toString(),
+      `₦${item.price.toFixed(2)}`,
+      `₦${(item.price * item.quantity).toFixed(2)}`,
+    ]);
+
+    (doc as any).autoTable({
+      startY: 105,
+      head: [["#", "Item", "Qty", "Unit Price", "Total"]],
+      body: tableData,
+      styles: {
+        font: "helvetica",
+        fontSize: 10,
+        textColor: [51, 51, 51],
+        lineColor: [209, 213, 219],
+        lineWidth: 0.1,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [234, 88, 12],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      alternateRowStyles: {
+        fillColor: [245, 245, 245],
+      },
+      margin: { left: 20, right: 20 },
+      columnStyles: {
+        0: { cellWidth: 10 },
+        1: { cellWidth: "auto" },
+        2: { cellWidth: 20 },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 30 },
+      },
     });
 
-    yPos += 10;
-    doc.text(`Subtotal: $${pricing.subtotal}`, 20, yPos);
-    doc.text(`Tax: $${pricing.tax}`, 20, yPos + 10);
-    doc.text(`Discount: -$${pricing.discount}`, 20, yPos + 20);
-    doc.text(`Commission: $${pricing.commission}`, 20, yPos + 30);
-    doc.text(`Total: $${pricing.total}`, 20, yPos + 40);
+    // Payment Summary
+    const finalY = (doc as any).lastAutoTable.finalY + 10;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(51, 51, 51);
+    doc.text("Payment Summary", 20, finalY);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.text(`Subtotal: ₦${pricing.subtotal}`, 140, finalY + 10, { align: "right" });
+    doc.text(`Tax: ₦${pricing.tax}`, 140, finalY + 15, { align: "right" });
+    if (pricing.discount !== "0.00") {
+      doc.text(`Discount: -₦${pricing.discount}`, 140, finalY + 20, { align: "right" });
+    }
+    doc.text(`Commission: ₦${pricing.commission}`, 140, finalY + 25, { align: "right" });
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(234, 88, 12);
+    doc.text(`Total: ₦${pricing.total}`, 140, finalY + 30, { align: "right" });
+
+    doc.setDrawColor(234, 88, 12);
+    doc.line(20, finalY + 28, 190, finalY + 28);
+
+    // Footer
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(107, 114, 128);
+    const footerY = doc.internal.pageSize.height - 20;
+    doc.text("Thank you for shopping with Mbaay!", 105, footerY, { align: "center" });
+    doc.text("For support, contact us at support@mbaay.com", 105, footerY + 5, { align: "center" });
 
     doc.save(`order_${orderId}_receipt.pdf`);
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-green-50 to-white">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-orange-50 to-white">
       <div className="w-full max-w-md overflow-hidden bg-white shadow-xl rounded-2xl">
-        <div className="p-6 text-center bg-green-500">
+        <div className="p-6 text-center bg-orange-600">
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 100, delay: 0.2 }}
             className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-white rounded-full"
           >
-            <CheckCircle className="w-10 h-10 text-green-500" />
+            <CheckCircle className="w-10 h-10 text-orange-600" />
           </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 10 }}
@@ -126,7 +221,7 @@ export default function PaymentSuccess() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="mt-1 text-green-100"
+            className="mt-1 text-orange-100"
           >
             Your order has been processed successfully
           </motion.p>
@@ -151,7 +246,7 @@ export default function PaymentSuccess() {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <div className="mb-1 text-sm text-gray-500">Amount Paid</div>
-              <div className="text-lg font-semibold text-gray-800">${pricing.total}</div>
+              <div className="text-lg font-semibold text-gray-800">₦{pricing.total}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Date</div>
@@ -184,7 +279,7 @@ export default function PaymentSuccess() {
                   <div>
                     <div className="text-sm font-medium text-gray-800">{item.name}</div>
                     <div className="text-sm text-gray-600">
-                      ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
+                      ₦{item.price.toFixed(2)} x {item.quantity} = ₦{(item.price * item.quantity).toFixed(2)}
                     </div>
                   </div>
                 </li>
@@ -197,25 +292,25 @@ export default function PaymentSuccess() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium text-gray-800">${pricing.subtotal}</span>
+                <span className="font-medium text-gray-800">₦{pricing.subtotal}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax</span>
-                <span className="font-medium text-gray-800">${pricing.tax}</span>
+                <span className="font-medium text-gray-800">₦{pricing.tax}</span>
               </div>
               {pricing.discount !== "0.00" && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Discount</span>
-                  <span className="font-medium text-green-600">-${pricing.discount}</span>
+                  <span className="font-medium text-orange-600">-₦{pricing.discount}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span className="text-gray-600">Mbaay Commission</span>
-                <span className="font-medium text-gray-800">${pricing.commission}</span>
+                <span className="font-medium text-gray-800">₦{pricing.commission}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800">Total Paid</span>
-                <span className="font-semibold text-gray-800">${pricing.total}</span>
+                <span className="font-semibold text-orange-600">₦{pricing.total}</span>
               </div>
             </div>
           </div>
@@ -240,7 +335,7 @@ export default function PaymentSuccess() {
             >
               <Link
                 to={`/order-details/${orderId}`}
-                className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-white transition-colors bg-green-500 rounded-lg hover:bg-green-600"
+                className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-white transition-colors bg-orange-600 rounded-lg hover:bg-orange-700"
               >
                 View Order Details
               </Link>
@@ -277,7 +372,7 @@ export default function PaymentSuccess() {
       >
         <p>
           Need help with your order?{" "}
-          <Link to="/support" className="text-green-600 transition-colors hover:text-green-700">
+          <Link to="/support" className="text-orange-600 transition-colors hover:text-orange-700">
             Contact Support
           </Link>
         </p>
