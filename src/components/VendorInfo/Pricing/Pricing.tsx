@@ -46,7 +46,7 @@ export default function UpgradePage() {
     "Plant and Seeds",
     "Spices, Condiments, and Seasonings",
     "Local & Traditional Foods",
-    "Fashion Clothing & Fabrics",
+    "Fashion Clothing and Fabrics",
     "Art & Sculptures",
     "Handmade Furniture",
     "Traditional Musical Instruments (Religious & Ceremonial)",

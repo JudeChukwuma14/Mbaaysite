@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, type ChangeEvent, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
