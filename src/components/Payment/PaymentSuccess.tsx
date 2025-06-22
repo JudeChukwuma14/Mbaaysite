@@ -8,6 +8,7 @@ import "jspdf-autotable";
 import { OrderData } from "@/utils/orderApi";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
+import ImageWithFallback from "../Reuseable/ImageWithFallback";
 
 interface LocationState {
   orderId: string;
@@ -110,15 +111,23 @@ export default function PaymentSuccess() {
     doc.setFontSize(10);
     doc.setTextColor(51, 51, 51);
     doc.text(`Order ID: ${orderId}`, 20, 65);
-    doc.text(`Date: ${new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })}`, 20, 70);
+    doc.text(
+      `Date: ${new Date().toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })}`,
+      20,
+      70
+    );
     doc.text(`Customer: ${first_name} ${last_name}`, 20, 75);
     doc.text(`Email: ${email}`, 20, 80);
     doc.text(`Address: ${address}`, 20, 85);
-    doc.text(`Payment Method: ${paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}`, 20, 90);
+    doc.text(
+      `Payment Method: ${paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}`,
+      20,
+      90
+    );
 
     // Items Table
     doc.setFont("helvetica", "bold");
@@ -134,8 +143,13 @@ export default function PaymentSuccess() {
       `₦${(item.price * item.quantity).toFixed(2)}`,
     ]);
 
+    // Calculate table height to position images correctly
+    const rowHeight = 10; // Adjust if images misalign
+    let currentY = 105;
+
+    // Render table
     (doc as any).autoTable({
-      startY: 105,
+      startY: currentY,
       head: [["#", "Item", "Qty", "Unit Price", "Total"]],
       body: tableData,
       styles: {
@@ -154,7 +168,7 @@ export default function PaymentSuccess() {
       alternateRowStyles: {
         fillColor: [245, 245, 245],
       },
-      margin: { left: 20, right: 20 },
+      margin: { left: 45, right: 20 },
       columnStyles: {
         0: { cellWidth: 10 },
         1: { cellWidth: "auto" },
@@ -162,6 +176,28 @@ export default function PaymentSuccess() {
         3: { cellWidth: 30 },
         4: { cellWidth: 30 },
       },
+    });
+
+    // Add images aligned with table rows
+    currentY = 105 + rowHeight;
+    cartItems.forEach((item, index) => {
+      if (item.image && item.image.trim()) {
+        try {
+          doc.addImage(item.image, "JPEG", 20, currentY + index * rowHeight, 12, 12);
+        } catch (error) {
+          console.warn(`Failed to load JPEG image for ${item.name}:`, error);
+          try {
+            doc.addImage(item.image, "PNG", 20, currentY + index * rowHeight, 12, 12);
+          } catch (pngError) {
+            console.warn(`Failed to load PNG image for ${item.name}:`, pngError);
+            doc.setFillColor(200, 200, 200);
+            doc.rect(20, currentY + index * rowHeight, 12, 12, "F");
+          }
+        }
+      } else {
+        doc.setFillColor(200, 200, 200);
+        doc.rect(20, currentY + index * rowHeight, 12, 12, "F");
+      }
     });
 
     // Payment Summary
@@ -275,7 +311,16 @@ export default function PaymentSuccess() {
             <ul className="space-y-4">
               {cartItems.map((item) => (
                 <li key={item.productId} className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded" />
+                  {item.image && item.image.trim() ? (
+                    <ImageWithFallback
+                      src={item.image}
+                      alt={item.name}
+                      fallbackSrc="https://via.placeholder.com/48"
+                      className="object-cover w-12 h-12 rounded"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-gray-200 rounded" />
+                  )}
                   <div>
                     <div className="text-sm font-medium text-gray-800">{item.name}</div>
                     <div className="text-sm text-gray-600">
