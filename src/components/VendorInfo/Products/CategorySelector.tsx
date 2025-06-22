@@ -1154,124 +1154,70 @@ export default function CategorySelector({
       name: "Fashion Clothing and Fabrics",
       subCategories: [
         {
-          name: "Men's Traditional Wear",
-          subSubCategories: [
-            { name: "Dashikis" },
-            { name: "Kimonos" },
-            { name: "Sherwanis" },
-            { name: "Boubous" },
-            { name: "Kente Cloth" },
-          ],
-        },
-        {
-          name: "Women's Traditional Wear",
-          subSubCategories: [
-            { name: "kaftans" },
-            { name: "Kanga" },
-            { name: "Sari" },
-            { name: "Abaya" },
-            { name: "Gele" },
-            { name: "Kimono" },
-          ],
-        },
-        {
-          name: "Children's Traditional Wear",
-          subSubCategories: [
-            { name: "Mini Dashikis" },
-            { name: "Cheongsams" },
-            { name: "Cultural Dresses" },
-          ],
-        },
-        {
-          name: "Unisex Traditional Clothing",
-          subSubCategories: [
-            { name: "Ponchos" },
-            { name: "Sarongs" },
-            { name: "Robes" },
-            { name: "Caftans" },
-          ],
-        },
-        {
-          name: "Contemporary African Fashion",
+          name: "Traditional Clothing ",
           subSubCategories: [
             {
-              name: "Ankara Dresses",
+              name: "Men’s Traditional Wear ( e.g., Dashiki, Agbada, Buba, Sokoto, Boubous, Sherwanis, Kimono Kente Cloth)",
             },
-            { name: "Kente-inspired Styles" },
-            { name: "Batik Prints Designs" },
+            {
+              name: "Women’s Traditional Wear ( e.g., Kaftans, Kanga, Sari, Abaya, Gele, Kimono )",
+            },
+            {
+              name: "Children’s Traditional Wear ( e.g., Dress, Mini Dashikis, Cheongsam, Cultural Dresses )",
+            },
+            {
+              name: "Unisex Traditional Clothing ( e.g., Sarongs, Robes, Ponchos, Caftans )",
+            },
           ],
         },
         {
-          name: "Ethnic-Inspired Urban Wear",
+          name: "Modern Clothing with Traditional Influence",
           subSubCategories: [
             {
-              name: "Kimonos with Modern Cuts",
+              name: "Contemporary African Fashion ( e.g., Ankara Dresses, Adire, Batik Print Designs, Kente-inspired Styles, Dashiki ) ",
             },
-            { name: "Fusion Kurtas" },
-            { name: "Maasai Beadwork Clothing" },
+            {
+              name: "Ethnic-Inspired Urban Wear ( e.g., Kimonos with Modern, Fusion Kurtas, Maasai Beadwork Clothing )",
+            },
+            {
+              name: "Fusion Clothing ( e.g., Indo-Western Outfits, Afro-Western Styles ) ",
+            },
+            {
+              name: "Custom-Made Ethnic Fashion ( e.g., Tailored Kitenge, Custom Embroidered Kaftans )",
+            },
           ],
         },
         {
-          name: "Fusion Clothing",
+          name: "Footwear & Shoes",
           subSubCategories: [
-            { name: "Indo-Western Outfits" },
-            { name: "Afro-Western Styles" },
-          ],
-        },
-        {
-          name: "Custom-Made Ethnic fashion",
-          subSubCategories: [
-            { name: "Tailored Kitenge" },
-            { name: "Custom Embroidered Kaftans" },
-          ],
-        },
-        {
-          name: "Traditional Shoes & Sandals",
-          subSubCategories: [
-            { name: "Maasai" },
-            { name: "Sandals" },
-            { name: "Babouches" },
-            { name: "Mojaris" },
-            { name: "Espadrilles" },
-          ],
-        },
-        {
-          name: "Leather & Handmade Shoes",
-          subSubCategories: [
-            { name: "Handcrafted Leather Shoes" },
-            { name: "Moccasins" },
-            { name: "Traditonal Slippers" },
-          ],
-        },
-        {
-          name: "Modern Shoes with Cultural Designs",
-          subSubCategories: [
-            { name: "Sneakers" },
-            { name: "African Prints" },
-            { name: "Embroidered Flats" },
-          ],
-        },
-        {
-          name: "Custom Shoes & Sandals",
-          subSubCategories: [
-            { name: "Custom-designed Slippers" },
-            { name: "Ethnic-inspired Footwear" },
+            {
+              name: "Traditional Shoes & Sandals ( e.g., Maasai,Sandals, Babouches, Mojaris, Espadrilles",
+            },
+            {
+              name: "Leather & Handmade Shoes (e.g.,Handcrafted Leather Shoes,Moccasins,Traditional Slippers)",
+            },
+            {
+              name: "Modern Shoes with Cultural Designs (e.g., Sneakers, African Prints,Embroidered Flats)",
+            },
+            {
+              name: "Custom Shoes & Sandals (e.g., Ethnic-Inspired Footwear, Made-to-Order Traditional Sandals)",
+            },
           ],
         },
         {
           name: "Cultural Accessories & Adornments",
           subSubCategories: [
             {
-              name: "Headwear & Scarves (e.g., Turbans, Head Wraps, Geles, Kufi Caps, Hijabs)",
+              name: "Headwear & Scarves (e.g., Turbans, Head Wraps,Geles, Kufi Caps, Hijabs",
             },
             {
-              name: "Belts & Sashes (e.g., Kente Sashes, Obi Belts, Traditional Leather Belts)",
+              name: "Belts & Sashes (e.g., Kente Sashes,Obi Belts,Traditional Leather Belts)",
             },
             {
-              name: "Jewelry & Adornments (e.g., Beaded Necklaces, Waist Beads, Tribal Earrings)",
+              name: "Jewelry & Adornments (e.g., Beaded Necklaces, Waist Beads,Tribal Earrings)",
             },
             {
-              name: "Bags & Pouches (e.g., Handmade Leather Bags, Beaded Clutches, Cultural Tote Bags)",
+              name: "Bags & Pouches (e.g., Handmade Leather BagsBeaded Clutches, Cultural Tote Bags)",
             },
           ],
         },
@@ -1282,7 +1228,7 @@ export default function CategorySelector({
               name: "Handwoven & Local Fabrics (e.g., Kente Cloth, Batik Fabrics, Adire, Shweshwe)",
             },
             {
-              name: "Printed Fabrics (e.g., Ankara, Wax Prints, African Prints, Ikat)",
+              name: "Printed Fabrics (e.g., Ankara, Wax Prints, African Prints, Ikat )",
             },
             {
               name: "Embroidered & Handmade Textiles (e.g., Aso-Oke, Kantha Stitch, Brocade)",
@@ -1329,91 +1275,6 @@ export default function CategorySelector({
             {
               name: "Made-to-Order Shoes (e.g., Custom Leather Sandals, Handcrafted Cultural Shoes)",
             },
-          ],
-        },
-        {
-          name: "Sustainable & Ethical Fashion",
-          subSubCategories: [
-            {
-              name: "Eco-friendly Clothing (e.g., Organic Cotton Outfits, Recycled Fabrics)",
-            },
-            {
-              name: "Fair Trade Clothing & Shoes (e.g., Handwoven Sustainable Fabrics, Ethically Produced Sandals)",
-            },
-          ],
-        },
-        {
-          name: "Traditional Embroidery & Design Work",
-          subSubCategories: [
-            {
-              name: "Hand-Embroidered Clothing (e.g., Zardozi, Chikankari, Maasai Beadwork)",
-            },
-            {
-              name: "Block Printing & Hand-Painted Designs (e.g., Batik Prints, Tie-Dye Fabrics, Kalamkari)",
-            },
-            {
-              name: "Beadwork & Embellishments (e.g., Beaded Necklines, Embellished Footwear)",
-            },
-          ],
-        },
-        {
-          name: "Fashion for Specific Cultures & Regions",
-          subSubCategories: [
-            {
-              name: "African Fashion (e.g., South African Shweshwe, Nigerian Aso-Oke, Moroccan Caftans)",
-            },
-            {
-              name: "Asian Fashion (e.g., Indian Lehenga, Japanese Yukata, Chinese Qipao)",
-            },
-            { name: "Middle Eastern Fashion (e.g., Kaftans, Abayas, Thobes)" },
-            {
-              name: "Latin American Fashion (e.g., Peruvian Ponchos, Mexican Huipils, Guatemalan Weavings)",
-            },
-            {
-              name: "Caribbean Fashion (e.g., Carnival Costumes, Rastafarian Clothing, Dominican Linen Outfits)",
-            },
-          ],
-        },
-        {
-          name: "Seasonal & Special Occasion Fashion",
-          subSubCategories: [
-            {
-              name: "Summer Ethnic Wear (e.g., Lightweight Caftans, Cotton Sarongs)",
-            },
-            {
-              name: "Winter Ethnic Wear (e.g., Woolen Ponchos, Knitted Shawls, Traditional Wool Slippers)",
-            },
-          ],
-        },
-        {
-          name: "Functional Categories",
-          subSubCategories: [
-            { name: "New Arrivals" },
-            { name: "Best Sellers" },
-            { name: "Limited Edition & Seasonal Fashion" },
-            { name: "Discounted & Sale Products" },
-          ],
-        },
-        {
-          name: "Country or Region",
-          subSubCategories: [
-            { name: "Africa" },
-            { name: "Asia" },
-            { name: "Middle East" },
-            { name: "Latin America" },
-            { name: "Caribbean" },
-            { name: "Europe" },
-          ],
-        },
-        {
-          name: "Fabric Type",
-          subSubCategories: [
-            { name: "Cotton" },
-            { name: "Silk" },
-            { name: "Wool" },
-            { name: "Linen" },
-            { name: "Leather" },
-            { name: "Synthetic Blends" },
           ],
         },
       ],
