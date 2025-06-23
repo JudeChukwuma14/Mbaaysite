@@ -6,7 +6,7 @@ import background from "../../assets/image/bg2.jpeg";
 import logo from "../../assets/image/MBLogo.png";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
-import { forgotPassword } from "@/utils/vendorApi";
+import { forgotPassword } from "@/utils/ForgetpassApi";
 import { useNavigate } from "react-router-dom";
 
 // Define the shape of the form data
@@ -27,12 +27,17 @@ const Forgotpassword: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await forgotPassword(data.email)
-      console.log(response);
-      toast.success(response.message, {
+      const message = response.message
+      if(message){
+         toast.success(message, {
         position: "top-right",
         autoClose: 3000,
       });
-      navigate("/restpassword"); // Navigate to reset password page
+      navigate("/restpassword"); 
+      }else{
+         toast.error("OTP Sending failed. Please try again.");
+      }
+     
     } catch (error: unknown) {
       toast.error(
         (error as Error)?.message || "Failed to send reset link. Please try again.",
