@@ -14,7 +14,7 @@ import EW from "@/assets/image/ethnicwear.jpg"
 import { motion } from "framer-motion"
 
 // // Mock components - replace with your actual components
-const ProductCard2 = ({ image, name, price,  label }: any) => (
+const ProductCard2 = ({ image, name, price, label }: any) => (
   <div className="overflow-hidden transition-shadow duration-300 bg-white rounded-lg shadow-md hover:shadow-lg">
     <div className="overflow-hidden aspect-square">
       <img
@@ -98,21 +98,21 @@ const Fashion: React.FC = () => {
   const fashionCategories: Subcategory[] = [
     {
       image: Women,
-      text: "Traditional Clothing",
-      link: "/fashion-traditional-clothing",
-      description: "Trendy styles for every occasion",
+      text: "Traditional Fashion Clothing & Fabrics",
+      link: "/traditional-fashion",
+      description: "Authentic cultural attire and textiles",
     },
     {
       image: Men,
-      text: "Men's Fashion",
-      link: "/MenFashion",
-      description: "Classic and modern menswear",
+      text: "Modern Clothing with Traditional Influence",
+      link: "/modern-traditional",
+      description: "Contemporary fashion with cultural heritage",
     },
     {
       image: Kid,
-      text: "Kid's Fashion",
-      link: "/KidFashion",
-      description: "Comfortable and stylish kids wear",
+      text: "Footwear & Shoes",
+      link: "/footwear",
+      description: "Cultural and handmade footwear designs",
     },
     {
       image: AS,

@@ -1102,7 +1102,6 @@ const routesConfig: RouteObject[] = [
   {
     path: "/app",
     element: <ProtectedVendor />,
-
     children: [
       {
         element: <VendorLayout />,
