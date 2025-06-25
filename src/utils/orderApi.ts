@@ -12,10 +12,10 @@ interface OrderCartItem {
 
 interface OrderPricing {
   subtotal: string;
-  shipping: number;
+  shipping: string; // Changed to string
   tax: string;
   discount: string;
-  commission: string; // Added commission
+  commission: string;
   total: string;
 }
 

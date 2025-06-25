@@ -593,18 +593,11 @@ export default function CheckoutForm() {
         cartItems: cartItems.map((item) => ({
           productId: item.id,
           name: item.name,
-          price: item.price,
-          quantity: item.quantity,
+          price: Number(item.price), // Ensure number
+          quantity: Number(item.quantity), // Ensure number
           image: item.image,
         })),
-        pricing: {
-          subtotal: pricing.subtotal.toFixed(2),
-          shipping: pricing.shipping,
-          tax: pricing.tax.toFixed(2),
-          discount: pricing.discount.toFixed(2),
-          commission: pricing.commission.toFixed(2), // Added commission
-          total: pricing.total.toFixed(2),
-        },
+        pricing,
       };
 
       const response = await submitOrder(sessionId, orderData);

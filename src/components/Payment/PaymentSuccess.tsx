@@ -24,36 +24,34 @@ export default function PaymentSuccess() {
 
   console.log("PaymentSuccess state:", {
     orderId,
-    orderData: JSON.stringify(orderData, null, 2),
+    orderData: JSON.stringify(orderData, undefined, 2),
   });
 
-  // Fallback if state or required data is missing
+  // Simplified validation
   if (
     !orderId ||
     !orderData ||
-    !orderData.pricing ||
-    !orderData.pricing.total ||
-    !orderData.cartItems ||
-    orderData.cartItems.length === 0 ||
+    !orderData.cartItems?.length ||
+    !orderData.pricing?.total ||
     !orderData.first_name ||
     !orderData.email ||
     !orderData.address ||
     !orderData.paymentOption
   ) {
-    console.error("Invalid state in PaymentSuccess:", {
+    console.error("Missing required order data", {
       orderId,
-      hasOrderData: !!orderData,
-      hasPricing: !!orderData?.pricing,
-      hasTotal: !!orderData?.pricing?.total,
-      hasCartItems: !!orderData?.cartItems,
+      orderDataExists: !!orderData,
       cartItemsLength: orderData?.cartItems?.length,
-      hasFirstName: !!orderData?.first_name,
-      hasEmail: !!orderData?.email,
-      hasAddress: !!orderData?.address,
-      hasPaymentOption: !!orderData?.paymentOption,
+      hasTotal: !!orderData?.pricing?.total,
+      hasRequiredFields: !!(
+        orderData?.first_name &&
+        orderData?.email &&
+        orderData?.address &&
+        orderData?.paymentOption
+      ),
     });
     return (
-      <div className="container px-4 py-8 mx-auto text-center max-w-7xl">
+      <div className="container mx-auto px-4 py-8 text-center max-w-7xl">
         <h1 className="text-2xl font-bold text-red-600">Error</h1>
         <p className="mt-4 text-gray-600">Order information is missing. Please contact support.</p>
         <Button onClick={() => navigate("/")} className="mt-4">
@@ -65,7 +63,6 @@ export default function PaymentSuccess() {
 
   const { cartItems, pricing, first_name, last_name, email, address, paymentOption } = orderData;
 
-  // Copy order number
   const copyOrderNumber = () => {
     navigator.clipboard.writeText(orderId);
     setCopied(true);
@@ -75,6 +72,30 @@ export default function PaymentSuccess() {
   const downloadReceipt = () => {
     try {
       console.log("Starting PDF generation...");
+      // Validate data
+      if (
+        !cartItems.every(
+          (item) =>
+            item.name &&
+            (typeof item.price === "number" || typeof item.price === "string") &&
+            (typeof item.quantity === "number" || typeof item.quantity === "string")
+        )
+      ) {
+        console.log("cartItems:", JSON.stringify(cartItems, undefined, 2));
+        throw new Error("Invalid cartItems data");
+      }
+      const requiredPricingKeys = ["subtotal", "tax", "discount", "commission", "total"] as const;
+      if (
+        !pricing ||
+        !requiredPricingKeys.every(
+          (key) => pricing[key] !== undefined && (typeof pricing[key] === "string" || typeof pricing[key] === "number")
+        )
+      ) {
+        console.log("pricing:", JSON.stringify(pricing, undefined, 2));
+        throw new Error("Invalid pricing data");
+      }
+
+      console.log("Creating jsPDF instance...");
       const doc = new jsPDF();
 
       // Company Details
@@ -82,28 +103,29 @@ export default function PaymentSuccess() {
       const companyAddress = "123 Mbaay Street, Lagos, Nigeria";
       const companyEmail = "support@mbaay.com";
       const companyPhone = "+234 123 456 7890";
-      const logoUrl = "https://res.cloudinary.com/dw3mr6jpx/image/upload/v1750550594/MBLogo_anmbkb.png";
+      const logoUrl = "https://res.cloudinary.com/dw3mr6jpx/image/upload/v1750550594/MBLogo_anmbkb.png"
 
-      // Header: Logo and Company Details
+      console.log("Adding logo...");
       try {
-        console.log("Adding logo...");
         doc.addImage(logoUrl, "PNG", 20, 10, 40, 40);
       } catch (error) {
         console.warn("Failed to load logo:", error);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(20);
-        doc.setTextColor(51, 51, 51);
-        doc.text(companyName, 20, 20);
       }
+
+      console.log("Adding header text...");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(51, 51, 51);
+      doc.text(companyName, 70, 20);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.setTextColor(107, 114, 128);
-      doc.text(companyAddress, 70, 20);
-      doc.text(`Email: ${companyEmail}`, 70, 25);
-      doc.text(`Phone: ${companyPhone}`, 70, 30);
+      doc.text(companyAddress, 70, 25);
+      doc.text(`Email: ${companyEmail}`, 70, 30);
+      doc.text(`Phone: ${companyPhone}`, 70, 35);
 
-      // Receipt Title and Order Info
+      console.log("Adding receipt title...");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
       doc.setTextColor(234, 88, 12);
@@ -122,7 +144,7 @@ export default function PaymentSuccess() {
         20,
         70
       );
-      doc.text(`Customer: ${first_name} ${last_name}`, 20, 75);
+      doc.text(`Customer: ${first_name} ${last_name || ""}`, 20, 75);
       doc.text(`Email: ${email}`, 20, 80);
       doc.text(`Address: ${address}`, 20, 85);
       doc.text(
@@ -131,7 +153,7 @@ export default function PaymentSuccess() {
         90
       );
 
-      // Items Table
+      console.log("Preparing items table...");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(12);
       doc.setTextColor(51, 51, 51);
@@ -142,14 +164,17 @@ export default function PaymentSuccess() {
         (index + 1).toString(),
         item.name,
         item.quantity.toString(),
-        `₦${item.price.toFixed(2)}`,
-        `₦${(item.price * item.quantity).toFixed(2)}`,
+        `₦${Number(item.price).toFixed(2)}`,
+        `₦${(Number(item.price) * Number(item.quantity)).toFixed(2)}`,
       ]);
 
-      const rowHeight = 10;
       let currentY = 105;
 
       console.log("Rendering table...");
+      if (!(doc as any).autoTable) {
+        console.error("autoTable is not available on jsPDF instance");
+        throw new Error("jsPDF autoTable plugin not loaded");
+      }
       (doc as any).autoTable({
         startY: currentY,
         head: [["#", "Item", "Qty", "Unit Price", "Total"]],
@@ -170,7 +195,7 @@ export default function PaymentSuccess() {
         alternateRowStyles: {
           fillColor: [245, 245, 245],
         },
-        margin: { left: 45, right: 20 },
+        margin: { left: 20, right: 20 },
         columnStyles: {
           0: { cellWidth: 10 },
           1: { cellWidth: "auto" },
@@ -180,31 +205,33 @@ export default function PaymentSuccess() {
         },
       });
 
-      console.log("Adding images...");
-      currentY = 105 + rowHeight;
+      // Images disabled to isolate PDF issue; uncomment after confirming download works
+      /*
+      console.log("Adding item images...");
+      currentY = 105 + 10; // Adjust for row height
       cartItems.forEach((item, index) => {
         if (item.image && item.image.trim()) {
           try {
             console.log(`Adding image for ${item.name}: ${item.image}`);
-            doc.addImage(item.image, "JPEG", 20, currentY + index * rowHeight, 12, 12);
+            doc.addImage(item.image, "JPEG", 20, currentY + index * 10, 12, 12);
           } catch (error) {
             console.warn(`Failed to load JPEG image for ${item.name}:`, error);
             try {
-              doc.addImage(item.image, "PNG", 20, currentY + index * rowHeight, 12, 12);
+              doc.addImage(item.image, "PNG", 20, currentY + index * 10, 12, 12);
             } catch (pngError) {
               console.warn(`Failed to load PNG image for ${item.name}:`, pngError);
               doc.setFillColor(200, 200, 200);
-              doc.rect(20, currentY + rowHeight * index, 12, 12, "F");
+              doc.rect(20, currentY + index * 10, 12, 12, "F");
             }
           }
         } else {
           console.log(`No valid image for ${item.name}`);
           doc.setFillColor(200, 200, 200);
-          doc.rect(20, currentY + rowHeight * index, 12, 12, "F");
+          doc.rect(20, currentY + index * 10, 12, 12, "F");
         }
       });
+      */
 
-      // Payment Summary
       console.log("Adding payment summary...");
       const finalY = (doc as any).lastAutoTable.finalY + 10;
       doc.setFont("helvetica", "bold");
@@ -214,20 +241,19 @@ export default function PaymentSuccess() {
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      doc.text(`Subtotal: ₦${pricing.subtotal}`, 140, finalY + 10, { align: "right" });
-      doc.text(`Tax: ₦${pricing.tax}`, 140, finalY + 15, { align: "right" });
-      if (pricing.discount !== "0.00") {
-        doc.text(`Discount: -₦${pricing.discount}`, 140, finalY + 20, { align: "right" });
+      doc.text(`Subtotal: ₦${Number(pricing.subtotal).toFixed(2)}`, 140, finalY + 10, { align: "right" });
+      doc.text(`Tax: ₦${Number(pricing.tax).toFixed(2)}`, 140, finalY + 15, { align: "right" });
+      if (pricing.discount && Number(pricing.discount) !== 0) {
+        doc.text(`Discount: -₦${Number(pricing.discount).toFixed(2)}`, 140, finalY + 20, { align: "right" });
       }
-      doc.text(`Commission: ₦${pricing.commission}`, 140, finalY + 25, { align: "right" });
+      doc.text(`Commission: ₦${Number(pricing.commission).toFixed(2)}`, 140, finalY + 25, { align: "right" });
       doc.setFont("helvetica", "bold");
       doc.setTextColor(234, 88, 12);
-      doc.text(`Total: ₦${pricing.total}`, 140, finalY + 30, { align: "right" });
+      doc.text(`Total: ₦${Number(pricing.total).toFixed(2)}`, 140, finalY + 30, { align: "right" });
 
       doc.setDrawColor(234, 88, 12);
       doc.line(20, finalY + 28, 190, finalY + 28);
 
-      // Footer
       console.log("Adding footer...");
       doc.setFont("helvetica", "italic");
       doc.setFontSize(9);
@@ -236,9 +262,18 @@ export default function PaymentSuccess() {
       doc.text("Thank you for shopping with Mbaay!", 105, footerY, { align: "center" });
       doc.text("For support, contact us at support@mbaay.com", 105, footerY + 5, { align: "center" });
 
-      console.log("Saving PDF...");
-      doc.save(`order_${orderId}_receipt.pdf`);
-      console.log("PDF saved successfully.");
+      console.log("Generating Blob for download...");
+      const pdfBlob = doc.output("blob");
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeOrderId = orderId.replace(/[^a-zA-Z0-9-_]/g, "_");
+      a.download = `order_${safeOrderId}_receipt.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      console.log("PDF download triggered.");
     } catch (error) {
       console.error("Error generating PDF:", error);
       alert("Failed to generate receipt. Please try again or contact support.");
@@ -294,7 +329,7 @@ export default function PaymentSuccess() {
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <div className="mb-1 text-sm text-gray-500">Amount Paid</div>
-              <div className="text-lg font-semibold text-gray-800">₦{pricing.total}</div>
+              <div className="text-lg font-semibold text-gray-800">₦{Number(pricing.total).toFixed(2)}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Date</div>
@@ -336,7 +371,7 @@ export default function PaymentSuccess() {
                   <div>
                     <div className="text-sm font-medium text-gray-800">{item.name}</div>
                     <div className="text-sm text-gray-600">
-                      ₦{item.price.toFixed(2)} x {item.quantity} = ₦{(item.price * item.quantity).toFixed(2)}
+                      ₦{Number(item.price).toFixed(2)} x {item.quantity} = ₦{(Number(item.price) * Number(item.quantity)).toFixed(2)}
                     </div>
                   </div>
                 </li>
@@ -349,25 +384,25 @@ export default function PaymentSuccess() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>
-                <span className="font-medium text-gray-800">₦{pricing.subtotal}</span>
+                <span className="font-medium text-gray-800">₦{Number(pricing.subtotal).toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tax</span>
-                <span className="font-medium text-gray-800">₦{pricing.tax}</span>
+                <span className="font-medium text-gray-800">₦{Number(pricing.tax).toFixed(2)}</span>
               </div>
-              {pricing.discount !== "0.00" && (
+              {pricing.discount && Number(pricing.discount) !== 0 && (
                 <div className="flex justify-between">
                   <span className="text-gray-600">Discount</span>
-                  <span className="font-medium text-orange-600">-₦{pricing.discount}</span>
+                  <span className="font-medium text-orange-600">-₦{Number(pricing.discount).toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-gray-600">Mbaay Commission</span>
-                <span className="font-medium text-gray-800">₦{pricing.commission}</span>
+                <span className="text-gray-600">Commission</span>
+                <span className="font-medium text-gray-800">₦{Number(pricing.commission).toFixed(2)}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800">Total Paid</span>
-                <span className="font-semibold text-orange-600">₦{pricing.total}</span>
+                <span className="font-semibold text-orange-600">₦{Number(pricing.total).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -397,7 +432,10 @@ export default function PaymentSuccess() {
                 View Order Details
               </Link>
               <Button
-                onClick={downloadReceipt}
+                onClick={() => {
+                  console.log("Download Receipt button clicked");
+                  downloadReceipt();
+                }}
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
                 variant="outline"
               >
