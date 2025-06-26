@@ -35,10 +35,6 @@ export interface OrderData {
   paymentOption: "Pay Before Delivery" | "Pay After Delivery";
   cartItems: OrderCartItem[];
   pricing: OrderPricing;
-  createdAt?: string;
-  vendor?: string; // Optional, based on UI
-  estimatedArrival?: string; // Optional, e.g., "9 July 2024"
-  trackingNumber?: string; // Optional, e.g., "872198298212"
 }
 
 interface CheckoutResponse {
@@ -55,25 +51,11 @@ export interface PaymentStatusResponse {
   orderData?: OrderData;
 }
 
-interface GetGuestOrdersResponse {
-  orders: OrderData[];
-  message?: string;
-}
-
-interface ConfirmOrderReceivedResponse {
-  message: string;
-  order?: OrderData;
-}
-
 const api = axios.create({
   baseURL: "https://mbayy-be.vercel.app/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
 
-const order = axios.create({
-  baseURL: "https://mbayy-be.vercel.app/api/v1/user",
-  headers: { "Content-Type": "application/json" },
-});
 
 api.interceptors.response.use(
   (response) => response,
@@ -94,24 +76,6 @@ api.interceptors.response.use(
   }
 );
 
-order.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const message =
-      error.response?.data?.message ||
-      error.message ||
-      "An unexpected error occurred";
-    if (error.response?.status === 401) {
-      toast.error("Session expired. Please log in again.");
-    } else if (error.response?.status === 404) {
-      toast.error("Resource not found.");
-    } else {
-      toast.error(message);
-    }
-    console.error("API Error:", error.message, error.response?.data);
-    return Promise.reject(error);
-  }
-);
 
 export const submitOrder = async (
   sessionId: string,
@@ -142,34 +106,6 @@ export const getPaymentStatus = async (
     console.error("Payment Status Error:", error.message, error.response?.data);
     throw new Error(
       error.response?.data?.message || "Failed to verify payment"
-    );
-  }
-};
-
-export const getGuestOrders = async (
-  sessionId: string
-): Promise<GetGuestOrdersResponse> => {
-  try {
-    const response = await order.get(`/get_orders_user`, {
-      params: { sessionId },
-    });
-    return response.data.data || response.data;
-  } catch (error: any) {
-    console.error("Error fetching guest orders:", error.message);
-    throw new Error(error.response?.data?.message || "Failed to fetch orders.");
-  }
-};
-
-export const confirmOrderStatus = async (
-  orderId: string
-): Promise<ConfirmOrderReceivedResponse> => {
-  try {
-    const response = await order.patch(`/confirmOrderReceived/${orderId}`);
-    return response.data.data || response.data;
-  } catch (error: any) {
-    console.error("Error confirming order:", error.message);
-    throw new Error(
-      error.response?.data?.message || "Failed to confirm order receipt."
     );
   }
 };

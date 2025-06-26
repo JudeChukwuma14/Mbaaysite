@@ -6,11 +6,11 @@ import vendorReducer from "./slices/vendorSlice";
 import SettingsReducer from "./slices/settingsSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import orderReducer from "./slices/orderSlice"
+// import orderReducer from "./slices/orderSlice"
 const persistConfig = {
   key: "root",
   storage,
-  whitelist:["cart", "wishlist", "user", "vendor","settings", "order"]
+  whitelist:["cart", "wishlist", "user", "vendor","settings"]
 };
 
 const rootReducer = combineReducers({
@@ -19,7 +19,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   vendor: vendorReducer,  // Add vendor slice here if needed.
   settings:SettingsReducer,
-  order:orderReducer
+  // order:orderReducer
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
