@@ -66,7 +66,7 @@ export default function PaymentCallback() {
       ],
       pricing: {
         subtotal: firstOrder.totalPrice?.toString() || "0.00",
-        shipping: 0,
+        shipping: "0.00",
         tax: "0.00",
         discount: "0.00",
         commission: "0.00",

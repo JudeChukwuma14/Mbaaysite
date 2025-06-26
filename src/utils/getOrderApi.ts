@@ -1,0 +1,99 @@
+import axios from "axios";
+import { toast } from "react-toastify";
+
+
+interface OrderCartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
+
+interface OrderPricing {
+  subtotal: string;
+  shipping: string; // Changed to string
+  tax: string;
+  discount: string;
+  commission: string;
+  total: string;
+}
+
+
+export interface OrderData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  country: string;
+  apartment: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  couponCode: string;
+  paymentOption: "Pay Before Delivery" | "Pay After Delivery";
+  cartItems: OrderCartItem[];
+  pricing: OrderPricing;
+  createdAt?: string;
+   vendor?: string; // Optional, based on UI
+  estimatedArrival?: string; // Optional, e.g., "9 July 2024"
+  trackingNumber?: string; // Optional, e.g., "872198298212"
+}
+
+interface GetGuestOrdersResponse {
+  orders: OrderData[];
+  message?: string;
+}
+
+interface ConfirmOrderReceivedResponse {
+  message: string;
+  order?: OrderData;
+}
+
+const api = axios.create({
+  baseURL: "https://mbayy-be.vercel.app/api/v1/order",
+  headers: { "Content-Type": "application/json" },
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "An unexpected error occurred";
+    if (error.response?.status === 401) {
+      toast.error("Session expired. Please log in again.");
+    } else if (error.response?.status === 404) {
+      toast.error("Resource not found.");
+    } else {
+      toast.error(message);
+    }
+    console.error("API Error:", error.message, error.response?.data);
+    return Promise.reject(error);
+  }
+);
+
+
+export const getGuestOrders = async (sessionId: string): Promise<GetGuestOrdersResponse> => {
+  try {
+    const response = await api.get(`/get_orders_user`, {
+      params: { sessionId },
+    });
+    return response.data.data || response.data;
+  } catch (error: any) {
+    console.error("Error fetching guest orders:", error.message);
+    throw new Error(error.response?.data?.message || "Failed to fetch orders.");
+  }
+};
+
+export const confirmOrderStatus = async (orderId: string): Promise<ConfirmOrderReceivedResponse> => {
+  try {
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`);
+    return response.data.data || response.data;
+  } catch (error: any) {
+    console.error("Error confirming order:", error.message);
+    throw new Error(error.response?.data?.message || "Failed to confirm order receipt.");
+  }
+};
