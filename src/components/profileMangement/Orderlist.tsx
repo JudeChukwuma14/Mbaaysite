@@ -194,7 +194,7 @@ export default function OrderList() {
                             Quantity: <span className="font-medium">{order.quantity}</span>
                           </p>
                           <p className="mt-1">
-                            Price: <span className="font-medium">${order.product.price.toFixed(2)}</span>
+                            Price: <span className="font-medium">₦{order.product.price.toFixed(2)}</span>
                           </p>
                         </div>
                       </div>
@@ -209,7 +209,7 @@ export default function OrderList() {
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Total Amount:</span>
-                        <span className="text-lg font-bold text-gray-900">${order.totalPrice.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-gray-900">₦{order.totalPrice.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Payment Method:</span>

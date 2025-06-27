@@ -2,15 +2,6 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { FaRegSadTear, FaShoppingCart, FaHome, FaChevronRight } from "react-icons/fa"
-import Men from "@/assets/image/menF.jpg"
-import Women from "@/assets/image/womenF.jpg"
-import Kid from "@/assets/image/kidF.jpg"
-import FJ from "@/assets/image/FashionJe.jpg"
-import sportW from "@/assets/image/sportyF.jpg"
-import AS from "@/assets/image/accessorieFA.jpg"
-import FW from "@/assets/image/Footwear.jpg"
-import EW from "@/assets/image/ethnicwear.jpg"
-
 import { motion } from "framer-motion"
 
 // // Mock components - replace with your actual components
@@ -97,52 +88,75 @@ const Fashion: React.FC = () => {
 
   const fashionCategories: Subcategory[] = [
     {
-      image: Women,
+      image: "https://i.pinimg.com/736x/4a/85/8f/4a858f54a6ba34e85ed8a0ffadc8676d.jpg",
       text: "Traditional Fashion Clothing & Fabrics",
       link: "/traditional-fashion",
       description: "Authentic cultural attire and textiles",
     },
     {
-      image: Men,
+      image: "https://i.pinimg.com/736x/bf/bf/48/bfbf480b166080dfcba610de7c19c69d.jpg",
       text: "Modern Clothing with Traditional Influence",
       link: "/modern-traditional",
       description: "Contemporary fashion with cultural heritage",
     },
     {
-      image: Kid,
+      image: "https://i.pinimg.com/736x/0c/f1/c2/0cf1c2181092f51dc7ddb2bd314a19c4.jpg",
       text: "Footwear & Shoes",
       link: "/footwear",
       description: "Cultural and handmade footwear designs",
     },
     {
-      image: AS,
-      text: "Accessories",
-      link: "/Accessories",
-      description: "Hats, belts, and more",
+      image: "https://i.pinimg.com/736x/89/fe/45/89fe452b48e9bd379f38fd82abca357d.jpg",
+      text: "Cultural Accessories & Adornments",
+      link: "/accessories",
+      description: "Traditional headwear, jewelry, and bags",
     },
     {
-      image: FJ,
-      text: "Fashion Jewelry",
-      link: "/FashionJewelry",
-      description: "Beautiful jewelry pieces",
+      image: "https://i.pinimg.com/736x/34/73/fd/3473fdb40c1794fdf852fdf6a5a8b7d2.jpg",
+      text: "Fabrics & Textiles",
+      link: "/fabrics",
+      description: "Authentic handwoven and printed textiles",
+    }, {
+      image: "https://i.pinimg.com/736x/c4/9a/3b/c49a3bf77176deb364bd435d8f5a3436.jpg",
+      text: "Cultural Footwear for Specific Occasions",
+      link: "/occasion-footwear",
+      description: "Traditional footwear for weddings and festivals",
     },
     {
-      image: sportW,
-      text: "Sportswear",
-      link: "/SportWear",
-      description: "Active and athletic wear",
+      image: "https://i.pinimg.com/736x/9d/04/ce/9d04ce6783516cbcdc6722f1ef3a0fdb.jpg",
+      text: "Cultural & Festival Clothing",
+      link: "/festival-clothing",
+      description: "Attire for cultural celebrations and ceremonies",
     },
     {
-      image: EW,
-      text: "Ethnic Wear",
-      link: "/EthnicWear",
-      description: "Traditional and cultural clothing",
+      image: "https://i.pinimg.com/736x/60/3f/ea/603fea9b0c89ec913062caad257788ee.jpg",
+      text: "Fashion by Culture & Region",
+      link: "/regional-fashion",
+      description: "Culturally distinct fashion from global regions",
     },
     {
-      image: FW,
-      text: "Footwear",
-      link: "/FootWear",
-      description: "Shoes for every style",
+      image: "https://i.pinimg.com/736x/48/65/56/486556d30c7e2515c68493bb4b18904e.jpg",
+      text: "Seasonal & Special Occasion Fashion",
+      link: "/seasonal-fashion",
+      description: "Ethnic wear for summer and winter occasions",
+    },
+    {
+      image: "https://i.pinimg.com/736x/83/3c/ad/833cad5ed43ea48801479b9845db3367.jpg",
+      text: "Traditional Embroidery & Design Work",
+      link: "/embroidery",
+      description: "Intricate hand-embroidered and printed designs",
+    },
+    {
+      image: "https://i.pinimg.com/736x/ee/7e/79/ee7e795f3e07f9167f6795b0f8477e10.jpg",
+      text: "Bespoke & Tailored Clothing",
+      link: "/bespoke",
+      description: "Custom-made traditional attire",
+    },
+    {
+      image: "https://i.pinimg.com/736x/08/c3/a3/08c3a3e7f1e06dabb56db797b76e645a.jpg",
+      text: "Sustainable & Ethical Fashion",
+      link: "/sustainable",
+      description: "Eco-friendly and fair trade cultural wear",
     },
   ]
 

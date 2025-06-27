@@ -11,6 +11,22 @@ import ProtectedVendor from "./ProtectedVendor";
 import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
+import TF from "@/components/AllCategory/Fashion/subcategory/TF/TF";
+import MT from "@/components/AllCategory/Fashion/subcategory/MT";
+import FW from "@/components/AllCategory/Fashion/subcategory/FW";
+import FB from "@/components/AllCategory/Fashion/subcategory/FB";
+import OF from "@/components/AllCategory/Fashion/subcategory/OF";
+import FC from "@/components/AllCategory/Fashion/subcategory/FC";
+import RF from "@/components/AllCategory/Fashion/subcategory/RF";
+import SF from "@/components/AllCategory/Fashion/subcategory/SF";
+import EB from "@/components/AllCategory/Fashion/subcategory/EB";
+import BS from "@/components/AllCategory/Fashion/subcategory/BS";
+import ST from "@/components/AllCategory/Fashion/subcategory/ST";
+import AC from "@/components/AllCategory/Fashion/subcategory/AC";
+import MenWear from "@/components/AllCategory/Fashion/subcategory/TF/MenWear";
+import WomenWear from "@/components/AllCategory/Fashion/subcategory/TF/WomenWear";
+import ChildrenWear from "@/components/AllCategory/Fashion/subcategory/TF/ChildrenWear";
+import Unsex from "@/components/AllCategory/Fashion/subcategory/TF/Unsex";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -577,31 +593,6 @@ const Spicesi = lazy(
 );
 
 
-// Fashion Subcategory
-const Accessories = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/Accessories")
-);
-const EthnicWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/EthnicWear")
-);
-const FashionJewelry = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/FashionJewelry")
-);
-const FootWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/FootWear")
-);
-const KidFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/KidFashion")
-);
-const MenFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/MenFashion")
-);
-const SportWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/SportWear")
-);
-const WomenFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/WomenFashion")
-);
 
 // Furniture
 const Seating = lazy(
@@ -1071,14 +1062,32 @@ const routesConfig: RouteObject[] = [
 
             
       // Fashion Subcategory
-      { path: "/Accessories", element: withSuspense(Accessories) },
-      { path: "/EthnicWear", element: withSuspense(EthnicWear) },
-      { path: "/FashionJewelry", element: withSuspense(FashionJewelry) },
-      { path: "/FootWear", element: withSuspense(FootWear) },
-      { path: "/KidFashion", element: withSuspense(KidFashion) },
-      { path: "/MenFashion", element: withSuspense(MenFashion) },
-      { path: "/SportWear", element: withSuspense(SportWear) },
-      { path: "/WomenFashion", element: withSuspense(WomenFashion) },
+      { path: "/traditional-fashion", element: withSuspense(TF) },
+      { path: "/men-tf-wear", element: withSuspense(MenWear) },
+      { path: "/women-tf-wear", element: withSuspense(WomenWear) },
+      { path: "/children-tf-wear", element: withSuspense(ChildrenWear) },
+      { path: "/unisex-tf-wear", element: withSuspense(Unsex) },
+
+
+
+
+
+
+
+
+
+
+      { path: "/modern-traditional", element: withSuspense(MT) },
+      { path: "/footwear", element: withSuspense(FW) },
+      { path: "/accessories", element: withSuspense(AC) },
+      { path: "/fabrics", element: withSuspense(FB) },
+      { path: "/occasion-footwear", element: withSuspense(OF) },
+      { path: "/festival-clothing", element: withSuspense(FC) },
+      { path: "/regional-fashion", element: withSuspense(RF) },
+      { path: "/seasonal-fashion", element: withSuspense(SF) },
+      { path: "/embroidery", element: withSuspense(EB) },
+      { path: "/bespoke", element: withSuspense(BS) },
+      { path: "/sustainable", element: withSuspense(ST) },
     ],
   },
   {
