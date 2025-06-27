@@ -12,8 +12,8 @@ import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
 import TF from "@/components/AllCategory/Fashion/subcategory/TF/TF";
-import MT from "@/components/AllCategory/Fashion/subcategory/MT";
-import FW from "@/components/AllCategory/Fashion/subcategory/FW";
+import MT from "@/components/AllCategory/Fashion/subcategory/MT/MT";
+import FW from "@/components/AllCategory/Fashion/subcategory/FW/FW";
 import FB from "@/components/AllCategory/Fashion/subcategory/FB";
 import OF from "@/components/AllCategory/Fashion/subcategory/OF";
 import FC from "@/components/AllCategory/Fashion/subcategory/FC";
@@ -27,6 +27,14 @@ import MenWear from "@/components/AllCategory/Fashion/subcategory/TF/MenWear";
 import WomenWear from "@/components/AllCategory/Fashion/subcategory/TF/WomenWear";
 import ChildrenWear from "@/components/AllCategory/Fashion/subcategory/TF/ChildrenWear";
 import Unsex from "@/components/AllCategory/Fashion/subcategory/TF/Unsex";
+import FUC from "@/components/AllCategory/Fashion/subcategory/MT/FUC";
+import CMF from "@/components/AllCategory/Fashion/subcategory/MT/CMF";
+import EUW from "@/components/AllCategory/Fashion/subcategory/MT/EUW";
+import CAF from "@/components/AllCategory/Fashion/subcategory/MT/CAF";
+import TSS from "@/components/AllCategory/Fashion/subcategory/FW/TSS";
+import LHS from "@/components/AllCategory/Fashion/subcategory/FW/LHS";
+import MSC from "@/components/AllCategory/Fashion/subcategory/FW/MSC";
+import CSS from "@/components/AllCategory/Fashion/subcategory/FW/CSS";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -1068,17 +1076,25 @@ const routesConfig: RouteObject[] = [
       { path: "/children-tf-wear", element: withSuspense(ChildrenWear) },
       { path: "/unisex-tf-wear", element: withSuspense(Unsex) },
 
-
-
-
-
-
-
-
-
-
       { path: "/modern-traditional", element: withSuspense(MT) },
+      { path: "/contemporary-african-fashion", element: withSuspense(CAF) },
+      { path: "/ethnic-inspired-urban-wear", element: withSuspense(EUW) },
+      { path: "/fusion-clothing", element: withSuspense(FUC) },
+      { path: "/custom-made-ethnic-fashion", element: withSuspense(CMF) },
+
       { path: "/footwear", element: withSuspense(FW) },
+      { path: "/traditional-shoes", element: withSuspense(TSS) },
+      { path: "/leather-handmade", element: withSuspense(LHS) },
+      { path: "/modern-shoes", element: withSuspense(MSC) },
+      { path: "/custom-shoes-sandals", element: withSuspense(CSS) },
+
+
+
+
+
+
+
+
       { path: "/accessories", element: withSuspense(AC) },
       { path: "/fabrics", element: withSuspense(FB) },
       { path: "/occasion-footwear", element: withSuspense(OF) },

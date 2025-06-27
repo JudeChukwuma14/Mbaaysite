@@ -10,8 +10,7 @@ import {
 import { motion, Variants } from "framer-motion";
 import NewArrival from "@/components/Cards/NewArrival";
 
-
-// Define interfaces
+// Define interfaces for type safety
 interface Product {
     _id: string;
     name: string;
@@ -29,46 +28,39 @@ interface Subcategory {
     text: string;
 }
 
-// Static subcategories (can be derived from categories array)
+// Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-    {
-        image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg",
-        text: "Contemporary African Fashion",
-        link: "/contemporary-african-fashion",
-    },
-    {
-        image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg",
-        text: "Ethnic-inspired Urban Wear",
-        link: "/ethnic-inspired-urban-wear",
-    },
-    {
-        image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg",
-        text: "Fusion Clothing",
-        link: "/fusion-clothing",
-    },
-    {
-        image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg",
-        text: "Custom-made Ethnic Fashion",
-        link: "/custom-made-ethnic-fashion",
-    },
+    { image: "https://i.pinimg.com/736x/72/b6/1b/72b61be26e7d9f18e8d94547bc3217a2.jpg", text: "Traditional Shoes & Sandals", link: "/traditional-shoes" },
+    { image: "https://i.pinimg.com/736x/70/61/76/706176a83d9b477d8f68ce2de1a67b2b.jpg", text: "Leather & Handmade Shoes", link: "/leather-handmade" },
+    { image: "https://i.pinimg.com/736x/38/19/4f/38194f90eaf9332fbaf98121ac5ee2b1.jpg", text: "Modern Shoes with Cultural Designs", link: "/modern-shoes" },
+    { image: "https://i.pinimg.com/736x/9a/67/be/9a67bee73921f0908ca369bbec85e320.jpg", text: "Custom Shoes & Sandals", link: "/custom-shoes-sandals" },
 ];
 
-// Animation variants
+// Animation variants for containers
 const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.5, when: "beforeChildren", staggerChildren: 0.1 },
+        transition: {
+            duration: 0.5,
+            when: "beforeChildren",
+            staggerChildren: 0.1,
+        },
     },
 };
 
+// Animation variants for child elements (subcategories, products, heading)
 const childVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.3 },
+    },
 };
 
-// Error Message Component
+// Reusable Error Message Component
 const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <motion.div
         initial={{ opacity: 0 }}
@@ -77,9 +69,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
         className="flex flex-col items-center justify-center py-16 text-center"
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
-        <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-            Something Went Wrong
-        </h2>
+        <h2 className="mb-2 text-2xl font-semibold text-gray-800">Something Went Wrong</h2>
         <p className="max-w-md mb-6 text-gray-600">{message}</p>
         <Link
             to="/shop"
@@ -92,7 +82,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     </motion.div>
 );
 
-// Empty State Component
+// Reusable Empty State Component
 const EmptyState: React.FC = () => (
     <motion.div
         initial={{ opacity: 0 }}
@@ -102,7 +92,7 @@ const EmptyState: React.FC = () => (
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-            No Modern Clothing with Traditional Influence Products Found
+            No Footwear & Shoes Products Found
         </h2>
         <p className="max-w-md mb-6 text-gray-600">
             No products are available in this category. Browse our shop to find your favorite products!
@@ -118,7 +108,7 @@ const EmptyState: React.FC = () => (
     </motion.div>
 );
 
-// Subcategory Card Component
+// Reusable Subcategory Card Component
 const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
     <motion.div variants={childVariants}>
         <Link
@@ -145,7 +135,8 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
     </motion.div>
 );
 
-const MT: React.FC = () => {
+
+const FW: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -162,7 +153,7 @@ const MT: React.FC = () => {
                 const filtered = allProducts.filter(
                     (product: Product) =>
                         product.category?.toLowerCase() === "fashion clothing and fabrics" &&
-                        product.sub_category?.toLowerCase() === "modern clothing with traditional influence"
+                        product.sub_category?.toLowerCase() === "footwear & shoes"
                 );
 
                 setProducts(filtered);
@@ -181,7 +172,8 @@ const MT: React.FC = () => {
         fetchProducts();
     }, []);
 
-    // Memoize sorted products
+
+    // Memoize sorted products for two rows (10 products)
     const sortedProducts = useMemo(
         () =>
             products
@@ -229,7 +221,7 @@ const MT: React.FC = () => {
                     </Link>
                     <FaChevronRight className="text-xs" aria-hidden="true" />
                     <span className="font-medium text-gray-800">
-                        Modern Clothing with Traditional Influence
+                        Footwear & Shoes
                     </span>
                 </motion.nav>
 
@@ -254,29 +246,21 @@ const MT: React.FC = () => {
                     variants={containerVariants}
                     aria-labelledby="products-heading"
                 >
-                    <motion.h1
+                    <motion.h2
                         id="products-heading"
                         variants={childVariants}
                         className="mb-6 text-2xl font-bold text-gray-800 sm:text-3xl"
                     >
-                        Modern Clothing with Traditional Influence
-                    </motion.h1>
+                        Featured Products
+                    </motion.h2>
                     {isLoading ? (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
+                            className="flex justify-center py-16"
                         >
-                            {Array(10)
-                                .fill(0)
-                                .map((_, index) => (
-                                    <div
-                                        key={index}
-                                        className="w-full h-64 bg-gray-200 animate-pulse rounded-lg"
-                                        aria-hidden="true"
-                                    ></div>
-                                ))}
+                            <div className="w-12 h-12 border-4 border-orange-500 rounded-full animate-spin border-t-transparent"></div>
                         </motion.div>
                     ) : products.length === 0 ? (
                         <EmptyState />
@@ -301,4 +285,4 @@ const MT: React.FC = () => {
     );
 };
 
-export default MT;
+export default FW;

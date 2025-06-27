@@ -10,7 +10,8 @@ import {
 import { motion, Variants } from "framer-motion";
 import NewArrival from "@/components/Cards/NewArrival";
 
-// Define interfaces for type safety
+
+// Define interfaces
 interface Product {
     _id: string;
     name: string;
@@ -28,40 +29,46 @@ interface Subcategory {
     text: string;
 }
 
-// Static subcategories
+// Static subcategories (can be derived from categories array)
 const SUBCATEGORIES: Subcategory[] = [
-    { image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg", text: "Paintings", link: "/paintings" },
-    { image: "https://i.pinimg.com/736x/6f/46/86/6f4686892acc50bcb9561349090bd231.jpg", text: "Wall Art", link: "/wall-art" },
-    { image: "https://i.pinimg.com/736x/ee/2c/a8/ee2ca86391336c0998fc5125a8131f61.jpg", text: "Sculptures", link: "/sculptures" },
-    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Traditional Designs", link: "/traditional-craft" },
-    { image: "https://i.pinimg.com/736x/d3/aa/74/d3aa74015ecae82fc958a12fd4d414e6.jpg", text: "Religious & Cultural Art", link: "/traditional-artifacts" },
+    {
+        image: "https://i.pinimg.com/736x/27/1b/2e/271b2eafa73f8ac40ee196dea8ef9454.jpg",
+        text: "Contemporary African Fashion",
+        link: "/contemporary-african-fashion",
+    },
+    {
+        image: "https://i.pinimg.com/736x/c8/61/d1/c861d187aedf638e458cfb00ec2c2345.jpg",
+        text: "Ethnic-inspired Urban Wear",
+        link: "/ethnic-inspired-urban-wear",
+    },
+    {
+        image: "https://i.pinimg.com/736x/9b/df/64/9bdf641acb423e9cb589b70203a1a490.jpg",
+        text: "Fusion Clothing",
+        link: "/fusion-clothing",
+    },
+    {
+        image: "https://i.pinimg.com/736x/68/1e/e0/681ee0d7200c31bff09f30fc62ff588d.jpg",
+        text: "Custom-made Ethnic Fashion",
+        link: "/custom-made-ethnic-fashion",
+    },
 ];
 
-// Animation variants for containers
+// Animation variants
 const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 0.5,
-            when: "beforeChildren",
-            staggerChildren: 0.1,
-        },
+        transition: { duration: 0.5, when: "beforeChildren", staggerChildren: 0.1 },
     },
 };
 
-// Animation variants for child elements (subcategories, products, heading)
 const childVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.3 },
-    },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
-// Reusable Error Message Component
+// Error Message Component
 const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <motion.div
         initial={{ opacity: 0 }}
@@ -70,7 +77,9 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
         className="flex flex-col items-center justify-center py-16 text-center"
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
-        <h2 className="mb-2 text-2xl font-semibold text-gray-800">Something Went Wrong</h2>
+        <h2 className="mb-2 text-2xl font-semibold text-gray-800">
+            Something Went Wrong
+        </h2>
         <p className="max-w-md mb-6 text-gray-600">{message}</p>
         <Link
             to="/shop"
@@ -83,7 +92,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     </motion.div>
 );
 
-// Reusable Empty State Component
+// Empty State Component
 const EmptyState: React.FC = () => (
     <motion.div
         initial={{ opacity: 0 }}
@@ -93,7 +102,7 @@ const EmptyState: React.FC = () => (
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-            No Artifact Products Found
+            No Modern Clothing with Traditional Influence Products Found
         </h2>
         <p className="max-w-md mb-6 text-gray-600">
             No products are available in this category. Browse our shop to find your favorite products!
@@ -109,17 +118,22 @@ const EmptyState: React.FC = () => (
     </motion.div>
 );
 
-// Reusable Subcategory Card Component
+// Subcategory Card Component
 const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
     <motion.div variants={childVariants}>
-        <Link to={link} className="rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400">
+        <Link
+            to={link}
+            className="rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
+            aria-label={`Explore ${text}`}
+        >
             <div className="flex flex-col items-center justify-center group">
                 <div className="flex items-center justify-center w-24 h-24 mb-3 overflow-hidden bg-gray-100 rounded-full shadow-md sm:w-28 sm:h-28 md:w-32 md:h-32">
                     <img
                         src={image}
-                        alt={text}
+                        alt={`${text} category`}
                         width={300}
                         height={300}
+                        loading="lazy"
                         className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                     />
                 </div>
@@ -131,7 +145,7 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
     </motion.div>
 );
 
-const FW: React.FC = () => {
+const MT: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -142,19 +156,23 @@ const FW: React.FC = () => {
             try {
                 setIsLoading(true);
                 const result = await getAllProduct();
-                const allProducts = Array.isArray(result)
-                    ? result
-                    : result.products || [];
+                console.log(result)
+                const allProducts = Array.isArray(result) ? result : result.products || [];
 
                 const filtered = allProducts.filter(
                     (product: Product) =>
-                        product.category?.toLowerCase() === "artifacts"
+                        product.category?.toLowerCase() === "fashion clothing and fabrics" &&
+                        product.sub_category?.toLowerCase() === "modern clothing with traditional influence"
                 );
 
                 setProducts(filtered);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error fetching products:", err);
-                setError("Failed to fetch artifacts. Please try again later.");
+                const errorMessage =
+                    err.message.includes("Network")
+                        ? "Network error. Please check your connection and try again."
+                        : "Failed to fetch products. Please try again later.";
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
@@ -163,15 +181,16 @@ const FW: React.FC = () => {
         fetchProducts();
     }, []);
 
-    // Memoize sorted products for two rows (10 products)
+    // Memoize sorted products
     const sortedProducts = useMemo(
         () =>
             products
                 .sort(
                     (a, b) =>
-                        new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
+                        new Date(b.createdAt || "").getTime() -
+                        new Date(a.createdAt || "").getTime()
                 )
-                .slice(0, 10), // Limit to 10 products for 2 rows on xl screens
+                .slice(0, 10),
         [products]
     );
 
@@ -202,7 +221,16 @@ const FW: React.FC = () => {
                         Home
                     </Link>
                     <FaChevronRight className="text-xs" aria-hidden="true" />
-                    <span className="font-medium text-gray-800">Artifacts</span>
+                    <Link
+                        to="/fashion"
+                        className="transition-colors rounded hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    >
+                        Fashion Clothing and Fabrics
+                    </Link>
+                    <FaChevronRight className="text-xs" aria-hidden="true" />
+                    <span className="font-medium text-gray-800">
+                        Modern Clothing with Traditional Influence
+                    </span>
                 </motion.nav>
 
                 {/* Subcategories */}
@@ -226,21 +254,29 @@ const FW: React.FC = () => {
                     variants={containerVariants}
                     aria-labelledby="products-heading"
                 >
-                    <motion.h2
+                    <motion.h1
                         id="products-heading"
                         variants={childVariants}
                         className="mb-6 text-2xl font-bold text-gray-800 sm:text-3xl"
                     >
-                        Featured Products
-                    </motion.h2>
+                        Modern Clothing with Traditional Influence
+                    </motion.h1>
                     {isLoading ? (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5 }}
-                            className="flex justify-center py-16"
+                            className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
                         >
-                            <div className="w-12 h-12 border-4 border-orange-500 rounded-full animate-spin border-t-transparent"></div>
+                            {Array(10)
+                                .fill(0)
+                                .map((_, index) => (
+                                    <div
+                                        key={index}
+                                        className="w-full h-64 bg-gray-200 rounded-lg animate-pulse"
+                                        aria-hidden="true"
+                                    ></div>
+                                ))}
                         </motion.div>
                     ) : products.length === 0 ? (
                         <EmptyState />
@@ -265,4 +301,4 @@ const FW: React.FC = () => {
     );
 };
 
-export default FW;
+export default MT;

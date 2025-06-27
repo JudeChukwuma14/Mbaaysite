@@ -64,7 +64,7 @@ const EmptyState: React.FC = () => (
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-            No Children’s Traditional Wear Products Found
+            No Ethnic-Inspired Urban Wear Products Found
         </h2>
         <p className="max-w-md mb-6 text-gray-500">
             No products are available in this category. Browse our shop to find other great products!
@@ -80,7 +80,7 @@ const EmptyState: React.FC = () => (
     </motion.div>
 );
 
-const ChildrenWear: React.FC = () => {
+const EUW: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(true);
@@ -98,9 +98,8 @@ const ChildrenWear: React.FC = () => {
                     const sub2 = product.sub_category2?.trim().toLowerCase() || "";
                     return (
                         category === "fashion clothing and fabrics" &&
-                        sub1 === "traditional clothing" &&
-                        sub2 ===
-                        "children’s traditional wear ( e.g., dress, mini dashikis, cheongsam, cultural dresses )"
+                        sub1 === "modern clothing with traditional influence" &&
+                        sub2 === "ethnic-inspired urban wear ( e.g., kimonos with modern, fusion kurtas, maasai beadwork clothing )"
                     );
                 });
                 console.log(filtered)
@@ -109,7 +108,7 @@ const ChildrenWear: React.FC = () => {
                 console.error("Error fetching products:", err);
                 const errorMessage = err.message.includes("Network")
                     ? "Network error. Please check your connection and try again."
-                    : "Failed to fetchChildren’s Traditional Wear products. Please try again.";
+                    : "Failed to fetch Ethnic-Inspired Urban Wear products. Please try again.";
                 setError(errorMessage);
             } finally {
                 setIsLoading(false);
@@ -160,21 +159,20 @@ const ChildrenWear: React.FC = () => {
                 </Link>
                 <FaChevronRight className="text-xs" aria-hidden="true" />
                 <Link
-                    to="/traditional-fashion"
+                    to="/modern-traditional"
                     className="transition-colors rounded hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
-                >
-                    Traditional Clothing
+                >Modern Clothing with Traditional Influence
                 </Link>
                 <FaChevronRight className="text-xs" aria-hidden="true" />
                 <span className="font-medium text-gray-800">
-                   Children’s Traditional Wear
+                    Ethnic-Inspired Urban Wear
                 </span>
             </motion.nav>
             <motion.h1
                 variants={childVariants}
                 className="mb-6 text-2xl font-bold text-gray-800"
             >
-               Children’s Traditional Wear
+                Ethnic-Inspired Urban Wear
             </motion.h1>
             {isLoading ? (
                 <motion.div
@@ -217,4 +215,4 @@ const ChildrenWear: React.FC = () => {
     );
 };
 
-export default ChildrenWear;
+export default EUW;
