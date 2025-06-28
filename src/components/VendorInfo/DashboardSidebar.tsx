@@ -66,7 +66,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
           <NavItem title="Orders" to="orders" Icon={ShoppingCart} />
           <NavItem
             title="Products"
-            subItems={["All Products", "New Product", "Auction Product"]}
+            subItems={["All Products", "New Product"]}
             Icon={Box}
           />
           <NavItem title="Customers" to="customers" Icon={Users} />

@@ -44,14 +44,21 @@ orderApi.interceptors.response.use(
   }
 );
 
-export interface Order {
+export interface Orders {
   _id: string;
-  orderId: string;
+  // orderId: string;
   orderDate: string;
-  customer: {
-    name: string;
+  buyerInfo: {
+    first_name: string;
+    last_name: string;
     email: string;
     phone: string;
+    address: string;
+    city: string;
+    country: string;
+    region: string;
+    apartment: string;
+    postalCode: number;
   };
   deliveryAddress: {
     street: string;
@@ -60,16 +67,16 @@ export interface Order {
     country: string;
     fullAddress: string;
   };
-  totalAmount: number;
-  status: "On Delivery" | "Delivered" | "Cancelled" | "Pending";
+  totalPrice: number;
+  status: "Processing" | "Delivered" | "Cancelled" | "Pending";
   items: Array<{
-    productId: string;
-    productName: string;
+    _id: string;
+    name: string;
     quantity: number;
     price: number;
     image: string;
   }>;
-  paymentStatus: "Paid" | "Pending" | "Failed";
+  payStatus: "Successful" | "Pending" | "Failed";
   createdAt: string;
   updatedAt: string;
 }
@@ -78,7 +85,7 @@ export interface GetVendorOrdersResponse {
   success: boolean;
   message: string;
   data: {
-    orders: Order[];
+    orders: Orders[];
     totalOrders: number;
     pagination: {
       currentPage: number;
@@ -97,9 +104,7 @@ export interface GetVendorOrdersParams {
   sortBy?: "newest" | "oldest";
 }
 
-export const getVendorOrders = async (
-  params: GetVendorOrdersParams
-): Promise<GetVendorOrdersResponse> => {
+export const getVendorOrders = async (params: any) => {
   const { token, page = 1, limit = 10, status, sortBy = "newest" } = params;
 
   // Build query parameters
@@ -120,8 +125,8 @@ export const getVendorOrders = async (
         Authorization: `Bearer ${token}`,
       },
     });
-
-    return response.data;
+    console.log(response);
+    return response;
   } catch (error) {
     console.error("Error fetching vendor orders:", error);
     throw error;
@@ -129,18 +134,11 @@ export const getVendorOrders = async (
 };
 
 // Get single order details
-export const getOrderDetails = async (
-  orderId: string,
-  token: string
-): Promise<Order> => {
+export const getOrderDetails = async (orderId: string) => {
   try {
-    const response = await orderApi.get(`/order/${orderId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await orderApi.get(`/order/get_one_order/${orderId}`);
 
-    return response.data.data;
+    return response;
   } catch (error) {
     console.error("Error fetching order details:", error);
     throw error;
@@ -148,53 +146,40 @@ export const getOrderDetails = async (
 };
 
 // Get single order by ID (using the new endpoint)
-export const getOneOrder = async (
-  orderId: string,
-  token: string
-): Promise<Order> => {
+export const getOneOrder = async (orderId: string) => {
   try {
-    const response = await orderApi.get(`/order/get_one_order/${orderId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await orderApi.get(`/order/get_one_order/${orderId}`);
 
-    return response.data.data;
+    console.log(response);
+
+    return response.data.order;
   } catch (error) {
     console.error("Error fetching single order:", error);
     throw error;
   }
 };
 
-// Update order status
-export interface UpdateOrderStatusParams {
-  orderId: string;
-  status: Order["status"];
-  token: string;
-}
+//   params: UpdateOrderStatusParams
+// ): Promise<Orders> => {
+//   const { orderId, status, token } = params;
 
-export const updateOrderStatus = async (
-  params: UpdateOrderStatusParams
-): Promise<Order> => {
-  const { orderId, status, token } = params;
+//   try {
+//     const response = await orderApi.patch(
+//       `/order/${orderId}/status`,
+//       { status },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
 
-  try {
-    const response = await orderApi.patch(
-      `/order/${orderId}/status`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return response.data.data;
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    throw error;
-  }
-};
+//     return response.data.data;
+//   } catch (error) {
+//     console.error("Error updating order status:", error);
+//     throw error;
+//   }
+// };
 
 // Get order statistics
 export interface OrderStats {
@@ -227,7 +212,7 @@ export const cancelOrder = async (
   orderId: string,
   token: string,
   reason?: string
-): Promise<Order> => {
+): Promise<Orders> => {
   try {
     const response = await orderApi.patch(
       `/order/${orderId}/cancel`,

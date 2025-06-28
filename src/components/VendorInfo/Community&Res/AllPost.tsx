@@ -110,16 +110,6 @@ export default function SocialFeed() {
   >({});
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  interface RootState {
-    vendor: {
-      token: string;
-      _id: string;
-      vendor: {
-        id: string;
-      };
-    };
-  }
-
   // interface PostImagesProps {
   //   images: string[];
   // }
@@ -161,7 +151,7 @@ export default function SocialFeed() {
   //   );
   // }
 
-  const user = useSelector((state: RootState) => state.vendor);
+  const user = useSelector((state: any) => state.vendor);
 
   // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
@@ -297,7 +287,7 @@ export default function SocialFeed() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex gap-3">
-                      {post?.posterType === "vendors" ? (
+                      {/* {post?.posterType === "vendors" ? (
                         <div className="w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white">
                           <p>{post?.poster?.userName?.charAt(0)}</p>
                         </div>
@@ -306,15 +296,26 @@ export default function SocialFeed() {
                           src={post?.poster?.community_Images}
                           alt={post?.author?.name}
                         />
+                      )} */}
+                      {!vendors?.avatar ? (
+                        <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                          {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                        </div>
+                      ) : (
+                        <img
+                          src={vendors?.avatar}
+                          alt="Vendor"
+                          className="w-10 h-10 rounded-full"
+                        />
                       )}
                       <div>
                         {post?.posterType === "vendors" ? (
                           <h3 className="font-semibold">
-                            {post?.poster?.userName}
+                            {post?.poster?.storeName}
                           </h3>
                         ) : (
                           <h3 className="font-semibold">
-                            {post?.poster?.name}
+                            {post?.poster?.storeName}
                           </h3>
                         )}
                         <p className="text-sm text-gray-500">
@@ -394,11 +395,17 @@ export default function SocialFeed() {
                         exit={{ opacity: 0, y: -20 }}
                       >
                         <div className="flex items-start gap-2">
-                          <Avatar
-                            src={comment?.author?.avatar}
-                            alt={comment?.author?.name}
-                            size="sm"
-                          />
+                          {!vendors?.avatar ? (
+                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                              {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                            </div>
+                          ) : (
+                            <img
+                              src={vendors?.avatar}
+                              alt="Vendor"
+                              className="w-10 h-10 rounded-full"
+                            />
+                          )}
                           <div className="flex-grow">
                             <p className="text-sm font-medium">
                               {comment?.comment_poster}
@@ -437,9 +444,7 @@ export default function SocialFeed() {
                                 }
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                              >
-                                😊
-                              </motion.button>
+                              ></motion.button>
                             </div>
                             {showEmojiPicker[comment.id] && (
                               <div
@@ -497,7 +502,11 @@ export default function SocialFeed() {
 
                   {/* Add Comment Input */}
                   <div className="flex items-center gap-2 mt-4">
-                    {/* <Avatar src={vendors[0].avatar} alt={vendors[0].name} size="sm" /> */}
+                    {/* <Avatar
+                      src={vendors[0]?.avatar}
+                      alt={vendors[0]?.name}
+                      size="sm"
+                    /> */}
                     <div className="relative flex-grow">
                       <input
                         type="text"
@@ -549,9 +558,7 @@ export default function SocialFeed() {
                         }
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
-                      >
-                        😊
-                      </motion.button>
+                      ></motion.button>
                     </div>
                     {showEmojiPicker[post.id] && (
                       <div
@@ -674,12 +681,12 @@ export default function SocialFeed() {
                       animate={{ scale: 1 }}
                       whileHover={{ scale: 1.05 }}
                       className={`px-3 py-2 rounded-full ${
-                        communities.admin === user?.vendor?.id
+                        communities.admin === user?.vendor?._id
                           ? "bg-orange-200 text-orange-800"
                           : "bg-blue-200 text-blue-800"
                       } text-sm ml-4 cursor-pointer`}
                     >
-                      {communities.admin === user?.vendor?.id
+                      {communities.admin === user?.vendor?._id
                         ? "Owner"
                         : "Member"}
                     </motion.span>

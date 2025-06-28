@@ -28,9 +28,7 @@ export default function ProfilePage() {
     description: string,
     image: File | null
   ) => {
-    // Implement the logic to save the edited community details
     console.log("Saving edited community:", { name, description, image });
-    // You'll need to implement the API call to update the community details here
   };
 
   const handleDelete = () => {
@@ -71,28 +69,25 @@ export default function ProfilePage() {
             {/*  Created By*/}
             <div className="flex items-center gap-2">
               <h2>Created by:</h2>
-              <span>{one_community?.admin?.userName}</span>
+              <span>{one_community?.admin?.storeName}</span>
             </div>
           </div>
           <div className="flex items-center">
             <h2 className="text-xl font-semibold">{one_community?.name}</h2>
-            {
-              one_community?.admin._id === user.vendor.id ?
-                <div className="flex items-center justify-between gap-3 ml-7">
-              <CiEdit
-                size={20}
-                className="text-blue-600 cursor-pointer"
-                onClick={() => setIsEditModalOpen(true)}
-              />
-              <MdDelete
-                size={20}
-                className="text-red-600 cursor-pointer"
-                onClick={() => setIsDeleteModalOpen(true)}
-              />
-            </div>
-               : null
-            }
-
+            {one_community?.admin._id === user.vendor._id ? (
+              <div className="flex items-center justify-between gap-3 ml-7">
+                <CiEdit
+                  size={20}
+                  className="text-blue-600 cursor-pointer"
+                  onClick={() => setIsEditModalOpen(true)}
+                />
+                <MdDelete
+                  size={20}
+                  className="text-red-600 cursor-pointer"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                />
+              </div>
+            ) : null}
           </div>
           <div className="flex items-center gap-1 text-sm text-gray-600">
             <span className="w-[600px]">{one_community?.description}</span>
@@ -136,7 +131,7 @@ export default function ProfilePage() {
           <button className="px-6 py-2 text-sm font-medium rounded-full bg-gray-50">
             Posts
           </button>
-          {one_community?.admin._id === user.vendor.id ? (
+          {one_community?.admin._id === user.vendor._id ? (
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -248,7 +243,7 @@ export default function ProfilePage() {
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <MdOutlineRateReview  className="w-4 h-4 text-gray-500" />
+                    <MdOutlineRateReview className="w-4 h-4 text-gray-500" />
                   </div>
                   <div className="flex items-center gap-1">
                     {/* <ImBin   className="w-4 h-4 text-gray-500" /> */}
@@ -279,9 +274,9 @@ export default function ProfilePage() {
         />
 
         <LeaveConfirmationModal
-        isOpen={isLeaveModalOpen}
-        onClose={() => setIsLeaveModalOpen(false)}
-        onConfirm={handleDelete}
+          isOpen={isLeaveModalOpen}
+          onClose={() => setIsLeaveModalOpen(false)}
+          onConfirm={handleDelete}
         />
       </div>
     </div>

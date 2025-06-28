@@ -1,6 +1,5 @@
-"use client";
-
 import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   Phone,
   Mail,
@@ -14,15 +13,40 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/redux/store";
-import { useOneOrder, useUpdateOrderStatus } from "@/hook/useOrders";
-import { Order } from "@/utils/orderVendorApi";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+// import { useSelector } from "react-redux";
+// import type { RootState } from "@/redux/store";
+import { useOneOrder } from "@/hook/useOrders";
+import type { Orders } from "@/utils/orderVendorApi";
+
+// Fix for default markers in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+interface LocationCoordinates {
+  lat: number;
+  lng: number;
+}
 
 const OrderDetailsPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const user: any = useSelector((state: RootState) => state.vendor);
+  // const user: any = useSelector((state: RootState) => state.vendor);
+
+  // New state for map functionality
+  const [coordinates, setCoordinates] = useState<LocationCoordinates | null>(
+    null
+  );
+  const [isGeocodingLoading, setIsGeocodingLoading] = useState(false);
+  const [geocodingError, setGeocodingError] = useState<string | null>(null);
 
   // Fetch order details
   const {
@@ -31,13 +55,58 @@ const OrderDetailsPage = () => {
     isError,
     error,
     refetch,
-  } = useOneOrder(orderId!, user?.token);
+  } = useOneOrder(orderId);
 
-  // Update order status mutation
-  const updateOrderStatusMutation = useUpdateOrderStatus();
+  // Geocoding function using Nominatim
+  const geocodeAddress = async (address: string) => {
+    if (!address) return;
 
-  const calculateTotal = (items: Order["items"]) => {
-    const subtotal = items.reduce(
+    setIsGeocodingLoading(true);
+    setGeocodingError(null);
+
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          address
+        )}&limit=1`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch location data");
+      }
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        const location = data[0];
+        setCoordinates({
+          lat: Number.parseFloat(location.lat),
+          lng: Number.parseFloat(location.lon),
+        });
+      } else {
+        setGeocodingError("Location not found");
+        // Fallback to Lagos, Nigeria coordinates
+        setCoordinates({ lat: 6.5244, lng: 3.3792 });
+      }
+    } catch (error) {
+      console.error("Geocoding error:", error);
+      setGeocodingError("Failed to load location");
+      // Fallback to Lagos, Nigeria coordinates
+      setCoordinates({ lat: 6.5244, lng: 3.3792 });
+    } finally {
+      setIsGeocodingLoading(false);
+    }
+  };
+
+  // Geocode address when order data is available
+  useEffect(() => {
+    if (order?.buyerInfo?.address) {
+      geocodeAddress(order.buyerInfo.address);
+    }
+  }, [order?.buyerInfo?.address]);
+
+  const calculateTotal = (items: Orders["items"]) => {
+    const subtotal = items?.reduce(
       (acc, item) => acc + item.price * item.quantity,
       0
     );
@@ -46,9 +115,9 @@ const OrderDetailsPage = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount);
   };
 
@@ -62,9 +131,9 @@ const OrderDetailsPage = () => {
     });
   };
 
-  const getStatusColor = (status: Order["status"]) => {
+  const getStatusColor = (status: Orders["status"]) => {
     switch (status) {
-      case "On Delivery":
+      case "Processing":
         return "bg-yellow-400 text-white";
       case "Delivered":
         return "bg-green-500 text-white";
@@ -77,23 +146,12 @@ const OrderDetailsPage = () => {
     }
   };
 
-  const handleStatusUpdate = (newStatus: Order["status"]) => {
-    if (!orderId || !user.token) return;
-
-    updateOrderStatusMutation.mutate({
-      orderId,
-      status: newStatus,
-      token: user.token,
-    });
-  };
-
-  const mapContainerStyle = {
-    width: "100%",
-    height: "100%",
-  };
+  // const mapContainerStyle = {
+  //   width: "100%",
+  //   height: "100%",
+  // };
 
   // Default location (you can update this based on delivery address)
-  const defaultLocation = { lat: 6.5244, lng: 3.3792 };
 
   // Loading state
   if (isLoading) {
@@ -168,34 +226,8 @@ const OrderDetailsPage = () => {
           </motion.button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
-            <p className="text-gray-600">Order #{order.orderId}</p>
+            <p className="text-gray-600">Order #{order._id}</p>
           </div>
-        </div>
-
-        {/* Status Update Buttons */}
-        <div className="flex gap-2">
-          {order.status !== "Delivered" && order.status !== "Cancelled" && (
-            <>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleStatusUpdate("On Delivery")}
-                disabled={updateOrderStatusMutation.isPending}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 disabled:opacity-50 transition-colors"
-              >
-                Mark as On Delivery
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleStatusUpdate("Delivered")}
-                disabled={updateOrderStatusMutation.isPending}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 transition-colors"
-              >
-                Mark as Delivered
-              </motion.button>
-            </>
-          )}
         </div>
       </div>
 
@@ -218,26 +250,67 @@ const OrderDetailsPage = () => {
           >
             {order.status}
           </div>
-          <div className="h-64 rounded overflow-hidden bg-gray-200">
-            <LoadScript
-              googleMapsApiKey={
-                process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "YOUR_API_KEY"
-              }
-            >
-              <GoogleMap
-                mapContainerStyle={mapContainerStyle}
-                center={defaultLocation}
-                zoom={14}
+
+          <div className="h-64 rounded overflow-hidden bg-gray-200 relative">
+            {isGeocodingLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                  <span className="text-gray-600">Loading map...</span>
+                </div>
+              </div>
+            ) : coordinates ? (
+              <MapContainer
+                center={[coordinates.lat, coordinates.lng]}
+                zoom={13}
+                style={{ height: "100%", width: "100%" }}
+                className="rounded"
               >
-                <Marker position={defaultLocation} />
-              </GoogleMap>
-            </LoadScript>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker position={[coordinates.lat, coordinates.lng]}>
+                  <Popup>
+                    <div className="text-center">
+                      <strong>Delivery Location</strong>
+                      <br />
+                      {order.buyerInfo?.address}
+                    </div>
+                  </Popup>
+                </Marker>
+              </MapContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-600">
+                    {geocodingError || "Unable to load map"}
+                  </p>
+                  {order.buyerInfo?.address && (
+                    <button
+                      onClick={() => geocodeAddress(order.buyerInfo.address)}
+                      className="mt-2 px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
+                    >
+                      Retry
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <h4 className="font-semibold text-gray-800 mb-2">
               Delivery Address
             </h4>
-            <p className="text-gray-600">{order.deliveryAddress.fullAddress}</p>
+            <p className="text-gray-600">{order?.buyerInfo?.address}</p>
+            {coordinates && (
+              <p className="text-sm text-gray-500 mt-1">
+                Coordinates: {coordinates.lat.toFixed(6)},{" "}
+                {coordinates.lng.toFixed(6)}
+              </p>
+            )}
           </div>
         </div>
 
@@ -252,12 +325,12 @@ const OrderDetailsPage = () => {
             <User className="w-20 h-20 text-white" />
           </div>
           <h3 className="font-bold text-lg text-center">
-            {order.customer.name}
+            {order.buyerInfo.first_name}
           </h3>
           <p className="text-gray-600 mb-4">Customer</p>
           <div className="flex space-x-3">
             <motion.a
-              href={`tel:${order.customer.phone}`}
+              href={`tel:${order.buyerInfo.phone}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="bg-orange-500 text-white p-3 rounded-full hover:bg-orange-600 transition-colors"
@@ -265,7 +338,7 @@ const OrderDetailsPage = () => {
               <Phone className="w-5 h-5" />
             </motion.a>
             <motion.a
-              href={`https://wa.me/${order.customer.phone.replace(/\D/g, "")}`}
+              href={`https://wa.me/${order.buyerInfo.phone.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1 }}
@@ -275,7 +348,7 @@ const OrderDetailsPage = () => {
               <FaWhatsapp className="w-5 h-5" />
             </motion.a>
             <motion.a
-              href={`mailto:${order.customer.email}`}
+              href={`mailto:${order.buyerInfo.email}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition-colors"
@@ -285,10 +358,10 @@ const OrderDetailsPage = () => {
           </div>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-600">
-              Phone: {order.customer.phone}
+              Phone: {order.buyerInfo.phone}
             </p>
             <p className="text-sm text-gray-600">
-              Email: {order.customer.email}
+              Email: {order.buyerInfo.email}
             </p>
           </div>
         </motion.div>
@@ -300,7 +373,7 @@ const OrderDetailsPage = () => {
             Order Items
           </h2>
           <div className="space-y-4">
-            {order.items.map((item, index) => (
+            {order?.items?.map((item: any, index: any) => (
               <div
                 key={index}
                 className="flex items-center justify-between border-b pb-4 last:border-b-0"
@@ -310,7 +383,7 @@ const OrderDetailsPage = () => {
                     {item.image ? (
                       <img
                         src={item.image || "/placeholder.svg"}
-                        alt={item.productName}
+                        alt={item.name}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -321,10 +394,10 @@ const OrderDetailsPage = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800">
-                      {item.productName}
+                      {order.product.name}
                     </h4>
                     <p className="text-sm text-gray-500">
-                      Product ID: {item.productId}
+                      Product ID: {order.product._id}
                     </p>
                   </div>
                 </div>
@@ -332,7 +405,7 @@ const OrderDetailsPage = () => {
                   <p className="text-sm text-gray-500">
                     Quantity: {item.quantity}
                   </p>
-                  <p className="font-bold">{formatCurrency(item.price)}</p>
+                  <p className="font-bold">{formatCurrency(order.price)}</p>
                   <p className="text-sm text-gray-600">
                     Total: {formatCurrency(item.price * item.quantity)}
                   </p>
@@ -369,20 +442,20 @@ const OrderDetailsPage = () => {
           <div className="space-y-4">
             <div>
               <h4 className="font-semibold text-gray-800">Order Date</h4>
-              <p className="text-gray-600">{formatDate(order.orderDate)}</p>
+              <p className="text-gray-600">{formatDate(order.createdAt)}</p>
             </div>
             <div>
               <h4 className="font-semibold text-gray-800">Payment Status</h4>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                  order.paymentStatus === "Paid"
-                    ? "bg-green-100 text-green-800"
-                    : order.paymentStatus === "Pending"
+                  order.payStatus === "Successful"
+                    ? "bg-green-600 text-green-100"
+                    : order.payStatus === "Pending"
                     ? "bg-yellow-100 text-yellow-800"
-                    : "bg-red-100 text-red-800"
+                    : "bg-red-100 text-green-800"
                 }`}
               >
-                {order.paymentStatus}
+                {order.payStatus}
               </span>
             </div>
             <div>

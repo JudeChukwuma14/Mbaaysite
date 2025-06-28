@@ -108,15 +108,6 @@ export default function CreatePostModal({
     };
   }, []);
 
-  // const isApiError = (error: unknown): error is ApiError => {
-  //   return (
-  //     typeof error === "object" &&
-  //     error !== null &&
-  //     "response" in error &&
-  //     typeof (error as ApiError).response === "object"
-  //   )
-  // }
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
