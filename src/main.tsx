@@ -26,7 +26,6 @@
 
 
 import { createRoot } from "react-dom/client";
-import "./index.css";
 import { RouterProvider } from "react-router-dom";
 import { mainRouter } from "./router/mainRouter";
 import { ToastContainer } from "react-toastify";
@@ -38,7 +37,7 @@ import { DarkModeProvider } from "./components/Context/DarkModeContext";
 import { I18nextProvider } from "react-i18next";
 import i18next from "./utils/i18n";
 import ErrorBoundary from "./components/Error/ErrorBoundary";
-
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <Provider store={store}>

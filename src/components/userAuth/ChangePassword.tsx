@@ -7,7 +7,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
-import { CreateNewPassword } from "@/utils/vendorApi";
+import { CreateNewPassword } from "@/utils/ForgetpassApi";
 import { useNavigate } from "react-router-dom";
 
 interface ResetPasswordFormData {
@@ -26,21 +26,52 @@ const ResetPassword: React.FC = () => {
     formState: { errors },
   } = useForm<ResetPasswordFormData>();
 
+  // const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data) => {
+  //   setIsLoading(true);
+  //   try {
+  //     // Call API to reset password
+  //     const response = await CreateNewPassword(data.email, data.otp, data.newPassword);
+  //     if(response.message){
+  //       toast.success(response.message, {
+  //       position: "top-right",
+  //       autoClose: 3000,
+  //     })
+  //     navigate("/login-vendor");
+  //     }else{
+  //       toast.error("Please retry")
+  //     }
+
+  //   } catch (err) {
+  //     toast.error((err as Error)?.message || String(err), {
+  //           position: "top-right",
+  //           autoClose: 4000,
+  //         });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data) => {
     setIsLoading(true);
     try {
-      // Call API to reset password
       const response = await CreateNewPassword(data.email, data.otp, data.newPassword);
-      toast.success(response.message, {
-        position: "top-right",
-        autoClose: 3000,
-      })
-      navigate("/login-vendor");
+      const message = response?.message;
+      console.log(message)
+      if (message) {
+        toast.success(message, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+        navigate("/login-vendor");
+      } else {
+        toast.error("Password reset failed. Please try again.");
+      }
     } catch (err) {
-      toast.error((err as Error)?.message || String(err), {
-            position: "top-right",
-            autoClose: 4000,
-          });
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 4000,
+      });
     } finally {
       setIsLoading(false);
     }

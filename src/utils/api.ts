@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/user";
+const API_BASE_URL = " https://mbayy-be.onrender.com/api/v1/user";
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -60,3 +60,4 @@ export const LoginUser = async (userData: any) => {
     throw error.response?.data?.message || "Failed to Login account";
   }
 };
+

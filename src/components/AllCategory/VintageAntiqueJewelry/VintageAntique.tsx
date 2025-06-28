@@ -30,7 +30,7 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-  { image: "https://i.pinimg.com/736x/1b/46/51/1b4651a63d04892434940d1a7fe1e5c4.jpg", text: "Vintage Jewelry", link: "/vintage-jewelry" },
+  { image: "https://i.pinimg.com/736x/1b/46/51/1b4651a63d04892434940d1a7fe1e5c4.jpg", text: "Vintage Jewelry", link: "/vintage-jewelrys" },
   { image: "https://i.pinimg.com/736x/bb/b1/69/bbb1694f4176b6cc2af031b87ef24c45.jpg", text: "Religious & Spiritual Jewelry", link: "/religious-jewelry" },
   { image: "https://i.pinimg.com/736x/b3/e6/4d/b3e64d880d83ac1032eb6f35295429c9.jpg", text: "Cultural Gemstones", link: "/cultural-gemstones" },
   { image: "https://i.pinimg.com/736x/e9/ff/ab/e9ffab23a31618920c2117f2660dc2ef.jpg", text: "Festive & Ritual Jewelry", link: "/festive-jewelry" },

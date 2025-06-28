@@ -1,154 +1,275 @@
-import React, { useState } from "react";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 
+import { useEffect, useState } from "react"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react"
+import { confirmOrderReceived, getOrdersWithSession } from "@/utils/getOrderApi"
+import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils"
+
+// Mock data structure
 interface Order {
-  id: string;
-  date: string;
-  vendor: string;
-  location: string;
-  amount: string;
-  status: "On Delivery" | "Delivered" | "Cancelled";
+  id: string
+  buyer: {
+    fullName: string
+    email: string
+    phone: string
+  }
+  shippingAddress: {
+    street: string
+    city: string
+    region: string
+    country: string
+    postalCode: string
+  }
+  product: {
+    name: string
+    category: string
+    subCategory: string
+    image: string
+    price: number
+  }
+  quantity: number
+  totalPrice: number
+  paymentStatus: "Paid" | "Pending" | "Failed"
+  orderStatus: "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed"
+  paymentOption: string
+  createdAt: string
 }
 
-const OrderList: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("All status");
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const orders: Order[] = Array.from({ length: 50 }, (_, i) => ({
-    id: `#123450${i + 1}`,
-    date: "Nov 20th 2024 09:21AM",
-    vendor: "James Ikenna",
-    location: "Center Park Orange St, London",
-    amount: "$50,000",
-    status: i % 3 === 0 ? "On Delivery" : i % 3 === 1 ? "Delivered" : "Cancelled",
-  }));
 
-  const tabs = ["All status", "On Delivery", "Delivered", "Cancelled"];
+export default function OrderList() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const data = await getOrdersWithSession();
+        setOrders(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadOrders();
+  }, []);
 
-  const filteredOrders =
-    activeTab === "All status"
-      ? orders
-      : orders.filter((order) => order.status === activeTab);
 
-  const ordersPerPage = 10;
-  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * ordersPerPage,
-    currentPage * ordersPerPage
-  );
-
-  const handlePageChange = (direction: "prev" | "next") => {
-    setCurrentPage((prev) => {
-      if (direction === "prev" && prev > 1) return prev - 1;
-      if (direction === "next" && prev < totalPages) return prev + 1;
-      return prev;
-    });
+  const handleStatusChange = async (orderId: string, newStatus: Order["orderStatus"]) => {
+    try {
+      if (newStatus === "Delivered") {
+        await confirmOrderReceived(orderId);
+      }
+      setOrders(orders.map(order =>
+        order.id === orderId ? { ...order, orderStatus: newStatus } : order
+      ));
+    } catch (err) {
+      console.error("Failed to update status:", err);
+      setError("Failed to update order status");
+    }
   };
 
-  return (
-    <div className="container mx-auto p-4">
-      {/* Tabs */}
-      <div className="flex space-x-4 mb-4 border-b">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => {
-              setActiveTab(tab);
-              setCurrentPage(1);
-            }}
-            className={`px-4 py-2 font-bold ${
-              activeTab === tab
-                ? "border-b-2 border-orange-500 text-orange-500"
-                : "text-gray-500 hover:text-orange-500"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+  const handleViewDetails = (orderId: string) => {
+    // Handle view details action
+    console.log(`Viewing details for order ${orderId}`)
+  }
 
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white rounded shadow">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2 text-left">Order ID</th>
-              <th className="px-4 py-2 text-left">Date</th>
-              <th className="px-4 py-2 text-left">Vendor</th>
-              <th className="px-4 py-2 text-left">Location</th>
-              <th className="px-4 py-2 text-left">Amount</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedOrders.map((order) => (
-              <tr key={order.id} className="border-t">
-                <td className="px-4 py-2">{order.id}</td>
-                <td className="px-4 py-2">{order.date}</td>
-                <td className="px-4 py-2">{order.vendor}</td>
-                <td className="px-4 py-2">{order.location}</td>
-                <td className="px-4 py-2">{order.amount}</td>
-                <td className="px-4 py-2">
-                  <span
-                    className={`px-3 py-1 rounded text-sm font-bold ${
-                      order.status === "On Delivery"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : order.status === "Delivered"
-                        ? "bg-green-100 text-green-600"
-                        : "bg-red-100 text-red-600"
-                    }`}
-                  >
-                    {order.status}
-                  </span>
-                </td>
-                <td className="px-4 py-2">
-                  <button className="text-blue-500 hover:underline">
-                    View details
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
 
-      {/* Pagination */}
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => handlePageChange("prev")}
-          className="flex items-center space-x-2 text-gray-500 hover:text-orange-500 disabled:opacity-50"
-          disabled={currentPage === 1}
-        >
-          <FaAngleLeft />
-          <span>Previous</span>
-        </button>
-        <div className="flex space-x-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-orange-500 text-white"
-                  : "text-gray-500 hover:bg-gray-200"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={() => handlePageChange("next")}
-          className="flex items-center space-x-2 text-gray-500 hover:text-orange-500 disabled:opacity-50"
-          disabled={currentPage === totalPages}
-        >
-          <span>Next</span>
-          <FaAngleRight />
-        </button>
+  if (loading) return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-lg text-gray-700">Loading orders...</p>
       </div>
     </div>
   );
-};
 
-export default OrderList;
+  if (error) return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6 flex items-center justify-center">
+      <div className="text-center text-red-500">
+        <p className="text-lg font-medium">{error}</p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => window.location.reload()}
+        >
+          Retry
+        </Button>
+      </div>
+    </div>
+  );
+
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Management</h1>
+          <p className="text-gray-600">Manage and track all customer orders</p>
+        </div>
+
+        {/* Orders List */}
+        <div className="space-y-4">
+          {orders.map((order) => (
+            <Card key={order.id} className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-semibold text-gray-900">#{order.id}</span>
+                    <Badge className={`${getStatusColor(order.orderStatus)} border`}>
+                      {order.orderStatus}
+                    </Badge>
+                    <Badge className={`${getPaymentStatusColor(order.paymentStatus)} border`}>
+                      {order.paymentStatus}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <Calendar className="h-4 w-4" />
+                    {formatDate(order.createdAt)}
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      Customer Details
+                    </h3>
+                    <div className="space-y-2 text-sm">
+                      <p className="font-medium text-gray-900">{order.buyer.fullName}</p>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Mail className="h-3 w-3" />
+                        {order.buyer.email}
+                      </div>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Phone className="h-3 w-3" />
+                        {order.buyer.phone}
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <h4 className="font-medium text-gray-900 flex items-center gap-2 mb-2">
+                        <MapPin className="h-4 w-4" />
+                        Shipping Address
+                      </h4>
+                      <div className="text-sm text-gray-600 leading-relaxed">
+                        <p>{order.shippingAddress.street}</p>
+                        <p>
+                          {order.shippingAddress.city}, {order.shippingAddress.region}{" "}
+                          {order.shippingAddress.postalCode}
+                        </p>
+                        <p>{order.shippingAddress.country}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <Package className="h-4 w-4" />
+                      Product Details
+                    </h3>
+                    <div className="flex gap-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={order.product.image}
+                          alt={order.product.name}
+                          width={80}
+                          height={80}
+                          className="rounded-lg border border-gray-200 object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <h4 className="font-medium text-gray-900 leading-tight">{order.product.name}</h4>
+                        <div className="text-sm text-gray-600">
+                          <p>
+                            {order.product.category} → {order.product.subCategory}
+                          </p>
+                          <p className="mt-1">
+                            Quantity: <span className="font-medium">{order.quantity}</span>
+                          </p>
+                          <p className="mt-1">
+                            Price: <span className="font-medium">₦{order.product.price.toFixed(2)}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      <CreditCard className="h-4 w-4" />
+                      Order Summary
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Total Amount:</span>
+                        <span className="text-lg font-bold text-gray-900">₦{order.totalPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Payment Method:</span>
+                        <span className="text-sm font-medium text-gray-900">{order.paymentOption}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(order.id)}
+                        className="flex items-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View Details
+                      </Button>
+
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                          >
+                            Change Status
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(order.id, "Delivered")}
+                            disabled={order.orderStatus === "Delivered"}
+                          >
+                            Mark as Delivered
+                          </DropdownMenuItem>
+                          <DropdownMenuItem disabled>Processing</DropdownMenuItem>
+                          <DropdownMenuItem disabled>Shipped</DropdownMenuItem>
+                          <DropdownMenuItem disabled>Cancelled</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Empty State (if no orders) */}
+        {orders.length === 0 && (
+          <Card className="bg-white shadow-sm border border-gray-200">
+            <CardContent className="text-center py-12">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders found</h3>
+              <p className="text-gray-600">Orders will appear here when customers place them.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  )
+}

@@ -12,18 +12,19 @@ interface OrderCartItem {
 
 interface OrderPricing {
   subtotal: string;
-  shipping: number;
+  shipping: string; // Changed to string
   tax: string;
   discount: string;
-  commission: string; // Added commission
+  commission: string;
   total: string;
 }
 
 export interface OrderData {
+  id?:string
   first_name: string;
   last_name: string;
   email: string;
-  phone: string;
+  phone: string;  
   address: string;
   country: string;
   apartment: string;
@@ -44,16 +45,17 @@ interface CheckoutResponse {
   message?: string;
 }
 
-interface PaymentStatusResponse {
-  status: "success" | "failed";
+export interface PaymentStatusResponse {
+  message: string;
   orderId: string;
-  orderDetails?: OrderData;
+  orderData?: OrderData;
 }
 
 const api = axios.create({
-  baseURL: "https://mbayy-be.onrender.com/api/v1/order",
+  baseURL: "https://mbayy-be.vercel.app/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
+
 
 api.interceptors.response.use(
   (response) => response,
@@ -74,6 +76,7 @@ api.interceptors.response.use(
   }
 );
 
+
 export const submitOrder = async (
   sessionId: string,
   orderData: OrderData
@@ -82,7 +85,11 @@ export const submitOrder = async (
     const response = await api.post(`/order_checkout/${sessionId}`, orderData);
     return response.data.data || response.data; // Handle nested data
   } catch (error: any) {
-    console.error("Order Submission Error:", error.message, error.response?.data);
+    console.error(
+      "Order Submission Error:",
+      error.message,
+      error.response?.data
+    );
     throw new Error(error.response?.data?.message || "Failed to place order");
   }
 };

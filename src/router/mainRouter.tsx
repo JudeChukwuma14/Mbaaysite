@@ -12,6 +12,7 @@ import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
 
+
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -586,58 +587,27 @@ const Spicesi = lazy(
     )
 );
 
-// Fashion Subcategory
-const Accessories = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/Accessories")
-);
-const EthnicWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/EthnicWear")
-);
-const FashionJewelry = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/FashionJewelry")
-);
-const FootWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/FootWear")
-);
-const KidFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/KidFashion")
-);
-const MenFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/MenFashion")
-);
-const SportWear = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/SportWear")
-);
-const WomenFashion = lazy(
-  () => import("@/components/AllCategory/Fashion/subcategory/WomenFashion")
-);
 
 // Furniture
-const BedroomFurniture = lazy(
+const Seating = lazy(
   () =>
-    import("@/components/AllCategory/Furniture/subcategory/BedroomFurniture")
+    import("@/components/AllCategory/Furniture/subcategory/Seating")
 );
-const ChairsStools = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/ChairsStools")
+const Table = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/Table")
 );
-const Dresser = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/Dresser")
+const Storage = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/Storage")
 );
-const LivingRoom = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/LivingRoom")
+const BedroomItem = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/BedroomItem")
 );
-const OfficeFurniture = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/OfficeFurniture")
+const DecorUtility = lazy(
+  () => import("@/components/AllCategory/Furniture/subcategory/DecorUtility")
 );
-const OutdoorFurniture = lazy(
+const OutdoorPatio = lazy(
   () =>
-    import("@/components/AllCategory/Furniture/subcategory/OutdoorFurniture")
-);
-const SofasCouches = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/SofasCouches")
-);
-const TablesDesks = lazy(
-  () => import("@/components/AllCategory/Furniture/subcategory/TablesDesks")
+    import("@/components/AllCategory/Furniture/subcategory/OutdoorPatio")
 );
 
 // Local Food
@@ -744,6 +714,7 @@ const TraditionalSweet = lazy(
     )
 );
 
+
 // PAYMENT
 const SuccessPayment = lazy(
   () => import("@/components/Payment/PaymentSuccess")
@@ -803,6 +774,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       { path: "/art", element: withSuspense(Art) },
+      { path: "/traditional-items", element: withSuspense(TraditionalRi) },
 
       // Art Subcategory Page
       { path: "/paintings", element: withSuspense(Paintings) },
@@ -918,6 +890,12 @@ const routesConfig: RouteObject[] = [
       { path: "/Vintage-Religious", element: withSuspense(VintageReligious) },
       { path: "/Vintage-Storage", element: withSuspense(VintageStorage) },
 
+      // Vintage Jewelry
+
+      {path: "/festive-jewelry", element: withSuspense(FestiveRitualJewelry)},
+      {path: "/Vintage-jewelrys", element: withSuspense(VintageJewelrys)},
+      {path: "/cultural-gemstones", element: withSuspense(CulturalGemstones)},
+      {path: "/religious-jewelry", element: withSuspense(ReligiousSpiritualJewelry)},
       // Plant Seed
 
       { path: "/plant", element: withSuspense(Plant) },
@@ -982,24 +960,63 @@ const routesConfig: RouteObject[] = [
       { path: "/TraditionalSweet", element: withSuspense(TraditionalSweet) },
 
       // Furniture Subcategory
-      { path: "/BedroomFurniture", element: withSuspense(BedroomFurniture) },
-      { path: "/ChairsStools", element: withSuspense(ChairsStools) },
-      { path: "/Dresser", element: withSuspense(Dresser) },
-      { path: "/LivingRoom", element: withSuspense(LivingRoom) },
-      { path: "/OfficeFurniture", element: withSuspense(OfficeFurniture) },
-      { path: "/OutdoorFurniture", element: withSuspense(OutdoorFurniture) },
-      { path: "/SofasCouches", element: withSuspense(SofasCouches) },
-      { path: "/TablesDesks", element: withSuspense(TablesDesks) },
+      { path: "/seating", element: withSuspense(Seating) },
+      { path: "/tables", element: withSuspense(Table) },
+      { path: "/storage", element: withSuspense(Storage) },
+      { path: "/bedroom-items", element: withSuspense(BedroomItem) },
+      { path: "/decor-utility", element: withSuspense(DecorUtility) },
+      { path: "/outdoor-patio", element: withSuspense(OutdoorPatio) },
 
+      // TRI
+      { path: "/religious-artifacts", element: withSuspense(ReligiousAS) },
+      { path: "/ceremonial-clothing", element: withSuspense(Tcc) },
+      { path: "/religious-jewelry", element: withSuspense(Rja) },
+      { path: "/altars-shrines", element: withSuspense(As) },
+      { path: "/ceremonial-ritual-tools", element: withSuspense(Crt) },
+      { path: "/Spiritual Healing & Meditation Items", element: withSuspense(Shmi) },
+      { path: "/cultural-festive", element: withSuspense(Cfi) },
+      { path: "/ritual-tools", element: withSuspense(Rt) },
+
+            
       // Fashion Subcategory
-      { path: "/Accessories", element: withSuspense(Accessories) },
-      { path: "/EthnicWear", element: withSuspense(EthnicWear) },
-      { path: "/FashionJewelry", element: withSuspense(FashionJewelry) },
-      { path: "/FootWear", element: withSuspense(FootWear) },
-      { path: "/KidFashion", element: withSuspense(KidFashion) },
-      { path: "/MenFashion", element: withSuspense(MenFashion) },
-      { path: "/SportWear", element: withSuspense(SportWear) },
-      { path: "/WomenFashion", element: withSuspense(WomenFashion) },
+      { path: "/traditional-fashion", element: withSuspense(TF) },
+      { path: "/men-tf-wear", element: withSuspense(MenWear) },
+      { path: "/women-tf-wear", element: withSuspense(WomenWear) },
+      { path: "/children-tf-wear", element: withSuspense(ChildrenWear) },
+      { path: "/unisex-tf-wear", element: withSuspense(Unsex) },
+
+      { path: "/modern-traditional", element: withSuspense(MT) },
+      { path: "/contemporary-african-fashion", element: withSuspense(CAF) },
+      { path: "/ethnic-inspired-urban-wear", element: withSuspense(EUW) },
+      { path: "/fusion-clothing", element: withSuspense(FUC) },
+      { path: "/custom-made-ethnic-fashion", element: withSuspense(CMF) },
+
+      { path: "/footwear", element: withSuspense(FW) },
+      { path: "/traditional-shoes", element: withSuspense(TSS) },
+      { path: "/leather-handmade", element: withSuspense(LHS) },
+      { path: "/modern-shoes", element: withSuspense(MSC) },
+      { path: "/custom-shoes-sandals", element: withSuspense(CSS) },
+
+      { path: "/accessories", element: withSuspense(AC) },
+      { path: "/belts-sashes", element: withSuspense(BSS) },
+      { path: "/bags-pouches", element: withSuspense(BP) },
+      { path: "/headwear-scarves", element: withSuspense(HS) },
+      { path: "/jewelry-adornments", element: withSuspense(JA) },
+
+
+
+
+
+
+
+      { path: "/fabrics", element: withSuspense(FB) },
+      { path: "/occasion-footwear", element: withSuspense(OF) },
+      { path: "/festival-clothing", element: withSuspense(FC) },
+      { path: "/regional-fashion", element: withSuspense(RF) },
+      { path: "/seasonal-fashion", element: withSuspense(SF) },
+      { path: "/embroidery", element: withSuspense(EB) },
+      { path: "/bespoke", element: withSuspense(BS) },
+      { path: "/sustainable", element: withSuspense(ST) },
     ],
   },
   {
@@ -1023,7 +1040,6 @@ const routesConfig: RouteObject[] = [
   {
     path: "/app",
     element: <ProtectedVendor />,
-
     children: [
       {
         element: <VendorLayout />,
@@ -1092,10 +1108,11 @@ const routesConfig: RouteObject[] = [
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
-  // Payment
+  // Payment 
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
   { path: "/failed", element: withSuspense(FaliedPayment) },
   { path: "/payment_callback", element: withSuspense(PaymentCallback) },
+
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
 ];

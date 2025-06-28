@@ -1,4 +1,3 @@
-// src/components/CheckoutForm.tsx
 import { useState, useEffect } from "react";
 import { useForm, Controller, UseFormRegister, Control, FieldErrors } from "react-hook-form";
 import { CountryDropdown, RegionDropdown } from "react-country-region-selector";
@@ -16,9 +15,9 @@ import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { CiDeliveryTruck } from "react-icons/ci";
-import { getSessionId } from "@/utils/session";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
+import { initializeSession } from "@/redux/slices/sessionSlice";
 
 interface FormValues {
   first_name: string;
@@ -341,11 +340,13 @@ function PaymentDetails({
   activePaymentOption,
   setActivePaymentOption,
   isSubmitting,
+  isSessionLoading, // Add isSessionLoading prop
 }: {
   register: UseFormRegister<FormValues>;
   activePaymentOption: "Pay Before Delivery" | "Pay After Delivery";
   setActivePaymentOption: (option: "Pay Before Delivery" | "Pay After Delivery") => void;
   isSubmitting: boolean;
+  isSessionLoading: boolean; // Add isSessionLoading prop
 }) {
   const paymentOptions = [
     { option: "Pay Before Delivery", label: "Pay Now", icon: FaCreditCard },
@@ -385,7 +386,7 @@ function PaymentDetails({
                 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isSessionLoading}
                 aria-label={`Select ${label} payment option`}
               >
                 <Icon className="w-5 h-5" />
@@ -429,16 +430,16 @@ function PaymentDetails({
 
         <motion.div
           className="flex justify-end mt-6"
-          whileHover={{ scale: isSubmitting ? 1 : 1.02 }}
-          whileTap={{ scale: isSubmitting ? 1 : 0.98 }}
+          whileHover={{ scale: isSubmitting || isSessionLoading ? 1 : 1.02 }}
+          whileTap={{ scale: isSubmitting || isSessionLoading ? 1 : 0.98 }}
         >
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSessionLoading}
             className="w-full px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto"
             aria-label="Place order"
           >
-            {isSubmitting ? (
+            {isSubmitting || isSessionLoading ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
                 Processing...
@@ -455,6 +456,7 @@ function PaymentDetails({
 
 export default function CheckoutForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSessionLoading, setIsSessionLoading] = useState(false); // Add session loading state
   const [activePaymentOption, setActivePaymentOption] = useState<"Pay Before Delivery" | "Pay After Delivery">("Pay Before Delivery");
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isCityLoading, setIsCityLoading] = useState(false);
@@ -464,6 +466,7 @@ export default function CheckoutForm() {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
 
   const {
     register,
@@ -492,6 +495,15 @@ export default function CheckoutForm() {
   const selectedCountry = watch("country");
   const selectedRegion = watch("region");
   const couponCode = watch("couponCode");
+
+  // Initialize sessionId if missing
+  useEffect(() => {
+    if (!sessionId) {
+      setIsSessionLoading(true);
+      dispatch(initializeSession());
+      setIsSessionLoading(false);
+    }
+  }, [dispatch, sessionId]);
 
   useEffect(() => {
     setValue("couponCode", cartCoupon || "");
@@ -543,6 +555,10 @@ export default function CheckoutForm() {
       toast.error("Your cart is empty. Add items before applying a coupon.");
       return;
     }
+    if (!sessionId) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
     setCouponLoading(true);
     setTimeout(() => {
       if (code.toUpperCase() === "SUMMER10") {
@@ -561,10 +577,13 @@ export default function CheckoutForm() {
       toast.error("Your cart is empty. Please add items before checking out.");
       return;
     }
+    if (!sessionId) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const sessionId = getSessionId();
       const pricing = calculatePricing(cartItems, discountRate);
 
       const address = [
@@ -593,18 +612,11 @@ export default function CheckoutForm() {
         cartItems: cartItems.map((item) => ({
           productId: item.id,
           name: item.name,
-          price: item.price,
-          quantity: item.quantity,
+          price: Number(item.price), // Ensure number
+          quantity: Number(item.quantity), // Ensure number
           image: item.image,
         })),
-        pricing: {
-          subtotal: pricing.subtotal.toFixed(2),
-          shipping: pricing.shipping,
-          tax: pricing.tax.toFixed(2),
-          discount: pricing.discount.toFixed(2),
-          commission: pricing.commission.toFixed(2), // Added commission
-          total: pricing.total.toFixed(2),
-        },
+        pricing,
       };
 
       const response = await submitOrder(sessionId, orderData);
@@ -667,6 +679,7 @@ export default function CheckoutForm() {
               activePaymentOption={activePaymentOption}
               setActivePaymentOption={setActivePaymentOption}
               isSubmitting={isSubmitting}
+              isSessionLoading={isSessionLoading} // Pass isSessionLoading
             />
           </form>
         </motion.div>

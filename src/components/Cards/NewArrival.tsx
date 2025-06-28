@@ -1,6 +1,4 @@
-"use client";
 
-import type React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { addItem } from "@/redux/slices/cartSlice";
@@ -9,8 +7,9 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { convertPrice } from "@/utils/currencyCoverter";
-import { getSessionId } from "@/utils/session";
 import { addToCart } from "@/utils/cartApi";
+import { initializeSession } from "@/redux/slices/sessionSlice";
+import { useEffect } from "react";
 
 
 interface Product {
@@ -29,26 +28,41 @@ interface NewArrivalProps {
 const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   const dispatch = useDispatch();
   const { currency, language } = useSelector((state: RootState) => state.settings);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
+
+  // Ensure sessionId is initialized
+  useEffect(() => {
+    if (!sessionId) {
+      dispatch(initializeSession());
+    }
+  }, [dispatch, sessionId]);
 
   const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const sessionId = getSessionId()
+
+    if (!sessionId) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
 
     try {
-      await addToCart(sessionId, product._id, 1)
+      await addToCart(sessionId, product._id, 1);
       dispatch(
         addItem({
           id: product._id,
           name: product.name,
           price: product.price,
           quantity: 1,
-          image: product.images[0] || product.poster,
+          image: product.images[0] || product.poster || "/placeholder.svg",
         })
       );
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
-
+      toast.error((error as Error)?.message || "Failed to add item to cart", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     }
   };
 

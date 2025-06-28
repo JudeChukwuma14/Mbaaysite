@@ -4,9 +4,9 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { getPaymentStatus } from "@/utils/orderApi";
+import { getPaymentStatus, PaymentStatusResponse, OrderData } from "@/utils/orderApi";
 import { clearCart } from "@/redux/slices/cartSlice";
-import { clearSessionId } from "@/utils/session";
+
 
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
@@ -16,10 +16,6 @@ export default function PaymentCallback() {
 
   const handleClearCart = () => {
     try {
-      // Reset sessionId to clear server-side cart
-      const newSessionId = clearSessionId();
-      console.log("Session ID reset to:", newSessionId);
-      // Clear client-side Redux cart
       dispatch(clearCart());
       console.log("Cart cleared successfully");
     } catch (error: any) {
@@ -28,11 +24,63 @@ export default function PaymentCallback() {
     }
   };
 
+  const mapBackendOrderData = (backendOrderData: any[]): OrderData | null => {
+    console.log("Mapping backend orderData:", JSON.stringify(backendOrderData, null, 2));
+
+    if (!backendOrderData || !Array.isArray(backendOrderData) || backendOrderData.length === 0) {
+      console.warn("Invalid or empty orderData array:", backendOrderData);
+      return null;
+    }
+
+    const firstOrder = backendOrderData[0].order;
+    const product = backendOrderData[0].product;
+
+    if (!firstOrder || !product || !firstOrder.buyerInfo) {
+      console.warn("Missing order, product, or buyerInfo in orderData:", backendOrderData);
+      return null;
+    }
+
+    const mappedData: OrderData = {
+      first_name: firstOrder.buyerInfo.first_name || "",
+      last_name: firstOrder.buyerInfo.last_name || "",
+      email: firstOrder.buyerInfo.email || "",
+      phone: firstOrder.buyerInfo.phone || "",
+      address: firstOrder.buyerInfo.address || "",
+      country: firstOrder.buyerInfo.country || "",
+      apartment: firstOrder.buyerInfo.apartment || "",
+      city: firstOrder.buyerInfo.city || "",
+      region: firstOrder.buyerInfo.region || "",
+      postalCode: firstOrder.buyerInfo.postalCode || "",
+      couponCode: "",
+      paymentOption: firstOrder.paymentOption || "Pay Before Delivery",
+      cartItems: [
+        {
+          productId: product._id || "",
+          name: product.name || "",
+          price: product.price || 0,
+          quantity: firstOrder.quantity || 1,
+          image: product.images?.[0] || "",
+        },
+      ],
+      pricing: {
+        subtotal: firstOrder.totalPrice?.toString() || "0.00",
+        shipping: "0.00",
+        tax: "0.00",
+        discount: "0.00",
+        commission: "0.00",
+        total: firstOrder.totalPrice?.toString() || "0.00",
+      },
+    };
+
+    console.log("Mapped orderData:", JSON.stringify(mappedData, null, 2));
+    return mappedData;
+  };
+
   useEffect(() => {
     const verifyPayment = async () => {
       const reference = searchParams.get("reference");
       if (!reference) {
-        console.error("No reference provided in URL query");
+        console.error("No reference provided in URL query", { searchParams: Object.fromEntries(searchParams) });
         toast.error("Invalid payment reference");
         navigate("/failed", {
           state: {
@@ -47,57 +95,49 @@ export default function PaymentCallback() {
       console.log("Verifying payment with reference:", reference);
 
       try {
-        const response = await getPaymentStatus(reference);
+        const response: PaymentStatusResponse = await getPaymentStatus(reference);
         console.log("Payment Status Response:", JSON.stringify(response, null, 2));
 
-        // Check orderId
-        if (!response.orderId || typeof response.orderId !== "string" || response.orderId.trim() === "") {
-          console.warn("Invalid or missing orderId in response:", response);
-          toast.error("Payment verification failed due to missing order information.");
-          navigate("/failed", {
-            state: {
-              errorCode: "ERR_MISSING_ORDER_ID",
-              errorMessage: "Order ID is missing or invalid.",
-            },
+        // Map backend orderData to expected OrderData
+        const mappedOrderData = mapBackendOrderData(
+          Array.isArray(response.orderData) ? response.orderData : []
+        );
+
+        // Check orderId and mapped orderData
+        if (
+          response.orderId &&
+          typeof response.orderId === "string" &&
+          response.orderId.trim() !== "" &&
+          mappedOrderData &&
+          mappedOrderData.pricing &&
+          mappedOrderData.pricing.total &&
+          mappedOrderData.cartItems &&
+          mappedOrderData.cartItems.length > 0
+        ) {
+          console.log("Navigating to success with state:", {
+            orderId: response.orderId,
+            orderData: mappedOrderData,
           });
-          return;
-        }
-
-        if (response.status === "success") {
-          // Check orderDetails for success case
-          if (
-            !response.orderDetails ||
-            typeof response.orderDetails !== "object" ||
-            !response.orderDetails.cartItems ||
-            !response.orderDetails.pricing
-          ) {
-            console.warn("Invalid or missing orderDetails in success response:", response);
-            toast.error("Payment verification failed due to incomplete order details.");
-            navigate("/failed", {
-              state: {
-                errorCode: "ERR_MISSING_ORDER_DETAILS",
-                errorMessage: "Order details are missing or invalid for a successful payment.",
-              },
-            });
-            return;
-          }
-
           // Clear cart on successful payment
           handleClearCart();
 
           toast.success("Payment verified successfully!");
           navigate(`/${response.orderId}/success`, {
-            state: { orderId: response.orderId, orderData: response.orderDetails },
+            state: { orderId: response.orderId, orderData: mappedOrderData },
           });
         } else {
-          console.warn("Payment failed with response:", response);
+          console.warn("Invalid or missing orderId or orderData in response:", {
+            orderId: response.orderId,
+            orderData: response.orderData,
+            mappedOrderData,
+          });
           toast.error("Payment failed. Please try again.");
           navigate("/failed", {
             state: {
-              orderId: response.orderId,
-              orderData: response.orderDetails,
-              errorCode: "ERR_PAYMENT_FAILED",
-              errorMessage: (response as any).message || "Payment was not successful.",
+              orderId: response.orderId || "unknown",
+              orderData: mappedOrderData,
+              errorCode: "ERR_INVALID_RESPONSE",
+              errorMessage: "Order ID or order data is missing or invalid.",
             },
           });
         }
@@ -107,11 +147,12 @@ export default function PaymentCallback() {
           response: error.response?.data,
           status: error.response?.status,
         });
-        toast.error(error.response?.data?.message || "Failed to verify payment status.");
+        const errorMessage = error.response?.data?.message || "Failed to verify payment status.";
+        toast.error(errorMessage);
         navigate("/failed", {
           state: {
             errorCode: "ERR_PAYMENT_STATUS_FETCH",
-            errorMessage: error.response?.data?.message || "Unable to verify payment status.",
+            errorMessage,
           },
         });
       } finally {

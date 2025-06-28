@@ -1,5 +1,3 @@
-
-
 import NewArrival from "@/components/Cards/NewArrival";
 import { getAllProduct } from "@/utils/productApi";
 import { useEffect, useState } from "react";
