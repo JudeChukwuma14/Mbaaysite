@@ -22,7 +22,7 @@ import SF from "@/components/AllCategory/Fashion/subcategory/SF";
 import EB from "@/components/AllCategory/Fashion/subcategory/EB";
 import BS from "@/components/AllCategory/Fashion/subcategory/BS";
 import ST from "@/components/AllCategory/Fashion/subcategory/ST";
-import AC from "@/components/AllCategory/Fashion/subcategory/AC";
+import AC from "@/components/AllCategory/Fashion/subcategory/AC/AC";
 import MenWear from "@/components/AllCategory/Fashion/subcategory/TF/MenWear";
 import WomenWear from "@/components/AllCategory/Fashion/subcategory/TF/WomenWear";
 import ChildrenWear from "@/components/AllCategory/Fashion/subcategory/TF/ChildrenWear";
@@ -35,6 +35,10 @@ import TSS from "@/components/AllCategory/Fashion/subcategory/FW/TSS";
 import LHS from "@/components/AllCategory/Fashion/subcategory/FW/LHS";
 import MSC from "@/components/AllCategory/Fashion/subcategory/FW/MSC";
 import CSS from "@/components/AllCategory/Fashion/subcategory/FW/CSS";
+import JA from "@/components/AllCategory/Fashion/subcategory/AC/JA";
+import HS from "@/components/AllCategory/Fashion/subcategory/AC/HS";
+import BP from "@/components/AllCategory/Fashion/subcategory/AC/BP";
+import BSS from "@/components/AllCategory/Fashion/subcategory/AC/BSS";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -1088,14 +1092,18 @@ const routesConfig: RouteObject[] = [
       { path: "/modern-shoes", element: withSuspense(MSC) },
       { path: "/custom-shoes-sandals", element: withSuspense(CSS) },
 
-
-
-
-
-
-
-
       { path: "/accessories", element: withSuspense(AC) },
+      { path: "/belts-sashes", element: withSuspense(BSS) },
+      { path: "/bags-pouches", element: withSuspense(BP) },
+      { path: "/headwear-scarves", element: withSuspense(HS) },
+      { path: "/jewelry-adornments", element: withSuspense(JA) },
+
+
+
+
+
+
+
       { path: "/fabrics", element: withSuspense(FB) },
       { path: "/occasion-footwear", element: withSuspense(OF) },
       { path: "/festival-clothing", element: withSuspense(FC) },

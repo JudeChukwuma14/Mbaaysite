@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { removeItem, setCartItems, updateQuantity } from "@/redux/slices/cartSlice";
 import { motion } from "framer-motion";
-import { getSessionId } from "@/utils/session";
 import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartQuantity } from "@/utils/cartApi";
 import { Link } from "react-router-dom";
@@ -20,14 +19,18 @@ interface CartItem {
 
 const Cart: React.FC = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId)
   const dispatch = useDispatch();
   const [couponCode, setCouponCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
 
   useEffect(() => {
     const fetchCart = async () => {
-      const sessionId = getSessionId();
-      console.log(sessionId)
+      if (!sessionId) {
+        toast.error("Session ID not found. Please try again.");
+        return;
+      }
+      console.log("Session ID:", sessionId);
       try {
         const items = await getCart(sessionId);
         console.log("...Cart", items)
@@ -50,14 +53,18 @@ const Cart: React.FC = () => {
       }
     };
     fetchCart();
-  }, [dispatch]);
+  }, [dispatch, sessionId]);
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (isNaN(newQuantity) || newQuantity < 1) {
       toast.error("Please enter a valid quantity (1 or more).");
       return;
     }
-    const sessionId = getSessionId();
+    if (!sessionId) {
+        toast.error("Session ID not found. Please try again.");
+        return;
+      }
+      console.log("Session ID:", sessionId);
     try {
       await updateCartQuantity(sessionId, itemId, newQuantity);
       dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
@@ -67,7 +74,11 @@ const Cart: React.FC = () => {
   };
 
   const handleRemoveItem = async (itemId: string) => {
-    const sessionId = getSessionId();
+    if (!sessionId) {
+        toast.error("Session ID not found. Please try again.");
+        return;
+      }
+      console.log("Session ID:", sessionId);
     try {
       await removeFromCart(sessionId, itemId);
       dispatch(removeItem(itemId));

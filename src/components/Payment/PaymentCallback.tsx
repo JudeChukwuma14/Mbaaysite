@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { getPaymentStatus, PaymentStatusResponse, OrderData } from "@/utils/orderApi";
 import { clearCart } from "@/redux/slices/cartSlice";
-import { clearSessionId } from "@/utils/session";
+
 
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
@@ -16,8 +16,6 @@ export default function PaymentCallback() {
 
   const handleClearCart = () => {
     try {
-      const newSessionId = clearSessionId();
-      console.log("Session ID reset to:", newSessionId);
       dispatch(clearCart());
       console.log("Cart cleared successfully");
     } catch (error: any) {

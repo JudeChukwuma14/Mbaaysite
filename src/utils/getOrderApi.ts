@@ -1,13 +1,14 @@
 // src/services/orderApi.ts
 import axios from "axios";
-import { getSessionId } from "@/utils/session";
+import { initializeSession } from "@/redux/slices/sessionSlice";
+import store from "@/redux/store";
 
 const api = axios.create({
   baseURL: "https://mbayy-be.onrender.com/api/v1/user",
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 10000,
+  timeout: 20000,
 });
 
 export interface Order {
@@ -52,6 +53,10 @@ interface ApiResponse {
 }
 
 export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
+    if (!sessionId) {
+    throw new Error("Session ID is missing. Please try again.");
+  }
+
   try {
     const response = await api.get<ApiResponse>("/get_orders_user", {
       params: { sessionId },
@@ -114,6 +119,7 @@ export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
 
 // Only available status update is confirming order received
 export const confirmOrderReceived = async (orderId: string): Promise<void> => {
+
   try {
     await api.patch(`/confirmOrderReceived/${orderId}`);
   } catch (error: any) {
@@ -123,6 +129,15 @@ export const confirmOrderReceived = async (orderId: string): Promise<void> => {
 };
 
 export const getOrdersWithSession = async (): Promise<Order[]> => {
-  const sessionId = getSessionId();
+  let sessionId = store.getState().session.sessionId;
+  if (!sessionId) {
+    // Initialize session if missing
+    store.dispatch(initializeSession());
+    sessionId = store.getState().session.sessionId;
+
+    if (!sessionId) {
+      throw new Error("Failed to initialize session ID");
+    }
+  }
   return fetchOrders(sessionId);
 };

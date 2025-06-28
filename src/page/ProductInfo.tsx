@@ -1,6 +1,4 @@
-"use client";
 
-import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,8 +10,8 @@ import { getProductsById } from "@/utils/productApi";
 import { Heart, ShoppingCart, Minus, Plus, Star, ChevronRight, Share2 } from "lucide-react";
 import Spinner from "@/components/Common/Spinner";
 import { convertPrice } from "@/utils/currencyCoverter";
-import { getSessionId } from "@/utils/session";
 import { addToCart, updateCartQuantity } from "@/utils/cartApi";
+import { initializeSession } from "@/redux/slices/sessionSlice";
 
 
 interface Product {
@@ -39,6 +37,7 @@ const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSessionLoading, setIsSessionLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const [selectedMedia, setSelectedMedia] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -46,8 +45,19 @@ const ProductDetails: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeTab, setActiveTab] = useState<"description" | "reviews">("description");
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
   const dispatch = useDispatch();
   const { currency, language } = useSelector((state: RootState) => state.settings);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
+
+  // Initialize sessionId if missing
+  useEffect(() => {
+    if (!sessionId) {
+      setIsSessionLoading(true);
+      dispatch(initializeSession())
+      setIsSessionLoading(false);
+    }
+  }, [dispatch, sessionId]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -115,7 +125,14 @@ const ProductDetails: React.FC = () => {
     );
 
   const handleAddToCart = async () => {
-    const sessionId = getSessionId()
+    if (!sessionId || isSessionLoading) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
+    if (!product) {
+      toast.error("Product not found. Please try again.");
+      return;
+    }
     try {
       await addToCart(sessionId, product._id, 1)
       dispatch(
@@ -161,24 +178,28 @@ const ProductDetails: React.FC = () => {
     ...(product.product_video && getYouTubeVideoId(product.product_video) ? [product.product_video] : []),
   ];
 
- const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
-  if (isNaN(newQuantity) || newQuantity < 1) {
-    toast.error("Please enter a valid quantity (1 or more).");
-    return;
-  }
-  if (newQuantity > product.inventory) {
-    toast.error(`Cannot exceed available stock (${product.inventory}).`);
-    return;
-  }
-  const sessionId = getSessionId();
-  try {
-    await updateCartQuantity(sessionId, itemId, newQuantity);
-    dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
-    setQuantity(newQuantity);
-  } catch (error) {
-    toast.error("Failed to update quantity. Please try again.");
-  }
-};
+  const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
+    if (!sessionId || isSessionLoading) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
+    if (isNaN(newQuantity) || newQuantity < 1) {
+      toast.error("Please enter a valid quantity (1 or more).");
+      return;
+    }
+    if (newQuantity > product.inventory) {
+      toast.error(`Cannot exceed available stock (${product.inventory}).`);
+      return;
+    }
+
+    try {
+      await updateCartQuantity(sessionId, itemId, newQuantity);
+      dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+      setQuantity(newQuantity);
+    } catch (error) {
+      toast.error("Failed to update quantity. Please try again.");
+    }
+  };
 
   const isVideo = selectedMedia?.includes("youtube.com");
   const isInStock = product.inventory > 0;
