@@ -109,3 +109,13 @@ export const getPaymentStatus = async (
     );
   }
 };
+
+// Only available status update is confirming order received
+export const confirmOrderReceived = async (orderId: string): Promise<void> => {
+  try {
+    await api.patch(`/confirmOrderReceived/${orderId}`);
+  } catch (error: any) {
+    console.error("Confirm order error:", error);
+    throw error.message || "Failed to confirm order";
+  }
+};
