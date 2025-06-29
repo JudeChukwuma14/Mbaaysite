@@ -30,10 +30,10 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-    { image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg", text: "Belts & Sashes", link: "/belts-sashes" },
-    { image: "https://i.pinimg.com/736x/6f/46/86/6f4686892acc50bcb9561349090bd231.jpg", text: "Bags & Pouches", link: "/bags-pouches" },
-    { image: "https://i.pinimg.com/736x/ee/2c/a8/ee2ca86391336c0998fc5125a8131f61.jpg", text: "Headwear & Scarves", link: "/headwear-scarves" },
-    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Jewelry & Adornments", link: "/jewelry-adornments" },
+    { image: "https://i.pinimg.com/736x/57/49/c4/5749c432d7f20d2fa770524b53c05ac8.jpg", text: "Belts & Sashes", link: "/belts-sashes" },
+    { image: "https://i.pinimg.com/736x/e9/b7/46/e9b74602c8705c76dfd4b0bdefd56fda.jpg", text: "Bags & Pouches", link: "/bags-pouches" },
+    { image: "https://i.pinimg.com/736x/8e/61/30/8e6130a6df3e58b91abb6fe4a915c576.jpg", text: "Headwear & Scarves", link: "/headwear-scarves" },
+    { image: "https://i.pinimg.com/736x/a2/25/0e/a2250e15417eea5681a35d871fafe7e3.jpg", text: "Jewelry & Adornments", link: "/jewelry-adornments" },
 ];
 
 // Animation variants for containers

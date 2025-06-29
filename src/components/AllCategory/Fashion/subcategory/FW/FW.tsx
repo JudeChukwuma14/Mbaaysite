@@ -30,10 +30,10 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-    { image: "https://i.pinimg.com/736x/72/b6/1b/72b61be26e7d9f18e8d94547bc3217a2.jpg", text: "Traditional Shoes & Sandals", link: "/traditional-shoes" },
-    { image: "https://i.pinimg.com/736x/70/61/76/706176a83d9b477d8f68ce2de1a67b2b.jpg", text: "Leather & Handmade Shoes", link: "/leather-handmade" },
-    { image: "https://i.pinimg.com/736x/38/19/4f/38194f90eaf9332fbaf98121ac5ee2b1.jpg", text: "Modern Shoes with Cultural Designs", link: "/modern-shoes" },
-    { image: "https://i.pinimg.com/736x/9a/67/be/9a67bee73921f0908ca369bbec85e320.jpg", text: "Custom Shoes & Sandals", link: "/custom-shoes-sandals" },
+    { image: "https://i.pinimg.com/736x/5a/eb/90/5aeb90c77d2731c52d7f69a01226a282.jpg", text: "Traditional Shoes & Sandals", link: "/traditional-shoes" },
+    { image: "https://i.pinimg.com/736x/7e/03/ba/7e03ba97d64ecf3a6e76f9b4cb5e7012.jpg", text: "Leather & Handmade Shoes", link: "/leather-handmade" },
+    { image: "https://i.pinimg.com/736x/d7/4c/d1/d74cd138b0207746b0828b440ca6f733.jpg", text: "Modern Shoes with Cultural Designs", link: "/modern-shoes" },
+    { image: "https://i.pinimg.com/736x/2e/b7/d5/2eb7d5080a658b11ae06de629feb3a1e.jpg", text: "Custom Shoes & Sandals", link: "/custom-shoes-sandals" },
 ];
 
 // Animation variants for containers
