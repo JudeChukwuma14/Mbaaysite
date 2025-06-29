@@ -60,19 +60,39 @@ export default function OrderList() {
   }, []);
 
 
-  const handleStatusChange = async (orderId: string, newStatus: Order["orderStatus"]) => {
-    try {
-      if (newStatus === "Delivered") {
-        await confirmOrderReceived(orderId);
-      }
-      setOrders(orders.map(order =>
-        order.id === orderId ? { ...order, orderStatus: newStatus } : order
-      ));
-    } catch (err) {
-      console.error("Failed to update status:", err);
-      setError("Failed to update order status");
-    }
-  };
+ // In your component
+const handleStatusChange = async (order:any) => {
+  try {
+    // 1. Construct the full ID (order_[buyerSession]_[orderId])
+    const fullOrderId = `order_${order.buyerSession}_${order.id}`;
+    
+    // 2. Call API
+    const message = await confirmOrderReceived(fullOrderId);
+    
+    // 3. Update UI state
+    setOrders(orders.map(o => 
+      o.id === order.id ? { 
+        ...o, 
+        status: "Delivered", // Update status
+        payStatus: "Paid"    // Optional: Update payment status
+      } : o
+    ));
+    
+    // 4. Show success feedback
+    alert(message); // "Order confirmed and vendor paid"
+    
+  } catch (err) {
+    console.error("Order confirmation error:", {
+      error: err,
+      orderId: order.id
+    });
+    
+    setError(
+      err instanceof Error ? err.message : "Failed to confirm order"
+    );
+  }
+};
+
 
   const handleViewDetails = (orderId: string) => {
     // Handle view details action
@@ -242,7 +262,7 @@ export default function OrderList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleStatusChange(order.id, "Delivered")}
+                            onClick={() => handleStatusChange(order)}
                             disabled={order.orderStatus === "Delivered"}
                           >
                             Mark as Delivered

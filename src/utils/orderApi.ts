@@ -111,11 +111,25 @@ export const getPaymentStatus = async (
 };
 
 // Only available status update is confirming order received
-export const confirmOrderReceived = async (orderId: string): Promise<void> => {
+
+interface ConfirmOrderResponse {
+  message: string;
+  orderId: string;
+}
+
+export const confirmOrderReceived = async (fullOrderId: string): Promise<string> => {
   try {
-    await api.patch(`/confirmOrderReceived/${orderId}`);
+    const response = await api.patch<ConfirmOrderResponse>(
+      `/confirmOrderReceived/${fullOrderId}`
+    );
+    
+    // Returns: "Order confirmed and vendor paid"
+    return response.data.message;
   } catch (error: any) {
-    console.error("Confirm order error:", error);
-    throw error.message || "Failed to confirm order";
+    console.error("Confirmation failed for order:", fullOrderId, error);
+    throw new Error(
+      error.response?.data?.message || 
+      "Failed to confirm order. Please try again."
+    );
   }
 };
