@@ -3,7 +3,6 @@ import {
   getVendorOrders,
   getOrderDetails,
   getOneOrder, // Add this import
-  updateOrderStatus,
   getOrderStats,
   cancelOrder,
   exportOrders,
@@ -11,7 +10,6 @@ import {
 } from "@/utils/orderVendorApi";
 import { toast } from "react-toastify";
 
-// Hook for fetching vendor orders
 export const useVendorOrders = (params: GetVendorOrdersParams) => {
   return useQuery({
     queryKey: ["vendorOrders", params],
@@ -29,12 +27,11 @@ export const useVendorOrders = (params: GetVendorOrdersParams) => {
   });
 };
 
-// Hook for fetching single order details
-export const useOrderDetails = (orderId: string, token: string) => {
+export const useOrderDetails = (orderId: string) => {
   return useQuery({
     queryKey: ["orderDetails", orderId],
-    queryFn: () => getOrderDetails(orderId, token),
-    enabled: !!orderId && !!token,
+    queryFn: () => getOrderDetails(orderId),
+    enabled: !!orderId,
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: (failureCount, error) => {
       if (error.message.includes("401") || error.message.includes("403")) {
@@ -45,47 +42,17 @@ export const useOrderDetails = (orderId: string, token: string) => {
   });
 };
 
-// Hook for fetching single order by ID (new endpoint)
-export const useOneOrder = (orderId: string, token: string) => {
+export const useOneOrder = (orderId: any) => {
   return useQuery({
     queryKey: ["oneOrder", orderId],
-    queryFn: () => getOneOrder(orderId, token),
-    enabled: !!orderId && !!token,
+    queryFn: () => getOneOrder(orderId),
+    enabled: !!orderId,
     staleTime: 2 * 60 * 1000, // 2 minutes
     retry: (failureCount, error) => {
       if (error.message.includes("401") || error.message.includes("403")) {
         return false;
       }
       return failureCount < 3;
-    },
-  });
-};
-
-// Hook for updating order status
-export const useUpdateOrderStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateOrderStatus,
-    onSuccess: (variables) => {
-      // Invalidate and refetch orders
-      queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
-      queryClient.invalidateQueries({
-        queryKey: ["orderDetails", variables.orderId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["orderStats"] });
-
-      toast.success("Order status updated successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating order status:", error);
-      toast.error(error.message || "Failed to update order status", {
-        position: "top-right",
-        autoClose: 4000,
-      });
     },
   });
 };
@@ -123,7 +90,7 @@ export const useCancelOrder = () => {
     onSuccess: (variables) => {
       queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
       queryClient.invalidateQueries({
-        queryKey: ["orderDetails", variables.orderId],
+        queryKey: ["orderDetails", variables._id],
       });
       queryClient.invalidateQueries({ queryKey: ["orderStats"] });
 

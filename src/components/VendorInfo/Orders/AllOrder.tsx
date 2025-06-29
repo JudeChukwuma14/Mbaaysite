@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import {
   ChevronDown,
@@ -12,7 +10,7 @@ import { motion } from "framer-motion";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { useVendorOrders } from "@/hook/useOrders";
-import { Order } from "@/utils/orderVendorApi";
+import { Orders } from "@/utils/orderVendorApi";
 
 const AllOrdersPage = () => {
   const [currentTab, setCurrentTab] = useState("All");
@@ -39,7 +37,6 @@ const AllOrdersPage = () => {
 
   const orders = ordersResponse?.data?.orders || [];
   const totalPages = ordersResponse?.data?.pagination?.totalPages || 1;
-  const totalOrders = ordersResponse?.data?.totalOrders || 0;
 
   const handleNext = () => {
     if (currentPage < totalPages) {
@@ -74,16 +71,16 @@ const AllOrdersPage = () => {
   };
 
   const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-NG", {
       style: "currency",
-      currency: "USD",
+      currency: "NGN",
     }).format(amount);
   };
 
-  const getStatusColor = (status: Order["status"]) => {
+  const getStatusColor = (status: Orders["status"]) => {
     switch (status) {
-      case "On Delivery":
-        return "text-yellow-500";
+      case "Processing":
+        return "bg-yellow-400 text-white";
       case "Delivered":
         return "text-green-500";
       case "Cancelled":
@@ -143,14 +140,16 @@ const AllOrdersPage = () => {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Orders</h1>
-        <p className="text-gray-600">
-          {totalOrders} {totalOrders === 1 ? "order" : "orders"} found
-        </p>
+        {orders.length > 0 && (
+          <p className="text-gray-600">
+            You have {orders.length} order{orders.length > 1 ? "s" : ""}.
+          </p>
+        )}
       </div>
 
       {/* Tabs */}
       <div className="flex gap-4 mb-6 overflow-x-auto">
-        {["All", "Pending", "On Delivery", "Delivered", "Cancelled"].map(
+        {["All", "Pending", "Processing", "Delivered", "Cancelled"].map(
           (tab) => (
             <motion.button
               key={tab}
@@ -222,14 +221,14 @@ const AllOrdersPage = () => {
                   <th className="py-3 px-4">Order ID</th>
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Location</th>
+                  <th className="py-3 px-4">Item</th>
                   <th className="py-3 px-4">Amount</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order, index) => (
+                {orders.map((order: any, index: any) => (
                   <motion.tr
                     key={order._id}
                     initial={{ opacity: 0, y: 10 }}
@@ -238,33 +237,32 @@ const AllOrdersPage = () => {
                     className="border-b hover:bg-gray-50 transition-all duration-300"
                   >
                     <td className="py-3 px-4 font-mono text-sm">
-                      #{order.orderId}
+                      #{order._id}
                     </td>
                     <td className="py-3 px-4 text-sm">
-                      {formatDate(order.orderDate)}
+                      {formatDate(order.createdAt)}
                     </td>
                     <td className="py-3 px-4">
                       <div>
-                        <div className="font-medium">{order.customer.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {order.customer.email}
+                        <div className="font-medium">
+                          {order.buyerInfo.first_name}
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-4 text-sm max-w-xs truncate">
-                      {order.deliveryAddress.fullAddress}
+                      {order.product?.name}
                     </td>
                     <td className="py-3 px-4 font-semibold">
-                      {formatAmount(order.totalAmount)}
+                      {formatAmount(order.totalPrice)}
                     </td>
                     <td
-                      className={`py-3 px-4 font-semibold ${getStatusColor(
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2 ${getStatusColor(
                         order.status
                       )}`}
                     >
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100">
-                        {order.status}
-                      </span>
+                      {/* <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"> */}
+                      {order.status}
+                      {/* </span> */}
                     </td>
                     <td className="py-3 px-4">
                       <motion.button
@@ -300,9 +298,6 @@ const AllOrdersPage = () => {
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">
                   Page {currentPage} of {totalPages}
-                </span>
-                <span className="text-sm text-gray-500">
-                  ({totalOrders} total orders)
                 </span>
               </div>
 

@@ -11,34 +11,6 @@ import ProtectedVendor from "./ProtectedVendor";
 import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
-import TF from "@/components/AllCategory/Fashion/subcategory/TF/TF";
-import MT from "@/components/AllCategory/Fashion/subcategory/MT/MT";
-import FW from "@/components/AllCategory/Fashion/subcategory/FW/FW";
-import FB from "@/components/AllCategory/Fashion/subcategory/FB";
-import OF from "@/components/AllCategory/Fashion/subcategory/OF";
-import FC from "@/components/AllCategory/Fashion/subcategory/FC";
-import RF from "@/components/AllCategory/Fashion/subcategory/RF";
-import SF from "@/components/AllCategory/Fashion/subcategory/SF";
-import EB from "@/components/AllCategory/Fashion/subcategory/EB";
-import BS from "@/components/AllCategory/Fashion/subcategory/BS";
-import ST from "@/components/AllCategory/Fashion/subcategory/ST";
-import AC from "@/components/AllCategory/Fashion/subcategory/AC/AC";
-import MenWear from "@/components/AllCategory/Fashion/subcategory/TF/MenWear";
-import WomenWear from "@/components/AllCategory/Fashion/subcategory/TF/WomenWear";
-import ChildrenWear from "@/components/AllCategory/Fashion/subcategory/TF/ChildrenWear";
-import Unsex from "@/components/AllCategory/Fashion/subcategory/TF/Unsex";
-import FUC from "@/components/AllCategory/Fashion/subcategory/MT/FUC";
-import CMF from "@/components/AllCategory/Fashion/subcategory/MT/CMF";
-import EUW from "@/components/AllCategory/Fashion/subcategory/MT/EUW";
-import CAF from "@/components/AllCategory/Fashion/subcategory/MT/CAF";
-import TSS from "@/components/AllCategory/Fashion/subcategory/FW/TSS";
-import LHS from "@/components/AllCategory/Fashion/subcategory/FW/LHS";
-import MSC from "@/components/AllCategory/Fashion/subcategory/FW/MSC";
-import CSS from "@/components/AllCategory/Fashion/subcategory/FW/CSS";
-import JA from "@/components/AllCategory/Fashion/subcategory/AC/JA";
-import HS from "@/components/AllCategory/Fashion/subcategory/AC/HS";
-import BP from "@/components/AllCategory/Fashion/subcategory/AC/BP";
-import BSS from "@/components/AllCategory/Fashion/subcategory/AC/BSS";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -114,10 +86,6 @@ const CommunitySection = lazy(
 );
 const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"));
 
-const VendorAuctionProduct = lazy(
-  () => import("@/components/VendorInfo/Products/VendorAuctionProduct")
-);
-
 const AllPost = lazy(
   () => import("@/components/VendorInfo/Community&Res/AllPost")
 );
@@ -136,8 +104,10 @@ const userIndex = lazy(() => import("@/components/profileMangement/Index"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
-const AllVendor = lazy(() => import("@/components/Reuseable/AllVendor"))
-const VendorProfileProduct = lazy(() => import("@/components/Reuseable/VendorProfileProduct"))
+const AllVendor = lazy(() => import("@/components/Reuseable/AllVendor"));
+const VendorProfileProduct = lazy(
+  () => import("@/components/Reuseable/VendorProfileProduct")
+);
 // All Category Links
 const Fashion = lazy(() => import("@/components/AllCategory/Fashion/Fashion"));
 const Furniture = lazy(
@@ -152,8 +122,15 @@ const BookPoetry = lazy(
 const HomeDecor = lazy(
   () => import("@/components/AllCategory/HomeDécor&Accessories/HomeDecor")
 );
-const LocalFood = lazy(() => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood"));
-const LocalFoodsDrinks = lazy(() => import("@/components/AllCategory/LocalFoodandDrinksProducts/LocalFoodsDrinks"));
+const LocalFood = lazy(
+  () => import("@/components/AllCategory/Local&TraditionalFoods/LocalFood")
+);
+const LocalFoodsDrinks = lazy(
+  () =>
+    import(
+      "@/components/AllCategory/LocalFoodandDrinksProducts/LocalFoodsDrinks"
+    )
+);
 const PlantSeed = lazy(
   () => import("@/components/AllCategory/Plant&Seeds/PlantSeed")
 );
@@ -164,25 +141,31 @@ const Jewelry = lazy(
   () => import("@/components/AllCategory/Jewelry&Gemstones/Jewelry")
 );
 
-
-const Art = lazy(() => import("@/components/AllCategory/Art&Sculptures/ArtPage"));
+const Art = lazy(
+  () => import("@/components/AllCategory/Art&Sculptures/ArtPage")
+);
 // Art Subcategory Page
 const Paintings = lazy(
   () => import("@/components/AllCategory/Art&Sculptures/subcategory/Paintings")
 );
-const WallArts = lazy(()=> import("@/components/AllCategory/Art&Sculptures/subcategory/WallArts"));
+const WallArts = lazy(
+  () => import("@/components/AllCategory/Art&Sculptures/subcategory/WallArts")
+);
 const Sculptures = lazy(
   () => import("@/components/AllCategory/Art&Sculptures/subcategory/Sculptures")
 );
 const TraditionalCraft = lazy(
   () =>
-    import("@/components/AllCategory/Art&Sculptures/subcategory/TraditionalCraft")
+    import(
+      "@/components/AllCategory/Art&Sculptures/subcategory/TraditionalCraft"
+    )
 );
 const ReligiousCulturalArt = lazy(
   () =>
-    import("@/components/AllCategory/Art&Sculptures/subcategory/ReligiousCulturalArt")
+    import(
+      "@/components/AllCategory/Art&Sculptures/subcategory/ReligiousCulturalArt"
+    )
 );
-
 
 // BeautyWellness Subcategory Page
 const Skincare = lazy(
@@ -605,7 +588,6 @@ const Spicesi = lazy(
 );
 
 
-
 // Furniture
 const Seating = lazy(
   () =>
@@ -732,104 +714,15 @@ const TraditionalSweet = lazy(
     )
 );
 
-// vintage Jewerly 
-const FestiveRitualJewelry = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/FestiveRitualJewelry"
-    )
-);
-
-const VintageJewelrys = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/VintageJewelry"
-    )
-);
-const CulturalGemstones = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/CulturalGemstones"
-    )
-);
-const ReligiousSpiritualJewelry = lazy(
-  () =>
-    import(
-      "@/components/AllCategory/VintageAntiqueJewelry/subcategory/ReligiousSpiritualJewelry"
-    )
-);
-
-// TraditionalReligouseitem 
-const TraditionalRi =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/TranditionalReligiousItems"
-    )
-);
-const As =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/As"
-    )
-);
-
-const Cfi =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Cfi"
-    )
-);
-
-const Crt =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Crt"
-    )
-);
-
-const ReligiousAS =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/ReligiousAS"
-    )
-);
-
-const Rja =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rja"
-    )
-);
-
-const Rt =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rt"
-    )
-);
-
-const Shmi =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Shmi"
-    )
-);
-
-const Tcc =lazy(
-  () =>
-    import(
-      "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Tcc"
-    )
-);
-
-
-
-
 
 // PAYMENT
-const SuccessPayment = lazy(() => import("@/components/Payment/PaymentSuccess"))
-const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"))
-const PaymentCallback = lazy(() => import("@/components/Payment/PaymentCallback"))
+const SuccessPayment = lazy(
+  () => import("@/components/Payment/PaymentSuccess")
+);
+const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"));
+const PaymentCallback = lazy(
+  () => import("@/components/Payment/PaymentCallback")
+);
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -847,12 +740,24 @@ const routesConfig: RouteObject[] = [
       { path: "/about", element: withSuspense(About) },
       { path: "/contact", element: withSuspense(Contact) },
       { path: "/cart", element: withSuspense(Cart) },
-      { path: "/product-details/:id", element: withSuspense(ProductDetail), errorElement: <ErrorPage /> },
-      { path: "/product/:id", element: withSuspense(ProductInfo), errorElement: <ErrorPage /> },
+      {
+        path: "/product-details/:id",
+        element: withSuspense(ProductDetail),
+        errorElement: <ErrorPage />,
+      },
+      {
+        path: "/product/:id",
+        element: withSuspense(ProductInfo),
+        errorElement: <ErrorPage />,
+      },
       { path: "/auctionview", element: withSuspense(AuctionView) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
       { path: "/more-vendor", element: withSuspense(AllVendor) },
-      { path: "/veiws-profile/:id", element: withSuspense(VendorProfileProduct), errorElement: <ErrorPage /> },
+      {
+        path: "/veiws-profile/:id",
+        element: withSuspense(VendorProfileProduct),
+        errorElement: <ErrorPage />,
+      },
       { path: "/checkout", element: withSuspense(CheckOut) },
 
       // All Category Links
@@ -872,13 +777,15 @@ const routesConfig: RouteObject[] = [
       { path: "/traditional-items", element: withSuspense(TraditionalRi) },
 
       // Art Subcategory Page
-      {path: "/paintings", element: withSuspense(Paintings) },
-      {path: "/wall-art", element: withSuspense(WallArts) },
-      {path: "/sculptures", element: withSuspense(Sculptures) },
-      {path: "/traditional-craft", element: withSuspense(TraditionalCraft) },
-      {path: "/traditional-artifacts", element: withSuspense(ReligiousCulturalArt) },
+      { path: "/paintings", element: withSuspense(Paintings) },
+      { path: "/wall-art", element: withSuspense(WallArts) },
+      { path: "/sculptures", element: withSuspense(Sculptures) },
+      { path: "/traditional-craft", element: withSuspense(TraditionalCraft) },
+      {
+        path: "/traditional-artifacts",
+        element: withSuspense(ReligiousCulturalArt),
+      },
 
-      
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },
       { path: "/haircare", element: withSuspense(Haircare) },
@@ -1027,8 +934,6 @@ const routesConfig: RouteObject[] = [
       { path: "/SpiceKits", element: withSuspense(SpiceKits) },
       { path: "/Spices-i", element: withSuspense(Spicesi) },
 
-
-
       // Local & Traditional Foods Subcategory
       {
         path: "/CulturallySpecific",
@@ -1141,10 +1046,12 @@ const routesConfig: RouteObject[] = [
         children: [
           { index: true, element: withSuspense(Dashboard) },
           { path: "orders", element: withSuspense(AllOrder) },
-          { path: "order-details", element: withSuspense(OrderDetails) },
+          {
+            path: "order-details/:orderId",
+            element: withSuspense(OrderDetails),
+          },
           { path: "all-products", element: withSuspense(AllProduct) },
           { path: "new-product", element: withSuspense(NewProduct) },
-          { path: "auction-product", element: withSuspense(VendorAuctionProduct) },
           { path: "customers", element: withSuspense(Customer) },
           { path: "Payments", element: withSuspense(Payments) },
           { path: "preview-invoice", element: withSuspense(PreviewInvoice) },
@@ -1163,7 +1070,6 @@ const routesConfig: RouteObject[] = [
           {
             path: "comunity-detail/:communityid",
             element: withSuspense(CommunityDetailPage),
-
           },
           {
             path: "products-detail/:productid",
@@ -1171,7 +1077,7 @@ const routesConfig: RouteObject[] = [
               <ProductDetailModal
                 product={null}
                 isOpen={false}
-                onClose={() => { }}
+                onClose={() => {}}
                 productId={""}
               />
             )),
@@ -1179,7 +1085,6 @@ const routesConfig: RouteObject[] = [
         ],
       },
     ],
-
   },
   { path: "signin", element: withSuspense(Login) },
   { path: "signup", element: withSuspense(Signup) },
@@ -1191,7 +1096,11 @@ const routesConfig: RouteObject[] = [
   },
   { path: "forgot-password", element: withSuspense(ForgotPassword) },
   { path: "restpassword", element: withSuspense(ResetPassword) },
-  { path: "/verify-otp/:userId", element: withSuspense(OtpVerify), errorElement: <ErrorPage /> },
+  {
+    path: "/verify-otp/:userId",
+    element: withSuspense(OtpVerify),
+    errorElement: <ErrorPage />,
+  },
   { path: "sendlink", element: withSuspense(SendLink) },
   { path: "numberforgotpass", element: withSuspense(Number) },
   { path: "updatepassword", element: withSuspense(Updatepassword) },
@@ -1200,9 +1109,9 @@ const routesConfig: RouteObject[] = [
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
   // Payment 
-  { path: "/:sessionId/success", element: withSuspense(SuccessPayment), errorElement: <ErrorPage /> },
-  { path: "/failed", element: withSuspense(FaliedPayment), errorElement: <ErrorPage /> },
-  { path: "/payment_callback", element: withSuspense(PaymentCallback), errorElement: <ErrorPage /> },
+  { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
+  { path: "/failed", element: withSuspense(FaliedPayment) },
+  { path: "/payment_callback", element: withSuspense(PaymentCallback) },
 
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found

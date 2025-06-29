@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Eye, EyeOff, ShoppingCart, Package, Layers } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  ShoppingCart,
+  Package,
+  Layers,
+  ExternalLink,
+} from "lucide-react";
 import { Line } from "react-chartjs-2";
 import { motion } from "framer-motion";
 import type { ChartOptions } from "chart.js";
@@ -16,6 +23,8 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { useQuery } from "@tanstack/react-query";
+import { NavLink } from "react-router-dom";
+import { useOrderStats, useVendorOrders } from "@/hook/useOrders";
 
 ChartJS.register(
   LineElement,
@@ -39,45 +48,31 @@ const Dashboard = () => {
     queryFn: () => get_single_vendor(user.token),
   });
 
-  const totalOrders = 3234;
-  const productsSold = 1455;
+  // Fetch real orders data
+  const {
+    data: ordersData,
+    isLoading: ordersLoading,
+    error: ordersError,
+    refetch: refetchOrders,
+  } = useVendorOrders({
+    token: user.token || "",
+    page: currentPage,
+    limit: rowsPerPage,
+    sortBy: "newest",
+  });
+
+  // Fetch order statistics
+  const { data: orderStats, isLoading: statsLoading } = useOrderStats(
+    user.token || ""
+  );
+
   const accountType = vendors?.storeType || "Loading...";
 
-  const orders = [
-    {
-      id: "#12356",
-      client: "Chukwuma Jude",
-      product: "Wooden Pots (Clay)",
-      qty: 10,
-      price: "$50,000",
-      category: "Arts and craft",
-      status: "Pending",
-    },
-    {
-      id: "#12357",
-      client: "Abbas Mohammed",
-      product: "Ankara Dress",
-      qty: 15,
-      price: "$75,000",
-      category: "Fashion",
-      status: "Rejected",
-    },
-    {
-      id: "#12358",
-      client: "Jane Doe",
-      product: "Leather Bag",
-      qty: 5,
-      price: "$30,000",
-      category: "Accessories",
-      status: "Delivered",
-    },
-  ];
-
-  const totalPages = Math.ceil(orders.length / rowsPerPage);
-  const paginatedOrders = orders.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
+  // Use real data from API or fallback to loading/default values
+  // const totalOrders = orderStats?.totalOrders || 0;
+  const productsSold = orderStats?.deliveredOrders || 0;
+  const orders = ordersData?.data?.orders || [];
+  const totalPages = ordersData?.data?.pagination?.totalPages || 1;
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
@@ -91,12 +86,54 @@ const Dashboard = () => {
     setBalanceVisible(!balanceVisible);
   };
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+    }).format(amount);
+  };
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return "text-yellow-500";
+      case "On Delivery":
+        return "text-blue-500";
+      case "Delivered":
+        return "text-green-500";
+      case "Cancelled":
+        return "text-red-500";
+      default:
+        return "text-gray-500";
+    }
+  };
+
   const chartData = {
-    labels: ["January", "February", "March", "April", "May", "June"], // Placeholder months
+    labels: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+    ], // Placeholder months
     datasets: [
       {
         label: "Revenue",
-        data: [5000, 10000, 7500, 12000, 8000, 15000], // Replace with real data
+        data: [5000, 10000, 7500, 12000, 8000, 15000, 5000, 20000], // Replace with real data
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         borderWidth: 2,
@@ -125,22 +162,34 @@ const Dashboard = () => {
       <div className="grid grid-cols-4 gap-4 mb-5">
         {[
           {
-            title: "Wallet Balance",
-            value: balanceVisible ? "$34,000" : "****",
+            title: "Money Earned",
+            value: balanceVisible
+              ? formatCurrency(orderStats?.totalRevenue || 0)
+              : "****",
             icon: balanceVisible ? EyeOff : Eye,
             onClick: toggleBalanceVisibility,
+            loading: statsLoading,
           },
           {
             title: "Total Orders",
-            value: totalOrders.toString(),
+            value: statsLoading
+              ? "Loading..."
+              : ordersData?.data?.orders?.length?.toString() || "0",
             icon: ShoppingCart,
+            loading: statsLoading,
           },
           {
             title: "Products Sold",
-            value: productsSold.toString(),
+            value: statsLoading ? "Loading..." : productsSold.toString(),
             icon: Package,
+            loading: statsLoading,
           },
-          { title: "Account Type", value: accountType, icon: Layers },
+          {
+            title: "Account Type",
+            value: accountType,
+            icon: Layers,
+            loading: false,
+          },
         ].map((card, index) => (
           <motion.div
             key={index}
@@ -150,7 +199,11 @@ const Dashboard = () => {
           >
             <div>
               <h3 className="text-sm text-gray-500">{card.title}</h3>
-              <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+              {card.loading ? (
+                <div className="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
+              ) : (
+                <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+              )}
             </div>
             {card.icon && (
               <motion.button onClick={card.onClick}>
@@ -218,69 +271,165 @@ const Dashboard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <h2 className="font-bold mb-4">All Orders</h2>
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b">
-              <th className="py-2">ID</th>
-              <th>Client Name</th>
-              <th>Product Name</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Category</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedOrders.map((order, index) => (
-              <motion.tr
-                key={index}
-                className="border-b hover:bg-gray-100"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <td className="py-2">{order.id}</td>
-                <td>{order.client}</td>
-                <td>{order.product}</td>
-                <td>{order.qty}</td>
-                <td>{order.price}</td>
-                <td>{order.category}</td>
-                <td
-                  className={`text-${
-                    order.status === "Pending"
-                      ? "yellow"
-                      : order.status === "Delivered"
-                      ? "green"
-                      : "red"
-                  }-500`}
-                >
-                  {order.status}
-                </td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-
-        <div className="flex justify-between items-center mt-4">
-          <button
-            onClick={handlePrev}
-            disabled={currentPage === 1}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold">Recent Orders</h2>
+          <NavLink
+            to="/app/orders"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors"
           >
-            Prev
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            onClick={handleNext}
-            disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-          >
-            Next
-          </button>
+            View All Orders
+            <ExternalLink className="w-4 h-4" />
+          </NavLink>
         </div>
+
+        {/* Loading State */}
+        {ordersLoading && (
+          <div className="flex items-center justify-center py-8">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-gray-600">Loading orders...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {ordersError && (
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="text-red-500 mb-2">Failed to load orders</div>
+            <button
+              onClick={() => refetchOrders()}
+              className="px-4 py-2 text-sm text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {/* Orders Table */}
+        {!ordersLoading && !ordersError && (
+          <>
+            {orders.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8">
+                <ShoppingCart className="w-12 h-12 text-gray-400 mb-2" />
+                <p className="text-gray-500">No orders found</p>
+                <p className="text-sm text-gray-400">
+                  Orders will appear here when customers place them
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="py-2">Order ID</th>
+                        <th>Customer</th>
+                        <th>Date</th>
+                        <th>Items</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((order: any, index: any) => (
+                        <motion.tr
+                          key={order._id}
+                          className="border-b hover:bg-gray-50"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                          <td className="py-3">
+                            <span className="font-mono text-sm">
+                              {order?._id}
+                            </span>
+                          </td>
+                          <td className="py-3">
+                            <div>
+                              <div className="font-medium">
+                                {order.buyerInfo.first_name}
+                              </div>
+                              {/* <div className="text-sm text-gray-500">
+                                {order.buyerInfo.email}
+                              </div> */}
+                            </div>
+                          </td>
+                          <td className="py-3 text-sm text-gray-600">
+                            {formatDate(order.createdAt)}
+                          </td>
+                          <td className="py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm">
+                                {/* {order.name?.length} item
+                                {order.name?.length > 1 ? "s" : ""} */}
+                                {order.product.name}
+                              </span>
+                              {order.name?.[0]?.image && (
+                                <img
+                                  src={
+                                    order.items[0].image || "/placeholder.svg"
+                                  }
+                                  alt={order.items[0].name}
+                                  className="w-8 h-8 rounded object-cover"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src =
+                                      "/placeholder.svg?height=32&width=32";
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3 font-semibold">
+                            {formatCurrency(order.totalPrice)}
+                          </td>
+                          <td className="py-3">
+                            <span
+                              className={`font-medium ${getStatusColor(
+                                order.status
+                              )}`}
+                            >
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="py-3">
+                            <NavLink
+                              to={`/app/order-details/${order._id}`}
+                              className="text-blue-500 hover:text-blue-700 text-sm hover:underline"
+                            >
+                              View Details
+                            </NavLink>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={handlePrev}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Prev
+                  </button>
+                  <span className="text-sm text-gray-600">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={handleNext}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            )}
+          </>
+        )}
       </motion.div>
     </main>
   );

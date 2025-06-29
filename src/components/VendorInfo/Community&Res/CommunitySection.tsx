@@ -33,8 +33,8 @@ const CommunitySection: React.FC = () => {
   const filteredCommunities = useMemo(() => {
     return communities.filter((community: Community) => {
       if (filter === "all") return true;
-      if (filter === "owner") return community.admin === user?.vendor?.id;
-      if (filter === "member") return community.admin !== user?.vendor?.id;
+      if (filter === "owner") return community.admin === user?.vendor?._id;
+      if (filter === "member") return community.admin !== user?.vendor?._id;
       return true;
     });
   }, [communities, filter, user]);
@@ -95,7 +95,7 @@ const CommunitySection: React.FC = () => {
                     : "bg-blue-200 text-blue-800"
                 }`}
               >
-                {community.admin === user?.vendor?.id ? "Owner" : "Member"}
+                {community.admin === user?.vendor?._id ? "Owner" : "Member"}
               </span>
               <div className="w-[50px] h-[50px] bg-red-900 absolute right-[10px] top-[10px] rounded-full overflow-hidden">
                 <img

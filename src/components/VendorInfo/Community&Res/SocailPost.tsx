@@ -70,11 +70,11 @@ export default function SocialList() {
       }
 
       // setTimeout(() => window.location.reload(), 1000);
-      queryClient.invalidateQueries({ queryKey: ['vendors'] })
-        queryClient.invalidateQueries({ queryKey: ["all_comm"] });
-        queryClient.invalidateQueries({ queryKey: ['vendor'] })
-        queryClient.invalidateQueries({ queryKey: ["search_res"] })
-    queryClient.invalidateQueries({ queryKey: ['communities'] })
+      queryClient.invalidateQueries({ queryKey: ["vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["all_comm"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+      queryClient.invalidateQueries({ queryKey: ["search_res"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
     } catch (error) {
       console.error("Follow/Unfollow failed:", error);
     }
@@ -94,9 +94,9 @@ export default function SocialList() {
       }
 
       // setTimeout(() => window.location.reload(), 1000)
-       queryClient.invalidateQueries({ queryKey: ["all_comm"] });
-          queryClient.invalidateQueries({ queryKey: ['vendor'] })
-      queryClient.invalidateQueries({ queryKey: ['communities'] })
+      queryClient.invalidateQueries({ queryKey: ["all_comm"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
     } catch (error) {
       console.error("Join/Leave failed:", error);
     }
@@ -120,7 +120,9 @@ export default function SocialList() {
 
       {/* Search Loading Indicator */}
       {isSearching && (
-        <div className="text-center text-sm text-gray-500 mb-3">Searching...</div>
+        <div className="text-center text-sm text-gray-500 mb-3">
+          Searching...
+        </div>
       )}
 
       {/* Vendors & Communities List */}
@@ -139,7 +141,7 @@ export default function SocialList() {
           ) : displayVendors.length === 0 ? (
             <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
-            displayVendors.map((vendor:any) => (
+            displayVendors.map((vendor: any) => (
               <motion.div key={vendor._id} layout className="space-y-4">
                 <AnimatePresence>
                   <motion.div
@@ -154,7 +156,9 @@ export default function SocialList() {
                         <p>{vendor?.storeName?.charAt(0)}</p>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{vendor.storeName}</p>
+                        <p className="text-sm font-medium">
+                          {vendor.storeName}
+                        </p>
                         {vendor?.craftCategories[0] && (
                           <p className="text-xs text-gray-500">
                             {vendor.craftCategories[0]}
@@ -235,12 +239,14 @@ export default function SocialList() {
                       whileTap={{ scale: 0.95 }}
                       onClick={() => handleCommunityToggle(community._id)}
                       className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] ${
-                        community.members.includes(user?.vendor?.id)
+                        community.members.includes(user?.vendor?._id)
                           ? "bg-gray-100 text-gray-700"
                           : "bg-blue-500 text-white"
                       }`}
                     >
-                      {community.members.includes(user?.vendor?.id) ? "Joined" : "Join"}
+                      {community.members.includes(user?.vendor?._id)
+                        ? "Joined"
+                        : "Join"}
                     </motion.button>
                   </motion.div>
                 </AnimatePresence>
