@@ -11,6 +11,45 @@ import ProtectedVendor from "./ProtectedVendor";
 import ErrorPage from "@/components/Error/ErrorPage";
 import VintageJewelry from "@/components/AllCategory/VintageAntiqueJewelry/VintageAntique";
 import Vintage from "@/components/AllCategory/VintageStocks/Vintage";
+import FestiveRitualJewelry from "@/components/AllCategory/VintageAntiqueJewelry/subcategory/FestiveRitualJewelry";
+import CulturalGemstones from "@/components/AllCategory/VintageAntiqueJewelry/subcategory/CulturalGemstones";
+import ReligiousSpiritualJewelry from "@/components/AllCategory/VintageAntiqueJewelry/subcategory/ReligiousSpiritualJewelry";
+import ReligiousAS from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/ReligiousAS";
+import Tcc from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Tcc";
+import Rja from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rja";
+import As from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/As";
+import Crt from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Crt";
+import Shmi from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Shmi";
+import Cfi from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Cfi";
+import Rt from "@/components/AllCategory/TraditionalandReligiousItems/subcategory/Rt";
+import TF from "@/components/AllCategory/Fashion/subcategory/TF/TF";
+import MenWear from "@/components/AllCategory/Fashion/subcategory/TF/MenWear";
+import WomenWear from "@/components/AllCategory/Fashion/subcategory/TF/WomenWear";
+import ChildrenWear from "@/components/AllCategory/Fashion/subcategory/TF/ChildrenWear";
+import Unsex from "@/components/AllCategory/Fashion/subcategory/TF/Unsex";
+import MT from "@/components/AllCategory/Fashion/subcategory/MT/MT";
+import CAF from "@/components/AllCategory/Fashion/subcategory/MT/CAF";
+import EUW from "@/components/AllCategory/Fashion/subcategory/MT/EUW";
+import FUC from "@/components/AllCategory/Fashion/subcategory/MT/FUC";
+import CMF from "@/components/AllCategory/Fashion/subcategory/MT/CMF";
+import FW from "@/components/AllCategory/Fashion/subcategory/FW/FW";
+import TSS from "@/components/AllCategory/Fashion/subcategory/FW/TSS";
+import LHS from "@/components/AllCategory/Fashion/subcategory/FW/LHS";
+import MSC from "@/components/AllCategory/Fashion/subcategory/FW/MSC";
+import CSS from "@/components/AllCategory/Fashion/subcategory/FW/CSS";
+import AC from "@/components/AllCategory/Fashion/subcategory/AC/AC";
+import BSS from "@/components/AllCategory/Fashion/subcategory/AC/BSS";
+import BP from "@/components/AllCategory/Fashion/subcategory/AC/BP";
+import HS from "@/components/AllCategory/Fashion/subcategory/AC/HS";
+import JA from "@/components/AllCategory/Fashion/subcategory/AC/JA";
+import FB from "@/components/AllCategory/Fashion/subcategory/FB";
+import OF from "@/components/AllCategory/Fashion/subcategory/OF";
+import FC from "@/components/AllCategory/Fashion/subcategory/FC";
+import RF from "@/components/AllCategory/Fashion/subcategory/RF";
+import SF from "@/components/AllCategory/Fashion/subcategory/SF";
+import EB from "@/components/AllCategory/Fashion/subcategory/EB";
+import BS from "@/components/AllCategory/Fashion/subcategory/BS";
+import ST from "@/components/AllCategory/Fashion/subcategory/ST";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -774,7 +813,7 @@ const routesConfig: RouteObject[] = [
       { path: "/vintage-jewelry", element: withSuspense(VintageJewelry) },
       { path: "/beautywellness", element: withSuspense(BeautyWellness) },
       { path: "/art", element: withSuspense(Art) },
-      { path: "/traditional-items", element: withSuspense(TraditionalRi) },
+      { path: "/traditional-items", element: withSuspense(TraditionalOil) },
 
       // Art Subcategory Page
       { path: "/paintings", element: withSuspense(Paintings) },
@@ -893,7 +932,7 @@ const routesConfig: RouteObject[] = [
       // Vintage Jewelry
 
       {path: "/festive-jewelry", element: withSuspense(FestiveRitualJewelry)},
-      {path: "/Vintage-jewelrys", element: withSuspense(VintageJewelrys)},
+      {path: "/Vintage-jewelrys", element: withSuspense(VintageJewelry)},
       {path: "/cultural-gemstones", element: withSuspense(CulturalGemstones)},
       {path: "/religious-jewelry", element: withSuspense(ReligiousSpiritualJewelry)},
       // Plant Seed

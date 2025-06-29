@@ -491,7 +491,7 @@ export default function CategorySelector({
         {
           name: "Textiles and Fabrics",
           subSubCategories: [
-            { name: "Handwoven Rugs (e.g., Kilim, Dhurrie)" },
+            { name: "Handwoven Rugs(e.g., Kilim, Dhurrie)" },
             { name: "Embroidered Cushion Covers" },
             { name: "Hand-dyed Batik Throws" },
             { name: "Traditional Quilts" },
@@ -515,7 +515,7 @@ export default function CategorySelector({
             { name: "Traditional Wooden Masks" },
             { name: "Ornate Wooden Wall Art" },
             {
-              name: "Handcrafted Wooden Furniture (e.g., stools, side tables)",
+              name: "Handcrafted Wooden Furniture(e.g., stools, side tables)",
             },
             { name: "Wooden Picture Frames" },
           ],
@@ -684,7 +684,7 @@ export default function CategorySelector({
           subSubCategories: [
             { name: "Aloe Vera" },
             { name: "Neem" },
-            { name: "Holy Basil (Tulsi)" },
+            { name: "Holy Basil(Tulsi)" },
             { name: "Echinacea" },
           ],
         },
@@ -706,9 +706,9 @@ export default function CategorySelector({
         {
           name: "Herb Seeds",
           subSubCategories: [
-            { name: "Culinary Herbs (Basil, Thyme)" },
-            { name: "Medicinal Herbs (Moringa, Ashwagandha" },
-            { name: "Aromatic Herbs (Lemongrass, Mint" },
+            { name: "Culinary Herbs(Basil, Thyme)" },
+            { name: "Medicinal Herbs(Moringa, Ashwagandha" },
+            { name: "Aromatic Herbs(Lemongrass, Mint" },
           ],
         },
         {
@@ -723,7 +723,7 @@ export default function CategorySelector({
         {
           name: "Cultural and Traditional Seeds",
           subSubCategories: [
-            { name: "Indigenous Crop Seeds (Millet, Sorghum)" },
+            { name: "Indigenous Crop Seeds(Millet, Sorghum)" },
             { name: "Heritage Seeds" },
             { name: "Ceremonial and Ritual Seeds" },
           ],
@@ -764,7 +764,7 @@ export default function CategorySelector({
           subSubCategories: [
             { name: "Soil Mixes" },
             { name: "Organic Soil Mixes" },
-            { name: "Specialized Soil (e.g., Cactus Soil)" },
+            { name: "Specialized Soil(e.g., Cactus Soil)" },
             { name: "Fertilizers and Nutrients" },
             { name: "Organic Fertilizers" },
             { name: "Specialty Plant Nutrients" },
@@ -782,36 +782,36 @@ export default function CategorySelector({
         {
           name: "Spices",
           subSubCategories: [
-            { name: "Whole Spices (Ungrounded Spice)" },
-            { name: "Ground Spices (Powdery Form)" },
+            { name: "Whole Spices(Ungrounded Spice)" },
+            { name: "Ground Spices(Powdery Form)" },
             {
-              name: "Spice Blends & Mixes (e.g., Curry Powder, Garam Masala, Chili Powder)",
+              name: "Spice Blends & Mixes(e.g., Curry Powder, Garam Masala, Chili Powder)",
             },
             {
-              name: "Specialty & Exotic Spices (e.g., Saffron, Sumac, Za'atar, Star Anise)",
+              name: "Specialty & Exotic Spices(e.g., Saffron, Sumac, Za'atar, Star Anise)",
             },
-            { name: "Organic Spices (Certified Organic options)" },
-            { name: "Dried Herbs (e.g., Oregano, Thyme, Basil, Rosemary)" },
+            { name: "Organic Spices(Certified Organic options)" },
+            { name: "Dried Herbs(e.g., Oregano, Thyme, Basil, Rosemary)" },
           ],
         },
         {
           name: "Condiments",
           subSubCategories: [
-            { name: "Sauces (e.g., Hot Sauces, Soy Sauce, Barbecue Sauce)" },
+            { name: "Sauces(e.g., Hot Sauces, Soy Sauce, Barbecue Sauce)" },
             {
-              name: "Vinegars & Cooking Wines (e.g., Apple Cider Vinegar, Balsamic Vinegar, Rice Wine Vinegar)",
+              name: "Vinegars & Cooking Wines(e.g., Apple Cider Vinegar, Balsamic Vinegar, Rice Wine Vinegar)",
             },
             {
-              name: "Mustards & Ketchups (e.g., Dijon Mustard, Whole Grain Mustard, Organic Ketchup)",
+              name: "Mustards & Ketchups(e.g., Dijon Mustard, Whole Grain Mustard, Organic Ketchup)",
             },
             {
-              name: "Relishes & Pickles (e.g., Mango Pickle, Dill Pickles, Sweet Relish)",
+              name: "Relishes & Pickles(e.g., Mango Pickle, Dill Pickles, Sweet Relish)",
             },
             {
-              name: "Chutneys & Preserves (e.g., Mango Chutney, Tamarind Chutney)",
+              name: "Chutneys & Preserves(e.g., Mango Chutney, Tamarind Chutney)",
             },
             {
-              name: "Honey & Syrups (e.g., Local Honey, Maple Syrup, Agave Syrup)",
+              name: "Honey & Syrups(e.g., Local Honey, Maple Syrup, Agave Syrup)",
             },
           ],
         },
@@ -819,17 +819,17 @@ export default function CategorySelector({
           name: "Cultural & Regional Spices",
           subSubCategories: [
             {
-              name: "African Spices (e.g., Berbere, Ras el Hanout, Suya Spice)",
+              name: "African Spices(e.g., Berbere, Ras el Hanout, Suya Spice)",
             },
             {
-              name: "Asian Spices (e.g., Chinese Five Spice, Indian Masalas, Japanese Shichimi)",
+              name: "Asian Spices(e.g., Chinese Five Spice, Indian Masalas, Japanese Shichimi)",
             },
-            { name: "Middle Eastern Spices (e.g., Baharat, Dukkah, Za'atar)" },
+            { name: "Middle Eastern Spices(e.g., Baharat, Dukkah, Za'atar)" },
             {
-              name: "Latin American Spices (e.g., Achiote, Ancho Chili Powder, Adobo Seasoning)",
+              name: "Latin American Spices(e.g., Achiote, Ancho Chili Powder, Adobo Seasoning)",
             },
             {
-              name: "European Spices (e.g., Italian Herbs, Herbes de Provence, Smoked Paprika)",
+              name: "European Spices(e.g., Italian Herbs, Herbes de Provence, Smoked Paprika)",
             },
           ],
         },
@@ -837,13 +837,13 @@ export default function CategorySelector({
           name: "Salt & Pepper Varieties",
           subSubCategories: [
             {
-              name: "Artisan Salts (e.g., Himalayan Pink Salt, Black Lava Salt, Fleur de Sel)",
+              name: "Artisan Salts(e.g., Himalayan Pink Salt, Black Lava Salt, Fleur de Sel)",
             },
             {
-              name: "Pepper Varieties (e.g., Black Pepper, White Pepper, Sichuan Peppercorns)",
+              name: "Pepper Varieties(e.g., Black Pepper, White Pepper, Sichuan Peppercorns)",
             },
             {
-              name: "Smoked Salts & Peppers (e.g., Smoked Sea Salt, Smoked Paprika)",
+              name: "Smoked Salts & Peppers(e.g., Smoked Sea Salt, Smoked Paprika)",
             },
           ],
         },
@@ -851,23 +851,23 @@ export default function CategorySelector({
           name: "Marinades & Rubs",
           subSubCategories: [
             {
-              name: "Meat Rubs (e.g., Barbecue Rubs, Cajun Rubs, Jerk Seasoning)",
+              name: "Meat Rubs(e.g., Barbecue Rubs, Cajun Rubs, Jerk Seasoning)",
             },
             {
-              name: "Fish & Seafood Marinades (e.g., Lemon & Herb Marinades, Creole Seasoning)",
+              name: "Fish & Seafood Marinades(e.g., Lemon & Herb Marinades, Creole Seasoning)",
             },
             {
-              name: "Vegetable & Vegan Marinades (e.g., Tandoori Marinades, Harissa Paste)",
+              name: "Vegetable & Vegan Marinades(e.g., Tandoori Marinades, Harissa Paste)",
             },
           ],
         },
         {
           name: "Health & Wellness Spices",
           subSubCategories: [
-            { name: "Ayurvedic Spices (e.g., Turmeric, Ashwagandha, Ginger)" },
-            { name: "Herbal Supplements (e.g., Moringa, Holy Basil)" },
+            { name: "Ayurvedic Spices(e.g., Turmeric, Ashwagandha, Ginger)" },
+            { name: "Herbal Supplements(e.g., Moringa, Holy Basil)" },
             {
-              name: "Medicinal Blends (e.g., Golden Milk Blends, Herbal Teas)",
+              name: "Medicinal Blends(e.g., Golden Milk Blends, Herbal Teas)",
             },
           ],
         },
@@ -875,20 +875,20 @@ export default function CategorySelector({
           name: "Spice Kits & Gift Sets",
           subSubCategories: [
             {
-              name: "Regional Spice Kits (e.g., Indian Cooking Spice Kits, Mediterranean Spice Kits)",
+              name: "Regional Spice Kits(e.g., Indian Cooking Spice Kits, Mediterranean Spice Kits)",
             },
             {
-              name: "Gift Sets (e.g., Gourmet Spice Gift Sets, Hot Sauce Gift Packs)",
+              name: "Gift Sets(e.g., Gourmet Spice Gift Sets, Hot Sauce Gift Packs)",
             },
           ],
         },
         {
           name: "Cooking Ingredients",
           subSubCategories: [
-            { name: "Flavor Extracts (e.g., Vanilla Extract, Almond Extract)" },
-            { name: "Oils & Fats (e.g., Olive Oil, Coconut Oil, Ghee)" },
+            { name: "Flavor Extracts(e.g., Vanilla Extract, Almond Extract)" },
+            { name: "Oils & Fats(e.g., Olive Oil, Coconut Oil, Ghee)" },
             {
-              name: "Baking Ingredients (e.g., Baking Soda, Baking Powder, Yeast)",
+              name: "Baking Ingredients(e.g., Baking Soda, Baking Powder, Yeast)",
             },
           ],
         },
@@ -994,19 +994,19 @@ export default function CategorySelector({
           name: "Local Beverages",
           subSubCategories: [
             {
-              name: "Non-Alcoholic Drinks (e.g., Hibiscus Tea, Tamarind Juice, Ginger Beer, Palm Wine)",
+              name: "Non-Alcoholic Drinks(e.g., Hibiscus Tea, Tamarind Juice, Ginger Beer, Palm Wine)",
             },
             {
-              name: "Alcoholic Beverages (e.g., Local Spirits, Mead, Traditional Liquors like Tequila, Aguardiente, Sake)",
+              name: "Alcoholic Beverages(e.g., Local Spirits, Mead, Traditional Liquors like Tequila, Aguardiente, Sake)",
             },
             {
-              name: "Herbal & Medicinal Teas (e.g., Moringa Tea, Rooibos, Bitter Leaf Tea)",
+              name: "Herbal & Medicinal Teas(e.g., Moringa Tea, Rooibos, Bitter Leaf Tea)",
             },
             {
-              name: "Coffee & Cocoa Products (e.g., Ethiopian Coffee, Ghanaian Cocoa, Jamaican Blue Mountain Coffee)",
+              name: "Coffee & Cocoa Products(e.g., Ethiopian Coffee, Ghanaian Cocoa, Jamaican Blue Mountain Coffee)",
             },
             {
-              name: "Specialty Milk & Dairy Products (e.g., Local Goat Milk, Camel Milk, Yogurt Drinks)",
+              name: "Specialty Milk & Dairy Products(e.g., Local Goat Milk, Camel Milk, Yogurt Drinks)",
             },
           ],
         },
@@ -1014,20 +1014,20 @@ export default function CategorySelector({
           name: "Regional & Ethnic Foods",
           subSubCategories: [
             {
-              name: "African Cuisine (e.g., Jollof Rice, Injera, Ugali, Bobotie)",
+              name: "African Cuisine(e.g., Jollof Rice, Injera, Ugali, Bobotie)",
             },
             {
-              name: "Caribbean Cuisine (e.g., Ackee & Saltfish, Jerk Chicken, Doubles)",
+              name: "Caribbean Cuisine(e.g., Ackee & Saltfish, Jerk Chicken, Doubles)",
             },
             {
-              name: "Latin American Cuisine (e.g., Arepas, Tacos, Pupusas, Tamales)",
+              name: "Latin American Cuisine(e.g., Arepas, Tacos, Pupusas, Tamales)",
             },
             {
-              name: "Middle Eastern Cuisine (e.g., Hummus, Falafel, Manakeesh, Koshari)",
+              name: "Middle Eastern Cuisine(e.g., Hummus, Falafel, Manakeesh, Koshari)",
             },
-            { name: "Asian Cuisine (e.g., Kimchi, Nasi Goreng, Laksa, Adobo)" },
+            { name: "Asian Cuisine(e.g., Kimchi, Nasi Goreng, Laksa, Adobo)" },
             {
-              name: "European Cuisine (e.g., Pierogi, Moussaka, Paella, Black Pudding)",
+              name: "European Cuisine(e.g., Pierogi, Moussaka, Paella, Black Pudding)",
             },
           ],
         },
@@ -1035,16 +1035,16 @@ export default function CategorySelector({
           name: "Ethnic Sauces, Spices & Seasonings",
           subSubCategories: [
             {
-              name: "Local Hot Sauces (e.g., Scotch Bonnet Sauce, Harissa, Piri-Piri)",
+              name: "Local Hot Sauces(e.g., Scotch Bonnet Sauce, Harissa, Piri-Piri)",
             },
             {
-              name: "Traditional Seasoning Mixes (e.g., Suya Spice, Curry Powder, Adobo Seasoning)",
+              name: "Traditional Seasoning Mixes(e.g., Suya Spice, Curry Powder, Adobo Seasoning)",
             },
             {
-              name: "Indigenous Spice Blends (e.g., Berbere, Cajun Seasoning, Ras el Hanout)",
+              name: "Indigenous Spice Blends(e.g., Berbere, Cajun Seasoning, Ras el Hanout)",
             },
             {
-              name: "Ethnic Condiments (e.g., Chutney, Fish Sauce, Ghee, Sour Cream)",
+              name: "Ethnic Condiments(e.g., Chutney, Fish Sauce, Ghee, Sour Cream)",
             },
           ],
         },
@@ -1056,7 +1056,7 @@ export default function CategorySelector({
             { name: "Vegan & Vegetarian Options" },
             { name: "Gluten-Free Traditional Foods" },
             {
-              name: "Organic & Ethically Sourced Products (e.g., Fair Trade Cocoa, Locally Harvested Grains)",
+              name: "Organic & Ethically Sourced Products(e.g., Fair Trade Cocoa, Locally Harvested Grains)",
             },
           ],
         },
@@ -1064,13 +1064,13 @@ export default function CategorySelector({
           name: "Traditional Sweets & Desserts",
           subSubCategories: [
             {
-              name: "Ethnic Desserts (e.g., Turkish Delight, Baklava, Kulfi, Cassava Cake)",
+              name: "Ethnic Desserts(e.g., Turkish Delight, Baklava, Kulfi, Cassava Cake)",
             },
             {
-              name: "Indigenous Candies & Treats (e.g., Coconut Sweets, Tamarind Candy, Plantain Chips)",
+              name: "Indigenous Candies & Treats(e.g., Coconut Sweets, Tamarind Candy, Plantain Chips)",
             },
             {
-              name: "Specialty Chocolate & Cocoa Products (e.g., Dark Chocolate Bars, Cocoa Nibs, Artisanal Chocolates)",
+              name: "Specialty Chocolate & Cocoa Products(e.g., Dark Chocolate Bars, Cocoa Nibs, Artisanal Chocolates)",
             },
           ],
         },
@@ -1078,13 +1078,13 @@ export default function CategorySelector({
           name: "Packaged & Ready-to-Eat Foods",
           subSubCategories: [
             {
-              name: "Ready-to-Eat Traditional Meals (e.g., Canned Jollof Rice, Packaged Tacos, Frozen Samosas)",
+              name: "Ready-to-Eat Traditional Meals(e.g., Canned Jollof Rice, Packaged Tacos, Frozen Samosas)",
             },
             {
-              name: "Pre-Packaged Snacks (e.g., Roasted Peanuts, Cassava Chips, Dried Mango)",
+              name: "Pre-Packaged Snacks(e.g., Roasted Peanuts, Cassava Chips, Dried Mango)",
             },
             {
-              name: "Meal Kits for Traditional Dishes (e.g., Jerk Chicken Kit, Fufu & Soup Kit, Tandoori Chicken Kit)",
+              name: "Meal Kits for Traditional Dishes(e.g., Jerk Chicken Kit, Fufu & Soup Kit, Tandoori Chicken Kit)",
             },
           ],
         },
@@ -1112,13 +1112,13 @@ export default function CategorySelector({
           name: "Fermented & Pickled Foods",
           subSubCategories: [
             {
-              name: "Pickled Vegetables & Fruits (e.g., Pickled Mango, Pickled Peppers)",
+              name: "Pickled Vegetables & Fruits(e.g., Pickled Mango, Pickled Peppers)",
             },
             {
-              name: "Fermented Fish & Seafood (e.g., Salt Fish, Fermented Shrimp)",
+              name: "Fermented Fish & Seafood(e.g., Salt Fish, Fermented Shrimp)",
             },
             {
-              name: "Sauerkraut & Kimchi (Local variations of fermented dishes)",
+              name: "Sauerkraut & Kimchi(Local variations of fermented dishes)",
             },
           ],
         },
@@ -1126,13 +1126,13 @@ export default function CategorySelector({
           name: "Cultural Holiday & Festival Foods",
           subSubCategories: [
             {
-              name: "Special Holiday Meals (e.g., Thanksgiving Turkey, Eid Lamb, Christmas Ham)",
+              name: "Special Holiday Meals(e.g., Thanksgiving Turkey, Eid Lamb, Christmas Ham)",
             },
             {
-              name: "Festival Foods (e.g., Diwali Sweets, Ramadan Desserts, Lunar New Year Rice Cakes)",
+              name: "Festival Foods(e.g., Diwali Sweets, Ramadan Desserts, Lunar New Year Rice Cakes)",
             },
             {
-              name: "Religious & Cultural Feasts (e.g., Passover Foods, Christmas Pudding, Carnival Treats)",
+              name: "Religious & Cultural Feasts(e.g., Passover Foods, Christmas Pudding, Carnival Treats)",
             },
           ],
         },
@@ -1140,10 +1140,10 @@ export default function CategorySelector({
           name: "Meal Plans & Subscription Boxes",
           subSubCategories: [
             {
-              name: "Diaspora Food Subscription Boxes (e.g., African Food Box, Caribbean Meal Box, Asian Cuisine Box)",
+              name: "Diaspora Food Subscription Boxes(e.g., African Food Box, Caribbean Meal Box, Asian Cuisine Box)",
             },
             {
-              name: "Monthly Traditional Snack Subscription (e.g., Global Snack Box, Heritage Treats Box)",
+              name: "Monthly Traditional Snack Subscription(e.g., Global Snack Box, Heritage Treats Box)",
             },
           ],
         },
@@ -1157,16 +1157,16 @@ export default function CategorySelector({
           name: "Traditional Clothing ",
           subSubCategories: [
             {
-              name: "Men’s Traditional Wear ( e.g., Dashiki, Agbada, Buba, Sokoto, Boubous, Sherwanis, Kimono Kente Cloth)",
+              name: "Men’s Traditional Wear( e.g., Dashiki, Agbada, Buba, Sokoto, Boubous, Sherwanis, Kimono Kente Cloth)",
             },
             {
-              name: "Women’s Traditional Wear ( e.g., Kaftans, Kanga, Sari, Abaya, Gele, Kimono )",
+              name: "Women’s Traditional Wear( e.g., Kaftans, Kanga, Sari, Abaya, Gele, Kimono )",
             },
             {
-              name: "Children’s Traditional Wear ( e.g., Dress, Mini Dashikis, Cheongsam, Cultural Dresses )",
+              name: "Children’s Traditional Wear( e.g., Dress, Mini Dashikis, Cheongsam, Cultural Dresses )",
             },
             {
-              name: "Unisex Traditional Clothing ( e.g., Sarongs, Robes, Ponchos, Caftans )",
+              name: "Unisex Traditional Clothing( e.g., Sarongs, Robes, Ponchos, Caftans )",
             },
           ],
         },
@@ -1174,16 +1174,16 @@ export default function CategorySelector({
           name: "Modern Clothing with Traditional Influence",
           subSubCategories: [
             {
-              name: "Contemporary African Fashion ( e.g., Ankara Dresses, Adire, Batik Print Designs, Kente-inspired Styles, Dashiki ) ",
+              name: "Contemporary African Fashion( e.g., Ankara Dresses, Adire, Batik Print Designs, Kente-inspired Styles, Dashiki ) ",
             },
             {
-              name: "Ethnic-Inspired Urban Wear ( e.g., Kimonos with Modern, Fusion Kurtas, Maasai Beadwork Clothing )",
+              name: "Ethnic-Inspired Urban Wear( e.g., Kimonos with Modern, Fusion Kurtas, Maasai Beadwork Clothing )",
             },
             {
-              name: "Fusion Clothing ( e.g., Indo-Western Outfits, Afro-Western Styles ) ",
+              name: "Fusion Clothing( e.g., Indo-Western Outfits, Afro-Western Styles ) ",
             },
             {
-              name: "Custom-Made Ethnic Fashion ( e.g., Tailored Kitenge, Custom Embroidered Kaftans )",
+              name: "Custom-Made Ethnic Fashion( e.g., Tailored Kitenge, Custom Embroidered Kaftans )",
             },
           ],
         },
@@ -1191,16 +1191,16 @@ export default function CategorySelector({
           name: "Footwear & Shoes",
           subSubCategories: [
             {
-              name: "Traditional Shoes & Sandals ( e.g., Maasai,Sandals, Babouches, Mojaris, Espadrilles",
+              name: "Traditional Shoes & Sandals( e.g., Maasai,Sandals, Babouches, Mojaris, Espadrilles",
             },
             {
-              name: "Leather & Handmade Shoes (e.g.,Handcrafted Leather Shoes,Moccasins,Traditional Slippers)",
+              name: "Leather & Handmade Shoes(e.g.,Handcrafted Leather Shoes,Moccasins,Traditional Slippers)",
             },
             {
-              name: "Modern Shoes with Cultural Designs (e.g., Sneakers, African Prints,Embroidered Flats)",
+              name: "Modern Shoes with Cultural Designs(e.g., Sneakers, African Prints,Embroidered Flats)",
             },
             {
-              name: "Custom Shoes & Sandals (e.g., Ethnic-Inspired Footwear, Made-to-Order Traditional Sandals)",
+              name: "Custom Shoes & Sandals(e.g., Ethnic-Inspired Footwear, Made-to-Order Traditional Sandals)",
             },
           ],
         },
@@ -1208,16 +1208,16 @@ export default function CategorySelector({
           name: "Cultural Accessories & Adornments",
           subSubCategories: [
             {
-              name: "Headwear & Scarves (e.g., Turbans, Head Wraps,Geles, Kufi Caps, Hijabs",
+              name: "Headwear & Scarves(e.g., Turbans, Head Wraps,Geles, Kufi Caps, Hijabs",
             },
             {
-              name: "Belts & Sashes (e.g., Kente Sashes,Obi Belts,Traditional Leather Belts)",
+              name: "Belts & Sashes(e.g., Kente Sashes,Obi Belts,Traditional Leather Belts)",
             },
             {
-              name: "Jewelry & Adornments (e.g., Beaded Necklaces, Waist Beads,Tribal Earrings)",
+              name: "Jewelry & Adornments(e.g., Beaded Necklaces, Waist Beads,Tribal Earrings)",
             },
             {
-              name: "Bags & Pouches (e.g., Handmade Leather BagsBeaded Clutches, Cultural Tote Bags)",
+              name: "Bags & Pouches(e.g., Handmade Leather BagsBeaded Clutches, Cultural Tote Bags)",
             },
           ],
         },
@@ -1225,16 +1225,16 @@ export default function CategorySelector({
           name: "Fabrics & Textiles",
           subSubCategories: [
             {
-              name: "Handwoven & Local Fabrics (e.g., Kente Cloth, Batik Fabrics, Adire, Shweshwe)",
+              name: "Handwoven & Local Fabrics(e.g., Kente Cloth, Batik Fabrics, Adire, Shweshwe)",
             },
             {
-              name: "Printed Fabrics (e.g., Ankara, Wax Prints, African Prints, Ikat )",
+              name: "Printed Fabrics(e.g., Ankara, Wax Prints, African Prints, Ikat )",
             },
             {
-              name: "Embroidered & Handmade Textiles (e.g., Aso-Oke, Kantha Stitch, Brocade)",
+              name: "Embroidered & Handmade Textiles(e.g., Aso-Oke, Kantha Stitch, Brocade)",
             },
             {
-              name: "Natural & Organic Fabrics (e.g., Cotton, Silk, Wool, Linen)",
+              name: "Natural & Organic Fabrics(e.g., Cotton, Silk, Wool, Linen)",
             },
           ],
         },
@@ -1242,13 +1242,13 @@ export default function CategorySelector({
           name: "Cultural Footwear for Specific Occasions",
           subSubCategories: [
             {
-              name: "Wedding Footwear (e.g., Bridal Slippers, Beaded Sandals, Embroidered Wedding Shoes)",
+              name: "Wedding Footwear(e.g., Bridal Slippers, Beaded Sandals, Embroidered Wedding Shoes)",
             },
             {
-              name: "Festival & Ceremony Footwear (e.g., Festival Sandals, Special Occasion Moccasins)",
+              name: "Festival & Ceremony Footwear(e.g., Festival Sandals, Special Occasion Moccasins)",
             },
             {
-              name: "Casual Ethnic Footwear (e.g., Beaded Flip-Flops, Everyday Traditional Sandals)",
+              name: "Casual Ethnic Footwear(e.g., Beaded Flip-Flops, Everyday Traditional Sandals)",
             },
           ],
         },
@@ -1256,13 +1256,13 @@ export default function CategorySelector({
           name: "Cultural & Festival Clothing",
           subSubCategories: [
             {
-              name: "Wedding Attire (e.g., Traditional Wedding Dresses, Groom's Outfits, Wedding Kente)",
+              name: "Wedding Attire(e.g., Traditional Wedding Dresses, Groom's Outfits, Wedding Kente)",
             },
             {
-              name: "Festival & Ceremony Outfits (e.g., Eid Outfits, Diwali Sarees, Traditional New Year Costumes)",
+              name: "Festival & Ceremony Outfits(e.g., Eid Outfits, Diwali Sarees, Traditional New Year Costumes)",
             },
             {
-              name: "Religious Clothing (e.g., Traditional Muslim Attire, Hindu Wedding Saris, Christian Choir Robes)",
+              name: "Religious Clothing(e.g., Traditional Muslim Attire, Hindu Wedding Saris, Christian Choir Robes)",
             },
           ],
         },
@@ -1270,10 +1270,10 @@ export default function CategorySelector({
           name: "Bespoke & Tailored Clothing",
           subSubCategories: [
             {
-              name: "Custom Tailored Traditional Wear (e.g., Tailor-made Sherwanis, Custom Gele, Made-to-Measure Dashikis)",
+              name: "Custom Tailored Traditional Wear(e.g., Tailor-made Sherwanis, Custom Gele, Made-to-Measure Dashikis)",
             },
             {
-              name: "Made-to-Order Shoes (e.g., Custom Leather Sandals, Handcrafted Cultural Shoes)",
+              name: "Made-to-Order Shoes(e.g., Custom Leather Sandals, Handcrafted Cultural Shoes)",
             },
           ],
         },
@@ -1287,16 +1287,16 @@ export default function CategorySelector({
           name: "Religious Artifacts & Symbols",
           subSubCategories: [
             {
-              name: "Religious Statues & Idols (e.g., Hindu Deities, Buddha Statues, Christian Crosses, Islamic Calligraphy Art)",
+              name: "Religious Statues & Idols(e.g., Hindu Deities, Buddha Statues, Christian Crosses, Islamic Calligraphy Art)",
             },
             {
-              name: "Sacred Symbols & Talismans (e.g., Hamsa, Nazar (Evil Eye), Om Symbols, Christian Medallions)",
+              name: "Sacred Symbols & Talismans(e.g., Hamsa, Nazar (Evil Eye), Om Symbols, Christian Medallions)",
             },
             {
-              name: "Holy Books & Scriptures (e.g., Quran, Bible, Bhagavad Gita, Torah)",
+              name: "Holy Books & Scriptures(e.g., Quran, Bible, Bhagavad Gita, Torah)",
             },
             {
-              name: "Religious Wall Art & Hangings (e.g., Christian Crosses, Islamic Calligraphy, Hindu Tapestries)",
+              name: "Religious Wall Art & Hangings(e.g., Christian Crosses, Islamic Calligraphy, Hindu Tapestries)",
             },
           ],
         },
@@ -1304,16 +1304,16 @@ export default function CategorySelector({
           name: "Traditional & Ceremonial Clothing",
           subSubCategories: [
             {
-              name: "Religious Attire (e.g., Islamic Abayas and Thobes, Buddhist Robes, Hindu Kurta-Pajamas)",
+              name: "Religious Attire(e.g., Islamic Abayas and Thobes, Buddhist Robes, Hindu Kurta-Pajamas)",
             },
             {
-              name: "Traditional Garments for Ceremonies (e.g., Sari for Weddings, Kente Cloth for Initiation Ceremonies)",
+              name: "Traditional Garments for Ceremonies(e.g., Sari for Weddings, Kente Cloth for Initiation Ceremonies)",
             },
             {
-              name: "Headwear & Shawls (e.g., Hijabs, Tallit, Turbans, Dupattas)",
+              name: "Headwear & Shawls(e.g., Hijabs, Tallit, Turbans, Dupattas)",
             },
             {
-              name: "Religious Robes & Sashes (e.g., Priest Robes, Monk Sashes, Ceremonial Robes)",
+              name: "Religious Robes & Sashes(e.g., Priest Robes, Monk Sashes, Ceremonial Robes)",
             },
           ],
         },
@@ -1321,16 +1321,16 @@ export default function CategorySelector({
           name: "Religious Jewelry & Adornments",
           subSubCategories: [
             {
-              name: "Prayer Beads & Rosaries (e.g., Islamic Tasbih, Catholic Rosaries, Hindu Rudraksha Malas)",
+              name: "Prayer Beads & Rosaries(e.g., Islamic Tasbih, Catholic Rosaries, Hindu Rudraksha Malas)",
             },
             {
-              name: "Amulets & Protective Jewelry (e.g., Hamsa Necklaces, Nazar Bracelets, Talisman Pendants)",
+              name: "Amulets & Protective Jewelry(e.g., Hamsa Necklaces, Nazar Bracelets, Talisman Pendants)",
             },
             {
-              name: "Religious Rings & Bracelets (e.g., Cross Rings, Sikh Kara Bracelets, Christian Faith Jewelry)",
+              name: "Religious Rings & Bracelets(e.g., Cross Rings, Sikh Kara Bracelets, Christian Faith Jewelry)",
             },
             {
-              name: "Religious Pendants (e.g., Star of David, Om Pendants, Crescent Moon Necklaces)",
+              name: "Religious Pendants(e.g., Star of David, Om Pendants, Crescent Moon Necklaces)",
             },
           ],
         },
@@ -1338,13 +1338,13 @@ export default function CategorySelector({
           name: "Altars & Shrines",
           subSubCategories: [
             {
-              name: "Home Altars & Prayer Stands (e.g., Hindu Pooja Altars, Buddhist Home Shrines, Catholic Home Altars)",
+              name: "Home Altars & Prayer Stands(e.g., Hindu Pooja Altars, Buddhist Home Shrines, Catholic Home Altars)",
             },
             {
-              name: "Travel Shrines & Portable Altars (e.g., Foldable Prayer Stands, Portable Meditation Shrines)",
+              name: "Travel Shrines & Portable Altars(e.g., Foldable Prayer Stands, Portable Meditation Shrines)",
             },
             {
-              name: "Temple & Religious Centerpieces (e.g., Large Religious Statues, Sacred Figures for Temples)",
+              name: "Temple & Religious Centerpieces(e.g., Large Religious Statues, Sacred Figures for Temples)",
             },
           ],
         },
@@ -1352,16 +1352,16 @@ export default function CategorySelector({
           name: "Ceremonial & Ritual Tools",
           subSubCategories: [
             {
-              name: "Incense Burners & Holders (e.g., Brass Incense Holders, Clay Diyas, Incense Towers)",
+              name: "Incense Burners & Holders(e.g., Brass Incense Holders, Clay Diyas, Incense Towers)",
             },
             {
-              name: "Prayer Mats & Cushions (e.g., Islamic Prayer Rugs, Meditation Cushions, Buddhist Mats)",
+              name: "Prayer Mats & Cushions(e.g., Islamic Prayer Rugs, Meditation Cushions, Buddhist Mats)",
             },
             {
-              name: "Lamps & Candles (e.g., Diwali Lamps, Hanukkah Menorah, Candle Holders for Churches)",
+              name: "Lamps & Candles(e.g., Diwali Lamps, Hanukkah Menorah, Candle Holders for Churches)",
             },
             {
-              name: "Ritual Tools (e.g., Hindu Aarti Plates, Tibetan Singing Bowls, Christian Chalices)",
+              name: "Ritual Tools(e.g., Hindu Aarti Plates, Tibetan Singing Bowls, Christian Chalices)",
             },
           ],
         },
@@ -1369,16 +1369,16 @@ export default function CategorySelector({
           name: "Spiritual Healing & Meditation Items",
           subSubCategories: [
             {
-              name: "Crystals & Healing Stones (e.g., Quartz, Amethyst, Jade, Mala Beads)",
+              name: "Crystals & Healing Stones(e.g., Quartz, Amethyst, Jade, Mala Beads)",
             },
             {
-              name: "Meditation Accessories (e.g., Meditation Cushions, Prayer Beads, Mandalas)",
+              name: "Meditation Accessories(e.g., Meditation Cushions, Prayer Beads, Mandalas)",
             },
             {
-              name: "Essential Oils & Incense (e.g., Frankincense, Myrrh, Sandalwood, Palo Santo Sticks)",
+              name: "Essential Oils & Incense(e.g., Frankincense, Myrrh, Sandalwood, Palo Santo Sticks)",
             },
             {
-              name: "Spiritual Books & Guides (e.g., Books on Meditation, Spiritual Guidance Texts)",
+              name: "Spiritual Books & Guides(e.g., Books on Meditation, Spiritual Guidance Texts)",
             },
           ],
         },
@@ -1386,13 +1386,13 @@ export default function CategorySelector({
           name: "Cultural & Festive Items",
           subSubCategories: [
             {
-              name: "Festival Decorations (e.g., Diwali Diyas, Christmas Ornaments, Ramadan Lanterns)",
+              name: "Festival Decorations(e.g., Diwali Diyas, Christmas Ornaments, Ramadan Lanterns)",
             },
             {
-              name: "Ceremonial Items (e.g., Wedding Pooja Accessories, Bar/Bat Mitzvah Decorations, Islamic Eid Gifts)",
+              name: "Ceremonial Items(e.g., Wedding Pooja Accessories, Bar/Bat Mitzvah Decorations, Islamic Eid Gifts)",
             },
             {
-              name: "Festival Gifts & Hampers (e.g., Rakhi Gift Sets, Christmas Gift Baskets, Ramadan Gifts)",
+              name: "Festival Gifts & Hampers(e.g., Rakhi Gift Sets, Christmas Gift Baskets, Ramadan Gifts)",
             },
           ],
         },
@@ -1400,13 +1400,13 @@ export default function CategorySelector({
           name: "Funeral & Ancestral Veneration Items",
           subSubCategories: [
             {
-              name: "Ancestral Shrines (e.g., Chinese Ancestral Shrines, African Ancestral Statues)",
+              name: "Ancestral Shrines(e.g., Chinese Ancestral Shrines, African Ancestral Statues)",
             },
             {
-              name: "Funeral Ritual Items (e.g., Incense Burners, Funeral Candles, Prayer Cards)",
+              name: "Funeral Ritual Items(e.g., Incense Burners, Funeral Candles, Prayer Cards)",
             },
             {
-              name: "Memorial Jewelry & Keepsakes (e.g., Ash Pendants, Memorial Bracelets, Ancestral Spirit Beads)",
+              name: "Memorial Jewelry & Keepsakes(e.g., Ash Pendants, Memorial Bracelets, Ancestral Spirit Beads)",
             },
           ],
         },
@@ -1414,13 +1414,13 @@ export default function CategorySelector({
           name: "Sacred Spaces & Decor",
           subSubCategories: [
             {
-              name: "Sacred Furnishings (e.g., Meditation Benches, Religious Seating, Prayer Desks)",
+              name: "Sacred Furnishings(e.g., Meditation Benches, Religious Seating, Prayer Desks)",
             },
             {
-              name: "Religious Wall Decor (e.g., Religious Quotes, Sacred Tapestries, Iconography)",
+              name: "Religious Wall Decor(e.g., Religious Quotes, Sacred Tapestries, Iconography)",
             },
             {
-              name: "Sacred Texts & Calligraphy Art (e.g., Quranic Verses, Biblical Quotes, Sanskrit Script)",
+              name: "Sacred Texts & Calligraphy Art(e.g., Quranic Verses, Biblical Quotes, Sanskrit Script)",
             },
           ],
         },
@@ -1428,13 +1428,13 @@ export default function CategorySelector({
           name: "Traditional & Religious Crafts",
           subSubCategories: [
             {
-              name: "Handcrafted Religious Items (e.g., Cross Stitching, Woven Prayer Mats, Hand-Carved Religious Statues)",
+              name: "Handcrafted Religious Items(e.g., Cross Stitching, Woven Prayer Mats, Hand-Carved Religious Statues)",
             },
             {
-              name: "Cultural Ceremonial Crafts (e.g., Woven Offering Baskets, Clay Diyas, Decorative Candles)",
+              name: "Cultural Ceremonial Crafts(e.g., Woven Offering Baskets, Clay Diyas, Decorative Candles)",
             },
             {
-              name: "Hand-Painted Religious Icons (e.g., Orthodox Icons, Hindu God Paintings, Buddhist Thangka Paintings)",
+              name: "Hand-Painted Religious Icons(e.g., Orthodox Icons, Hindu God Paintings, Buddhist Thangka Paintings)",
             },
           ],
         },
@@ -1493,7 +1493,7 @@ export default function CategorySelector({
       name: "Music & Beats",
       subCategories: [
         {
-          name: "Traditional Instruments (Physical Products)",
+          name: "Traditional Instruments(Physical Products)",
           subSubCategories: [
             { name: "Talking Drums & Bata" },
             { name: "Kalimba & Thumb Piano" },
@@ -1532,8 +1532,8 @@ export default function CategorySelector({
         {
           name: "Music & Beats",
           subSubCategories: [
-            { name: "Beats & Instrumentals (MP3)" },
-            { name: "Albums & Songs (Digital)" },
+            { name: "Beats & Instrumentals(MP3)" },
+            { name: "Albums & Songs(Digital)" },
             { name: "Physiacl Instruments" },
           ],
         },
@@ -1541,9 +1541,9 @@ export default function CategorySelector({
           name: "Drama & Skits",
           subSubCategories: [
             {
-              name: "Scripts & Manuscripts (PDF/Doc) (e.g Cultural plays, Festival performances, Moral & Satirical Skits)",
+              name: "Scripts & Manuscripts(PDF/Doc)(e.g Cultural plays, Festival performances, Moral & Satirical Skits)",
             },
-            { name: "Recorded Performances (MP4/Streaming)" },
+            { name: "Recorded Performances(MP4/Streaming)" },
             { name: "Folks and storytelling session" },
             { name: "Live Performances / Booking" },
           ],
@@ -1587,7 +1587,7 @@ export default function CategorySelector({
         {
           name: "Bedroom Items",
           subSubCategories: [
-            { name: "Bed Frames (Hand-carved)" },
+            { name: "Bed Frames(Hand-carved)" },
             { name: "Side Stools & Nightstands" },
           ],
         },
@@ -1654,7 +1654,7 @@ export default function CategorySelector({
     },
     //Traditional Musical Instruments (Religious & Ceremonial)
     {
-      name: "Traditional Musical Instruments (Religious & Ceremonial)",
+      name: "Traditional Musical Instruments(Religious & Ceremonial)",
       subCategories: [
         {
           name: "Drums & Percussion(e.g., African Djembe Drums, Indian Tabla, Ceremonial Bongos)",

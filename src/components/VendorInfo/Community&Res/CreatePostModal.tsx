@@ -1,18 +1,13 @@
-"use client";
-
 import type React from "react";
-
 import { createPost } from "@/utils/communityApi";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smile, ImageIcon, MapPin, User, XCircle } from "lucide-react";
+import { X, Smile, ImageIcon, User, XCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
-// import { LoadScript } from "@react-google-maps/api"
-// import GooglePlacesAutocomplete from "react-google-autocomplete"
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -29,19 +24,23 @@ interface CreatePostModalProps {
 
 interface TaggedUser {
   id: string;
-  name: string;
+  storeName: string;
 }
 
 const userSuggestions = [
-  { id: "1", name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
+  {
+    id: "1",
+    storeName: "John Doe",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
   {
     id: "2",
-    name: "Jane Smith",
+    storeName: "Jane Smith",
     avatar: "/placeholder.svg?height=32&width=32",
   },
   {
     id: "3",
-    name: "Mike Johnson",
+    storeName: "Mike Johnson",
     avatar: "/placeholder.svg?height=32&width=32",
   },
 ];
@@ -61,7 +60,6 @@ export default function CreatePostModal({
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [location, setLocation] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
@@ -124,7 +122,7 @@ export default function CreatePostModal({
     setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleTagUser = (user: { id: string; name: string }) => {
+  const handleTagUser = (user: { id: string; storeName: string }) => {
     if (!taggedUsers.find((tagged) => tagged.id === user.id)) {
       setTaggedUsers([...taggedUsers, user]);
     }
@@ -267,7 +265,7 @@ export default function CreatePostModal({
                         key={user.id}
                         className="inline-flex items-center gap-1 px-2 py-1 text-sm text-orange-700 bg-orange-100 rounded-full"
                       >
-                        @{user.name}
+                        @{user.storeName}
                         <motion.button
                           type="button"
                           onClick={() => removeTag(user.id)}
@@ -316,11 +314,11 @@ export default function CreatePostModal({
                       <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
                         {userSuggestions
                           .filter((user) =>
-                            user.name
+                            user.storeName
                               .toLowerCase()
                               .includes(tagInput.toLowerCase())
                           )
-                          .map((user) => (
+                          .map((user: any) => (
                             <button
                               key={user.id}
                               type="button"
@@ -339,42 +337,6 @@ export default function CreatePostModal({
                     )}
                   </div>
                 )}
-
-                {location && (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>{location}</span>
-                  </div>
-                )}
-
-                {/* {showLocationPicker && (
-                  <div className="mt-2">
-                    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={["places"]}>
-                      {typeof google !== "undefined" ? (
-                        <GooglePlacesAutocomplete
-                          apiKey={GOOGLE_MAPS_API_KEY}
-                          onPlaceSelected={handleLocationSelect}
-                          options={{
-                            types: ["(regions)"],
-                          }}
-                          style={{
-                            input: {
-                              width: "100%",
-                              padding: "0.5rem",
-                              fontSize: "0.875rem",
-                              borderRadius: "0.375rem",
-                              backgroundColor: "#f3f4f6",
-                              border: "none",
-                              outline: "none",
-                            },
-                          }}
-                        />
-                      ) : (
-                        <div>Loading Google Maps...</div>
-                      )}
-                    </LoadScript>
-                  </div>
-                )} */}
               </form>
             </div>
 
@@ -408,13 +370,6 @@ export default function CreatePostModal({
                     className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                   >
                     <User className="w-6 h-6" />
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    onClick={() => setShowLocationPicker(!showLocationPicker)}
-                    className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
-                  >
-                    <MapPin className="w-6 h-6" />
                   </motion.button>
                 </div>
                 <button

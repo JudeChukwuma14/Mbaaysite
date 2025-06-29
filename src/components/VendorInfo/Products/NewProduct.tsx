@@ -90,14 +90,14 @@ const NewProduct = () => {
     ],
   };
 
-  const defaultCategory = "Beauty and Wellness";
+  const defaultCategory = "";
   const defaultSubCategory = subCategories[defaultCategory][0];
 
   const [productName, setProductName] = useState("");
   const [value, setValue] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
     defaultCategory,
-    "Jewelry and Gemstones",
+    "",
   ]);
   const [activeCategory, setActiveCategory] = useState(defaultCategory);
   const [subCategory, setSubCategory] = useState(defaultSubCategory);
