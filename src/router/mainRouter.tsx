@@ -42,14 +42,14 @@ import BSS from "@/components/AllCategory/Fashion/subcategory/AC/BSS";
 import BP from "@/components/AllCategory/Fashion/subcategory/AC/BP";
 import HS from "@/components/AllCategory/Fashion/subcategory/AC/HS";
 import JA from "@/components/AllCategory/Fashion/subcategory/AC/JA";
-import FB from "@/components/AllCategory/Fashion/subcategory/FB";
-import OF from "@/components/AllCategory/Fashion/subcategory/OF";
-import FC from "@/components/AllCategory/Fashion/subcategory/FC";
-import RF from "@/components/AllCategory/Fashion/subcategory/RF";
-import SF from "@/components/AllCategory/Fashion/subcategory/SF";
-import EB from "@/components/AllCategory/Fashion/subcategory/EB";
-import BS from "@/components/AllCategory/Fashion/subcategory/BS";
-import ST from "@/components/AllCategory/Fashion/subcategory/ST";
+import FB from "@/components/AllCategory/Fashion/subcategory/FB/FB";
+import OF from "@/components/AllCategory/Fashion/subcategory/OF/OF";
+import FC from "@/components/AllCategory/Fashion/subcategory/FC/FC";
+import RF from "@/components/AllCategory/Fashion/subcategory/RF/RF";
+import SF from "@/components/AllCategory/Fashion/subcategory/SF/SF";
+import EB from "@/components/AllCategory/Fashion/subcategory/EB/EB";
+import BS from "@/components/AllCategory/Fashion/subcategory/BS/BS";
+import ST from "@/components/AllCategory/Fashion/subcategory/ST/ST";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
