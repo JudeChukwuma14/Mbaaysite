@@ -28,7 +28,11 @@ interface TaggedUser {
 }
 
 const userSuggestions = [
-  { id: "1", storeName: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
+  {
+    id: "1",
+    storeName: "John Doe",
+    avatar: "/placeholder.svg?height=32&width=32",
+  },
   {
     id: "2",
     storeName: "Jane Smith",
@@ -314,7 +318,7 @@ export default function CreatePostModal({
                               .toLowerCase()
                               .includes(tagInput.toLowerCase())
                           )
-                          .map((user:any) => (
+                          .map((user: any) => (
                             <button
                               key={user.id}
                               type="button"

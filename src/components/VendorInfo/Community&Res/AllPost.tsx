@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
-import { motion, AnimatePresence } from "framer-motion"
-import CreatePostModal from "./CreatePostModal"
-import SocialList from "./SocailPost"
-import { get_single_vendor } from "@/utils/vendorApi"
-import { useSelector } from "react-redux"
+import { useState, useRef, useEffect } from "react";
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
+import { motion, AnimatePresence } from "framer-motion";
+import CreatePostModal from "./CreatePostModal";
+import SocialList from "./SocailPost";
+import { get_single_vendor } from "@/utils/vendorApi";
+import { useSelector } from "react-redux";
 import {
   comment_on_posts,
   comment_on_comment,
@@ -14,19 +14,19 @@ import {
   get_posts_feed,
   like_posts,
   unlike_posts,
-} from "@/utils/communityApi"
-import moment from "moment"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { FaHeart } from "react-icons/fa"
-import { toast } from "react-toastify"
-import loading from "../../../assets/loading.gif"
-import { CiHeart } from "react-icons/ci"
+} from "@/utils/communityApi";
+import moment from "moment";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { FaHeart } from "react-icons/fa";
+import { toast } from "react-toastify";
+import loading from "../../../assets/loading.gif";
+import { CiHeart } from "react-icons/ci";
 
 interface Recommendation {
-  id: string
-  name: string
-  mutuals: number
-  avatar: string
+  id: string;
+  name: string;
+  mutuals: number;
+  avatar: string;
 }
 
 const recommendations: Recommendation[] = [
@@ -54,92 +54,99 @@ const recommendations: Recommendation[] = [
     mutuals: 15,
     avatar: "/placeholder.svg?height=40&width=40",
   },
-]
-
+];
 
 export default function SocialFeed() {
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [showEmojiPicker, setShowEmojiPicker] = useState<Record<string, boolean>>({})
-  const emojiPickerRef = useRef<HTMLDivElement>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<
+    Record<string, boolean>
+  >({});
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  const [showReplyInput, setShowReplyInput] = useState<Record<string, boolean>>({})
-  const [showRepliesDropdown, setShowRepliesDropdown] = useState<Record<string, boolean>>({})
-  const [replyText, setReplyText] = useState<Record<string, string>>({})
+  const [showReplyInput, setShowReplyInput] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [showRepliesDropdown, setShowRepliesDropdown] = useState<
+    Record<string, boolean>
+  >({});
+  const [replyText, setReplyText] = useState<Record<string, string>>({});
 
-  const user = useSelector((state: any) => state.vendor)
+  const user = useSelector((state: any) => state.vendor);
 
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>(() => {
-    const savedLikes = localStorage.getItem("likedPosts")
-    return savedLikes ? JSON.parse(savedLikes) : {}
-  })
+    const savedLikes = localStorage.getItem("likedPosts");
+    return savedLikes ? JSON.parse(savedLikes) : {};
+  });
 
   useEffect(() => {
-    localStorage.setItem("likedPosts", JSON.stringify(likedPosts))
-  }, [likedPosts])
+    localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+  }, [likedPosts]);
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
-  })
+  });
 
   const { data: communities = [] } = useQuery({
     queryKey: ["communities"],
     queryFn: () => get_communities(user?.token),
     enabled: !!user?.token,
-  })
+  });
 
   const { data: comm_posts, isLoading } = useQuery({
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
-  })
+  });
 
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const handleLikeToggle = (postId: string, isLiked: boolean) => {
     if (isLiked) {
-      unlikeMutation.mutate(postId)
+      unlikeMutation.mutate(postId);
     } else {
-      likeMutation.mutate(postId)
+      likeMutation.mutate(postId);
     }
     setLikedPosts((prev) => ({
       ...prev,
       [postId]: !isLiked,
-    }))
-  }
+    }));
+  };
 
   const likeMutation = useMutation({
     mutationFn: (postId: string) => like_posts(user?.token, postId),
     onMutate: async (postId) => {
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] })
-      const previousPosts = queryClient.getQueryData(["comm_posts"])
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
+      const previousPosts = queryClient.getQueryData(["comm_posts"]);
 
       queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
           if (post._id === postId) {
             return {
               ...post,
-              likes: post.likes.includes(user._id) ? post.likes : [...post.likes, user._id],
-            }
+              likes: post.likes.includes(user._id)
+                ? post.likes
+                : [...post.likes, user._id],
+            };
           }
-          return post
-        })
-      })
+          return post;
+        });
+      });
 
-      return { previousPosts }
+      return { previousPosts };
     },
     onError: (_, __, context) => {
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts)
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] })
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
     },
-  })
+  });
 
   const unlikeMutation = useMutation({
     mutationFn: (postId: string) => unlike_posts(user?.token, postId),
     onMutate: async (postId) => {
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] })
-      const previousPosts = queryClient.getQueryData(["comm_posts"])
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
+      const previousPosts = queryClient.getQueryData(["comm_posts"]);
 
       queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
@@ -147,21 +154,21 @@ export default function SocialFeed() {
             return {
               ...post,
               likes: post.likes.filter((like: string) => like !== user._id),
-            }
+            };
           }
-          return post
-        })
-      })
+          return post;
+        });
+      });
 
-      return { previousPosts }
+      return { previousPosts };
     },
     onError: (_, __, context) => {
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts)
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] })
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
     },
-  })
+  });
 
   // useMutation for replying to comments with background refresh
   const replyToCommentMutation = useMutation({
@@ -170,20 +177,20 @@ export default function SocialFeed() {
       commentId,
       text,
     }: {
-      postId: string
-      commentId: string
-      text: string
+      postId: string;
+      commentId: string;
+      text: string;
     }) => comment_on_comment(user?.token, postId, commentId, { text }),
     onSuccess: async (_, variables) => {
       // Clear the reply input
       setReplyText((prev) => ({
         ...prev,
         [variables.commentId]: "",
-      }))
+      }));
       setShowReplyInput((prev) => ({
         ...prev,
         [variables.commentId]: false,
-      }))
+      }));
 
       // Background refresh using refetchQueries instead of invalidateQueries
       await Promise.all([
@@ -192,30 +199,24 @@ export default function SocialFeed() {
         queryClient.refetchQueries({ queryKey: ["vendors"] }),
         queryClient.refetchQueries({ queryKey: ["vendor"] }),
         queryClient.refetchQueries({ queryKey: ["all_comm"] }),
-      ])
+      ]);
 
       toast.success("Reply posted successfully", {
         position: "top-right",
         autoClose: 3000,
-      })
+      });
     },
     onError: (error) => {
-      console.error("Error posting reply:", error)
+      console.error("Error posting reply:", error);
       toast.error("Failed to post reply. Please try again.", {
         position: "top-right",
         autoClose: 4000,
-      })
+      });
     },
-  })
+  });
 
   const commentOnPostMutation = useMutation({
-    mutationFn: ({
-      postId,
-      text,
-    }: {
-      postId: string
-      text: string
-    }) =>
+    mutationFn: ({ postId, text }: { postId: string; text: string }) =>
       comment_on_posts(user?.token, postId, {
         text,
         userType: "vendors",
@@ -228,80 +229,84 @@ export default function SocialFeed() {
         queryClient.refetchQueries({ queryKey: ["vendors"] }),
         queryClient.refetchQueries({ queryKey: ["vendor"] }),
         queryClient.refetchQueries({ queryKey: ["all_comm"] }),
-      ])
+      ]);
 
       toast.success("Comment created successfully", {
         position: "top-right",
         autoClose: 3000,
-      })
+      });
     },
     onError: (error) => {
-      console.error("Error posting comment:", error)
+      console.error("Error posting comment:", error);
       toast.error("Failed to post comment. Please try again.", {
         position: "top-right",
         autoClose: 4000,
-      })
+      });
     },
-  })
+  });
 
   // Function to handle reply button click
   const handleReplyClick = (commentId: string) => {
     setShowReplyInput((prev) => ({
       ...prev,
       [commentId]: !prev[commentId],
-    }))
-  }
+    }));
+  };
 
   // Function to handle reply text change
   const handleReplyTextChange = (commentId: string, text: string) => {
     setReplyText((prev) => ({
       ...prev,
       [commentId]: text,
-    }))
-  }
+    }));
+  };
 
   // Function to submit reply
   const handleReplySubmit = (postId: string, commentId: string) => {
-    const text = replyText[commentId]?.trim()
+    const text = replyText[commentId]?.trim();
     if (!text) {
       toast.error("Please enter a reply", {
         position: "top-right",
         autoClose: 3000,
-      })
-      return
+      });
+      return;
     }
 
     replyToCommentMutation.mutate({
       postId,
       commentId,
       text,
-    })
-  }
+    });
+  };
 
   // Function to handle comment submission
-  const handleCommentSubmit = (postId: string, text: string, inputElement: HTMLInputElement) => {
+  const handleCommentSubmit = (
+    postId: string,
+    text: string,
+    inputElement: HTMLInputElement
+  ) => {
     if (!text.trim()) {
       toast.error("Please enter a comment", {
         position: "top-right",
         autoClose: 3000,
-      })
-      return
+      });
+      return;
     }
 
     commentOnPostMutation.mutate({
       postId,
       text: text.trim(),
-    })
+    });
 
     // Clear the input
-    inputElement.value = ""
+    inputElement.value = "";
 
     // Hide emoji picker
     setShowEmojiPicker((prev) => ({
       ...prev,
       [postId]: false,
-    }))
-  }
+    }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -323,7 +328,8 @@ export default function SocialFeed() {
             </div>
           ) : (
             comm_posts?.map((post: any, index: any) => {
-              const isLiked = likedPosts[post._id] || post.likes.includes(user._id)
+              const isLiked =
+                likedPosts[post._id] || post.likes.includes(user._id);
 
               return (
                 <motion.div
@@ -348,13 +354,19 @@ export default function SocialFeed() {
                       )}
                       <div>
                         {post?.posterType === "vendors" ? (
-                          <h3 className="font-semibold">{post?.poster?.storeName}</h3>
+                          <h3 className="font-semibold">
+                            {post?.poster?.storeName}
+                          </h3>
                         ) : (
-                          <h3 className="font-semibold">{post?.poster?.storeName}</h3>
+                          <h3 className="font-semibold">
+                            {post?.poster?.storeName}
+                          </h3>
                         )}
                         <p className="text-sm text-gray-500">
-                          {post?.posterType === "vendors" ? post?.poster?.craftCategories[0] : "COMMUNITY"}•{" "}
-                          {moment(post?.createdTime).fromNow()}
+                          {post?.posterType === "vendors"
+                            ? post?.poster?.craftCategories[0]
+                            : "COMMUNITY"}
+                          • {moment(post?.createdTime).fromNow()}
                         </p>
                       </div>
                     </div>
@@ -363,7 +375,12 @@ export default function SocialFeed() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg
+                        className="w-5 h-5 text-gray-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -401,7 +418,11 @@ export default function SocialFeed() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      {isLiked ? <FaHeart size={16} className="text-red-500" /> : <CiHeart size={16} />}
+                      {isLiked ? (
+                        <FaHeart size={16} className="text-red-500" />
+                      ) : (
+                        <CiHeart size={16} />
+                      )}
                       <span>{post.likes.length} Likes</span>
                     </motion.button>
                     <span>{post?.comments?.length || 0} Comments</span>
@@ -430,7 +451,9 @@ export default function SocialFeed() {
                             />
                           )}
                           <div className="flex-grow">
-                            <p className="text-sm font-medium">{comment?.comment_poster}</p>
+                            <p className="text-sm font-medium">
+                              {comment?.comment_poster}
+                            </p>
                             <p className="text-sm">{comment?.text}</p>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                               <span>{comment?.timestamp}</span>
@@ -442,34 +465,41 @@ export default function SocialFeed() {
                               >
                                 Reply
                               </motion.button>
-                              {comment?.replies && comment.replies.length > 0 && (
-                                <motion.button
-                                  className="hover:text-gray-700 font-medium flex items-center gap-1"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() =>
-                                    setShowRepliesDropdown((prev) => ({
-                                      ...prev,
-                                      [comment._id]: !prev[comment._id],
-                                    }))
-                                  }
-                                >
-                                  {comment.replies.length === 1 ? "1 Reply" : `${comment.replies.length} Replies`}
-                                  <svg
-                                    className={`w-3 h-3 transition-transform ${showRepliesDropdown[comment._id] ? "rotate-180" : ""}`}
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
+                              {comment?.replies &&
+                                comment.replies.length > 0 && (
+                                  <motion.button
+                                    className="hover:text-gray-700 font-medium flex items-center gap-1"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() =>
+                                      setShowRepliesDropdown((prev) => ({
+                                        ...prev,
+                                        [comment._id]: !prev[comment._id],
+                                      }))
+                                    }
                                   >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
-                                </motion.button>
-                              )}
+                                    {comment.replies.length === 1
+                                      ? "1 Reply"
+                                      : `${comment.replies.length} Replies`}
+                                    <svg
+                                      className={`w-3 h-3 transition-transform ${
+                                        showRepliesDropdown[comment._id]
+                                          ? "rotate-180"
+                                          : ""
+                                      }`}
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 9l-7 7-7-7"
+                                      />
+                                    </svg>
+                                  </motion.button>
+                                )}
                             </div>
 
                             {/* Reply Input */}
@@ -484,11 +514,15 @@ export default function SocialFeed() {
                                   <div className="flex items-center gap-2">
                                     {!vendors?.avatar ? (
                                       <div className="w-[30px] h-[30px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center text-xs">
-                                        {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                                        {vendors?.storeName
+                                          ?.charAt(0)
+                                          ?.toUpperCase()}
                                       </div>
                                     ) : (
                                       <img
-                                        src={vendors?.avatar || "/placeholder.svg"}
+                                        src={
+                                          vendors?.avatar || "/placeholder.svg"
+                                        }
                                         alt="Vendor"
                                         className="w-8 h-8 rounded-full"
                                       />
@@ -498,31 +532,54 @@ export default function SocialFeed() {
                                         type="text"
                                         placeholder="Write a reply..."
                                         value={replyText[comment._id] || ""}
-                                        onChange={(e) => handleReplyTextChange(comment._id, e.target.value)}
+                                        onChange={(e) =>
+                                          handleReplyTextChange(
+                                            comment._id,
+                                            e.target.value
+                                          )
+                                        }
                                         className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                                         onKeyPress={(e) => {
                                           if (e.key === "Enter") {
-                                            handleReplySubmit(post._id, comment._id)
+                                            handleReplySubmit(
+                                              post._id,
+                                              comment._id
+                                            );
                                           }
                                         }}
-                                        disabled={replyToCommentMutation.isPending}
+                                        disabled={
+                                          replyToCommentMutation.isPending
+                                        }
                                       />
                                     </div>
                                     <div className="flex gap-1">
                                       <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleReplySubmit(post._id, comment._id)}
-                                        disabled={replyToCommentMutation.isPending}
+                                        onClick={() =>
+                                          handleReplySubmit(
+                                            post._id,
+                                            comment._id
+                                          )
+                                        }
+                                        disabled={
+                                          replyToCommentMutation.isPending
+                                        }
                                         className="px-3 py-1 text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                                       >
-                                        {replyToCommentMutation.isPending ? "Posting..." : "Post"}
+                                        {replyToCommentMutation.isPending
+                                          ? "Posting..."
+                                          : "Post"}
                                       </motion.button>
                                       <motion.button
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleReplyClick(comment._id)}
-                                        disabled={replyToCommentMutation.isPending}
+                                        onClick={() =>
+                                          handleReplyClick(comment._id)
+                                        }
+                                        disabled={
+                                          replyToCommentMutation.isPending
+                                        }
                                         className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
                                       >
                                         Cancel
@@ -559,14 +616,17 @@ export default function SocialFeed() {
                             </div>
 
                             {showEmojiPicker[comment.id] && (
-                              <div ref={emojiPickerRef} className="absolute z-10">
+                              <div
+                                ref={emojiPickerRef}
+                                className="absolute z-10"
+                              >
                                 <EmojiPicker
                                   onEmojiClick={(emojiData: EmojiClickData) => {
                                     setShowEmojiPicker((prev) => ({
                                       ...prev,
                                       [comment.id]: false,
-                                    }))
-                                    console.log(emojiData)
+                                    }));
+                                    console.log(emojiData);
                                   }}
                                 />
                               </div>
@@ -574,24 +634,29 @@ export default function SocialFeed() {
 
                             {/* Replies Dropdown */}
                             <AnimatePresence>
-                              {showRepliesDropdown[comment._id] && comment?.replies && comment.replies.length > 0 && (
-                                <motion.div
-                                  initial={{ opacity: 0, height: 0 }}
-                                  animate={{ opacity: 1, height: "auto" }}
-                                  exit={{ opacity: 0, height: 0 }}
-                                  className="mt-3"
-                                >
-                                  <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg bg-white">
-                                    {comment.replies.map((reply: any, replyIndex: number) => (
-                                      <motion.div
-                                        key={reply.id || replyIndex}
-                                        className="p-3 border-b border-gray-100 last:border-b-0"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: replyIndex * 0.05 }}
-                                      >
-                                        <div className="flex items-start gap-2">
-                                          {/* {!reply?.author?.avatar ? (
+                              {showRepliesDropdown[comment._id] &&
+                                comment?.replies &&
+                                comment.replies.length > 0 && (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="mt-3"
+                                  >
+                                    <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg bg-white">
+                                      {comment.replies.map(
+                                        (reply: any, replyIndex: number) => (
+                                          <motion.div
+                                            key={reply.id || replyIndex}
+                                            className="p-3 border-b border-gray-100 last:border-b-0"
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{
+                                              delay: replyIndex * 0.05,
+                                            }}
+                                          >
+                                            <div className="flex items-start gap-2">
+                                              {/* {!reply?.author?.avatar ? (
                                             <div className="w-[32px] h-[32px] rounded-[50%] bg-blue-300 text-white flex items-center justify-center text-xs">
                                               {reply?.author?.name?.charAt(0)?.toUpperCase() || "U"}
                                             </div>
@@ -602,37 +667,53 @@ export default function SocialFeed() {
                                               className="w-8 h-8 rounded-full"
                                             />
                                           )} */}
-                                          {!vendors?.avatar ? (
-                                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                                                   {vendors?.storeName?.charAt(0)?.toUpperCase()}
-                                             </div>
-                                           ) : (
-                                          <img src={vendors?.avatar || "/placeholder.svg"} alt="Vendor" className="w-10 h-10 rounded-full" />
-                                          )}
-                                          <div className="flex-grow">
-                                            <p className="text-sm font-medium text-gray-900">
-                                              {vendors?.storeName}
-                                            </p>
-                                            <p className="text-sm text-gray-700 mt-1">
-                                              {reply?.content || reply?.text}
-                                            </p>
-                                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                                              <span>{reply?.timestamp || moment(reply?.createdAt).fromNow()}</span>
-                                              {/* <motion.button
+                                              {!vendors?.avatar ? (
+                                                <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                                                  {vendors?.storeName
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase()}
+                                                </div>
+                                              ) : (
+                                                <img
+                                                  src={
+                                                    vendors?.avatar ||
+                                                    "/placeholder.svg"
+                                                  }
+                                                  alt="Vendor"
+                                                  className="w-10 h-10 rounded-full"
+                                                />
+                                              )}
+                                              <div className="flex-grow">
+                                                <p className="text-sm font-medium text-gray-900">
+                                                  {vendors?.storeName}
+                                                </p>
+                                                <p className="text-sm text-gray-700 mt-1">
+                                                  {reply?.content ||
+                                                    reply?.text}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                                  <span>
+                                                    {reply?.timestamp ||
+                                                      moment(
+                                                        reply?.createdAt
+                                                      ).fromNow()}
+                                                  </span>
+                                                  {/* <motion.button
                                                 className="hover:text-gray-700 font-medium"
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
                                               >
                                                 Like
                                               </motion.button> */}
+                                                </div>
+                                              </div>
                                             </div>
-                                          </div>
-                                        </div>
-                                      </motion.div>
-                                    ))}
-                                  </div>
-                                </motion.div>
-                              )}
+                                          </motion.div>
+                                        )
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                )}
                             </AnimatePresence>
                           </div>
                         </div>
@@ -651,8 +732,12 @@ export default function SocialFeed() {
                         disabled={commentOnPostMutation.isPending}
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
-                            const inputElement = e.currentTarget
-                            handleCommentSubmit(post._id, inputElement.value, inputElement)
+                            const inputElement = e.currentTarget;
+                            handleCommentSubmit(
+                              post._id,
+                              inputElement.value,
+                              inputElement
+                            );
                           }
                         }}
                       />
@@ -669,20 +754,27 @@ export default function SocialFeed() {
                       ></motion.button>
                     </div>
                     {showEmojiPicker[post.id] && (
-                      <div ref={emojiPickerRef} className="absolute right-0 z-10 bottom-full">
+                      <div
+                        ref={emojiPickerRef}
+                        className="absolute right-0 z-10 bottom-full"
+                      >
                         {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
                       </div>
                     )}
                   </div>
                 </motion.div>
-              )
+              );
             })
           )}
         </motion.div>
 
         {/* Right Sidebar */}
         <div className="max-w-md min-h-screen mx-auto bg-gray-100">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-white shadow-sm">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-white shadow-sm"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 {!vendors?.avatar ? (
@@ -690,7 +782,11 @@ export default function SocialFeed() {
                     {vendors?.storeName?.charAt(0)?.toUpperCase()}
                   </div>
                 ) : (
-                  <img src={vendors?.avatar || "/placeholder.svg"} alt="Vendor" className="w-10 h-10 rounded-full" />
+                  <img
+                    src={vendors?.avatar || "/placeholder.svg"}
+                    alt="Vendor"
+                    className="w-10 h-10 rounded-full"
+                  />
                 )}
                 <div>
                   <h2 className="font-semibold">{vendors?.storeName}</h2>
@@ -700,15 +796,21 @@ export default function SocialFeed() {
 
             <div className="flex justify-between mb-4 text-sm">
               <div className="text-center">
-                <div className="font-bold">{vendors?.communityPosts?.length || 0}</div>
+                <div className="font-bold">
+                  {vendors?.communityPosts?.length || 0}
+                </div>
                 <div className="text-gray-600">Posts</div>
               </div>
               <div className="text-center">
-                <div className="font-bold">{vendors?.followers?.length || 0}</div>
+                <div className="font-bold">
+                  {vendors?.followers?.length || 0}
+                </div>
                 <div className="text-gray-600">Followers</div>
               </div>
               <div className="text-center">
-                <div className="font-bold">{vendors?.following?.length || 0}</div>
+                <div className="font-bold">
+                  {vendors?.following?.length || 0}
+                </div>
                 <div className="text-gray-600">Following</div>
               </div>
             </div>
@@ -746,7 +848,9 @@ export default function SocialFeed() {
                     />
                     <span className="text-sm">{recommendation.name}</span>
                   </div>
-                  <div className="text-xs text-gray-500">{recommendation.mutuals} Mutuals</div>
+                  <div className="text-xs text-gray-500">
+                    {recommendation.mutuals} Mutuals
+                  </div>
                 </motion.div>
               ))}
             </motion.div>
@@ -763,7 +867,9 @@ export default function SocialFeed() {
               >
                 <div className="flex flex-col items-center justify-between gap-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="mb-1 text-sm font-semibold text-orange-800">{community.name}</h4>
+                    <h4 className="mb-1 text-sm font-semibold text-orange-800">
+                      {community.name}
+                    </h4>
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
@@ -774,7 +880,9 @@ export default function SocialFeed() {
                           : "bg-blue-200 text-blue-800"
                       } text-sm ml-4 cursor-pointer`}
                     >
-                      {community.admin === user?.vendor?._id ? "Owner" : "Member"}
+                      {community.admin === user?.vendor?._id
+                        ? "Owner"
+                        : "Member"}
                     </motion.span>
                   </div>
                 </div>
@@ -783,7 +891,7 @@ export default function SocialFeed() {
             {communities.length > 4 && (
               <button
                 onClick={() => {
-                  console.log("See More Clicked")
+                  console.log("See More Clicked");
                 }}
                 className="mt-2 font-semibold text-orange-600 cursor-pointer"
               >
@@ -792,9 +900,12 @@ export default function SocialFeed() {
             )}
           </div>
 
-          <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+          <CreatePostModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
         </div>
       </div>
     </div>
-  )
+  );
 }
