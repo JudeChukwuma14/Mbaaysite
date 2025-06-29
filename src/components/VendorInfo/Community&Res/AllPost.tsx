@@ -1,29 +1,32 @@
-import { useState, useRef, useEffect } from "react";
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
-import { motion, AnimatePresence } from "framer-motion";
-import CreatePostModal from "./CreatePostModal";
-import SocialList from "./SocailPost";
-import { get_single_vendor } from "@/utils/vendorApi";
-import { useSelector } from "react-redux";
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import EmojiPicker, { type EmojiClickData } from "emoji-picker-react"
+import { motion, AnimatePresence } from "framer-motion"
+import CreatePostModal from "./CreatePostModal"
+import SocialList from "./SocailPost"
+import { get_single_vendor } from "@/utils/vendorApi"
+import { useSelector } from "react-redux"
 import {
   comment_on_posts,
+  comment_on_comment,
   get_communities,
   get_posts_feed,
   like_posts,
   unlike_posts,
-} from "@/utils/communityApi";
-import moment from "moment";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { FaHeart } from "react-icons/fa";
-import { toast } from "react-toastify";
-import loading from "../../../assets/loading.gif";
-import { CiHeart } from "react-icons/ci";
+} from "@/utils/communityApi"
+import moment from "moment"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { FaHeart } from "react-icons/fa"
+import { toast } from "react-toastify"
+import loading from "../../../assets/loading.gif"
+import { CiHeart } from "react-icons/ci"
 
 interface Recommendation {
-  id: string;
-  name: string;
-  mutuals: number;
-  avatar: string;
+  id: string
+  name: string
+  mutuals: number
+  avatar: string
 }
 
 const recommendations: Recommendation[] = [
@@ -51,214 +54,259 @@ const recommendations: Recommendation[] = [
     mutuals: 15,
     avatar: "/placeholder.svg?height=40&width=40",
   },
-];
+]
 
-interface AvatarProps {
-  src: string;
-  alt: string;
-  size?: "sm" | "md" | "lg";
-}
-
-function Avatar({ src, alt, size = "sm" }: AvatarProps) {
-  const sizeClasses = {
-    sm: "w-8 h-8",
-    md: "w-10 h-10",
-    lg: "w-16 h-16",
-  };
-
-  return (
-    <motion.div
-      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-200 flex-shrink-0`}
-      whileHover={{ scale: 1.1 }}
-      whileTap={{ scale: 0.9 }}
-    >
-      <img
-        src={src || "/placeholder.svg"}
-        alt={alt}
-        className="object-cover w-full h-full"
-      />
-    </motion.div>
-  );
-}
-
-// interface BadgeProps {
-//   children: React.ReactNode
-//   variant?: "default" | "secondary"
-// }
-
-// function Badge({ children, variant = "default" }: BadgeProps) {
-//   const variantClasses = {
-//     default: "bg-orange-100 text-orange-600",
-//     secondary: "bg-gray-100 text-gray-600",
-//   }
-
-//   return (
-//     <motion.span
-//       className={`${variantClasses[variant]} text-xs px-2.5 py-0.5 rounded-full font-medium`}
-//       whileHover={{ scale: 1.05 }}
-//       whileTap={{ scale: 0.95 }}
-//     >
-//       {children}
-//     </motion.span>
-//   )
-// }
 
 export default function SocialFeed() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState<
-    Record<string, boolean>
-  >({});
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [showEmojiPicker, setShowEmojiPicker] = useState<Record<string, boolean>>({})
+  const emojiPickerRef = useRef<HTMLDivElement>(null)
 
-  // interface PostImagesProps {
-  //   images: string[];
-  // }
+  const [showReplyInput, setShowReplyInput] = useState<Record<string, boolean>>({})
+  const [showRepliesDropdown, setShowRepliesDropdown] = useState<Record<string, boolean>>({})
+  const [replyText, setReplyText] = useState<Record<string, string>>({})
 
-  // function PostImages({ images }: PostImagesProps) {
-  //   const gridStyles = () => {
-  //     if (images.length === 2) {
-  //       return "grid-cols-2 grid-rows-1 gap-2";
-  //     } else if (images.length === 3) {
-  //       return "grid-cols-2 grid-rows-2 gap-2";
-  //     } else if (images.length >= 4) {
-  //       return "grid-cols-2 grid-rows-2 gap-2";
-  //     } else {
-  //       return ""; // fallback for 1 image (handled directly)
-  //     }
-  //   };
-
-  //   return (
-  //     <div className={`grid ${gridStyles()} w-full h-[300px]`}>
-  //       {images.slice(0, 4).map((image, index) => {
-  //         const isBigImage = images.length === 3 && index === 0;
-
-  //         return (
-  //           <div
-  //             key={index}
-  //             className={`relative overflow-hidden ${
-  //               isBigImage ? "col-span-2 row-span-1 h-[150px]" : "h-[150px]"
-  //             }`}
-  //           >
-  //             <img
-  //               src={image}
-  //               alt={`Post image ${index + 1}`}
-  //               className="w-full h-full object-cover rounded-md"
-  //             />
-  //           </div>
-  //         );
-  //       })}
-  //     </div>
-  //   );
-  // }
-
-  const user = useSelector((state: any) => state.vendor);
-
-  // const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const user = useSelector((state: any) => state.vendor)
 
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>(() => {
-    const savedLikes = localStorage.getItem("likedPosts");
-    return savedLikes ? JSON.parse(savedLikes) : {};
-  });
+    const savedLikes = localStorage.getItem("likedPosts")
+    return savedLikes ? JSON.parse(savedLikes) : {}
+  })
 
   useEffect(() => {
-    localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
-  }, [likedPosts]);
+    localStorage.setItem("likedPosts", JSON.stringify(likedPosts))
+  }, [likedPosts])
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
-  });
+  })
 
   const { data: communities = [] } = useQuery({
     queryKey: ["communities"],
     queryFn: () => get_communities(user?.token),
-    enabled: !!user?.token, // Only fetch if token exists
-  });
+    enabled: !!user?.token,
+  })
 
   const { data: comm_posts, isLoading } = useQuery({
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
-  });
+  })
 
-  // const { data: comments } = useQuery({
-  //   queryKey: ["comments"],
-  //   queryFn: () => get_posts_comments("67bb54180851001aa027c1bb"),
-  // });
+  const queryClient = useQueryClient()
 
-  // console.log(comments)
-
-  const queryClient = useQueryClient();
   const handleLikeToggle = (postId: string, isLiked: boolean) => {
     if (isLiked) {
-      unlikeMutation.mutate(postId);
+      unlikeMutation.mutate(postId)
     } else {
-      likeMutation.mutate(postId);
+      likeMutation.mutate(postId)
     }
     setLikedPosts((prev) => ({
       ...prev,
       [postId]: !isLiked,
-    }));
-  };
+    }))
+  }
 
   const likeMutation = useMutation({
     mutationFn: (postId: string) => like_posts(user?.token, postId),
     onMutate: async (postId) => {
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
-      const previousPosts = queryClient.getQueryData(["comm_posts"]);
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] })
+      const previousPosts = queryClient.getQueryData(["comm_posts"])
+
       queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
           if (post._id === postId) {
             return {
               ...post,
-              likes: post.likes.includes(user._id)
-                ? post.likes
-                : [...post.likes, user._id],
-            };
+              likes: post.likes.includes(user._id) ? post.likes : [...post.likes, user._id],
+            }
           }
-          return post;
-        });
-      });
-      return { previousPosts };
+          return post
+        })
+      })
+
+      return { previousPosts }
     },
     onError: (_, __, context) => {
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] })
     },
-  });
+  })
 
   const unlikeMutation = useMutation({
     mutationFn: (postId: string) => unlike_posts(user?.token, postId),
     onMutate: async (postId) => {
-      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
-      const previousPosts = queryClient.getQueryData(["comm_posts"]);
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] })
+      const previousPosts = queryClient.getQueryData(["comm_posts"])
+
       queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
         return oldPosts.map((post: any) => {
           if (post._id === postId) {
             return {
               ...post,
               likes: post.likes.filter((like: string) => like !== user._id),
-            };
+            }
           }
-          return post;
-        });
-      });
-      return { previousPosts };
+          return post
+        })
+      })
+
+      return { previousPosts }
     },
     onError: (_, __, context) => {
-      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts)
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] })
     },
-  });
+  })
+
+  // useMutation for replying to comments with background refresh
+  const replyToCommentMutation = useMutation({
+    mutationFn: ({
+      postId,
+      commentId,
+      text,
+    }: {
+      postId: string
+      commentId: string
+      text: string
+    }) => comment_on_comment(user?.token, postId, commentId, { text }),
+    onSuccess: async (_, variables) => {
+      // Clear the reply input
+      setReplyText((prev) => ({
+        ...prev,
+        [variables.commentId]: "",
+      }))
+      setShowReplyInput((prev) => ({
+        ...prev,
+        [variables.commentId]: false,
+      }))
+
+      // Background refresh using refetchQueries instead of invalidateQueries
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["comm_posts"] }),
+        queryClient.refetchQueries({ queryKey: ["communities"] }),
+        queryClient.refetchQueries({ queryKey: ["vendors"] }),
+        queryClient.refetchQueries({ queryKey: ["vendor"] }),
+        queryClient.refetchQueries({ queryKey: ["all_comm"] }),
+      ])
+
+      toast.success("Reply posted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      })
+    },
+    onError: (error) => {
+      console.error("Error posting reply:", error)
+      toast.error("Failed to post reply. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      })
+    },
+  })
+
+  const commentOnPostMutation = useMutation({
+    mutationFn: ({
+      postId,
+      text,
+    }: {
+      postId: string
+      text: string
+    }) =>
+      comment_on_posts(user?.token, postId, {
+        text,
+        userType: "vendors",
+      }),
+    onSuccess: async () => {
+      // Background refresh using refetchQueries instead of invalidateQueries
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: ["comm_posts"] }),
+        queryClient.refetchQueries({ queryKey: ["communities"] }),
+        queryClient.refetchQueries({ queryKey: ["vendors"] }),
+        queryClient.refetchQueries({ queryKey: ["vendor"] }),
+        queryClient.refetchQueries({ queryKey: ["all_comm"] }),
+      ])
+
+      toast.success("Comment created successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      })
+    },
+    onError: (error) => {
+      console.error("Error posting comment:", error)
+      toast.error("Failed to post comment. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      })
+    },
+  })
+
+  // Function to handle reply button click
+  const handleReplyClick = (commentId: string) => {
+    setShowReplyInput((prev) => ({
+      ...prev,
+      [commentId]: !prev[commentId],
+    }))
+  }
+
+  // Function to handle reply text change
+  const handleReplyTextChange = (commentId: string, text: string) => {
+    setReplyText((prev) => ({
+      ...prev,
+      [commentId]: text,
+    }))
+  }
+
+  // Function to submit reply
+  const handleReplySubmit = (postId: string, commentId: string) => {
+    const text = replyText[commentId]?.trim()
+    if (!text) {
+      toast.error("Please enter a reply", {
+        position: "top-right",
+        autoClose: 3000,
+      })
+      return
+    }
+
+    replyToCommentMutation.mutate({
+      postId,
+      commentId,
+      text,
+    })
+  }
+
+  // Function to handle comment submission
+  const handleCommentSubmit = (postId: string, text: string, inputElement: HTMLInputElement) => {
+    if (!text.trim()) {
+      toast.error("Please enter a comment", {
+        position: "top-right",
+        autoClose: 3000,
+      })
+      return
+    }
+
+    commentOnPostMutation.mutate({
+      postId,
+      text: text.trim(),
+    })
+
+    // Clear the input
+    inputElement.value = ""
+
+    // Hide emoji picker
+    setShowEmojiPicker((prev) => ({
+      ...prev,
+      [postId]: false,
+    }))
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr_280px] gap-6 p-4 h-screen">
         {/* Left Sidebar */}
-
         <SocialList />
 
         {/* Main Content */}
@@ -270,13 +318,13 @@ export default function SocialFeed() {
         >
           {isLoading ? (
             <div className="flex justify-center items-center flex-col h-[100vh] relativ">
-              <img src={loading} alt="loading_image" />
+              <img src={loading || "/placeholder.svg"} alt="loading_image" />
               <p className="m-0 absolute top-[70%]">Loading...</p>
             </div>
           ) : (
             comm_posts?.map((post: any, index: any) => {
-              const isLiked =
-                likedPosts[post._id] || post.likes.includes(user._id);
+              const isLiked = likedPosts[post._id] || post.likes.includes(user._id)
+
               return (
                 <motion.div
                   key={post?.id}
@@ -287,42 +335,26 @@ export default function SocialFeed() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex gap-3">
-                      {/* {post?.posterType === "vendors" ? (
-                        <div className="w-[45px] h-[45px] rounded-full bg-orange-500 flex justify-center items-center text-white">
-                          <p>{post?.poster?.userName?.charAt(0)}</p>
-                        </div>
-                      ) : (
-                        <Avatar
-                          src={post?.poster?.community_Images}
-                          alt={post?.author?.name}
-                        />
-                      )} */}
                       {!vendors?.avatar ? (
                         <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
                           {vendors?.storeName?.charAt(0)?.toUpperCase()}
                         </div>
                       ) : (
                         <img
-                          src={vendors?.avatar}
+                          src={vendors?.avatar || "/placeholder.svg"}
                           alt="Vendor"
                           className="w-10 h-10 rounded-full"
                         />
                       )}
                       <div>
                         {post?.posterType === "vendors" ? (
-                          <h3 className="font-semibold">
-                            {post?.poster?.storeName}
-                          </h3>
+                          <h3 className="font-semibold">{post?.poster?.storeName}</h3>
                         ) : (
-                          <h3 className="font-semibold">
-                            {post?.poster?.storeName}
-                          </h3>
+                          <h3 className="font-semibold">{post?.poster?.storeName}</h3>
                         )}
                         <p className="text-sm text-gray-500">
-                          {post?.posterType === "vendors"
-                            ? post?.poster?.craftCategories[0]
-                            : "COMMUNITY"}
-                          • {moment(post?.createdTime).fromNow()}
+                          {post?.posterType === "vendors" ? post?.poster?.craftCategories[0] : "COMMUNITY"}•{" "}
+                          {moment(post?.createdTime).fromNow()}
                         </p>
                       </div>
                     </div>
@@ -331,12 +363,7 @@ export default function SocialFeed() {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     >
-                      <svg
-                        className="w-5 h-5 text-gray-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
+                      <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -352,7 +379,7 @@ export default function SocialFeed() {
                   {post?.posts_Images.length > 0 ? (
                     <div className="w-full h-[200px] object-cover border">
                       <img
-                        src={post?.posts_Images[0]}
+                        src={post?.posts_Images[0] || "/placeholder.svg"}
                         alt="image"
                         className="object-cover w-full h-full border"
                       />
@@ -374,11 +401,7 @@ export default function SocialFeed() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      {isLiked ? (
-                        <FaHeart size={16} className="text-red-500" />
-                      ) : (
-                        <CiHeart size={16} />
-                      )}
+                      {isLiked ? <FaHeart size={16} className="text-red-500" /> : <CiHeart size={16} />}
                       <span>{post.likes.length} Likes</span>
                     </motion.button>
                     <span>{post?.comments?.length || 0} Comments</span>
@@ -401,33 +424,121 @@ export default function SocialFeed() {
                             </div>
                           ) : (
                             <img
-                              src={vendors?.avatar}
+                              src={vendors?.avatar || "/placeholder.svg"}
                               alt="Vendor"
                               className="w-10 h-10 rounded-full"
                             />
                           )}
                           <div className="flex-grow">
-                            <p className="text-sm font-medium">
-                              {comment?.comment_poster}
-                            </p>
+                            <p className="text-sm font-medium">{comment?.comment_poster}</p>
                             <p className="text-sm">{comment?.text}</p>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
                               <span>{comment?.timestamp}</span>
                               <motion.button
-                                className="hover:text-gray-700"
+                                className="hover:text-gray-700 font-medium"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
+                                onClick={() => handleReplyClick(comment._id)}
                               >
                                 Reply
                               </motion.button>
+                              {comment?.replies && comment.replies.length > 0 && (
+                                <motion.button
+                                  className="hover:text-gray-700 font-medium flex items-center gap-1"
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  onClick={() =>
+                                    setShowRepliesDropdown((prev) => ({
+                                      ...prev,
+                                      [comment._id]: !prev[comment._id],
+                                    }))
+                                  }
+                                >
+                                  {comment.replies.length === 1 ? "1 Reply" : `${comment.replies.length} Replies`}
+                                  <svg
+                                    className={`w-3 h-3 transition-transform ${showRepliesDropdown[comment._id] ? "rotate-180" : ""}`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M19 9l-7 7-7-7"
+                                    />
+                                  </svg>
+                                </motion.button>
+                              )}
                             </div>
+
+                            {/* Reply Input */}
+                            <AnimatePresence>
+                              {showReplyInput[comment._id] && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="mt-3"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {!vendors?.avatar ? (
+                                      <div className="w-[30px] h-[30px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center text-xs">
+                                        {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                                      </div>
+                                    ) : (
+                                      <img
+                                        src={vendors?.avatar || "/placeholder.svg"}
+                                        alt="Vendor"
+                                        className="w-8 h-8 rounded-full"
+                                      />
+                                    )}
+                                    <div className="flex-grow">
+                                      <input
+                                        type="text"
+                                        placeholder="Write a reply..."
+                                        value={replyText[comment._id] || ""}
+                                        onChange={(e) => handleReplyTextChange(comment._id, e.target.value)}
+                                        className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                                        onKeyPress={(e) => {
+                                          if (e.key === "Enter") {
+                                            handleReplySubmit(post._id, comment._id)
+                                          }
+                                        }}
+                                        disabled={replyToCommentMutation.isPending}
+                                      />
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleReplySubmit(post._id, comment._id)}
+                                        disabled={replyToCommentMutation.isPending}
+                                        className="px-3 py-1 text-xs font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      >
+                                        {replyToCommentMutation.isPending ? "Posting..." : "Post"}
+                                      </motion.button>
+                                      <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleReplyClick(comment._id)}
+                                        disabled={replyToCommentMutation.isPending}
+                                        className="px-3 py-1 text-xs font-medium text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 disabled:opacity-50"
+                                      >
+                                        Cancel
+                                      </motion.button>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+
                             {/* Comment Reactions */}
                             <div className="flex items-center gap-1 mt-1">
                               {comment?.reactions?.map((reaction: any) => (
                                 <motion.button
                                   key={reaction?.emoji}
                                   className="px-2 py-1 text-sm rounded-full hover:bg-gray-200"
-                                  // onClick={() => handleReaction(post.id, comment.id, reaction.emoji)}
                                   whileHover={{ scale: 1.05 }}
                                   whileTap={{ scale: 0.95 }}
                                 >
@@ -446,53 +557,82 @@ export default function SocialFeed() {
                                 whileTap={{ scale: 0.95 }}
                               ></motion.button>
                             </div>
+
                             {showEmojiPicker[comment.id] && (
-                              <div
-                                ref={emojiPickerRef}
-                                className="absolute z-10"
-                              >
+                              <div ref={emojiPickerRef} className="absolute z-10">
                                 <EmojiPicker
                                   onEmojiClick={(emojiData: EmojiClickData) => {
-                                    // handleReaction(post.id, comment.id, emojiData.emoji)
                                     setShowEmojiPicker((prev) => ({
                                       ...prev,
                                       [comment.id]: false,
-                                    }));
-                                    console.log(emojiData);
+                                    }))
+                                    console.log(emojiData)
                                   }}
                                 />
                               </div>
                             )}
-                            {/* Replies */}
+
+                            {/* Replies Dropdown */}
                             <AnimatePresence>
-                              {comment?.replies?.map((reply: any) => (
+                              {showRepliesDropdown[comment._id] && comment?.replies && comment.replies.length > 0 && (
                                 <motion.div
-                                  key={reply.id}
-                                  className="p-2 mt-2 ml-6 bg-white rounded-lg"
-                                  initial={{ opacity: 0, y: 20 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -20 }}
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  exit={{ opacity: 0, height: 0 }}
+                                  className="mt-3"
                                 >
-                                  <div className="flex items-start gap-2">
-                                    <Avatar
-                                      src={reply?.author?.avatar}
-                                      alt={reply?.author?.name}
-                                      size="sm"
-                                    />
-                                    <div>
-                                      <p className="text-sm font-medium">
-                                        {reply?.author?.name}
-                                      </p>
-                                      <p className="text-sm">
-                                        {reply?.content}
-                                      </p>
-                                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                                        <span>{reply?.timestamp}</span>
-                                      </div>
-                                    </div>
+                                  <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-lg bg-white">
+                                    {comment.replies.map((reply: any, replyIndex: number) => (
+                                      <motion.div
+                                        key={reply.id || replyIndex}
+                                        className="p-3 border-b border-gray-100 last:border-b-0"
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: replyIndex * 0.05 }}
+                                      >
+                                        <div className="flex items-start gap-2">
+                                          {/* {!reply?.author?.avatar ? (
+                                            <div className="w-[32px] h-[32px] rounded-[50%] bg-blue-300 text-white flex items-center justify-center text-xs">
+                                              {reply?.author?.name?.charAt(0)?.toUpperCase() || "U"}
+                                            </div>
+                                          ) : (
+                                            <img
+                                              src={reply.author.avatar || "/placeholder.svg"}
+                                              alt={reply.author.name}
+                                              className="w-8 h-8 rounded-full"
+                                            />
+                                          )} */}
+                                          {!vendors?.avatar ? (
+                                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                                                   {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                                             </div>
+                                           ) : (
+                                          <img src={vendors?.avatar || "/placeholder.svg"} alt="Vendor" className="w-10 h-10 rounded-full" />
+                                          )}
+                                          <div className="flex-grow">
+                                            <p className="text-sm font-medium text-gray-900">
+                                              {vendors?.storeName}
+                                            </p>
+                                            <p className="text-sm text-gray-700 mt-1">
+                                              {reply?.content || reply?.text}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                                              <span>{reply?.timestamp || moment(reply?.createdAt).fromNow()}</span>
+                                              {/* <motion.button
+                                                className="hover:text-gray-700 font-medium"
+                                                whileHover={{ scale: 1.05 }}
+                                                whileTap={{ scale: 0.95 }}
+                                              >
+                                                Like
+                                              </motion.button> */}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </motion.div>
+                                    ))}
                                   </div>
                                 </motion.div>
-                              ))}
+                              )}
                             </AnimatePresence>
                           </div>
                         </div>
@@ -502,49 +642,17 @@ export default function SocialFeed() {
 
                   {/* Add Comment Input */}
                   <div className="flex items-center gap-2 mt-4">
-                    {/* <Avatar
-                      src={vendors[0]?.avatar}
-                      alt={vendors[0]?.name}
-                      size="sm"
-                    /> */}
                     <div className="relative flex-grow">
                       <input
                         type="text"
                         placeholder="Write a comment..."
                         data-post-id={post.id}
                         className="w-full p-2 pr-8 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        disabled={commentOnPostMutation.isPending}
                         onKeyPress={(e) => {
                           if (e.key === "Enter") {
-                            comment_on_posts(user?.token, post._id, {
-                              text: e.currentTarget.value,
-                              userType: "vendors",
-                            });
-                            queryClient.invalidateQueries({
-                              queryKey: ["comm_posts"],
-                            });
-                            queryClient.invalidateQueries({
-                              queryKey: ["communities"],
-                            });
-                            queryClient.invalidateQueries({
-                              queryKey: ["vendors"],
-                            });
-                            queryClient.invalidateQueries({
-                              queryKey: ["vendor"],
-                            });
-                            queryClient.invalidateQueries({
-                              queryKey: ["all_comm"],
-                            });
-                            setShowEmojiPicker((prev) => ({
-                              ...prev,
-                              [post.id]: false,
-                            }));
-                            toast.success("Comment created successfully", {
-                              position: "top-right",
-                              autoClose: 4000,
-                            });
-                            setTimeout(() => {
-                              window.location.reload();
-                            }, 1000);
+                            const inputElement = e.currentTarget
+                            handleCommentSubmit(post._id, inputElement.value, inputElement)
                           }
                         }}
                       />
@@ -561,27 +669,20 @@ export default function SocialFeed() {
                       ></motion.button>
                     </div>
                     {showEmojiPicker[post.id] && (
-                      <div
-                        ref={emojiPickerRef}
-                        className="absolute right-0 z-10 bottom-full"
-                      >
+                      <div ref={emojiPickerRef} className="absolute right-0 z-10 bottom-full">
                         {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
                       </div>
                     )}
                   </div>
                 </motion.div>
-              );
+              )
             })
           )}
         </motion.div>
 
         {/* Right Sidebar */}
         <div className="max-w-md min-h-screen mx-auto bg-gray-100">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-4 bg-white shadow-sm"
-          >
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 bg-white shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-4">
                 {!vendors?.avatar ? (
@@ -589,11 +690,7 @@ export default function SocialFeed() {
                     {vendors?.storeName?.charAt(0)?.toUpperCase()}
                   </div>
                 ) : (
-                  <img
-                    src={vendors?.avatar}
-                    alt="Vendor"
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <img src={vendors?.avatar || "/placeholder.svg"} alt="Vendor" className="w-10 h-10 rounded-full" />
                 )}
                 <div>
                   <h2 className="font-semibold">{vendors?.storeName}</h2>
@@ -603,21 +700,15 @@ export default function SocialFeed() {
 
             <div className="flex justify-between mb-4 text-sm">
               <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.communityPosts?.length || 0}
-                </div>
+                <div className="font-bold">{vendors?.communityPosts?.length || 0}</div>
                 <div className="text-gray-600">Posts</div>
               </div>
               <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.followers?.length || 0}
-                </div>
+                <div className="font-bold">{vendors?.followers?.length || 0}</div>
                 <div className="text-gray-600">Followers</div>
               </div>
               <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.following?.length || 0}
-                </div>
+                <div className="font-bold">{vendors?.following?.length || 0}</div>
                 <div className="text-gray-600">Following</div>
               </div>
             </div>
@@ -655,9 +746,7 @@ export default function SocialFeed() {
                     />
                     <span className="text-sm">{recommendation.name}</span>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {recommendation.mutuals} Mutuals
-                  </div>
+                  <div className="text-xs text-gray-500">{recommendation.mutuals} Mutuals</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -665,30 +754,27 @@ export default function SocialFeed() {
 
           <div className="p-4 mt-4 bg-white shadow-sm">
             <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
-            {communities?.slice(0, 4)?.map((communities: any) => (
+            {communities?.slice(0, 4)?.map((community: any) => (
               <motion.div
+                key={community.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex flex-wrap gap-2 mb-[20px]"
               >
                 <div className="flex flex-col items-center justify-between gap-3">
                   <div className="flex items-center justify-between">
-                    <h4 className="mb-1 text-sm font-semibold text-orange-800">
-                      {communities.name}
-                    </h4>
+                    <h4 className="mb-1 text-sm font-semibold text-orange-800">{community.name}</h4>
                     <motion.span
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       whileHover={{ scale: 1.05 }}
                       className={`px-3 py-2 rounded-full ${
-                        communities.admin === user?.vendor?._id
+                        community.admin === user?.vendor?._id
                           ? "bg-orange-200 text-orange-800"
                           : "bg-blue-200 text-blue-800"
                       } text-sm ml-4 cursor-pointer`}
                     >
-                      {communities.admin === user?.vendor?._id
-                        ? "Owner"
-                        : "Member"}
+                      {community.admin === user?.vendor?._id ? "Owner" : "Member"}
                     </motion.span>
                   </div>
                 </div>
@@ -697,8 +783,7 @@ export default function SocialFeed() {
             {communities.length > 4 && (
               <button
                 onClick={() => {
-                  // Handle what you want to do when user clicks 'See More'
-                  console.log("See More Clicked");
+                  console.log("See More Clicked")
                 }}
                 className="mt-2 font-semibold text-orange-600 cursor-pointer"
               >
@@ -707,12 +792,9 @@ export default function SocialFeed() {
             )}
           </div>
 
-          <CreatePostModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-          />
+          <CreatePostModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
         </div>
       </div>
     </div>
-  );
+  )
 }

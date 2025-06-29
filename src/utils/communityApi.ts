@@ -151,6 +151,58 @@ export const comment_on_posts = async (
   }
 };
 
+export const comment_on_comment = async (
+  token: string | null,
+  postId: string | null,
+  commentId: string | null,
+  data: any,
+) => {
+  try {
+    if (!postId || !commentId) {
+      throw new Error("Post ID and Comment ID are required")
+    }
+
+    if (!data?.text || data.text.trim() === "") {
+      throw new Error("Reply text is required")
+    }
+
+    const replyData = {
+      text: data.text.trim(),
+      ...data,
+    }
+
+    const response = await api.patch(`/comment_on_comment/${postId}/${commentId}`, replyData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    })
+
+    console.log("Reply to comment successful:", response)
+    return response
+  } catch (error) {
+    console.error("Error replying to comment:", error)
+
+    // Enhanced error handling
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message || error.message
+      const statusCode = error.response?.status
+
+      console.error(`API Error (${statusCode}):`, errorMessage)
+
+      // Return structured error for better handling in components
+      throw {
+        message: errorMessage,
+        status: statusCode,
+        type: "api_error",
+      }
+    }
+
+    console.log(error)
+    throw error
+  }
+}
+
 export const get_posts_comments = async (postId: string | null) => {
   try {
     const response = await api.get(`/post/ ${postId}/comments`);
