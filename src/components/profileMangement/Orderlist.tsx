@@ -60,39 +60,17 @@ export default function OrderList() {
   }, []);
 
 
- // In your component
-const handleStatusChange = async (order:any) => {
-  try {
-    // 1. Construct the full ID (order_[buyerSession]_[orderId])
-    const fullOrderId = `order_${order.buyerSession}_${order.id}`;
-    
-    // 2. Call API
-    const message = await confirmOrderReceived(fullOrderId);
-    
-    // 3. Update UI state
-    setOrders(orders.map(o => 
-      o.id === order.id ? { 
-        ...o, 
-        status: "Delivered", // Update status
-        payStatus: "Paid"    // Optional: Update payment status
-      } : o
+const handleStatusChange = async (order: Order) => {
+  const success = await confirmOrderReceived(order.id);
+
+  if (success) {
+    setOrders(orders.map(o =>
+      o.id === order.id
+        ? { ...o, orderStatus: "Delivered" }
+        : o
     ));
-    
-    // 4. Show success feedback
-    alert(message); // "Order confirmed and vendor paid"
-    
-  } catch (err) {
-    console.error("Order confirmation error:", {
-      error: err,
-      orderId: order.id
-    });
-    
-    setError(
-      err instanceof Error ? err.message : "Failed to confirm order"
-    );
   }
 };
-
 
   const handleViewDetails = (orderId: string) => {
     // Handle view details action

@@ -112,24 +112,22 @@ export const getPaymentStatus = async (
 
 // Only available status update is confirming order received
 
-interface ConfirmOrderResponse {
-  message: string;
-  orderId: string;
-}
-
-export const confirmOrderReceived = async (fullOrderId: string): Promise<string> => {
+// src/services/orderApi.ts
+export const confirmOrderReceived = async (orderId: string) => {
   try {
-    const response = await api.patch<ConfirmOrderResponse>(
-      `/confirmOrderReceived/${fullOrderId}`
-    );
+    // Use ONLY the MongoDB _id (last part of the compound ID)
+    const mongoId = orderId.includes('_') 
+      ? orderId.split('_').pop() 
+      : orderId;
+
+    const response = await api.patch(`/confirmOrderReceived/${mongoId}`);
     
-    // Returns: "Order confirmed and vendor paid"
-    return response.data.message;
+    toast.success(response.data.message || "Order confirmed!");
+    return true;
   } catch (error: any) {
-    console.error("Confirmation failed for order:", fullOrderId, error);
-    throw new Error(
-      error.response?.data?.message || 
-      "Failed to confirm order. Please try again."
-    );
+    const errorMsg = error.response?.data?.message || 
+                   "Failed to confirm order. Please try again.";
+    toast.error(errorMsg);
+    return false;
   }
 };
