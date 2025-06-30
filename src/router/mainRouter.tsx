@@ -50,6 +50,16 @@ import SF from "@/components/AllCategory/Fashion/subcategory/SF/SF";
 import EB from "@/components/AllCategory/Fashion/subcategory/EB/EB";
 import BS from "@/components/AllCategory/Fashion/subcategory/BS/BS";
 import ST from "@/components/AllCategory/Fashion/subcategory/ST/ST";
+import HLF from "@/components/AllCategory/Fashion/subcategory/FB/HLF";
+import PRF from "@/components/AllCategory/Fashion/subcategory/FB/PRF";
+import EHT from "@/components/AllCategory/Fashion/subcategory/FB/EHT";
+import NOF from "@/components/AllCategory/Fashion/subcategory/FB/NOF";
+import WF from "@/components/AllCategory/Fashion/subcategory/OF/WF";
+import FCF from "@/components/AllCategory/Fashion/subcategory/OF/FCF";
+import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
+import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
+import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
+import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
 
 
 const Home = lazy(() => import("@/page/HomeArea"));
@@ -1042,15 +1052,25 @@ const routesConfig: RouteObject[] = [
       { path: "/headwear-scarves", element: withSuspense(HS) },
       { path: "/jewelry-adornments", element: withSuspense(JA) },
 
-
-
-
-
-
-
       { path: "/fabrics", element: withSuspense(FB) },
+      { path: "/natural-organic", element: withSuspense(NOF) },
+      { path: "/handwoven-fabrics", element: withSuspense(HLF) },
+      { path: "/printed-fabrics", element: withSuspense(PRF) },
+      { path: "/embroidered-handmade", element: withSuspense(EHT) },
+
       { path: "/occasion-footwear", element: withSuspense(OF) },
+      { path: "/wedding-footwear", element: withSuspense(WF) },
+      { path: "/festival-ceremony", element: withSuspense(FCF) },
+      { path: "/casual-ethnic", element: withSuspense(CEF) },
+
       { path: "/festival-clothing", element: withSuspense(FC) },
+      { path: "/wedding-attire", element: withSuspense(WA) },
+      { path: "/festival-ceremony", element: withSuspense(FCO) },
+      { path: "/religious-clothing", element: withSuspense(REC) },
+
+
+
+
       { path: "/regional-fashion", element: withSuspense(RF) },
       { path: "/seasonal-fashion", element: withSuspense(SF) },
       { path: "/embroidery", element: withSuspense(EB) },

@@ -30,11 +30,10 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-    { image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg", text: "Paintings", link: "/paintings" },
-    { image: "https://i.pinimg.com/736x/6f/46/86/6f4686892acc50bcb9561349090bd231.jpg", text: "Wall Art", link: "/wall-art" },
-    { image: "https://i.pinimg.com/736x/ee/2c/a8/ee2ca86391336c0998fc5125a8131f61.jpg", text: "Sculptures", link: "/sculptures" },
-    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Traditional Designs", link: "/traditional-craft" },
-    { image: "https://i.pinimg.com/736x/d3/aa/74/d3aa74015ecae82fc958a12fd4d414e6.jpg", text: "Religious & Cultural Art", link: "/traditional-artifacts" },
+    { image: "https://i.pinimg.com/736x/c8/18/73/c8187388f0e5d7aad850de7ab3eacefa.jpg", text: "Handwoven & Local Fabrics", link: "/handwoven-fabrics" },
+    { image: "https://i.pinimg.com/736x/78/3b/55/783b557c485a59f4f04bd0c87a99a6e2.jpg", text: "Printed Fabrics", link: "/printed-fabrics" },
+    { image: "https://i.pinimg.com/736x/0b/2c/d9/0b2cd9cb494c4c4cfcf1e30fd3f6d4bb.jpg", text: "Embroidered & Handmade Textiles", link: "/embroidered-handmade" },
+    { image: "https://i.pinimg.com/736x/ed/d9/cf/edd9cf138dab2af6f87c030a36abe97c.jpg", text: "Natural & Organic Fabrics", link: "/natural-organic" },
 ];
 
 // Animation variants for containers
@@ -93,7 +92,7 @@ const EmptyState: React.FC = () => (
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-            No Artifact Products Found
+            No Fabrics & Textiles Products Found
         </h2>
         <p className="max-w-md mb-6 text-gray-600">
             No products are available in this category. Browse our shop to find your favorite products!
@@ -142,19 +141,23 @@ const FB: React.FC = () => {
             try {
                 setIsLoading(true);
                 const result = await getAllProduct();
-                const allProducts = Array.isArray(result)
-                    ? result
-                    : result.products || [];
+                console.log(result)
+                const allProducts = Array.isArray(result) ? result : result.products || [];
 
                 const filtered = allProducts.filter(
                     (product: Product) =>
-                        product.category?.toLowerCase() === "artifacts"
+                        product.category?.toLowerCase() === "fashion clothing and fabrics" &&
+                        product.sub_category?.toLowerCase() === "fabrics & textiles"
                 );
 
                 setProducts(filtered);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error fetching products:", err);
-                setError("Failed to fetch artifacts. Please try again later.");
+                const errorMessage =
+                    err.message.includes("Network")
+                        ? "Network error. Please check your connection and try again."
+                        : "Failed to fetch products. Please try again later.";
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
@@ -169,9 +172,10 @@ const FB: React.FC = () => {
             products
                 .sort(
                     (a, b) =>
-                        new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
+                        new Date(b.createdAt || "").getTime() -
+                        new Date(a.createdAt || "").getTime()
                 )
-                .slice(0, 10), // Limit to 10 products for 2 rows on xl screens
+                .slice(0, 10),
         [products]
     );
 
@@ -202,7 +206,7 @@ const FB: React.FC = () => {
                         Home
                     </Link>
                     <FaChevronRight className="text-xs" aria-hidden="true" />
-                    <span className="font-medium text-gray-800">Artifacts</span>
+                    <span className="font-medium text-gray-800">Fabrics & Textiles</span>
                 </motion.nav>
 
                 {/* Subcategories */}

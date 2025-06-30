@@ -64,7 +64,7 @@ const EmptyState: React.FC = () => (
   >
     <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
     <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-      No Sustainable & Ethical Fashion Products Found
+      No Natural & Organic Fabrics Products Found
     </h2>
     <p className="max-w-md mb-6 text-gray-500">
       No products are available in this category. Browse our shop to find other great products!
@@ -80,7 +80,7 @@ const EmptyState: React.FC = () => (
   </motion.div>
 );
 
-const ST:React.FC = () => {
+const NOF:React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -104,9 +104,9 @@ const ST:React.FC = () => {
           const sub2 = product.sub_category2?.trim().toLowerCase() || "";
           return (
             category === "fashion clothing and fabrics" &&
-            sub1 === "sustainable & ethical fashion" &&
+            sub1 === "fabrics & textiles" &&
             sub2 ===
-              "sustainable & ethical fashion"
+              "natural & organic fabrics(e.g., cotton, silk, wool, linen)"
           );
         });
         console.log("Filtered products:", filtered);
@@ -116,8 +116,8 @@ const ST:React.FC = () => {
         const errorMessage = err.message.includes("Network")
           ? "Network error. Please check your connection and try again."
           : err.response?.status === 404
-          ? "No products found for Sustainable & Ethical Fashion. Try again later."
-          : "Failed to fetch Sustainable & Ethical Fashion products. Please try again.";
+          ? "No products found for Natural & Organic Fabrics. Try again later."
+          : "Failed to fetch Natural & Organic Fabrics products. Please try again.";
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -168,21 +168,21 @@ const ST:React.FC = () => {
         </Link>
         <FaChevronRight className="text-xs" aria-hidden="true" />
         <Link
-          to="/accessories"
+          to="/fabrics"
           className="transition-colors rounded hover:text-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
         >
-         Sustainable & Ethical Fashion
+         Fabrics & Textiles
         </Link>
         <FaChevronRight className="text-xs" aria-hidden="true" />
         <span className="font-medium text-gray-800">
-          Sustainable & Ethical Fashion
+          Natural & Organic Fabrics
         </span>
       </motion.nav>
       <motion.h1
         variants={childVariants}
         className="mb-6 text-2xl font-bold text-gray-800"
       >
-        Sustainable & Ethical Fashion
+        Natural & Organic Fabrics
       </motion.h1>
       {isLoading ? (
         <motion.div
@@ -226,4 +226,4 @@ const ST:React.FC = () => {
   );
 };
 
-export default ST;
+export default NOF;
