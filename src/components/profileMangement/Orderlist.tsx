@@ -5,39 +5,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react"
-import { getOrdersWithSession } from "@/utils/getOrderApi"
+import { getOrdersWithSession, Order } from "@/utils/getOrderApi"
 import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils"
 import { confirmOrderReceived } from "@/utils/orderApi"
-
-// Mock data structure
-interface Order {
-  id: string
-  buyer: {
-    fullName: string
-    email: string
-    phone: string
-  }
-  shippingAddress: {
-    street: string
-    city: string
-    region: string
-    country: string
-    postalCode: string
-  }
-  product: {
-    name: string
-    category: string
-    subCategory: string
-    image: string
-    price: number
-  }
-  quantity: number
-  totalPrice: number
-  paymentStatus: "Paid" | "Pending" | "Failed"
-  orderStatus: "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed"
-  paymentOption: string
-  createdAt: string
-}
+import { useNavigate } from "react-router-dom"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
+import { toast } from "react-toastify"
 
 
 
@@ -45,32 +19,59 @@ export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user.user);
+  const isAuthenticated = !!user;
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to view your orders.");
+      navigate("/selectpath");
+      return;
+    }
     const loadOrders = async () => {
       try {
         const data = await getOrdersWithSession();
         setOrders(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        if (errorMessage.includes("Session expired")) {
+          toast.info("Please log in to view your orders.");
+          navigate("/selectpath");
+        }
       } finally {
         setLoading(false);
       }
     };
     loadOrders();
-  }, []);
+  }, [navigate, isAuthenticated]);
 
 
-const handleStatusChange = async (order: Order) => {
-  const success = await confirmOrderReceived(order.id);
 
-  if (success) {
-    setOrders(orders.map(o =>
-      o.id === order.id
-        ? { ...o, orderStatus: "Delivered" }
-        : o
-    ));
-  }
-};
+  const handleConfirmReceipt = async (orderId: string) => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to confirm order receipt.");
+      navigate("/selectpath");
+      return;
+    }
+
+    setConfirmingOrderId(orderId); // Set loading state for specific order
+    try {
+      await confirmOrderReceived(orderId);
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId ? { ...order, orderStatus: "Delivered" } : order
+        )
+      );
+      toast.success("Order receipt confirmed successfully!");
+    } catch (error: any) {
+      // Interceptor handles error toasts
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  };
+
 
   const handleViewDetails = (orderId: string) => {
     // Handle view details action
@@ -87,7 +88,7 @@ const handleStatusChange = async (order: Order) => {
   );
 
   if (error) return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 md:p-6">
+    <div className="flex items-center justify-center min-h-screen p-4 md:p-6">
       <div className="text-center text-red-500">
         <p className="text-lg font-medium">{error}</p>
         <Button
@@ -103,7 +104,7 @@ const handleStatusChange = async (order: Order) => {
 
 
   return (
-    <div className="min-h-screen p-4 bg-gray-50 md:p-6">
+    <div className="min-h-screen p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
@@ -240,8 +241,8 @@ const handleStatusChange = async (order: Order) => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleStatusChange(order)}
-                            disabled={order.orderStatus === "Delivered"}
+                            onClick={() => handleConfirmReceipt(order.id)}
+                            disabled={confirmingOrderId === order.id}
                           >
                             Mark as Delivered
                           </DropdownMenuItem>

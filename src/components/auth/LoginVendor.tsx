@@ -10,8 +10,10 @@ import { LoginVendorAPI, get_single_vendor } from "@/utils/vendorApi";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { setVendor } from "@/redux/slices/vendorSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import { RootState } from "@/redux/store";
+import { initializeSession } from "@/redux/slices/sessionSlice";
 
 interface FormData {
   emailOrPhone: string;
@@ -23,7 +25,7 @@ const LoginVendor: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
-
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const {
     register,
     handleSubmit,
@@ -33,6 +35,9 @@ const LoginVendor: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
+        if (!sessionId) {
+        dispatch(initializeSession());
+      }
       const loginResponse = await LoginVendorAPI({
         emailOrPhone: data.emailOrPhone,
         password: data.password,

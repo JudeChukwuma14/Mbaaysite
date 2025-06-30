@@ -21,11 +21,8 @@ const sessionSlice = createSlice({
     setSessionId: (state, action: PayloadAction<string>) => {
       state.sessionId = action.payload;
     },
-    clearSessionId: (state) => {
-      state.sessionId = null;
-    },
   },
 });
 
-export const { initializeSession, setSessionId, clearSessionId } = sessionSlice.actions;
+export const { initializeSession, setSessionId } = sessionSlice.actions;
 export default sessionSlice.reducer;

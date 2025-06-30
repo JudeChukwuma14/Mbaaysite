@@ -1,4 +1,5 @@
 // src/utils/orderApi.ts
+import store from "@/redux/store";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -110,24 +111,27 @@ export const getPaymentStatus = async (
   }
 };
 
-// Only available status update is confirming order received
 
-// src/services/orderApi.ts
-export const confirmOrderReceived = async (orderId: string) => {
+// src/utils/orderApi.ts
+export const confirmOrderReceived = async (orderId: string): Promise<boolean> => {
   try {
-    // Use ONLY the MongoDB _id (last part of the compound ID)
-    const mongoId = orderId.includes('_') 
-      ? orderId.split('_').pop() 
-      : orderId;
+    const token = store.getState().user.token || store.getState().vendor.token;
+    if (!token) {
+      throw new Error("Authentication token is missing. Please log in again.");
+    }
 
-    const response = await api.patch(`/confirmOrderReceived/${mongoId}`);
-    
-    toast.success(response.data.message || "Order confirmed!");
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to confirm order receipt");
+    }
+
     return true;
   } catch (error: any) {
-    const errorMsg = error.response?.data?.message || 
-                   "Failed to confirm order. Please try again.";
-    toast.error(errorMsg);
-    return false;
+    throw error; // Let interceptor handle error messaging
   }
 };

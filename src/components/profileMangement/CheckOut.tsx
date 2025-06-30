@@ -13,7 +13,7 @@ import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
 import { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
@@ -467,7 +467,15 @@ export default function CheckoutForm() {
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
+  const user = useSelector((state: RootState) => state.user.user);
+  const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  const isAuthenticated = !!user || !!vendor;
 
+  // Redirect to login if not authenticated
+  if (!isAuthenticated) {
+    toast.info("Please log in to proceed with checkout.");
+    return <Navigate to="/selectpath" replace />;
+  }
   const {
     register,
     handleSubmit,
