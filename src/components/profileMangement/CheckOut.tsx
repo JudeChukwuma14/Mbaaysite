@@ -135,7 +135,7 @@ function BillingDetails({
           </motion.div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700">
               Email Address*
@@ -188,6 +188,8 @@ function BillingDetails({
             )}
           </motion.div>
 
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
               Postal Code (Optional)
@@ -201,9 +203,6 @@ function BillingDetails({
               aria-invalid="false"
             />
           </motion.div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <motion.div variants={inputVariants}>
             <label htmlFor="country" className="block mb-1 text-sm font-medium text-gray-700">
               Country*
@@ -227,6 +226,8 @@ function BillingDetails({
               </motion.p>
             )}
           </motion.div>
+        </div>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
           <motion.div variants={inputVariants}>
             <label htmlFor="region" className="block mb-1 text-sm font-medium text-gray-700">
@@ -331,7 +332,7 @@ function BillingDetails({
           />
         </motion.div>
       </motion.div>
-    </motion.div>
+    </motion.div >
   );
 }
 
@@ -375,11 +376,10 @@ function PaymentDetails({
               <motion.button
                 key={option}
                 type="button"
-                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${
-                  activePaymentOption === option
-                    ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
-                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                }`}
+                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${activePaymentOption === option
+                  ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                  }`}
                 onClick={() => {
                   setActivePaymentOption(option as "Pay Before Delivery" | "Pay After Delivery");
                   register("paymentOption").onChange({ target: { value: option } });

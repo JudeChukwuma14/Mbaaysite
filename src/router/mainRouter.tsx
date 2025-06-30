@@ -79,7 +79,7 @@ const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
   () => import("@/components/profileMangement/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/Payment/CheckOut"));
+const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -807,7 +807,7 @@ const routesConfig: RouteObject[] = [
         element: withSuspense(VendorProfileProduct),
         errorElement: <ErrorPage />,
       },
-      { path: "/checkout", element: withSuspense(CheckOut) },
+      
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
@@ -1086,6 +1086,7 @@ const routesConfig: RouteObject[] = [
       { index: true, element: withSuspense(EditProfile) },
       { path: "/dashboard/orderlist", element: withSuspense(OrderList) },
       { path: "/dashboard/orderdetail", element: withSuspense(OrderDetail) },
+      { path: "/dashboard/checkout", element: withSuspense(CheckOut) },
       {
         path: "/dashboard/canclellation",
         element: withSuspense(Canclellation),

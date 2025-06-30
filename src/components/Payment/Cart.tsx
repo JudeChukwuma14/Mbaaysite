@@ -67,7 +67,7 @@ const Cart: React.FC = () => {
       toast.error("Session ID not found. Please try again.");
       return;
     }
-    console.log("Session ID:", sessionId);
+
     try {
       await updateCartQuantity(sessionId, itemId, newQuantity);
       dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
@@ -81,7 +81,7 @@ const Cart: React.FC = () => {
       toast.error("Session ID not found. Please try again.");
       return;
     }
-    console.log("Session ID:", sessionId);
+   
     try {
       await removeFromCart(sessionId, itemId);
       dispatch(removeItem(itemId));
@@ -122,7 +122,7 @@ const Cart: React.FC = () => {
       navigate("/selectpath");
       return;
     }
-    navigate("/checkout");
+    navigate("/dashboard/checkout");
   };
 
   return (
