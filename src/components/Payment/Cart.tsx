@@ -6,7 +6,7 @@ import { removeItem, setCartItems, updateQuantity } from "@/redux/slices/cartSli
 import { motion } from "framer-motion";
 import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartQuantity } from "@/utils/cartApi";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 interface CartItem {
@@ -20,7 +20,10 @@ interface CartItem {
 const Cart: React.FC = () => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const sessionId = useSelector((state: RootState) => state.session.sessionId)
+  const user = useSelector((state: RootState) => state.user.user)
+  const vendor = useSelector((state: RootState) => state.vendor.vendor)
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const [couponCode, setCouponCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
 
@@ -61,10 +64,10 @@ const Cart: React.FC = () => {
       return;
     }
     if (!sessionId) {
-        toast.error("Session ID not found. Please try again.");
-        return;
-      }
-      console.log("Session ID:", sessionId);
+      toast.error("Session ID not found. Please try again.");
+      return;
+    }
+    console.log("Session ID:", sessionId);
     try {
       await updateCartQuantity(sessionId, itemId, newQuantity);
       dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
@@ -75,10 +78,10 @@ const Cart: React.FC = () => {
 
   const handleRemoveItem = async (itemId: string) => {
     if (!sessionId) {
-        toast.error("Session ID not found. Please try again.");
-        return;
-      }
-      console.log("Session ID:", sessionId);
+      toast.error("Session ID not found. Please try again.");
+      return;
+    }
+    console.log("Session ID:", sessionId);
     try {
       await removeFromCart(sessionId, itemId);
       dispatch(removeItem(itemId));
@@ -110,6 +113,17 @@ const Cart: React.FC = () => {
   const subtotal = calculateSubtotal();
   const shipping = 0;
   const total = (subtotal + shipping) * (1 - discount);
+
+
+  const handleCheckout = () => {
+    const isAuthenticated = !!user || !!vendor;
+    if (!isAuthenticated) {
+      toast.info("Please log in to proceed to checkout.");
+      navigate("/selectpath");
+      return;
+    }
+    navigate("/checkout");
+  };
 
   return (
     <motion.div
@@ -271,12 +285,12 @@ const Cart: React.FC = () => {
           <span>Total:</span>
           <span>₦{total}</span>
         </div>
-        <Link to="/checkout">
-          <button
-            className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
-          >
-            Proceed to Checkout
-          </button></Link>
+        <button
+          onClick={handleCheckout}
+          className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
+        >
+          Proceed to Checkout
+        </button>
       </motion.div>
     </motion.div>
   );
