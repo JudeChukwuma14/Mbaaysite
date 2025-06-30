@@ -1,19 +1,21 @@
-
-import { useEffect, useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react"
-import { getOrdersWithSession, Order } from "@/utils/getOrderApi"
-import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils"
-import { confirmOrderReceived } from "@/utils/orderApi"
-import { useNavigate } from "react-router-dom"
-import { useSelector } from "react-redux"
-import { RootState } from "@/redux/store"
-import { toast } from "react-toastify"
-
-
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react";
+import { getOrdersWithSession, Order } from "@/utils/getOrderApi";
+import { confirmOrderReceived } from "@/utils/orderApi";
+import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "@/redux/store";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -23,12 +25,14 @@ export default function OrderList() {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user.user);
   const isAuthenticated = !!user;
+
   useEffect(() => {
     if (!isAuthenticated) {
       toast.info("Please log in to view your orders.");
       navigate("/selectpath");
       return;
     }
+
     const loadOrders = async () => {
       try {
         const data = await getOrdersWithSession();
@@ -36,18 +40,13 @@ export default function OrderList() {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
         setError(errorMessage);
-        if (errorMessage.includes("Session expired")) {
-          toast.info("Please log in to view your orders.");
-          navigate("/selectpath");
-        }
+        // Axios interceptor in orderApi.ts handles toast for 401 errors
       } finally {
         setLoading(false);
       }
     };
     loadOrders();
   }, [navigate, isAuthenticated]);
-
-
 
   const handleConfirmReceipt = async (orderId: string) => {
     if (!isAuthenticated) {
@@ -56,7 +55,7 @@ export default function OrderList() {
       return;
     }
 
-    setConfirmingOrderId(orderId); // Set loading state for specific order
+    setConfirmingOrderId(orderId);
     try {
       await confirmOrderReceived(orderId);
       setOrders(
@@ -66,42 +65,42 @@ export default function OrderList() {
       );
       toast.success("Order receipt confirmed successfully!");
     } catch (error: any) {
-      // Interceptor handles error toasts
+      // Axios interceptor handles error toasts
     } finally {
       setConfirmingOrderId(null);
     }
   };
 
-
   const handleViewDetails = (orderId: string) => {
-    // Handle view details action
-    console.log(`Viewing details for order ${orderId}`)
+    navigate(`/orders/${orderId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 md:p-6">
+        <div className="text-center">
+          <p className="text-lg text-gray-700">Loading orders...</p>
+        </div>
+      </div>
+    );
   }
 
-
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 md:p-6">
-      <div className="text-center">
-        <p className="text-lg text-gray-700">Loading orders...</p>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4 md:p-6">
+        <div className="text-center text-red-500">
+          <p className="text-lg font-medium">{error}</p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
       </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="flex items-center justify-center min-h-screen p-4 md:p-6">
-      <div className="text-center text-red-500">
-        <p className="text-lg font-medium">{error}</p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </div>
-    </div>
-  );
-
+    );
+  }
 
   return (
     <div className="min-h-screen p-4 md:p-6">
@@ -194,7 +193,11 @@ export default function OrderList() {
                             Quantity: <span className="font-medium">{order.quantity}</span>
                           </p>
                           <p className="mt-1">
-                            Price: <span className="font-medium">₦{order.product.price.toFixed(2)}</span>
+                            Price: <span className="font-medium">
+                              {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
+                                order.product.price
+                              )}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -209,7 +212,11 @@ export default function OrderList() {
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Total Amount:</span>
-                        <span className="text-lg font-bold text-gray-900">₦{order.totalPrice.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
+                            order.totalPrice
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Payment Method:</span>
@@ -234,6 +241,7 @@ export default function OrderList() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-2 text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
+                            disabled={order.orderStatus === "Delivered" || order.orderStatus === "Cancelled"}
                           >
                             Change Status
                             <ChevronDown className="w-4 h-4" />
@@ -242,9 +250,17 @@ export default function OrderList() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             onClick={() => handleConfirmReceipt(order.id)}
-                            disabled={confirmingOrderId === order.id}
+                            disabled={
+                              confirmingOrderId === order.id ||
+                              order.orderStatus === "Delivered" ||
+                              order.orderStatus === "Cancelled"
+                            }
                           >
-                            Mark as Delivered
+                            {confirmingOrderId === order.id ? (
+                              <div className="w-4 h-4 border-b-2 border-gray-900 rounded-full animate-spin"></div>
+                            ) : (
+                              "Mark as Delivered"
+                            )}
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled>Processing</DropdownMenuItem>
                           <DropdownMenuItem disabled>Shipped</DropdownMenuItem>
@@ -259,7 +275,7 @@ export default function OrderList() {
           ))}
         </div>
 
-        {/* Empty State (if no orders) */}
+        {/* Empty State */}
         {orders.length === 0 && (
           <Card className="bg-white border border-gray-200 shadow-sm">
             <CardContent className="py-12 text-center">
@@ -271,5 +287,5 @@ export default function OrderList() {
         )}
       </div>
     </div>
-  )
+  );
 }
