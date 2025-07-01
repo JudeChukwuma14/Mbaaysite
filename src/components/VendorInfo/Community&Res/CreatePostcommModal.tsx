@@ -1,10 +1,7 @@
-"use client";
-
 import type React from "react";
-
 import { createPost, get_one_community } from "@/utils/communityApi";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Smile, ImageIcon, MapPin, User, XCircle } from "lucide-react";
+import { X, Smile, ImageIcon, User, XCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
@@ -12,21 +9,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-// import { LoadScript } from "@react-google-maps/api"
-// import GooglePlacesAutocomplete from "react-google-autocomplete"
-
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-// interface ApiError {
-//   response?: {
-//     data?: {
-//       message?: string
-//     }
-//   }
-// }
 
 interface TaggedUser {
   id: string;
@@ -47,8 +33,6 @@ const userSuggestions = [
   },
 ];
 
-// const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""
-
 export default function CreatePostcommModal({
   isOpen,
   onClose,
@@ -62,8 +46,6 @@ export default function CreatePostcommModal({
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [location, setLocation] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -104,15 +86,6 @@ export default function CreatePostcommModal({
     };
   }, []);
 
-  // const isApiError = (error: unknown): error is ApiError => {
-  //   return (
-  //     typeof error === "object" &&
-  //     error !== null &&
-  //     "response" in error &&
-  //     typeof (error as ApiError).response === "object"
-  //   )
-  // }
-
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
@@ -145,12 +118,6 @@ export default function CreatePostcommModal({
     setContent((prev) => prev + emojiData.emoji);
   };
 
-  // const handleLocationSelect = (place: google.maps.places.PlaceResult) => {
-  //   if (place.formatted_address) {
-  //     setLocation(place.formatted_address)
-  //   }
-  //   setShowLocationPicker(false)
-  // }
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim()) {
@@ -178,10 +145,6 @@ export default function CreatePostcommModal({
         formData.append("tags", user.id);
       });
 
-      if (location) {
-        formData.append("location", location);
-      }
-
       const token = user?.token || null;
       await createPost(formData, token);
 
@@ -196,7 +159,6 @@ export default function CreatePostcommModal({
       setImages([]);
       setImagesPreviews([]);
       setTaggedUsers([]);
-      setLocation("");
       onClose();
     } catch (error) {
       toast.error("Failed to post. Please try again.", {
@@ -337,42 +299,6 @@ export default function CreatePostcommModal({
                     )}
                   </div>
                 )}
-
-                {location && (
-                  <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>{location}</span>
-                  </div>
-                )}
-
-                {/* {showLocationPicker && (
-                  <div className="mt-2">
-                    <LoadScript googleMapsApiKey={GOOGLE_MAPS_API_KEY} libraries={["places"]}>
-                      {typeof google !== "undefined" ? (
-                        <GooglePlacesAutocomplete
-                          apiKey={GOOGLE_MAPS_API_KEY}
-                          onPlaceSelected={handleLocationSelect}
-                          options={{
-                            types: ["(regions)"],
-                          }}
-                          style={{
-                            input: {
-                              width: "100%",
-                              padding: "0.5rem",
-                              fontSize: "0.875rem",
-                              borderRadius: "0.375rem",
-                              backgroundColor: "#f3f4f6",
-                              border: "none",
-                              outline: "none",
-                            },
-                          }}
-                        />
-                      ) : (
-                        <div>Loading Google Maps...</div>
-                      )}
-                    </LoadScript>
-                  </div>
-                )} */}
               </form>
             </div>
 
@@ -406,13 +332,6 @@ export default function CreatePostcommModal({
                     className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
                   >
                     <User className="w-6 h-6" />
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    onClick={() => setShowLocationPicker(!showLocationPicker)}
-                    className="p-2 text-gray-500 rounded-full hover:text-gray-700 hover:bg-gray-100"
-                  >
-                    <MapPin className="w-6 h-6" />
                   </motion.button>
                 </div>
                 <button
