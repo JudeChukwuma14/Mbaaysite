@@ -91,7 +91,7 @@ const NewProduct = () => {
   };
 
   const defaultCategory = "";
-  const defaultSubCategory = subCategories[defaultCategory][0];
+  const defaultSubCategory = subCategories[defaultCategory]?.[0];
 
   const [productName, setProductName] = useState("");
   const [value, setValue] = useState("");
@@ -126,7 +126,7 @@ const NewProduct = () => {
   const [isDirty, setIsDirty] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-  const [vendorCountry, setVendorCountry] = useState("United States");
+  const [vendorCountry, setVendorCountry] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
@@ -201,7 +201,7 @@ const NewProduct = () => {
       quantity !== "0" ||
       sku ||
       price ||
-      productImages.length > 0 ||
+      productImages?.length > 0 ||
       youtubeEmbedUrl ||
       uploadedVideoInfo
     ) {
@@ -242,11 +242,14 @@ const NewProduct = () => {
           setYoutubeEmbedUrl(draftData.youtubeEmbedUrl);
         if (draftData.uploadedVideoInfo)
           setUploadedVideoInfo(draftData.uploadedVideoInfo);
-        if (draftData.imagePreviewUrls && draftData.imagePreviewUrls.length > 0)
+        if (
+          draftData.imagePreviewUrls &&
+          draftData.imagePreviewUrls?.length > 0
+        )
           setImagePreviewUrls(draftData.imagePreviewUrls);
         if (
           draftData.selectedCategories &&
-          draftData.selectedCategories.length > 0
+          draftData.selectedCategories?.length > 0
         )
           setSelectedCategories(draftData.selectedCategories);
       } catch (error) {
@@ -265,8 +268,8 @@ const NewProduct = () => {
   };
 
   const handleDescriptionFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
+    if (e.target.files && e.target.files?.length > 0) {
+      const file = e.target?.files[0];
       if (file.type === "text/plain") {
         setDescriptionFileName(file.name);
         const reader = new FileReader();
@@ -310,7 +313,7 @@ const NewProduct = () => {
       if (Number(quantity) < 0) throw new Error("Quantity cannot be negative");
       const numericPrice = Number(price.replace(/[^0-9.-]+/g, ""));
       if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
-      if (productImages.length === 0)
+      if (productImages?.length === 0)
         throw new Error("Please upload at least one product image");
 
       const draftData: Partial<ProductData> = {
@@ -419,7 +422,7 @@ const NewProduct = () => {
       if (Number(quantity) < 0) throw new Error("Quantity cannot be negative");
       const numericPrice = Number(price.replace(/[^0-9.-]+/g, ""));
       if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
-      if (productImages.length === 0)
+      if (productImages?.length === 0)
         throw new Error("Please upload at least one product image");
 
       const formData = new FormData();
@@ -505,7 +508,7 @@ const NewProduct = () => {
 
   useEffect(() => {
     // Set initial category based on vendor's craftCategories
-    if (vendors?.craftCategories && vendors.craftCategories.length > 0) {
+    if (vendors?.craftCategories && vendors.craftCategories?.length > 0) {
       const firstCategory = vendors.craftCategories[0];
       setActiveCategory(firstCategory);
       const firstSubCategory = subCategories[firstCategory]?.[0] || "";
@@ -527,13 +530,13 @@ const NewProduct = () => {
           <h1 className="text-2xl font-bold">New Product</h1>
 
           {/* Category Dropdown - only show if vendor has multiple categories */}
-          {vendors?.craftCategories && vendors.craftCategories.length > 1 && (
+          {vendors?.craftCategories && vendors.craftCategories?.length > 1 && (
             <div className="relative">
               <button
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
                 className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
               >
-                <span>Categories ({vendors.craftCategories.length})</span>
+                <span>Categories ({vendors.craftCategories?.length})</span>
                 <motion.div
                   animate={{ rotate: showCategoryDropdown ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
@@ -590,7 +593,7 @@ const NewProduct = () => {
           )}
         </div>
 
-        {selectedCategories.length > 0 && !isUpgraded && (
+        {selectedCategories?.length > 0 && !isUpgraded && (
           <CategorySelector
             selectedCategories={selectedCategories}
             activeCategory={activeCategory}

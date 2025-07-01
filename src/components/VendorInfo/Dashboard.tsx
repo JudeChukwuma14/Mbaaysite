@@ -108,7 +108,7 @@ const Dashboard = () => {
     switch (status) {
       case "Pending":
         return "text-yellow-500";
-      case "On Delivery":
+      case "Processing":
         return "text-blue-500";
       case "Delivered":
         return "text-green-500";

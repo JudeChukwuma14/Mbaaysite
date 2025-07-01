@@ -1,7 +1,4 @@
-"use client";
-
-import { useState, useRef, useEffect } from "react";
-import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CreatePostModal from "./CreatePostModal";
 import SocialList from "./SocailPost";
@@ -14,54 +11,22 @@ import {
   get_posts_feed,
   like_posts,
   unlike_posts,
+  get_mutual_recommendation,
 } from "@/utils/communityApi";
 import moment from "moment";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaHeart } from "react-icons/fa";
+import { GoReply } from "react-icons/go";
 import { toast } from "react-toastify";
 import loading from "../../../assets/loading.gif";
 import { CiHeart } from "react-icons/ci";
 
-interface Recommendation {
-  id: string;
-  name: string;
-  mutuals: number;
-  avatar: string;
-}
-
-const recommendations: Recommendation[] = [
-  {
-    id: "1",
-    name: "James Chariton",
-    mutuals: 8,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "2",
-    name: "Madio Mane",
-    mutuals: 15,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "3",
-    name: "Javier Afritin",
-    mutuals: 12,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: "4",
-    name: "Terry Jones",
-    mutuals: 15,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
-
 export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showEmojiPicker, setShowEmojiPicker] = useState<
-    Record<string, boolean>
-  >({});
-  const emojiPickerRef = useRef<HTMLDivElement>(null);
+  // const [ setShowEmojiPicker] = useState<
+  //   Record<string, boolean>
+  // >({});
+  // const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const [showReplyInput, setShowReplyInput] = useState<Record<string, boolean>>(
     {}
@@ -97,6 +62,15 @@ export default function SocialFeed() {
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
   });
+
+  // New useQuery for mutual recommendations
+  const { data: mutualRecommendations = [], isLoading: isLoadingMutuals } =
+    useQuery({
+      queryKey: ["mutual_recommendations"],
+      queryFn: () => get_mutual_recommendation(user?.token),
+      enabled: !!user?.token,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    });
 
   const queryClient = useQueryClient();
 
@@ -300,12 +274,40 @@ export default function SocialFeed() {
 
     // Clear the input
     inputElement.value = "";
-
     // Hide emoji picker
-    setShowEmojiPicker((prev) => ({
-      ...prev,
-      [postId]: false,
-    }));
+    // setShowEmojiPicker((prev) => ({
+    //   ...prev,
+    //   [postId]: false,
+    // }));
+  };
+
+  // Function to render tags
+  const renderTags = (tags: any[], tagType: string) => {
+    if (!tags || tags?.length === 0) return null;
+
+    return (
+      <div className="flex flex-wrap gap-2 mb-3">
+        {tags.map((tag: any, index: number) => (
+          <motion.span
+            key={tag._id || tag.id || index}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.1 }}
+            className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${
+              tagType === "vendors"
+                ? "bg-blue-100 text-blue-700 border border-blue-200"
+                : "bg-green-100 text-green-700 border border-green-200"
+            }`}
+          >
+            <span className="font-medium">@</span>
+            <span>{tag?.storeName || tag?.name || "Unknown"}</span>
+            {tagType === "community" && (
+              <span className="text-xs opacity-75">(Community)</span>
+            )}
+          </motion.span>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -341,13 +343,14 @@ export default function SocialFeed() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex gap-3">
-                      {!vendors?.avatar ? (
+                      {!post?.poster?.avatar ? (
                         <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                          {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                          {post?.poster?.storeName?.charAt(0)?.toUpperCase() ||
+                            "U"}
                         </div>
                       ) : (
                         <img
-                          src={vendors?.avatar || "/placeholder.svg"}
+                          src={post?.poster?.avatar || "/placeholder.svg"}
                           alt="Vendor"
                           className="w-10 h-10 rounded-full"
                         />
@@ -359,57 +362,41 @@ export default function SocialFeed() {
                           </h3>
                         ) : (
                           <h3 className="font-semibold">
-                            {post?.poster?.storeName}
+                            {post?.poster?.name || post?.poster?.storeName}
                           </h3>
                         )}
                         <p className="text-sm text-gray-500">
                           {post?.posterType === "vendors"
-                            ? post?.poster?.craftCategories[0]
+                            ? post?.poster?.craftCategories?.[0] || "Vendor"
                             : "COMMUNITY"}
                           • {moment(post?.createdTime).fromNow()}
                         </p>
                       </div>
                     </div>
+
                     <motion.button
                       className="p-1 rounded-full hover:bg-gray-100"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
-                    >
-                      <svg
-                        className="w-5 h-5 text-gray-500"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
-                        />
-                      </svg>
-                    </motion.button>
+                    ></motion.button>
                   </div>
 
                   <p className="mb-4 text-sm">{post?.content}</p>
 
-                  {post?.posts_Images.length > 0 ? (
-                    <div className="w-full h-[200px] object-cover border">
+                  {/* Display Tags */}
+                  {post?.tags &&
+                    post.tags.length > 0 &&
+                    renderTags(post.tags, post.tagType || "vendors")}
+
+                  {post?.posts_Images?.length > 0 ? (
+                    <div className="w-full h-[200px] object-cover border mb-4">
                       <img
                         src={post?.posts_Images[0] || "/placeholder.svg"}
                         alt="image"
-                        className="object-cover w-full h-full border"
+                        className="object-cover w-full h-full border rounded-lg"
                       />
                     </div>
                   ) : null}
-
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {/* {post.hashtags.map((tag) => (
-                  <Badge key={tag} variant="secondary">
-                    #{tag}
-                  </Badge>
-                ))} */}
-                  </div>
 
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <motion.button
@@ -439,14 +426,18 @@ export default function SocialFeed() {
                         exit={{ opacity: 0, y: -20 }}
                       >
                         <div className="flex items-start gap-2">
-                          {!vendors?.avatar ? (
-                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                              {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                          {!comment?.commenter?.avatar ? (
+                            <div className="w-[40px] h-[40px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                              {comment?.comment_poster
+                                ?.charAt(0)
+                                ?.toUpperCase() || "U"}
                             </div>
                           ) : (
                             <img
-                              src={vendors?.avatar || "/placeholder.svg"}
-                              alt="Vendor"
+                              src={
+                                comment?.commenter?.avatar || "/placeholder.svg"
+                              }
+                              alt="Commenter"
                               className="w-10 h-10 rounded-full"
                             />
                           )}
@@ -456,15 +447,21 @@ export default function SocialFeed() {
                             </p>
                             <p className="text-sm">{comment?.text}</p>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                              <span>{comment?.timestamp}</span>
+                              <span>
+                                {moment(comment?.timestamp).fromNow()}
+                              </span>
                               <motion.button
                                 className="hover:text-gray-700 font-medium"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleReplyClick(comment._id)}
                               >
-                                Reply
+                                <div className="flex items-center gap-1">
+                                  <GoReply size={16} />
+                                  Reply
+                                </div>
                               </motion.button>
+
                               {comment?.replies &&
                                 comment.replies.length > 0 && (
                                   <motion.button
@@ -602,35 +599,7 @@ export default function SocialFeed() {
                                   {reaction?.emoji} {reaction?.count}
                                 </motion.button>
                               ))}
-                              <motion.button
-                                className="px-2 py-1 text-sm rounded-full hover:bg-gray-200"
-                                onClick={() =>
-                                  setShowEmojiPicker((prev) => ({
-                                    ...prev,
-                                    [comment.id]: !prev[comment.id],
-                                  }))
-                                }
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                              ></motion.button>
                             </div>
-
-                            {showEmojiPicker[comment.id] && (
-                              <div
-                                ref={emojiPickerRef}
-                                className="absolute z-10"
-                              >
-                                <EmojiPicker
-                                  onEmojiClick={(emojiData: EmojiClickData) => {
-                                    setShowEmojiPicker((prev) => ({
-                                      ...prev,
-                                      [comment.id]: false,
-                                    }));
-                                    console.log(emojiData);
-                                  }}
-                                />
-                              </div>
-                            )}
 
                             {/* Replies Dropdown */}
                             <AnimatePresence>
@@ -656,17 +625,6 @@ export default function SocialFeed() {
                                             }}
                                           >
                                             <div className="flex items-start gap-2">
-                                              {/* {!reply?.author?.avatar ? (
-                                            <div className="w-[32px] h-[32px] rounded-[50%] bg-blue-300 text-white flex items-center justify-center text-xs">
-                                              {reply?.author?.name?.charAt(0)?.toUpperCase() || "U"}
-                                            </div>
-                                          ) : (
-                                            <img
-                                              src={reply.author.avatar || "/placeholder.svg"}
-                                              alt={reply.author.name}
-                                              className="w-8 h-8 rounded-full"
-                                            />
-                                          )} */}
                                               {!vendors?.avatar ? (
                                                 <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
                                                   {vendors?.storeName
@@ -680,12 +638,13 @@ export default function SocialFeed() {
                                                     "/placeholder.svg"
                                                   }
                                                   alt="Vendor"
-                                                  className="w-10 h-10 rounded-full"
+                                                  className="w-7 h-7 rounded-full"
                                                 />
                                               )}
                                               <div className="flex-grow">
                                                 <p className="text-sm font-medium text-gray-900">
-                                                  {vendors?.storeName}
+                                                  {vendors?.storeName ||
+                                                    "Anonymous"}
                                                 </p>
                                                 <p className="text-sm text-gray-700 mt-1">
                                                   {reply?.content ||
@@ -693,18 +652,14 @@ export default function SocialFeed() {
                                                 </p>
                                                 <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
                                                   <span>
-                                                    {reply?.timestamp ||
-                                                      moment(
-                                                        reply?.createdAt
-                                                      ).fromNow()}
+                                                    {reply?.timestamp
+                                                      ? moment(
+                                                          reply.timestamp
+                                                        ).fromNow()
+                                                      : moment(
+                                                          reply?.createdAt
+                                                        ).fromNow()}
                                                   </span>
-                                                  {/* <motion.button
-                                                className="hover:text-gray-700 font-medium"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                              >
-                                                Like
-                                              </motion.button> */}
                                                 </div>
                                               </div>
                                             </div>
@@ -741,26 +696,7 @@ export default function SocialFeed() {
                           }
                         }}
                       />
-                      <motion.button
-                        className="absolute text-gray-500 transform -translate-y-1/2 right-2 top-1/2 hover:text-gray-700"
-                        onClick={() =>
-                          setShowEmojiPicker((prev) => ({
-                            ...prev,
-                            [post.id]: !prev[post.id],
-                          }))
-                        }
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                      ></motion.button>
                     </div>
-                    {showEmojiPicker[post.id] && (
-                      <div
-                        ref={emojiPickerRef}
-                        className="absolute right-0 z-10 bottom-full"
-                      >
-                        {/* <EmojiPicker onEmojiClick={(emojiData) => handleEmojiSelect(emojiData, post.id)} /> */}
-                      </div>
-                    )}
                   </div>
                 </motion.div>
               );
@@ -833,26 +769,58 @@ export default function SocialFeed() {
               transition={{ staggerChildren: 0.1 }}
               className="space-y-3"
             >
-              {recommendations.map((recommendation) => (
-                <motion.div
-                  key={recommendation.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={recommendation.avatar || "/placeholder.svg"}
-                      alt={recommendation.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span className="text-sm">{recommendation.name}</span>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {recommendation.mutuals} Mutuals
-                  </div>
-                </motion.div>
-              ))}
+              {isLoadingMutuals ? (
+                <div className="flex justify-center items-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                </div>
+              ) : mutualRecommendations && mutualRecommendations.length > 0 ? (
+                mutualRecommendations
+                  .slice(0, 4)
+                  .map((recommendation: any, index: number) => (
+                    <motion.div
+                      key={recommendation._id || recommendation.id || index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center justify-between"
+                    >
+                      <div className="flex items-center space-x-2">
+                        {!recommendation.avatar ? (
+                          <div className="w-8 h-8 rounded-full bg-blue-300 text-white flex items-center justify-center text-xs">
+                            {recommendation.storeName
+                              ?.charAt(0)
+                              ?.toUpperCase() ||
+                              recommendation.name?.charAt(0)?.toUpperCase() ||
+                              "U"}
+                          </div>
+                        ) : (
+                          <img
+                            src={recommendation.avatar || "/placeholder.svg"}
+                            alt={
+                              recommendation.storeName || recommendation.name
+                            }
+                            className="w-8 h-8 rounded-full"
+                          />
+                        )}
+                        <span className="text-sm">
+                          {recommendation.storeName ||
+                            recommendation.name ||
+                            "Unknown User"}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {recommendation.mutualCount ||
+                          recommendation.mutuals ||
+                          0}{" "}
+                        Mutuals
+                      </div>
+                    </motion.div>
+                  ))
+              ) : (
+                <div className="text-center text-gray-500">
+                  No mutual recommendations found.
+                </div>
+              )}
             </motion.div>
           </div>
 

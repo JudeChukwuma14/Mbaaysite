@@ -41,9 +41,6 @@ export const get_single_vendor = async (token: string | null) => {
   }
 };
 
-
-
-// export const get_single_vendor = async (token: string | null) => {
 //   if (!token) {
 //     throw new Error("No token provided");
 //   }
@@ -77,6 +74,7 @@ export const upload_return_policy = async (token: string | null, data: any) => {
 export const getAllVendor = async () => {
   try {
     const response = await api.get("/get_all_vendors");
+    console.log(response.data.vendors);
     return response.data;
   } catch (error) {
     console.log(error);

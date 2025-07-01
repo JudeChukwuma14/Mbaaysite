@@ -451,7 +451,7 @@ const OrderDetailsPage = () => {
                   order.payStatus === "Successful"
                     ? "bg-green-600 text-green-100"
                     : order.payStatus === "Pending"
-                    ? "bg-yellow-100 text-yellow-800"
+                    ? "bg-blue-500 text-white"
                     : "bg-red-100 text-green-800"
                 }`}
               >

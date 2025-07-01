@@ -20,7 +20,6 @@ const AllOrdersPage = () => {
 
   const user = useSelector((state: RootState) => state.vendor);
 
-  // Fetch orders using TanStack Query
   const {
     data: ordersResponse,
     isLoading,
@@ -86,7 +85,7 @@ const AllOrdersPage = () => {
       case "Cancelled":
         return "text-red-500";
       case "Pending":
-        return "text-blue-500";
+        return "bg-blue-500 text-white";
       default:
         return "text-gray-500";
     }

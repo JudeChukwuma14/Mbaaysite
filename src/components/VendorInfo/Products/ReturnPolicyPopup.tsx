@@ -1,6 +1,7 @@
 import type React from "react";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
+import { FiDownload } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 
 interface ReturnPolicyPopupProps {
@@ -12,7 +13,8 @@ interface ReturnPolicyPopupProps {
 export default function ReturnPolicyPopup({
   showReturnPolicyPopup,
   setShowReturnPolicyPopup,
-}: ReturnPolicyPopupProps) {
+}: // returnPolicyRef,
+ReturnPolicyPopupProps) {
   const navigate = useNavigate();
 
   if (!showReturnPolicyPopup) return null;
@@ -20,6 +22,19 @@ export default function ReturnPolicyPopup({
   const handleUploadClick = () => {
     setShowReturnPolicyPopup(false);
     navigate("/app/edit-vendor-profile");
+  };
+
+  const handleDownloadPolicy = () => {
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement("a");
+    link.href = "/policies/Mbaay-Return-Policy.pdf"; // Path to your PDF file
+    link.download = "Mbaay-Return-Policy.pdf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // You may want to set a flag that vendor is using default policy
+    // This would require API integration to save this preference
   };
 
   return (
@@ -38,26 +53,63 @@ export default function ReturnPolicyPopup({
           <motion.button
             onClick={() => setShowReturnPolicyPopup(false)}
             className="text-gray-500 hover:text-gray-700"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             <IoMdClose size={24} />
           </motion.button>
         </div>
-        <p className="mb-4">
-          You must upload a return policy before adding this product. This helps
-          customers understand your terms and conditions.
-        </p>
-        <div className="flex justify-end space-x-3">
+
+        <div className="mb-6 space-y-4">
+          <p className="text-gray-700">
+            You must have a return policy before adding products. Choose one of
+            these options:
+          </p>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-medium text-lg mb-2">
+              Option 1: Use Mbaay's Default Policy
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Download and review our standard return policy that meets all
+              platform requirements.
+            </p>
+            <button
+              onClick={handleDownloadPolicy}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+            >
+              <FiDownload />
+              Download Mbaay Return Policy
+            </button>
+            <p className="text-xs text-gray-500 mt-2">
+              By using this option, you agree to apply Mbaay's default return
+              policy to your store.
+            </p>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-medium text-lg mb-2">
+              Option 2: Upload Your Own Policy
+            </h3>
+            <p className="text-sm text-gray-600 mb-3">
+              Upload a custom return policy that meets or exceeds Mbaay's
+              minimum standards.
+            </p>
+            <button
+              onClick={handleUploadClick}
+              className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Upload Custom Policy
+            </button>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
           <button
-            className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700"
+            className="px-4 py-2 text-gray-500 hover:text-gray-700"
             onClick={() => setShowReturnPolicyPopup(false)}
           >
             Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg"
-            onClick={handleUploadClick}
-          >
-            Upload Return Policy
           </button>
         </div>
       </motion.div>

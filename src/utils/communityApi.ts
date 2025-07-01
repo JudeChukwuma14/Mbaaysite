@@ -155,53 +155,57 @@ export const comment_on_comment = async (
   token: string | null,
   postId: string | null,
   commentId: string | null,
-  data: any,
+  data: any
 ) => {
   try {
     if (!postId || !commentId) {
-      throw new Error("Post ID and Comment ID are required")
+      throw new Error("Post ID and Comment ID are required");
     }
 
     if (!data?.text || data.text.trim() === "") {
-      throw new Error("Reply text is required")
+      throw new Error("Reply text is required");
     }
 
     const replyData = {
       text: data.text.trim(),
       ...data,
-    }
+    };
 
-    const response = await api.patch(`/comment_on_comment/${postId}/${commentId}`, replyData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    })
+    const response = await api.patch(
+      `/comment_on_comment/${postId}/${commentId}`,
+      replyData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-    console.log("Reply to comment successful:", response)
-    return response
+    console.log("Reply to comment successful:", response);
+    return response;
   } catch (error) {
-    console.error("Error replying to comment:", error)
+    console.error("Error replying to comment:", error);
 
     // Enhanced error handling
     if (axios.isAxiosError(error)) {
-      const errorMessage = error.response?.data?.message || error.message
-      const statusCode = error.response?.status
+      const errorMessage = error.response?.data?.message || error.message;
+      const statusCode = error.response?.status;
 
-      console.error(`API Error (${statusCode}):`, errorMessage)
+      console.error(`API Error (${statusCode}):`, errorMessage);
 
       // Return structured error for better handling in components
       throw {
         message: errorMessage,
         status: statusCode,
         type: "api_error",
-      }
+      };
     }
 
-    console.log(error)
-    throw error
+    console.log(error);
+    throw error;
   }
-}
+};
 
 export const get_posts_comments = async (postId: string | null) => {
   try {
@@ -262,6 +266,7 @@ export const join_community = async (
     console.log(error);
   }
 };
+
 export const leave_community = async (
   token: string | null,
   communityid: any
@@ -282,6 +287,7 @@ export const leave_community = async (
     console.log(error);
   }
 };
+
 export const search_vendor_community = async (
   token: string | null,
   query: string | null
@@ -315,5 +321,35 @@ export const get_all_communities = async () => {
     return response.data.data;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const get_mutual_recommendation = async (token: string | null) => {
+  try {
+    const response = await api.get(`/get_mutual_recommendation`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log("Mutual recommendations:", response);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching mutual recommendations:", error);
+
+    // Enhanced error handling
+    if (axios.isAxiosError(error)) {
+      const errorMessage = error.response?.data?.message || error.message;
+      const statusCode = error.response?.status;
+
+      console.error(`API Error (${statusCode}):`, errorMessage);
+
+      throw {
+        message: errorMessage,
+        status: statusCode,
+        type: "api_error",
+      };
+    }
+
+    throw error;
   }
 };

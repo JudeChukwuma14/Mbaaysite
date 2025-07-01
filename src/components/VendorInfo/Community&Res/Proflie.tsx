@@ -52,13 +52,6 @@ export default function ProfilePage() {
             className="w-12 h-12 border-2 border-white rounded-lg"
           />
         </div>
-        {/* <div className="flex items-center justify-center h-full">
-          <h1 className="text-5xl font-bold tracking-wider">
-            <span className="text-[#00FF00]">m</span>
-            <span className="text-[#FFFF00]">oo</span>
-            <span className="text-[#00FFFF]">i</span>
-          </h1>
-        </div> */}
         <img
           src={posts?.data?.businessLogo}
           alt="banner"
@@ -153,15 +146,6 @@ export default function ProfilePage() {
             <PenSquare className="w-4 h-4" />
             Create Post
           </motion.button>
-          {/* <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setIsMessageModalOpen(true)}
-            className="flex items-center justify-center gap-2 bg-[#FF6B00] text-white px-6 py-2 rounded-full text-sm"
-          >
-            <MessageSquare className="w-4 h-4" />
-            Message
-          </motion.button> */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
@@ -260,6 +244,12 @@ export default function ProfilePage() {
                           {props.comments?.length || 0} Comments
                         </span>
                       </div>
+                      {/* <div className="flex items-center gap-1">
+                        <Reply className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm text-gray-500">
+                          {props.replies?.length || 0} Replies
+                        </span>
+                      </div> */}
                     </div>
                   </div>
                 </motion.div>
