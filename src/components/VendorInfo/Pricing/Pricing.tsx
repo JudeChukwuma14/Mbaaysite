@@ -171,7 +171,6 @@ export default function UpgradePage() {
     }
 
     // In the renderPlanButton function, update the "Previous plans" section:
-
     // Previous plans (inactive)
     if (targetPlanIndex < currentPlanIndex) {
       return (
@@ -502,15 +501,15 @@ export default function UpgradePage() {
         {openDialog && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <motion.div
-              className="bg-white rounded-lg max-w-md w-full overflow-hidden"
+              className="bg-white rounded-lg max-w-md w-full overflow-hidden max-h-[70vh]"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
             >
-              <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-xl font-semibold">Choose Categories</h2>
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <h2 className="text-lg font-semibold">Choose Categories</h2>
                   <motion.button
                     onClick={() => setOpenDialog(false)}
                     whileHover={{ scale: 1.1, rotate: 90 }}
@@ -520,7 +519,7 @@ export default function UpgradePage() {
                   </motion.button>
                 </div>
 
-                <p className="text-sm text-gray-500 mb-4">
+                <p className="text-sm text-gray-500 mb-3">
                   Please select{" "}
                   {upgradeInfo.maxCategories === 1
                     ? "1 category"
@@ -528,63 +527,68 @@ export default function UpgradePage() {
                   for your {upgradeType} upgrade:
                 </p>
 
-                <div className="bg-blue-50 p-3 rounded-lg mb-4">
+                <div className="bg-blue-50 p-2 rounded-lg mb-3">
                   <p className="text-xs text-blue-700">{upgradeInfo.message}</p>
                 </div>
 
-                <div className="grid grid-cols-1 gap-3">
-                  {availableCategories.map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <div
-                          className={`w-5 h-5 border rounded flex items-center justify-center ${
-                            selectedCategories?.includes(category)
-                              ? "bg-blue-600 border-blue-600"
-                              : "border-gray-300"
-                          } ${
-                            upgradeType &&
-                            selectedCategories.length >=
-                              upgradeInfo.maxCategories &&
-                            !selectedCategories.includes(category)
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          onClick={() => {
-                            if (
+                <div className="max-h-[35vh] overflow-y-auto">
+                  <div className="grid grid-cols-1 gap-2">
+                    {availableCategories.map((category) => (
+                      <div
+                        key={category}
+                        className="flex items-center space-x-2"
+                      >
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <div
+                            className={`w-4 h-4 border rounded flex items-center justify-center ${
+                              selectedCategories?.includes(category)
+                                ? "bg-blue-600 border-blue-600"
+                                : "border-gray-300"
+                            } ${
                               upgradeType &&
-                              !(
-                                selectedCategories.length >=
-                                  upgradeInfo.maxCategories &&
-                                !selectedCategories.includes(category)
-                              )
-                            ) {
-                              handleCategoryChange(category);
-                            }
-                          }}
-                        >
-                          {selectedCategories.includes(category) && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              transition={{
-                                type: "spring",
-                                damping: 10,
-                                stiffness: 200,
-                              }}
-                            >
-                              <Check className="h-4 w-4 text-white" />
-                            </motion.div>
-                          )}
-                        </div>
-                        <span className="text-sm">{category}</span>
-                      </label>
-                    </div>
-                  ))}
+                              selectedCategories.length >=
+                                upgradeInfo.maxCategories &&
+                              !selectedCategories.includes(category)
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }`}
+                            onClick={() => {
+                              if (
+                                upgradeType &&
+                                !(
+                                  selectedCategories.length >=
+                                    upgradeInfo.maxCategories &&
+                                  !selectedCategories.includes(category)
+                                )
+                              ) {
+                                handleCategoryChange(category);
+                              }
+                            }}
+                          >
+                            {selectedCategories.includes(category) && (
+                              <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{
+                                  type: "spring",
+                                  damping: 10,
+                                  stiffness: 200,
+                                }}
+                              >
+                                <Check className="h-3 w-3 text-white" />
+                              </motion.div>
+                            )}
+                          </div>
+                          <span className="text-sm">{category}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="mt-6 flex justify-between">
+                <div className="mt-4 flex justify-between">
                   <motion.button
-                    className="px-4 py-2 border border-gray-300 rounded text-gray-700 font-medium"
+                    className="px-3 py-2 border border-gray-300 rounded text-gray-700 font-medium text-sm"
                     onClick={() => setOpenDialog(false)}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
@@ -593,7 +597,7 @@ export default function UpgradePage() {
                   </motion.button>
 
                   <motion.button
-                    className={`px-4 py-2 rounded font-medium ${
+                    className={`px-3 py-2 rounded font-medium text-sm ${
                       upgradeType &&
                       selectedCategories.length === upgradeInfo.maxCategories
                         ? upgradeType === "Shelf"
