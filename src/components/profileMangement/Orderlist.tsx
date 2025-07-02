@@ -54,7 +54,6 @@ export default function OrderList() {
       navigate("/selectpath");
       return;
     }
-
     setConfirmingOrderId(orderId);
     try {
       await confirmOrderReceived(orderId);
@@ -63,14 +62,19 @@ export default function OrderList() {
           order.id === orderId ? { ...order, orderStatus: "Delivered" } : order
         )
       );
+      console.log(setOrders)
       toast.success("Order receipt confirmed successfully!");
     } catch (error: any) {
-      // Axios interceptor handles error toasts
+      if (error.message === "order is not marked as delivered yet") {
+        toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
+      } else {
+        // Axios interceptor handles other errors
+        console.error("Confirm Receipt Error:", error.message, error.response?.data);
+      }
     } finally {
       setConfirmingOrderId(null);
     }
   };
-
   const handleViewDetails = (orderId: string) => {
     navigate(`/orders/${orderId}`);
   };
@@ -258,9 +262,12 @@ export default function OrderList() {
                           >
                             {confirmingOrderId === order.id ? (
                               <div className="w-4 h-4 border-b-2 border-gray-900 rounded-full animate-spin"></div>
+                            ) : order.orderStatus !== "Delivered" ? (
+                              "Waiting for Delivery"
                             ) : (
-                              "Mark as Delivered"
+                              "Confirm Receipt"
                             )}
+
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled>Processing</DropdownMenuItem>
                           <DropdownMenuItem disabled>Shipped</DropdownMenuItem>
