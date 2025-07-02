@@ -1,4 +1,5 @@
 import type React from "react";
+import MbaayReturnPolicy from "../../../assets/policies/MbaayReturnPolicy.pdf";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
 import { FiDownload } from "react-icons/fi";
@@ -24,17 +25,58 @@ ReturnPolicyPopupProps) {
     navigate("/app/edit-vendor-profile");
   };
 
-  const handleDownloadPolicy = () => {
-    // Create a temporary anchor element to trigger download
-    const link = document.createElement("a");
-    link.href = "/policies/Mbaay-Return-Policy.pdf"; // Path to your PDF file
-    link.download = "Mbaay-Return-Policy.pdf";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownloadPolicy = async () => {
+    try {
+      // Fetch the PDF file from the imported asset
+      const response = await fetch(MbaayReturnPolicy);
 
-    // You may want to set a flag that vendor is using default policy
-    // This would require API integration to save this preference
+      if (!response.ok) {
+        throw new Error("Failed to fetch PDF file");
+      }
+
+      // Get the PDF as a blob
+      const blob = await response.blob();
+
+      // Create a blob URL
+      const blobUrl = URL.createObjectURL(blob);
+
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = "Mbaay-Return-Policy.pdf";
+      link.setAttribute("type", "application/pdf");
+
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Clean up the blob URL
+      URL.revokeObjectURL(blobUrl);
+
+      // Optional: Show success message
+      console.log("PDF downloaded successfully");
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+
+      // Fallback method - direct link approach
+      try {
+        const link = document.createElement("a");
+        link.href = MbaayReturnPolicy;
+        link.download = "Mbaay-Return-Policy.pdf";
+        link.setAttribute("target", "_blank");
+        link.setAttribute("rel", "noopener noreferrer");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (fallbackError) {
+        console.error("Fallback download method also failed:", fallbackError);
+        // You could show a toast notification here
+        alert(
+          "Unable to download the PDF. Please try again or contact support."
+        );
+      }
+    }
   };
 
   return (
