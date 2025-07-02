@@ -1,123 +1,126 @@
-
-import { useEffect, useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react"
-import { confirmOrderReceived, getOrdersWithSession } from "@/utils/getOrderApi"
-import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils"
-
-// Mock data structure
-interface Order {
-  id: string
-  buyer: {
-    fullName: string
-    email: string
-    phone: string
-  }
-  shippingAddress: {
-    street: string
-    city: string
-    region: string
-    country: string
-    postalCode: string
-  }
-  product: {
-    name: string
-    category: string
-    subCategory: string
-    image: string
-    price: number
-  }
-  quantity: number
-  totalPrice: number
-  paymentStatus: "Paid" | "Pending" | "Failed"
-  orderStatus: "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed"
-  paymentOption: string
-  createdAt: string
-}
-
-
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Eye, ChevronDown, MapPin, User, Phone, Mail, Package, Calendar, CreditCard } from "lucide-react";
+import { getOrdersWithSession, Order } from "@/utils/getOrderApi";
+import { confirmOrderReceived } from "@/utils/orderApi";
+import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils";
+import { useNavigate } from "react-router-dom";
+import { RootState } from "@/redux/store";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.user.user);
+  const isAuthenticated = !!user;
+
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to view your orders.");
+      navigate("/selectpath");
+      return;
+    }
+
     const loadOrders = async () => {
       try {
         const data = await getOrdersWithSession();
         setOrders(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        setError(errorMessage);
+        // Axios interceptor in orderApi.ts handles toast for 401 errors
       } finally {
         setLoading(false);
       }
     };
     loadOrders();
-  }, []);
+  }, [navigate, isAuthenticated]);
 
-
-  const handleStatusChange = async (orderId: string, newStatus: Order["orderStatus"]) => {
+  const handleConfirmReceipt = async (orderId: string) => {
+    if (!isAuthenticated) {
+      toast.info("Please log in to confirm order receipt.");
+      navigate("/selectpath");
+      return;
+    }
+    setConfirmingOrderId(orderId);
     try {
-      if (newStatus === "Delivered") {
-        await confirmOrderReceived(orderId);
+      await confirmOrderReceived(orderId);
+      setOrders(
+        orders.map((order) =>
+          order.id === orderId ? { ...order, orderStatus: "Delivered" } : order
+        )
+      );
+      console.log(setOrders)
+      toast.success("Order receipt confirmed successfully!");
+    } catch (error: any) {
+      if (error.message === "order is not marked as delivered yet") {
+        toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
+      } else {
+        // Axios interceptor handles other errors
+        console.error("Confirm Receipt Error:", error.message, error.response?.data);
       }
-      setOrders(orders.map(order =>
-        order.id === orderId ? { ...order, orderStatus: newStatus } : order
-      ));
-    } catch (err) {
-      console.error("Failed to update status:", err);
-      setError("Failed to update order status");
+    } finally {
+      setConfirmingOrderId(null);
     }
   };
-
   const handleViewDetails = (orderId: string) => {
-    // Handle view details action
-    console.log(`Viewing details for order ${orderId}`)
+    navigate(`/orders/${orderId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50 md:p-6">
+        <div className="text-center">
+          <p className="text-lg text-gray-700">Loading orders...</p>
+        </div>
+      </div>
+    );
   }
 
-
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-lg text-gray-700">Loading orders...</p>
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4 md:p-6">
+        <div className="text-center text-red-500">
+          <p className="text-lg font-medium">{error}</p>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </Button>
+        </div>
       </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 flex items-center justify-center">
-      <div className="text-center text-red-500">
-        <p className="text-lg font-medium">{error}</p>
-        <Button
-          variant="outline"
-          className="mt-4"
-          onClick={() => window.location.reload()}
-        >
-          Retry
-        </Button>
-      </div>
-    </div>
-  );
-
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Management</h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Order Management</h1>
           <p className="text-gray-600">Manage and track all customer orders</p>
         </div>
 
         {/* Orders List */}
         <div className="space-y-4">
           {orders.map((order) => (
-            <Card key={order.id} className="bg-white shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+            <Card key={order.id} className="transition-shadow bg-white border border-gray-200 shadow-sm hover:shadow-md">
               <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-lg font-semibold text-gray-900">#{order.id}</span>
                     <Badge className={`${getStatusColor(order.orderStatus)} border`}>
@@ -128,37 +131,37 @@ export default function OrderList() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="w-4 h-4" />
                     {formatDate(order.createdAt)}
                   </div>
                 </div>
               </CardHeader>
 
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <User className="h-4 w-4" />
+                    <h3 className="flex items-center gap-2 font-semibold text-gray-900">
+                      <User className="w-4 h-4" />
                       Customer Details
                     </h3>
                     <div className="space-y-2 text-sm">
                       <p className="font-medium text-gray-900">{order.buyer.fullName}</p>
                       <div className="flex items-center gap-2 text-gray-600">
-                        <Mail className="h-3 w-3" />
+                        <Mail className="w-3 h-3" />
                         {order.buyer.email}
                       </div>
                       <div className="flex items-center gap-2 text-gray-600">
-                        <Phone className="h-3 w-3" />
+                        <Phone className="w-3 h-3" />
                         {order.buyer.phone}
                       </div>
                     </div>
 
                     <div className="pt-2">
-                      <h4 className="font-medium text-gray-900 flex items-center gap-2 mb-2">
-                        <MapPin className="h-4 w-4" />
+                      <h4 className="flex items-center gap-2 mb-2 font-medium text-gray-900">
+                        <MapPin className="w-4 h-4" />
                         Shipping Address
                       </h4>
-                      <div className="text-sm text-gray-600 leading-relaxed">
+                      <div className="text-sm leading-relaxed text-gray-600">
                         <p>{order.shippingAddress.street}</p>
                         <p>
                           {order.shippingAddress.city}, {order.shippingAddress.region}{" "}
@@ -170,8 +173,8 @@ export default function OrderList() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <Package className="h-4 w-4" />
+                    <h3 className="flex items-center gap-2 font-semibold text-gray-900">
+                      <Package className="w-4 h-4" />
                       Product Details
                     </h3>
                     <div className="flex gap-4">
@@ -181,11 +184,11 @@ export default function OrderList() {
                           alt={order.product.name}
                           width={80}
                           height={80}
-                          className="rounded-lg border border-gray-200 object-cover"
+                          className="object-cover border border-gray-200 rounded-lg"
                         />
                       </div>
                       <div className="flex-1 space-y-2">
-                        <h4 className="font-medium text-gray-900 leading-tight">{order.product.name}</h4>
+                        <h4 className="font-medium leading-tight text-gray-900">{order.product.name}</h4>
                         <div className="text-sm text-gray-600">
                           <p>
                             {order.product.category} → {order.product.subCategory}
@@ -194,7 +197,11 @@ export default function OrderList() {
                             Quantity: <span className="font-medium">{order.quantity}</span>
                           </p>
                           <p className="mt-1">
-                            Price: <span className="font-medium">₦{order.product.price.toFixed(2)}</span>
+                            Price: <span className="font-medium">
+                              {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
+                                order.product.price
+                              )}
+                            </span>
                           </p>
                         </div>
                       </div>
@@ -202,29 +209,33 @@ export default function OrderList() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      <CreditCard className="h-4 w-4" />
+                    <h3 className="flex items-center gap-2 font-semibold text-gray-900">
+                      <CreditCard className="w-4 h-4" />
                       Order Summary
                     </h3>
                     <div className="space-y-3">
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Total Amount:</span>
-                        <span className="text-lg font-bold text-gray-900">₦{order.totalPrice.toFixed(2)}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
+                            order.totalPrice
+                          )}
+                        </span>
                       </div>
-                      <div className="flex justify-between items-center">
+                      <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Payment Method:</span>
                         <span className="text-sm font-medium text-gray-900">{order.paymentOption}</span>
                       </div>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                    <div className="flex flex-col gap-2 pt-4 sm:flex-row">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewDetails(order.id)}
-                        className="flex items-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                        className="flex items-center gap-2 text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Eye className="w-4 h-4" />
                         View Details
                       </Button>
 
@@ -233,18 +244,30 @@ export default function OrderList() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-2 bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                            className="flex items-center gap-2 text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
+                            disabled={order.orderStatus === "Delivered" || order.orderStatus === "Cancelled"}
                           >
                             Change Status
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleStatusChange(order.id, "Delivered")}
-                            disabled={order.orderStatus === "Delivered"}
+                            onClick={() => handleConfirmReceipt(order.id)}
+                            disabled={
+                              confirmingOrderId === order.id ||
+                              order.orderStatus === "Delivered" ||
+                              order.orderStatus === "Cancelled"
+                            }
                           >
-                            Mark as Delivered
+                            {confirmingOrderId === order.id ? (
+                              <div className="w-4 h-4 border-b-2 border-gray-900 rounded-full animate-spin"></div>
+                            ) : order.orderStatus !== "Delivered" ? (
+                              "Waiting for Delivery"
+                            ) : (
+                              "Confirm Receipt"
+                            )}
+
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled>Processing</DropdownMenuItem>
                           <DropdownMenuItem disabled>Shipped</DropdownMenuItem>
@@ -259,17 +282,17 @@ export default function OrderList() {
           ))}
         </div>
 
-        {/* Empty State (if no orders) */}
+        {/* Empty State */}
         {orders.length === 0 && (
-          <Card className="bg-white shadow-sm border border-gray-200">
-            <CardContent className="text-center py-12">
-              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No orders found</h3>
+          <Card className="bg-white border border-gray-200 shadow-sm">
+            <CardContent className="py-12 text-center">
+              <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <h3 className="mb-2 text-lg font-semibold text-gray-900">No orders found</h3>
               <p className="text-gray-600">Orders will appear here when customers place them.</p>
             </CardContent>
           </Card>
         )}
       </div>
     </div>
-  )
+  );
 }

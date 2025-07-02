@@ -1,6 +1,5 @@
 // src/utils/session.ts
 import {
-  clearSessionId,
   initializeSession,
   setSessionId,
 } from "@/redux/slices/sessionSlice";
@@ -29,7 +28,6 @@ export const setSession = (sessionId: string): void => {
 
 // Optional: If you ever need to clear the sessionId (not used in your case)
 export const clearSession = (): string => {
-  store.dispatch(clearSessionId());
   store.dispatch(initializeSession()); // Generate a new sessionId after clearing
   const newSessionId = store.getState().session.sessionId;
   if (!newSessionId) {

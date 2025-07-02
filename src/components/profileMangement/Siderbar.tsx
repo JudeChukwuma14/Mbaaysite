@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HeartIcon,
@@ -82,7 +83,7 @@ const Siderbar: React.FC = () => {
     navigate("/signin");
   };
 
-  return (
+ return (
     <section className="sticky left-0 top-0 flex h-screen w-full flex-col justify-between p-6 pt-24 text-black bg-[#F3F4F6] max-sm:hidden lg:w-[264px]">
       <div className="flex flex-col gap-2">
         {sidebarLayout.map((item) => {
@@ -94,10 +95,8 @@ const Siderbar: React.FC = () => {
               {item.urlLink ? (
                 <NavLink
                   to={item.urlLink}
-                  className={`flex items-center p-3 gap-3  ${
-                    isActive
-                      ? " bg-orange-500 text-white"
-                      : "hover:bg-orange-300"
+                  className={`flex items-center p-3 gap-3 ${
+                    isActive ? "bg-orange-500 text-white" : "hover:bg-orange-300"
                   }`}
                   onClick={() => handleItemClick(item.label)}
                 >
@@ -105,43 +104,45 @@ const Siderbar: React.FC = () => {
                   <p className="font-semibold">{item.label}</p>
                 </NavLink>
               ) : (
-                <div
+                <motion.div
                   className={`flex items-center p-3 gap-3 cursor-pointer ${
-                    openDropdown === item.label
-                      ? " bg-orange-500 text-white"
-                      : "hover:bg-orange-300"
+                    openDropdown === item.label ? "bg-orange-500 text-white" : "hover:bg-orange-300"
                   }`}
                   onClick={() => toggleDropdown(item.label)}
+                  whileHover={{ scale: 1.02 }} // Subtle hover animation
+                  transition={{ duration: 0.2 }}
                 >
                   {item.icons}
                   <p className="font-semibold">{item.label}</p>
                   {hasChildren && (
                     <span className="ml-auto">
-                      {openDropdown === item.label ? (
-                        <ChevronUpIcon />
-                      ) : (
-                        <ChevronDownIcon />
-                      )}
+                      {openDropdown === item.label ? <ChevronUpIcon /> : <ChevronDownIcon />}
                     </span>
                   )}
-                </div>
+                </motion.div>
               )}
               {hasChildren && (
-                <div
-                  className={`pl-8 mt-2 space-y-2 overflow-hidden transition-all duration-300 ease-in-out ${
-                    openDropdown === item.label ? "max-h-96" : "max-h-0"
-                  }`}
-                >
-                  {item.children?.map((child) => (
-                    <NavLink
-                      key={child.title}
-                      to={child.link}
-                      className="flex items-center p-2 rounded-lg hover:bg-orange-300"
+                <AnimatePresence>
+                  {openDropdown === item.label && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="pl-8 mt-2 space-y-2 overflow-hidden"
                     >
-                      <p className="font-semibold">{child.title}</p>
-                    </NavLink>
-                  ))}
-                </div>
+                      {item.children?.map((child) => (
+                        <NavLink
+                          key={child.title}
+                          to={child.link}
+                          className="flex items-center p-2 rounded-lg hover:bg-orange-300"
+                        >
+                          <p className="font-semibold">{child.title}</p>
+                        </NavLink>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               )}
             </div>
           );

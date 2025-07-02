@@ -4,6 +4,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -20,7 +21,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { logout } from "@/redux/slices/userSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 
 // Define the interface for sidebar items
 interface SidebarItem {
@@ -74,6 +76,20 @@ const MobileNavbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  // Access user and vendor from Redux store
+  const { user } = useSelector((state: RootState) => state.user);
+  const { vendor } = useSelector((state: RootState) => state.vendor);
+
+  // Determine the display name and initials
+  const displayName = user?.name || vendor?.storeName || "";
+  const initials = displayName
+    ? displayName
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+    : "";
 
   const toggleDropdown = (label: string) => {
     setOpenDropdown((prev) => (prev === label ? null : label));
@@ -94,20 +110,41 @@ const MobileNavbar = () => {
     <section className="w-full max-w-[264px]">
       <Sheet>
         <SheetTrigger asChild>
-          <Menu size={40} className="text-orange-500" />
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Menu size={40} className="text-orange-500" />
+          </motion.div>
         </SheetTrigger>
         <SheetContent
           side="left"
           className="bg-[#F3F4F6] border-none gap-1 text-black"
         >
-          <Link to="/" className="z-10 flex items-center gap-1">
-            <img
-              src="https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
-              alt=""
-              width={60}
-              height={60}
-            />
-          </Link>
+          {/* Logo and Initials */}
+          <div className="flex items-center justify-between">
+            <Link to="/" className="z-10 flex items-center gap-1">
+              <img
+                src="https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
+                alt=""
+                width={60}
+                height={60}
+              />
+            </Link>
+            {initials && (
+              <motion.div
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="flex items-center justify-center w-10 h-10 text-sm font-semibold text-white bg-orange-500 rounded-full"
+                title={displayName}
+              >
+                {initials}
+              </motion.div>
+            )}
+          </div>
+
           <div className="flex h-[calc(100vh-72px)] flex-col justify-between overflow-y-auto pt-10">
             <div>
               <div className="flex flex-col flex-1 gap-2">
@@ -121,27 +158,25 @@ const MobileNavbar = () => {
                         <SheetClose asChild>
                           <NavLink
                             to={item.urlLink}
-                            className={`flex items-center p-3 gap-4 ${
-                              isActive
+                            className={`flex items-center p-3 gap-4 ${isActive
                                 ? "bg-orange-500 text-white"
                                 : "hover:bg-orange-300"
-                            }`}
+                              }`}
                             onClick={() => handleItemClick(item.label)}
                           >
                             {item.icons}
-                            <p className="text-sm font-semibold">
-                              {item.label}
-                            </p>
+                            <p className="text-sm font-semibold">{item.label}</p>
                           </NavLink>
                         </SheetClose>
                       ) : (
-                        <div
-                          className={`flex items-center p-3 gap-4 cursor-pointer ${
-                            openDropdown === item.label
+                        <motion.div
+                          className={`flex items-center p-3 gap-4 cursor-pointer ${openDropdown === item.label
                               ? "bg-orange-500 text-white"
                               : "hover:bg-orange-300"
-                          }`}
+                            }`}
                           onClick={() => toggleDropdown(item.label)}
+                          whileHover={{ scale: 1.02 }}
+                          transition={{ duration: 0.2 }}
                         >
                           {item.icons}
                           <p className="text-sm font-semibold">{item.label}</p>
@@ -154,30 +189,34 @@ const MobileNavbar = () => {
                               )}
                             </span>
                           )}
-                        </div>
+                        </motion.div>
                       )}
 
                       {hasChildren && (
-                        <div
-                          className={`pl-8 mt-2 space-y-2 overflow-hidden transition-all duration-300 ease-in-out ${
-                            openDropdown === item.label
-                              ? "max-h-[500px]"
-                              : "max-h-0"
-                          }`}
-                        >
-                          {item.children?.map((child) => (
-                            <SheetClose asChild key={child.title}>
-                              <NavLink
-                                to={child.link}
-                                className="flex items-center p-2 hover:bg-orange-300"
-                              >
-                                <p className="text-sm font-semibold">
-                                  {child.title}
-                                </p>
-                              </NavLink>
-                            </SheetClose>
-                          ))}
-                        </div>
+                        <AnimatePresence>
+                          {openDropdown === item.label && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.3, ease: "easeInOut" }}
+                              className="pl-8 mt-2 space-y-2 overflow-hidden"
+                            >
+                              {item.children?.map((child) => (
+                                <SheetClose asChild key={child.title}>
+                                  <NavLink
+                                    to={child.link}
+                                    className="flex items-center p-2 hover:bg-orange-300"
+                                  >
+                                    <p className="text-sm font-semibold">
+                                      {child.title}
+                                    </p>
+                                  </NavLink>
+                                </SheetClose>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       )}
                     </div>
                   );
@@ -200,5 +239,8 @@ const MobileNavbar = () => {
     </section>
   );
 };
+
+
+
 
 export default MobileNavbar;

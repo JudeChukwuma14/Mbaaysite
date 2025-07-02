@@ -117,16 +117,6 @@ export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
   }
 };
 
-// Only available status update is confirming order received
-export const confirmOrderReceived = async (orderId: string): Promise<void> => {
-
-  try {
-    await api.patch(`/confirmOrderReceived/${orderId}`);
-  } catch (error: any) {
-    console.error("Confirm order error:", error);
-    throw error.message || "Failed to confirm order";
-  }
-};
 
 export const getOrdersWithSession = async (): Promise<Order[]> => {
   let sessionId = store.getState().session.sessionId;

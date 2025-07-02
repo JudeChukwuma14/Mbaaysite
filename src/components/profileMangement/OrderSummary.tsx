@@ -3,7 +3,6 @@ import React from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 import { calculatePricing } from "@/utils/pricingUtils";
 import ImageWithFallback from "../Reuseable/ImageWithFallback";
 
@@ -17,17 +16,11 @@ interface OrderSummaryProps {
 
 const OrderSummary: React.FC<OrderSummaryProps> = ({
   couponCode,
-  setCouponCode,
-  couponApplied,
-  couponLoading,
-  handleApplyCoupon,
 }) => {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const discount = useSelector((state: RootState) => state.cart.discount);
-  console.log("OrderSummary cartItems:", cartItems);
-  console.log("OrderSummary discount:", discount);
   const pricing = calculatePricing(cartItems, discount);
-  console.log("OrderSummary pricing:", pricing);
+
 
   // Validate pricing to prevent NaN display
   const isValidPricing = Object.values(pricing).every(
@@ -87,7 +80,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             })}
           </ul>
           <div className="pt-4 border-t border-gray-200">
-            <div className="flex items-center mb-4">
+            {/* <div className="flex items-center mb-4">
               <input
                 type="text"
                 value={couponCode}
@@ -111,7 +104,7 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
                   "Apply"
                 )}
               </button>
-            </div>
+            </div> */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>

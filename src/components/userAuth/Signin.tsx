@@ -8,9 +8,13 @@ import "react-toastify/dist/ReactToastify.css";
 import Sliding from "../Reuseable/Sliding";
 import { Link, useNavigate } from "react-router-dom";
 import { setUser } from "@/redux/slices/userSlice";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { LoginUser } from "@/utils/api";
 import { motion } from "framer-motion";
+import store, { RootState } from "@/redux/store";
+import { initializeSession } from "@/redux/slices/sessionSlice";
+import { getCart, updateCartQuantity } from "@/utils/cartApi";
+import { setCartItems } from "@/redux/slices/cartSlice";
 
 interface FormData {
   emailOrPhone: string;
@@ -22,20 +26,76 @@ const Signin: React.FC = () => {
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  // const onSubmit: SubmitHandler<FormData> = async (data) => {
+  //   setIsLoading(true);
+  //   try {
+  //     const response = await LoginUser(data);
+  //     if (response.user && response.token) {
+  //       dispatch(setUser({ user: response.user, token: response.token }));
+  //     localStorage.setItem("accountType", "user");
+  //       toast.success(response.message || "Login successful");
+  //       navigate("/");
+  //     } else {
+  //       throw new Error("Invalid response format from server");
+  //     }
+  //   } catch (err) {
+  //     toast.error((err as Error)?.message || String(err), {
+  //       position: "top-right",
+  //       autoClose: 4000,
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+    const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
+      // Ensure sessionId exists
+      if (!sessionId) {
+        dispatch(initializeSession());
+      }
+
       const response = await LoginUser(data);
       if (response.user && response.token) {
         dispatch(setUser({ user: response.user, token: response.token }));
-      localStorage.setItem("accountType", "user");
+        localStorage.setItem("accountType", "user");
+
+        // Merge guest cart with authenticated user's cart
+        const currentSessionId = store.getState().session.sessionId;
+        try {
+          if (currentSessionId) {
+            const guestCart = await getCart(currentSessionId);
+            if (guestCart && Array.isArray(guestCart)) {
+              await Promise.all(
+                guestCart.map((item: any) =>
+                  updateCartQuantity(currentSessionId, item.product._id, item.quantity)
+                )
+              );
+              const updatedCart = await getCart(currentSessionId);
+              const mappedItems = updatedCart.map((item: any) => ({
+                id: item.product._id,
+                name: item.product.name,
+                price: item.product.price,
+                quantity: item.quantity,
+                image: item.product.images[0] || "/placeholder.jpg",
+              }));
+              dispatch(setCartItems(mappedItems));
+            }
+          } else {
+            console.warn("Session ID is null, skipping cart merge.");
+          }
+        } catch (error) {
+          console.error("Failed to merge cart:", error);
+        }
+
         toast.success(response.message || "Login successful");
         navigate("/");
       } else {
@@ -50,7 +110,6 @@ const Signin: React.FC = () => {
       setIsLoading(false);
     }
   };
-
   const bg = {
     backgroundImage: `url(${background})`,
   };

@@ -1,4 +1,5 @@
 // src/utils/orderApi.ts
+import store from "@/redux/store";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -107,5 +108,28 @@ export const getPaymentStatus = async (
     throw new Error(
       error.response?.data?.message || "Failed to verify payment"
     );
+  }
+};
+
+
+// src/utils/orderApi.ts
+export const confirmOrderReceived = async (orderId: string): Promise<boolean> => {
+  try {
+    const token = store.getState().user.token || store.getState().vendor.token;
+    if (!token) {
+      throw new Error("Authentication token is missing. Please log in again.");
+    }
+    console.log("Sending PATCH to:", `/confirmOrderReceived/${orderId}`, "with token:", token);
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log("Confirm Order Response:", response.data);
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to confirm order receipt");
+    }
+    return true;
+  } catch (error: any) {
+    console.error("Confirm Order Error:", error.message, error.response?.data);
+    throw error; // Let interceptor handle error messaging
   }
 };

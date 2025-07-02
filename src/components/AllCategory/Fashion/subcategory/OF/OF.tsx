@@ -30,11 +30,9 @@ interface Subcategory {
 
 // Static subcategories
 const SUBCATEGORIES: Subcategory[] = [
-    { image: "https://i.pinimg.com/736x/8f/20/f5/8f20f52d7c9b03c50c1f75e0f671acf0.jpg", text: "Paintings", link: "/paintings" },
-    { image: "https://i.pinimg.com/736x/6f/46/86/6f4686892acc50bcb9561349090bd231.jpg", text: "Wall Art", link: "/wall-art" },
-    { image: "https://i.pinimg.com/736x/ee/2c/a8/ee2ca86391336c0998fc5125a8131f61.jpg", text: "Sculptures", link: "/sculptures" },
-    { image: "https://i.pinimg.com/736x/ff/0c/a2/ff0ca23d33281f4da1cccc4a87ae53dc.jpg", text: "Traditional Designs", link: "/traditional-craft" },
-    { image: "https://i.pinimg.com/736x/d3/aa/74/d3aa74015ecae82fc958a12fd4d414e6.jpg", text: "Religious & Cultural Art", link: "/traditional-artifacts" },
+    { image: "https://i.pinimg.com/736x/d7/5d/63/d75d63815c0c5f18bc0c76792e0744a2.jpg", text: "Wedding Footwear", link: "/wedding-footwear" },
+    { image: "https://i.pinimg.com/736x/49/88/8c/49888cfb3b6e420a877a002f95c767f1.jpg", text: "Festival & Ceremony Footwear", link: "/festival-ceremony" },
+    { image: "https://i.pinimg.com/736x/61/60/1d/61601d08f7bf9160ad8977dde9f715a6.jpg", text: "Casual Ethnic Footwear", link: "/casual-ethnic" },
 ];
 
 // Animation variants for containers
@@ -93,7 +91,7 @@ const EmptyState: React.FC = () => (
     >
         <FaRegSadTear className="mb-4 text-5xl text-gray-300" aria-hidden="true" />
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">
-            No Artifact Products Found
+            No Cultural Footwear for Specific Occasions Products Found
         </h2>
         <p className="max-w-md mb-6 text-gray-600">
             No products are available in this category. Browse our shop to find your favorite products!
@@ -131,7 +129,7 @@ const SubcategoryCard: React.FC<Subcategory> = ({ image, link, text }) => (
     </motion.div>
 );
 
-const FC: React.FC = () => {
+const OF: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -142,19 +140,23 @@ const FC: React.FC = () => {
             try {
                 setIsLoading(true);
                 const result = await getAllProduct();
-                const allProducts = Array.isArray(result)
-                    ? result
-                    : result.products || [];
+                console.log(result)
+                const allProducts = Array.isArray(result) ? result : result.products || [];
 
                 const filtered = allProducts.filter(
                     (product: Product) =>
-                        product.category?.toLowerCase() === "artifacts"
+                        product.category?.toLowerCase() === "fashion clothing and fabrics" &&
+                        product.sub_category?.toLowerCase() === "cultural footwear for specific occasions"
                 );
 
                 setProducts(filtered);
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error fetching products:", err);
-                setError("Failed to fetch artifacts. Please try again later.");
+                const errorMessage =
+                    err.message.includes("Network")
+                        ? "Network error. Please check your connection and try again."
+                        : "Failed to fetch products. Please try again later.";
+                setError(errorMessage);
             } finally {
                 setIsLoading(false);
             }
@@ -169,9 +171,10 @@ const FC: React.FC = () => {
             products
                 .sort(
                     (a, b) =>
-                        new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
+                        new Date(b.createdAt || "").getTime() -
+                        new Date(a.createdAt || "").getTime()
                 )
-                .slice(0, 10), // Limit to 10 products for 2 rows on xl screens
+                .slice(0, 10),
         [products]
     );
 
@@ -202,7 +205,7 @@ const FC: React.FC = () => {
                         Home
                     </Link>
                     <FaChevronRight className="text-xs" aria-hidden="true" />
-                    <span className="font-medium text-gray-800">Artifacts</span>
+                    <span className="font-medium text-gray-800">Cultural Footwear for Specific Occasions</span>
                 </motion.nav>
 
                 {/* Subcategories */}
@@ -265,4 +268,4 @@ const FC: React.FC = () => {
     );
 };
 
-export default FC;
+export default OF;
