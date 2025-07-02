@@ -37,7 +37,6 @@ export default function CreatePostModal({
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [location, setLocation] = useState("");
   const [communityId, setCommunityId] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -222,10 +221,6 @@ export default function CreatePostModal({
         uniqueTagTypes.length === 1 ? uniqueTagTypes[0] : "vendors";
       formData.append("tagType", tagType);
 
-      if (location) {
-        formData.append("location", location);
-      }
-
       if (communityId) {
         formData.append("communityId", communityId);
       }
@@ -254,7 +249,6 @@ export default function CreatePostModal({
       setImages([]);
       setImagesPreviews([]);
       setTaggedUsers([]);
-      setLocation("");
       setCommunityId("");
       onClose();
     } catch (error) {

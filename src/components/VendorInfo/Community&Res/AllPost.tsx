@@ -20,6 +20,7 @@ import { GoReply } from "react-icons/go";
 import { toast } from "react-toastify";
 import loading from "../../../assets/loading.gif";
 import { CiHeart } from "react-icons/ci";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,6 +36,11 @@ export default function SocialFeed() {
     Record<string, boolean>
   >({});
   const [replyText, setReplyText] = useState<Record<string, string>>({});
+
+  // New state for image gallery
+  const [showImageGallery, setShowImageGallery] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
 
   const user = useSelector((state: any) => state.vendor);
 
@@ -165,7 +171,6 @@ export default function SocialFeed() {
         ...prev,
         [variables.commentId]: false,
       }));
-
       // Background refresh using refetchQueries instead of invalidateQueries
       await Promise.all([
         queryClient.refetchQueries({ queryKey: ["comm_posts"] }),
@@ -310,6 +315,154 @@ export default function SocialFeed() {
     );
   };
 
+  // Function to open image gallery
+  const openImageGallery = (images: string[], startIndex = 0) => {
+    setGalleryImages(images);
+    setCurrentImageIndex(startIndex);
+    setShowImageGallery(true);
+  };
+
+  // Function to close image gallery
+  const closeImageGallery = () => {
+    setShowImageGallery(false);
+    setGalleryImages([]);
+    setCurrentImageIndex(0);
+  };
+
+  // Function to navigate to next image
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  // Function to navigate to previous image
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prev) => (prev - 1 + galleryImages.length) % galleryImages.length
+    );
+  };
+
+  // Function to render images based on count
+  const renderImages = (images: string[]) => {
+    if (!images || images.length === 0) return null;
+
+    const imageCount = images.length;
+
+    if (imageCount === 1) {
+      return (
+        <div className="w-full h-[300px] mb-4">
+          <img
+            src={images[0] || "/placeholder.svg"}
+            alt="Post image"
+            className="object-cover w-full h-full rounded-lg cursor-pointer"
+            onClick={() => openImageGallery(images, 0)}
+          />
+        </div>
+      );
+    }
+
+    if (imageCount === 2) {
+      return (
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {images.map((image, index) => (
+            <div key={index} className="h-[200px]">
+              <img
+                src={image || "/placeholder.svg"}
+                alt={`Post image ${index + 1}`}
+                className="object-cover w-full h-full rounded-lg cursor-pointer"
+                onClick={() => openImageGallery(images, index)}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (imageCount === 3) {
+      return (
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="h-[250px]">
+            <img
+              src={images[0] || "/placeholder.svg"}
+              alt="Post image 1"
+              className="object-cover w-full h-full rounded-lg cursor-pointer"
+              onClick={() => openImageGallery(images, 0)}
+            />
+          </div>
+          <div className="grid grid-rows-2 gap-2">
+            {images.slice(1, 3).map((image, index) => (
+              <div key={index + 1} className="h-[120px]">
+                <img
+                  src={image || "/placeholder.svg"}
+                  alt={`Post image ${index + 2}`}
+                  className="object-cover w-full h-full rounded-lg cursor-pointer"
+                  onClick={() => openImageGallery(images, index + 1)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (imageCount === 4) {
+      return (
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {images.map((image, index) => (
+            <div key={index} className="h-[150px]">
+              <img
+                src={image || "/placeholder.svg"}
+                alt={`Post image ${index + 1}`}
+                className="object-cover w-full h-full rounded-lg cursor-pointer"
+                onClick={() => openImageGallery(images, index)}
+              />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // For 5 or more images
+    if (imageCount >= 5) {
+      return (
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {images.slice(0, 3).map((image, index) => (
+            <div
+              key={index}
+              className={`h-[150px] ${
+                index === 0 ? "row-span-2 h-[310px]" : ""
+              }`}
+            >
+              <img
+                src={image || "/placeholder.svg"}
+                alt={`Post image ${index + 1}`}
+                className="object-cover w-full h-full rounded-lg cursor-pointer"
+                onClick={() => openImageGallery(images, index)}
+              />
+            </div>
+          ))}
+          <div className="relative h-[150px]">
+            <img
+              src={images[3] || "/placeholder.svg"}
+              alt="Post image 4"
+              className="object-cover w-full h-full rounded-lg cursor-pointer"
+              onClick={() => openImageGallery(images, 3)}
+            />
+            <div
+              className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg cursor-pointer"
+              onClick={() => openImageGallery(images, 3)}
+            >
+              <span className="text-white text-2xl font-bold">
+                +{imageCount - 4}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr_280px] gap-6 p-4 h-screen">
@@ -388,15 +541,9 @@ export default function SocialFeed() {
                     post.tags.length > 0 &&
                     renderTags(post.tags, post.tagType || "vendors")}
 
-                  {post?.posts_Images?.length > 0 ? (
-                    <div className="w-full h-[200px] object-cover border mb-4">
-                      <img
-                        src={post?.posts_Images[0] || "/placeholder.svg"}
-                        alt="image"
-                        className="object-cover w-full h-full border rounded-lg"
-                      />
-                    </div>
-                  ) : null}
+                  {/* Display Images */}
+                  {post?.posts_Images?.length > 0 &&
+                    renderImages(post.posts_Images)}
 
                   <div className="flex items-center gap-4 text-sm text-gray-500">
                     <motion.button
@@ -874,6 +1021,81 @@ export default function SocialFeed() {
           />
         </div>
       </div>
+
+      {/* Image Gallery Modal */}
+      <AnimatePresence>
+        {showImageGallery && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
+            onClick={closeImageGallery}
+          >
+            <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center p-4">
+              {/* Close Button */}
+              <motion.button
+                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                onClick={closeImageGallery}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <X size={32} />
+              </motion.button>
+
+              {/* Previous Button */}
+              {galleryImages.length > 1 && (
+                <motion.button
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ChevronLeft size={48} />
+                </motion.button>
+              )}
+
+              {/* Next Button */}
+              {galleryImages.length > 1 && (
+                <motion.button
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <ChevronRight size={48} />
+                </motion.button>
+              )}
+
+              {/* Current Image */}
+              <motion.img
+                key={currentImageIndex}
+                src={galleryImages[currentImageIndex] || "/placeholder.svg"}
+                alt={`Gallery image ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                onClick={(e) => e.stopPropagation()}
+              />
+
+              {/* Image Counter */}
+              {galleryImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full">
+                  {currentImageIndex + 1} / {galleryImages.length}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
