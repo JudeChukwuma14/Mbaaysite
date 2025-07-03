@@ -21,11 +21,11 @@ interface OrderPricing {
 }
 
 export interface OrderData {
-  id?:string
+  id?: string;
   first_name: string;
   last_name: string;
   email: string;
-  phone: string;  
+  phone: string;
   address: string;
   country: string;
   apartment: string;
@@ -57,7 +57,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -76,7 +75,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
 
 export const submitOrder = async (
   sessionId: string,
@@ -111,25 +109,34 @@ export const getPaymentStatus = async (
   }
 };
 
-
-// src/utils/orderApi.ts
-export const confirmOrderReceived = async (orderId: string): Promise<boolean> => {
+export const confirmOrderReceived = async (
+  orderId: string
+): Promise<boolean> => {
   try {
     const token = store.getState().user.token || store.getState().vendor.token;
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-    console.log("Sending PATCH to:", `/confirmOrderReceived/${orderId}`, "with token:", token);
-    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
+    console.log("Confirm Order Request:", {
+      url: `/confirmOrderReceived/${orderId}`,
+      token: token.slice(0, 10) + "...",
     });
+    const response = await api.patch(
+      `/confirmOrderReceived/${orderId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     console.log("Confirm Order Response:", response.data);
     if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to confirm order receipt");
+      throw new Error(
+        response.data.message || "Failed to confirm order receipt"
+      );
     }
     return true;
   } catch (error: any) {
     console.error("Confirm Order Error:", error.message, error.response?.data);
-    throw error; // Let interceptor handle error messaging
+    throw error;
   }
 };

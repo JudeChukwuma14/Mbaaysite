@@ -1,4 +1,3 @@
-// src/services/orderApi.ts
 import axios from "axios";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import store from "@/redux/store";
@@ -53,15 +52,27 @@ interface ApiResponse {
 }
 
 export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
-    if (!sessionId) {
+  if (!sessionId) {
     throw new Error("Session ID is missing. Please try again.");
   }
 
   try {
+    const state = store.getState();
+    const token = state.user?.token || state.vendor?.token;
+    console.log("Fetch Orders Request:", {
+      url: "/get_orders_user",
+      sessionId,
+      token: token ? token.slice(0, 10) + "..." : "undefined",
+    });
+    if (!token) {
+      throw new Error("Authentication token is missing. Please log in again.");
+    }
     const response = await api.get<ApiResponse>("/get_orders_user", {
       params: { sessionId },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
+    console.log("Fetch Orders Response:", response.data);
     if (!response.data.success || !Array.isArray(response.data.orders)) {
       throw new Error(response.data.message || "Failed to fetch orders");
     }
@@ -112,16 +123,14 @@ export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
       })
     );
   } catch (error: any) {
-    console.error("Fetch orders error:", error);
-    throw error.message || "Failed to fetch orders";
+    console.error("Fetch Orders Error:", error.message, error.response?.data);
+    throw new Error(error.response?.data?.message || error.message || "Failed to fetch orders");
   }
 };
-
 
 export const getOrdersWithSession = async (): Promise<Order[]> => {
   let sessionId = store.getState().session.sessionId;
   if (!sessionId) {
-    // Initialize session if missing
     store.dispatch(initializeSession());
     sessionId = store.getState().session.sessionId;
 

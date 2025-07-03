@@ -13,7 +13,7 @@ import { getOrdersWithSession, Order } from "@/utils/getOrderApi";
 import { confirmOrderReceived } from "@/utils/orderApi";
 import { formatDate, getPaymentStatusColor, getStatusColor } from "@/utils/orderUtils";
 import { useNavigate } from "react-router-dom";
-import { RootState } from "@/redux/store";
+import store, { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
@@ -33,14 +33,27 @@ export default function OrderList() {
       return;
     }
 
+
+
     const loadOrders = async () => {
       try {
+        const state = store.getState();
+        console.log("Redux State on Load Orders:", {
+          userToken: state.user?.token ? state.user.token.slice(0, 10) + "..." : "undefined",
+          vendorToken: state.vendor?.token ? state.vendor.token.slice(0, 10) + "..." : "undefined",
+          sessionId: state.session?.sessionId || "undefined",
+        });
         const data = await getOrdersWithSession();
+        console.log("Loaded Orders:", data);
         setOrders(data);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : String(err);
+      } catch (err: any) {
+        const errorMessage = err.message || String(err);
         setError(errorMessage);
-        // Axios interceptor in orderApi.ts handles toast for 401 errors
+        if (err.message === "Authentication token is missing. Please log in again." ||
+          err.message.includes("Access denied. No token provided")) {
+          toast.error("Session expired. Please log in again.");
+          navigate("/selectpath");
+        }
       } finally {
         setLoading(false);
       }
@@ -59,16 +72,17 @@ export default function OrderList() {
       await confirmOrderReceived(orderId);
       setOrders(
         orders.map((order) =>
-          order.id === orderId ? { ...order, orderStatus: "Delivered" } : order
+          order.id === orderId ? { ...order, orderStatus: "Completed" } : order
         )
       );
-      console.log(setOrders)
       toast.success("Order receipt confirmed successfully!");
     } catch (error: any) {
       if (error.message === "order is not marked as delivered yet") {
         toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
+      } else if (error.message.includes("Access denied. No token provided")) {
+        toast.error("Session expired. Please log in again.");
+        navigate("/selectpath");
       } else {
-        // Axios interceptor handles other errors
         console.error("Confirm Receipt Error:", error.message, error.response?.data);
       }
     } finally {
@@ -109,13 +123,11 @@ export default function OrderList() {
   return (
     <div className="min-h-screen p-4 md:p-6">
       <div className="mx-auto max-w-7xl">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">Order Management</h1>
           <p className="text-gray-600">Manage and track all customer orders</p>
         </div>
 
-        {/* Orders List */}
         <div className="space-y-4">
           {orders.map((order) => (
             <Card key={order.id} className="transition-shadow bg-white border border-gray-200 shadow-sm hover:shadow-md">
@@ -213,6 +225,11 @@ export default function OrderList() {
                       <CreditCard className="w-4 h-4" />
                       Order Summary
                     </h3>
+                    {order.orderStatus !== "Delivered" && (
+                      <p className="text-sm text-gray-600">
+                        This order must be marked as Delivered by the vendor before you can confirm receipt.
+                      </p>
+                    )}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-gray-600">Total Amount:</span>
@@ -245,7 +262,7 @@ export default function OrderList() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-2 text-gray-700 bg-white border-gray-300 hover:bg-gray-50"
-                            disabled={order.orderStatus === "Delivered" || order.orderStatus === "Cancelled"}
+                            disabled={order.orderStatus === "Cancelled" || order.orderStatus === "Delivered"}
                           >
                             Change Status
                             <ChevronDown className="w-4 h-4" />
@@ -256,8 +273,7 @@ export default function OrderList() {
                             onClick={() => handleConfirmReceipt(order.id)}
                             disabled={
                               confirmingOrderId === order.id ||
-                              order.orderStatus === "Delivered" ||
-                              order.orderStatus === "Cancelled"
+                              order.orderStatus !== "Delivered"
                             }
                           >
                             {confirmingOrderId === order.id ? (
@@ -267,7 +283,6 @@ export default function OrderList() {
                             ) : (
                               "Confirm Receipt"
                             )}
-
                           </DropdownMenuItem>
                           <DropdownMenuItem disabled>Processing</DropdownMenuItem>
                           <DropdownMenuItem disabled>Shipped</DropdownMenuItem>
@@ -282,7 +297,6 @@ export default function OrderList() {
           ))}
         </div>
 
-        {/* Empty State */}
         {orders.length === 0 && (
           <Card className="bg-white border border-gray-200 shadow-sm">
             <CardContent className="py-12 text-center">
