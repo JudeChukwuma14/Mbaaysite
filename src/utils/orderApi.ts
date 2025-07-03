@@ -81,8 +81,36 @@ export const submitOrder = async (
   orderData: OrderData
 ): Promise<CheckoutResponse> => {
   try {
-    const response = await api.post(`/order_checkout/${sessionId}`, orderData);
-    return response.data.data || response.data; // Handle nested data
+    const state = store.getState();
+    const token = state.user?.token || state.vendor?.token;
+    const userId = state.user?.user?.id || state.vendor?.vendor?.id;
+    console.log("Submit Order Redux State:", {
+      userId: userId || "undefined",
+      userToken: token ? token.slice(0, 10) + "..." : "undefined",
+      vendorToken: state.vendor?.token
+        ? state.vendor.token.slice(0, 10) + "..."
+        : "undefined",
+    });
+    if (!token) {
+      throw new Error("Authentication token is missing. Please log in again.");
+    }
+    if (!userId) {
+      throw new Error("User ID is missing. Please log in again.");
+    }
+    console.log("Submit Order Request:", {
+      url: `/order_checkout/${sessionId}`,
+      token: token.slice(0, 10) + "...",
+      userId,
+    });
+    const response = await api.post(
+      `/order_checkout/${sessionId}`,
+      { ...orderData, userId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    console.log("Submit Order Response:", response.data);
+    return response.data.data || response.data;
   } catch (error: any) {
     console.error(
       "Order Submission Error:",

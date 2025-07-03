@@ -1,5 +1,4 @@
 import axios from "axios";
-import { initializeSession } from "@/redux/slices/sessionSlice";
 import store from "@/redux/store";
 
 const api = axios.create({
@@ -51,24 +50,31 @@ interface ApiResponse {
   orders: any[];
 }
 
-export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
-  if (!sessionId) {
-    throw new Error("Session ID is missing. Please try again.");
-  }
-
+export const fetchOrders = async (): Promise<Order[]> => {
   try {
     const state = store.getState();
     const token = state.user?.token || state.vendor?.token;
-    console.log("Fetch Orders Request:", {
-      url: "/get_orders_user",
-      sessionId,
-      token: token ? token.slice(0, 10) + "..." : "undefined",
+    const userId = state.user?.user?.id || state.vendor?.vendor?.id; // Access userId from user.user.id or vendor.vendor.id
+    console.log("Fetch Orders Redux State:", {
+      userId: userId || "undefined",
+      userToken: token ? token.slice(0, 10) + "..." : "undefined",
+      vendorToken: state.vendor?.token
+        ? state.vendor.token.slice(0, 10) + "..."
+        : "undefined",
     });
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
+    if (!userId) {
+      throw new Error("User ID is missing. Please log in again.");
+    }
+    console.log("Fetch Orders Request:", {
+      url: "/get_orders_user",
+      params: { userId },
+      token: token.slice(0, 10) + "...",
+    });
     const response = await api.get<ApiResponse>("/get_orders_user", {
-      params: { sessionId },
+      params: { userId },
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -124,19 +130,12 @@ export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
     );
   } catch (error: any) {
     console.error("Fetch Orders Error:", error.message, error.response?.data);
-    throw new Error(error.response?.data?.message || error.message || "Failed to fetch orders");
+    throw new Error(
+      error.response?.data?.message || error.message || "Failed to fetch orders"
+    );
   }
 };
 
 export const getOrdersWithSession = async (): Promise<Order[]> => {
-  let sessionId = store.getState().session.sessionId;
-  if (!sessionId) {
-    store.dispatch(initializeSession());
-    sessionId = store.getState().session.sessionId;
-
-    if (!sessionId) {
-      throw new Error("Failed to initialize session ID");
-    }
-  }
-  return fetchOrders(sessionId);
+  return fetchOrders();
 };

@@ -33,15 +33,13 @@ export default function OrderList() {
       return;
     }
 
-
-
     const loadOrders = async () => {
       try {
         const state = store.getState();
         console.log("Redux State on Load Orders:", {
+          userId: state.user?.user?.id || state.vendor?.vendor?.id || "undefined",
           userToken: state.user?.token ? state.user.token.slice(0, 10) + "..." : "undefined",
           vendorToken: state.vendor?.token ? state.vendor.token.slice(0, 10) + "..." : "undefined",
-          sessionId: state.session?.sessionId || "undefined",
         });
         const data = await getOrdersWithSession();
         console.log("Loaded Orders:", data);
@@ -49,8 +47,11 @@ export default function OrderList() {
       } catch (err: any) {
         const errorMessage = err.message || String(err);
         setError(errorMessage);
-        if (err.message === "Authentication token is missing. Please log in again." ||
-          err.message.includes("Access denied. No token provided")) {
+        if (
+          err.message === "Authentication token is missing. Please log in again." ||
+          err.message.includes("Access denied. No token provided") ||
+          err.message.includes("User ID is required")
+        ) {
           toast.error("Session expired. Please log in again.");
           navigate("/selectpath");
         }
@@ -79,7 +80,10 @@ export default function OrderList() {
     } catch (error: any) {
       if (error.message === "order is not marked as delivered yet") {
         toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
-      } else if (error.message.includes("Access denied. No token provided")) {
+      } else if (
+        error.message.includes("Access denied. No token provided") ||
+        error.message.includes("User ID is required")
+      ) {
         toast.error("Session expired. Please log in again.");
         navigate("/selectpath");
       } else {
@@ -89,6 +93,7 @@ export default function OrderList() {
       setConfirmingOrderId(null);
     }
   };
+
   const handleViewDetails = (orderId: string) => {
     navigate(`/orders/${orderId}`);
   };
