@@ -4,7 +4,6 @@ import logo from "@/assets/image/MBLogo.png";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI, get_single_vendor } from "@/utils/vendorApi";
 import { Link, NavLink, useNavigate } from "react-router-dom";

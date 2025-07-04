@@ -27,19 +27,19 @@ const Gallery: React.FC = () => {
 
   return (
     <div className={`${darkMode ? 'dark' : ''} min-h-screen bg-gray-100 dark:bg-red-700`}> {/* Dark mode classes */}
-      <header className="p-4 flex justify-between items-center bg-gray-200 dark:bg-gray-800">
+      <header className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800">
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Art Gallery</h1>
         <button
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 dark:hover:bg-blue-700"
+          className="px-4 py-2 text-white bg-blue-500 rounded hover:bg-blue-600 dark:hover:bg-blue-700"
           onClick={toggleDarkMode}
         >
           {darkMode ? 'Light Mode' : 'Dark Mode'}
         </button>
       </header>
 
-      <main className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <main className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {images.map((image) => (
-          <div key={image.id} className="border border-gray-300 dark:border-gray-700 rounded overflow-hidden">
+          <div key={image.id} className="overflow-hidden border border-gray-300 rounded dark:border-gray-700">
             <img
               src={image.src}
               alt={image.alt}
@@ -49,11 +49,11 @@ const Gallery: React.FC = () => {
         ))}
       </main>
 
-      <footer className="p-4 flex justify-between items-center bg-gray-200 dark:bg-gray-800">
-        <button className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+      <footer className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800">
+        <button className="px-4 py-2 text-white bg-gray-400 rounded hover:bg-gray-500">
           Previous
         </button>
-        <button className="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500">
+        <button className="px-4 py-2 text-white bg-gray-400 rounded hover:bg-gray-500">
           Next
         </button>
       </footer>
