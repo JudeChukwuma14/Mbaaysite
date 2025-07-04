@@ -46,7 +46,6 @@ orderApi.interceptors.response.use(
 
 export interface Orders {
   _id: string;
-  // orderId: string;
   orderDate: string;
   buyerInfo: {
     first_name: string;

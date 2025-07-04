@@ -1,9 +1,13 @@
+"use client";
+
 import type React from "react";
 import MbaayReturnPolicy from "../../../assets/policies/MbaayReturnPolicy.pdf";
 import { motion } from "framer-motion";
 import { IoMdClose } from "react-icons/io";
-import { FiDownload } from "react-icons/fi";
+import { FiDownload, FiCheck } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 interface ReturnPolicyPopupProps {
   showReturnPolicyPopup: boolean;
@@ -17,6 +21,8 @@ export default function ReturnPolicyPopup({
 }: // returnPolicyRef,
 ReturnPolicyPopupProps) {
   const navigate = useNavigate();
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [hasDownloaded, setHasDownloaded] = useState(false);
 
   if (!showReturnPolicyPopup) return null;
 
@@ -27,6 +33,8 @@ ReturnPolicyPopupProps) {
 
   const handleDownloadPolicy = async () => {
     try {
+      setIsDownloading(true);
+
       // Fetch the PDF file from the imported asset
       const response = await fetch(MbaayReturnPolicy);
 
@@ -54,8 +62,26 @@ ReturnPolicyPopupProps) {
       // Clean up the blob URL
       URL.revokeObjectURL(blobUrl);
 
-      // Optional: Show success message
-      console.log("PDF downloaded successfully");
+      // Mark as downloaded and show success
+      setHasDownloaded(true);
+
+      // Auto-upload the Mbaay policy to the vendor profile
+      await uploadMbaayPolicyToProfile(blob);
+
+      toast.success(
+        "Mbaay Return Policy downloaded and uploaded to your profile successfully!",
+        {
+          position: "top-right",
+          autoClose: 4000,
+        }
+      );
+
+      // Auto-close popup after successful upload
+      setTimeout(() => {
+        setShowReturnPolicyPopup(false);
+        // Optionally navigate to edit profile to show the uploaded policy
+        navigate("/app/edit-vendor-profile");
+      }, 2000);
     } catch (error) {
       console.error("Error downloading PDF:", error);
 
@@ -69,20 +95,79 @@ ReturnPolicyPopupProps) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        setHasDownloaded(true);
+        toast.success(
+          "PDF downloaded successfully! Please upload it manually to your profile.",
+          {
+            position: "top-right",
+            autoClose: 4000,
+          }
+        );
       } catch (fallbackError) {
         console.error("Fallback download method also failed:", fallbackError);
-        // You could show a toast notification here
-        alert(
-          "Unable to download the PDF. Please try again or contact support."
+        toast.error(
+          "Unable to download the PDF. Please try again or contact support.",
+          {
+            position: "top-right",
+            autoClose: 4000,
+          }
         );
       }
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  // Function to automatically upload Mbaay policy to vendor profile
+  const uploadMbaayPolicyToProfile = async (policyBlob: Blob) => {
+    try {
+      // Create a File object from the blob
+      const policyFile = new File([policyBlob], "Mbaay-Return-Policy.pdf", {
+        type: "application/pdf",
+        lastModified: Date.now(),
+      });
+
+      // Store the policy file in localStorage for the edit profile component to pick up
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Data = reader.result as string;
+
+        // Store policy data in localStorage
+        localStorage.setItem(
+          "mbaay_return_policy",
+          JSON.stringify({
+            file: base64Data,
+            name: "Mbaay-Return-Policy.pdf",
+            type: "application/pdf",
+            size: policyFile.size,
+            uploadedAt: new Date().toISOString(),
+            isMbaayDefault: true,
+          })
+        );
+
+        // Trigger a custom event to notify the edit profile component
+        window.dispatchEvent(
+          new CustomEvent("mbaayPolicyUploaded", {
+            detail: {
+              fileName: "Mbaay-Return-Policy.pdf",
+              fileSize: policyFile.size,
+              isMbaayDefault: true,
+            },
+          })
+        );
+      };
+      reader.readAsDataURL(policyFile);
+    } catch (error) {
+      console.error("Error uploading Mbaay policy to profile:", error);
+      throw error;
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <motion.div
-        className="bg-white rounded-lg p-6 max-w-md w-full"
+        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
@@ -113,19 +198,39 @@ ReturnPolicyPopupProps) {
               Option 1: Use Mbaay's Default Policy
             </h3>
             <p className="text-sm text-gray-600 mb-3">
-              Download and review our standard return policy that meets all
-              platform requirements.
+              Download and automatically upload our standard return policy that
+              meets all platform requirements.
             </p>
             <button
               onClick={handleDownloadPolicy}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
+              disabled={isDownloading}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors w-full justify-center ${
+                hasDownloaded
+                  ? "bg-green-50 text-green-600 border border-green-200"
+                  : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+              } ${isDownloading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              <FiDownload />
-              Download Mbaay Return Policy
+              {isDownloading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                  Downloading & Uploading...
+                </>
+              ) : hasDownloaded ? (
+                <>
+                  <FiCheck />
+                  Policy Downloaded & Uploaded Successfully
+                </>
+              ) : (
+                <>
+                  <FiDownload />
+                  Accept and Download Mbaay Return Policy
+                </>
+              )}
             </button>
             <p className="text-xs text-gray-500 mt-2">
-              By using this option, you agree to apply Mbaay's default return
-              policy to your store.
+              {hasDownloaded
+                ? "The Mbaay return policy has been automatically uploaded to your profile."
+                : "By using this option, you agree to apply Mbaay's default return policy to your store and it will be automatically uploaded to your profile."}
             </p>
           </div>
 

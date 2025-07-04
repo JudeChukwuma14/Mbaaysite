@@ -305,7 +305,7 @@ export default function SocialFeed() {
             }`}
           >
             <span className="font-medium">@</span>
-            <span>{tag?.storeName || tag?.name || "Unknown"}</span>
+            <span>{tag?.user?.storeName || tag?.user?.name || "Unknown"}</span>
             {tagType === "community" && (
               <span className="text-xs opacity-75">(Community)</span>
             )}
