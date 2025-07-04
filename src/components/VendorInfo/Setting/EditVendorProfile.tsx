@@ -1,3 +1,5 @@
+"use client";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
@@ -320,6 +322,93 @@ export default function EditVendorProfile() {
       }));
     }
   }, [vendors]);
+
+  // Enhanced useEffect to listen for Mbaay policy upload events
+  useEffect(() => {
+    const handleMbaayPolicyUpload = (event: CustomEvent) => {
+      const { fileName } = event.detail;
+
+      // Get the stored policy data
+      const storedPolicy = localStorage.getItem("mbaay_return_policy");
+      if (storedPolicy) {
+        try {
+          const policyData = JSON.parse(storedPolicy);
+
+          // Convert base64 back to File object
+          const base64Data = policyData.file.split(",")[1]; // Remove data:application/pdf;base64, prefix
+          const binaryData = atob(base64Data);
+          const bytes = new Uint8Array(binaryData.length);
+          for (let i = 0; i < binaryData.length; i++) {
+            bytes[i] = binaryData.charCodeAt(i);
+          }
+
+          const file = new File([bytes], fileName, { type: "application/pdf" });
+
+          // Set the return policy file and name
+          setReturnPolicy(file);
+          setReturnPolicyName(fileName);
+
+          // Update return policy text to indicate it's Mbaay's default policy
+          setReturnPolicyText(
+            "Mbaay Default Return Policy - Automatically uploaded"
+          );
+
+          toast.success(
+            "Mbaay Return Policy has been automatically uploaded to your profile!",
+            {
+              position: "top-right",
+              autoClose: 4000,
+            }
+          );
+
+          // Clean up localStorage after successful upload
+          localStorage.removeItem("mbaay_return_policy");
+        } catch (error) {
+          console.error("Error processing Mbaay policy upload:", error);
+          toast.error(
+            "Error processing the uploaded policy. Please try again.",
+            {
+              position: "top-right",
+              autoClose: 4000,
+            }
+          );
+        }
+      }
+    };
+
+    // Listen for the custom event
+    window.addEventListener(
+      "mbaayPolicyUploaded",
+      handleMbaayPolicyUpload as EventListener
+    );
+
+    // Check if there's already a stored policy on component mount
+    const storedPolicy = localStorage.getItem("mbaay_return_policy");
+    if (storedPolicy) {
+      try {
+        const policyData = JSON.parse(storedPolicy);
+        handleMbaayPolicyUpload(
+          new CustomEvent("mbaayPolicyUploaded", {
+            detail: {
+              fileName: policyData.name,
+              fileSize: policyData.size,
+              isMbaayDefault: policyData.isMbaayDefault,
+            },
+          })
+        );
+      } catch (error) {
+        console.error("Error loading stored Mbaay policy:", error);
+      }
+    }
+
+    // Cleanup
+    return () => {
+      window.removeEventListener(
+        "mbaayPolicyUploaded",
+        handleMbaayPolicyUpload as EventListener
+      );
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1643,6 +1732,7 @@ export default function EditVendorProfile() {
                                       <img
                                         src={
                                           bankLogos[foundBankName] ||
+                                          "/placeholder.svg" ||
                                           "/placeholder.svg" ||
                                           "/placeholder.svg"
                                         }

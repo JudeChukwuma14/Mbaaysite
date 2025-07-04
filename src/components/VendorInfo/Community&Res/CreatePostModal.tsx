@@ -24,6 +24,15 @@ interface TaggedUser {
   tagType: "vendors" | "community";
 }
 
+interface Suggestion {
+  _id: string;
+  displayName: string;
+  avatar?: string;
+  tagType: "vendors" | "community";
+  storeName?: string;
+  name?: string;
+}
+
 export default function CreatePostModal({
   isOpen,
   onClose,
@@ -37,6 +46,7 @@ export default function CreatePostModal({
   const [taggedUsers, setTaggedUsers] = useState<TaggedUser[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [location, setLocation] = useState("");
   const [communityId, setCommunityId] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,32 +85,33 @@ export default function CreatePostModal({
     staleTime: 5 * 60 * 1000,
   });
 
-  // Extract vendors from nested response structure
-  const allVendors = allVendorsResponse?.data?.vendors || [];
-  const allCommunities = allCommunitiesResponse || [];
+  // Process vendors data
+  const allVendors =
+    allVendorsResponse?.vendors
+      ?.filter((vendor: any) => vendor?._id || vendor?.id)
+      ?.map((vendor: any) => ({
+        _id: vendor._id || vendor.id,
+        displayName: vendor.storeName || vendor.name || "Vendor",
+        avatar: vendor.avatar || "/placeholder.svg",
+        tagType: "vendors" as const,
+        storeName: vendor.storeName || vendor.name,
+        name: vendor.name,
+      })) || [];
+
+  // Process communities data
+  const allCommunities =
+    allCommunitiesResponse
+      ?.filter((community: any) => community?._id || community?.id)
+      ?.map((community: any) => ({
+        _id: community._id || community.id,
+        displayName: community.name || community.title || "Community",
+        avatar: community.community_Images || "/placeholder.svg",
+        tagType: "community" as const,
+        name: community.name || community.title,
+      })) || [];
 
   // Combine vendors and communities for suggestions
-  const userSuggestions = [
-    // Add vendors
-    ...allVendors.map((vendor: any) => ({
-      _id: vendor._id || vendor.id,
-      displayName: vendor.storeName || "Unknown Store",
-      avatar: vendor.avatar || "/placeholder.svg?height=32&width=32",
-      tagType: "vendors" as const,
-      storeName: vendor.storeName,
-    })),
-    // Add communities
-    ...allCommunities.map((community: any) => ({
-      _id: community._id || community.id,
-      displayName: community.name || "Unknown Community",
-      avatar:
-        community.community_Images ||
-        community.community_Images ||
-        "/placeholder.svg?height=32&width=32",
-      tagType: "community" as const,
-      name: community.name,
-    })),
-  ];
+  const userSuggestions: Suggestion[] = [...allVendors, ...allCommunities];
 
   useEffect(() => {
     if (isOpen) {
@@ -129,7 +140,6 @@ export default function CreatePostModal({
     };
   }, []);
 
-  // Auto-scroll to the latest image when new images are added
   useEffect(() => {
     if (imageScrollRef.current && imagesPreviews.length > 0) {
       imageScrollRef.current.scrollLeft = imageScrollRef.current.scrollWidth;
@@ -153,24 +163,19 @@ export default function CreatePostModal({
     setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleTagUser = (user: {
-    _id: string;
-    displayName: string;
-    tagType?: "vendors" | "community";
-    storeName?: string;
-    name?: string;
-  }) => {
-    if (!taggedUsers.find((tagged) => tagged._id === user._id)) {
-      setTaggedUsers([
-        ...taggedUsers,
-        {
-          _id: user._id,
-          storeName: user.storeName,
-          name: user.name,
-          tagType: user.tagType || "vendors",
-        },
-      ]);
+  const handleTagUser = (user: Suggestion) => {
+    const newTaggedUser: TaggedUser = {
+      _id: user._id,
+      ...(user.tagType === "vendors"
+        ? { storeName: user.storeName || user.displayName }
+        : { name: user.name || user.displayName }),
+      tagType: user.tagType,
+    };
+
+    if (!taggedUsers.some((tagged) => tagged._id === user._id)) {
+      setTaggedUsers([...taggedUsers, newTaggedUser]);
     }
+
     setTagInput("");
     setShowSuggestions(false);
   };
@@ -207,26 +212,25 @@ export default function CreatePostModal({
         formData.append("posts_Images", image);
       });
 
-      // Add tags with their IDs and types
-      const tags = taggedUsers.map((user) => user._id);
-      const tagTypes = taggedUsers.map((user) => user.tagType);
+      // Prepare tags in the required format
+      const tags = taggedUsers.map((user) => ({
+        tagId: user._id,
+        tagType: user.tagType,
+      }));
 
-      tags.forEach((tagId) => {
-        formData.append("tags", tagId);
-      });
+      if (tags.length > 0) {
+        formData.append("tags", JSON.stringify(tags));
+      }
 
-      // Add tagType - if all tags are the same type, use that, otherwise default to "vendors"
-      const uniqueTagTypes = [...new Set(tagTypes)];
-      const tagType =
-        uniqueTagTypes.length === 1 ? uniqueTagTypes[0] : "vendors";
-      formData.append("tagType", tagType);
+      if (location) {
+        formData.append("location", location);
+      }
 
       if (communityId) {
         formData.append("communityId", communityId);
       }
 
       const token = user?.token || null;
-
       await createPost(formData, token);
 
       toast.success("Post created successfully", {
@@ -234,7 +238,7 @@ export default function CreatePostModal({
         autoClose: 4000,
       });
 
-      // Background refresh using queryClient instead of window.location.reload()
+      // Refresh queries
       await Promise.all([
         queryClient.refetchQueries({ queryKey: ["comm_posts"] }),
         queryClient.refetchQueries({ queryKey: ["communities"] }),
@@ -249,6 +253,7 @@ export default function CreatePostModal({
       setImages([]);
       setImagesPreviews([]);
       setTaggedUsers([]);
+      setLocation("");
       setCommunityId("");
       onClose();
     } catch (error) {
@@ -261,6 +266,21 @@ export default function CreatePostModal({
       setLoading(false);
     }
   };
+
+  const filteredSuggestions = userSuggestions.filter((suggestion) => {
+    if (!tagInput.trim()) return false;
+
+    const searchTerm = tagInput.toLowerCase().trim();
+    const displayName = (suggestion.displayName || "").toLowerCase();
+    const storeName = (suggestion.storeName || "").toLowerCase();
+    const name = (suggestion.name || "").toLowerCase();
+
+    return (
+      displayName.includes(searchTerm) ||
+      storeName.includes(searchTerm) ||
+      name.includes(searchTerm)
+    );
+  });
 
   return (
     <AnimatePresence>
@@ -415,60 +435,45 @@ export default function CreatePostModal({
                         animate={{ opacity: 1, y: 0 }}
                         className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-32 overflow-y-auto"
                       >
-                        {userSuggestions.length === 0 ? (
-                          <div className="p-2 text-sm text-gray-500 text-center">
-                            Loading suggestions...
-                          </div>
-                        ) : (
-                          <>
-                            {userSuggestions
-                              .filter((suggestion: any) =>
-                                suggestion.displayName
-                                  .toLowerCase()
-                                  .includes(tagInput.toLowerCase())
-                              )
-                              .map((suggestion: any) => (
-                                <motion.button
-                                  key={suggestion._id}
-                                  type="button"
-                                  onClick={() => handleTagUser(suggestion)}
-                                  className="flex items-center w-full gap-2 p-2 text-left hover:bg-gray-100 transition-colors"
-                                  whileHover={{ backgroundColor: "#f3f4f6" }}
+                        {filteredSuggestions.length > 0 ? (
+                          filteredSuggestions.map((suggestion) => (
+                            <motion.button
+                              key={`${suggestion.tagType}-${suggestion._id}`}
+                              type="button"
+                              onClick={() => handleTagUser(suggestion)}
+                              className="flex items-center w-full gap-2 p-2 text-left hover:bg-gray-100 transition-colors"
+                              whileHover={{ backgroundColor: "#f3f4f6" }}
+                            >
+                              <img
+                                src={suggestion.avatar || "/placeholder.svg"}
+                                alt={suggestion.displayName}
+                                className="w-6 h-6 rounded-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    "/placeholder.svg?height=24&width=24";
+                                }}
+                              />
+                              <div>
+                                <span className="font-medium text-sm">
+                                  {suggestion.displayName}
+                                </span>
+                                <span
+                                  className={`text-xs ml-1 ${
+                                    suggestion.tagType === "vendors"
+                                      ? "text-blue-600"
+                                      : "text-green-600"
+                                  }`}
                                 >
-                                  <img
-                                    src={
-                                      suggestion.avatar || "/placeholder.svg"
-                                    }
-                                    alt={suggestion.displayName}
-                                    className="w-6 h-6 rounded-full"
-                                  />
-                                  <div>
-                                    <span className="font-medium text-sm">
-                                      {suggestion.displayName}
-                                    </span>
-                                    <span
-                                      className={`text-xs ml-1 ${
-                                        suggestion.tagType === "vendors"
-                                          ? "text-blue-600"
-                                          : "text-green-600"
-                                      }`}
-                                    >
-                                      ({suggestion.tagType})
-                                    </span>
-                                  </div>
-                                </motion.button>
-                              ))}
-                            {userSuggestions.filter((suggestion: any) =>
-                              suggestion.displayName
-                                .toLowerCase()
-                                .includes(tagInput.toLowerCase())
-                            ).length === 0 &&
-                              tagInput && (
-                                <div className="p-2 text-sm text-gray-500 text-center">
-                                  No vendors or communities found
-                                </div>
-                              )}
-                          </>
+                                  ({suggestion.tagType})
+                                </span>
+                              </div>
+                            </motion.button>
+                          ))
+                        ) : (
+                          <div className="p-2 text-sm text-gray-500 text-center">
+                            No vendors or communities found matching "{tagInput}
+                            "
+                          </div>
                         )}
                       </motion.div>
                     )}
