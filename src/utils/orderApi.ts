@@ -52,6 +52,8 @@ export interface PaymentStatusResponse {
   orderData?: OrderData;
 }
 
+export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed";
+
 const api = axios.create({
   baseURL: "https://mbayy-be.vercel.app/api/v1/order",
   headers: { "Content-Type": "application/json" },
@@ -114,31 +116,37 @@ export const getPaymentStatus = async (
   }
 };
 
+
 export const confirmOrderReceived = async (
-  orderId: string
-): Promise<boolean> => {
+  orderId: string,
+  token: string
+): Promise<{ success: boolean; message: string; status?: OrderStatus }> => {
   try {
-    const token = store.getState().user.token || store.getState().vendor.token;
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-   
-    const response = await api.patch(
-      `/confirmOrderReceived/${orderId}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to confirm order receipt"
-      );
+      throw new Error(response.data.message || "Failed to confirm order receipt");
     }
-    return true;
+    const validStatuses: OrderStatus[] = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Completed",
+    ];
+    const status = response.data.order?.status;
+    return {
+      success: true,
+      message: response.data.message || "Order receipt confirmed",
+      status: validStatuses.includes(status) ? status : "Delivered", // Default to "Delivered"
+    };
   } catch (error: any) {
     console.error("Confirm Order Error:", error.message, error.response?.data);
-    throw error;
+    throw new Error(error.response?.data?.message || error.message || "Failed to confirm order receipt");
   }
 };
