@@ -80,31 +80,6 @@ const OrderSummary: React.FC<OrderSummaryProps> = ({
             })}
           </ul>
           <div className="pt-4 border-t border-gray-200">
-            {/* <div className="flex items-center mb-4">
-              <input
-                type="text"
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value)}
-                placeholder="Enter coupon code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-                disabled={couponLoading}
-                aria-label="Coupon code"
-              />
-              <button
-                onClick={handleApplyCoupon}
-                disabled={couponLoading}
-                className="px-4 py-2 font-medium text-white bg-orange-500 rounded-r-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-orange-500"
-                aria-label={couponApplied ? "Coupon applied" : "Apply coupon"}
-              >
-                {couponLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : couponApplied ? (
-                  "Applied"
-                ) : (
-                  "Apply"
-                )}
-              </button>
-            </div> */}
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal</span>

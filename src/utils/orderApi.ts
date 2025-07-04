@@ -78,33 +78,22 @@ api.interceptors.response.use(
 
 export const submitOrder = async (
   sessionId: string,
-  orderData: OrderData
+  orderData: OrderData,
+  token: string
 ): Promise<CheckoutResponse> => {
   try {
-    const state = store.getState();
-    const token = state.user?.token || state.vendor?.token;
-    const userId = state.user?.user?.id || state.vendor?.vendor?.id;
-    if (!token) {
-      throw new Error("Authentication token is missing. Please log in again.");
-    }
-    if (!userId) {
-      throw new Error("User ID is missing. Please log in again.");
-    }
     const response = await api.post(
       `/order_checkout/${sessionId}`,
-      { ...orderData, userId },
+      orderData,
       {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
     );
-    console.log("Submit Order Response:", response.data);
     return response.data.data || response.data;
   } catch (error: any) {
-    console.error(
-      "Order Submission Error:",
-      error.message,
-      error.response?.data
-    );
+    console.error("Order Submission Error:", error.message, error.response?.data);
     throw new Error(error.response?.data?.message || "Failed to place order");
   }
 };
@@ -133,10 +122,7 @@ export const confirmOrderReceived = async (
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-    console.log("Confirm Order Request:", {
-      url: `/confirmOrderReceived/${orderId}`,
-      token: token.slice(0, 10) + "...",
-    });
+   
     const response = await api.patch(
       `/confirmOrderReceived/${orderId}`,
       {},
@@ -144,7 +130,7 @@ export const confirmOrderReceived = async (
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    console.log("Confirm Order Response:", response.data);
+    
     if (!response.data.success) {
       throw new Error(
         response.data.message || "Failed to confirm order receipt"

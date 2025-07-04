@@ -9,7 +9,6 @@ export const getSessionId = (): string => {
   let sessionId = state.session.sessionId;
 
   if (!sessionId) {
-    // Dispatch action to initialize sessionId
     store.dispatch(initializeSession());
     sessionId = store.getState().session.sessionId;
   }
@@ -21,14 +20,12 @@ export const getSessionId = (): string => {
   return sessionId;
 };
 
-// Optional: If you need to set a sessionId from the server or elsewhere
 export const setSession = (sessionId: string): void => {
   store.dispatch(setSessionId(sessionId));
 };
 
-// Optional: If you ever need to clear the sessionId (not used in your case)
 export const clearSession = (): string => {
-  store.dispatch(initializeSession()); // Generate a new sessionId after clearing
+  store.dispatch(initializeSession());
   const newSessionId = store.getState().session.sessionId;
   if (!newSessionId) {
     throw new Error("Failed to initialize new session ID");

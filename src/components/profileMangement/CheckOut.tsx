@@ -9,8 +9,8 @@ import { FaCreditCard } from "react-icons/fa";
 import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { useDispatch, useSelector } from "react-redux";
-import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
-import { RootState } from "@/redux/store";
+import { applyCoupon, clearCart, removeCoupon } from "@/redux/slices/cartSlice";
+import store, { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -467,11 +467,10 @@ export default function CheckoutForm() {
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
-  const user = useSelector((state: RootState) => state.user.user);
-  const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  const isAuthenticated = !!user || !!vendor;
+  const user = useSelector((state: RootState) => state.user); // Access full user state
+  const vendor = useSelector((state: RootState) => state.vendor); // Access full 
+  const isAuthenticated = !!user.token || !!vendor.token; // Fixed token access
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     toast.info("Please log in to proceed with checkout.");
     return <Navigate to="/selectpath" replace />;
@@ -509,13 +508,22 @@ export default function CheckoutForm() {
     if (!sessionId) {
       setIsSessionLoading(true);
       dispatch(initializeSession());
-      setIsSessionLoading(false);
+      const newSessionId = (store.getState() as RootState).session.sessionId;
+      if (newSessionId) {
+        setIsSessionLoading(false);
+      } else {
+        setTimeout(() => {
+          setIsSessionLoading(false);
+          toast.error("Failed to initialize session. Please try again.");
+        }, 1000);
+      }
     }
   }, [dispatch, sessionId]);
 
   useEffect(() => {
     setValue("couponCode", cartCoupon || "");
   }, [cartCoupon, setValue]);
+
 
   useEffect(() => {
     if (!selectedCountry || !selectedRegion) {
@@ -525,34 +533,35 @@ export default function CheckoutForm() {
     }
 
     setIsCityLoading(true);
-    setTimeout(() => {
-      try {
-        const country = Country.getAllCountries().find((c) => c.name === selectedCountry);
-        if (!country) {
-          toast.error("Country not found. Please try again.");
-          setCityOptions([]);
-          return;
-        }
-
-        const states = State.getStatesOfCountry(country.isoCode);
-        const state = states.find((s) => s.name === selectedRegion);
-        if (!state) {
-          toast.error("State not found. Please try again.");
-          setCityOptions([]);
-          return;
-        }
-
-        const cities = City.getCitiesOfState(country.isoCode, state.isoCode);
-        setCityOptions(cities.map((city) => ({ value: city.name, label: city.name })));
-      } catch (error) {
-        console.error("Failed to load cities:", error);
-        toast.error("Failed to load cities. Please try again.");
+    try {
+      const country = Country.getAllCountries().find((c) => c.name === selectedCountry);
+      if (!country) {
+        toast.error("Country not found.");
         setCityOptions([]);
-      } finally {
         setIsCityLoading(false);
+        return;
       }
-    }, 500);
+
+      const states = State.getStatesOfCountry(country.isoCode);
+      const state = states.find((s) => s.name === selectedRegion);
+      if (!state) {
+        toast.error("State not found.");
+        setCityOptions([]);
+        setIsCityLoading(false);
+        return;
+      }
+
+      const cities = City.getCitiesOfState(country.isoCode, state.isoCode);
+      setCityOptions(cities.map((city) => ({ value: city.name, label: city.name })));
+    } catch (error) {
+      console.error("Failed to load cities:", error);
+      toast.error("Failed to load cities.");
+      setCityOptions([]);
+    } finally {
+      setIsCityLoading(false);
+    }
   }, [selectedCountry, selectedRegion, resetField]);
+
 
   const handleApplyCoupon = (code: string) => {
     if (!code) {
@@ -587,6 +596,12 @@ export default function CheckoutForm() {
     }
     if (!sessionId) {
       toast.error("Session not initialized. Please try again.");
+      return;
+    }
+
+    if (!user?.token && !vendor?.token) {
+      toast.error("Please log in again.");
+      navigate("/selectpath");
       return;
     }
 
@@ -627,8 +642,9 @@ export default function CheckoutForm() {
         pricing,
       };
 
-      const response = await submitOrder(sessionId, orderData);
+      const response = await submitOrder(sessionId, orderData, user?.token || vendor?.token || "");
       toast.success("Order placed successfully!");
+      dispatch(clearCart());
 
       if (data.paymentOption === "Pay Before Delivery") {
         if (response.authorization_url) {

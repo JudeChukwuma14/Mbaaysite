@@ -17,7 +17,6 @@ export default function PaymentCallback() {
   const handleClearCart = () => {
     try {
       dispatch(clearCart());
-      console.log("Cart cleared successfully");
     } catch (error: any) {
       console.error("Error clearing cart:", error);
       toast.error("Failed to clear cart. Please clear it manually.");
