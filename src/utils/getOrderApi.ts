@@ -1,6 +1,5 @@
 // src/utils/getOrderApi.ts
 import axios from "axios";
-import { toast } from "react-toastify";
 import { OrderStatus } from "./orderApi";
 
 export interface Order {
