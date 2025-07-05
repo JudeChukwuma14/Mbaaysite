@@ -19,21 +19,26 @@ export default function OrderList() {
   const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
-  const vendor = useSelector((state: RootState) => state.vendor);
-  const isAuthenticated = !!user.token || !!vendor.token;
-  const userId = user.user?.id || vendor.vendor?.id;
-  const token = user.token || vendor.token;
+  const isAuthenticated = !!user.token;
+  const token = user.token;
+
+  // Debug Redux state
+  useEffect(() => {
+    console.log("Redux state:", { user, token });
+  }, [user, token]);
 
   useEffect(() => {
-    if (!isAuthenticated || !userId) {
+    if (!isAuthenticated || !token) {
+      console.log("Authentication failed:", { isAuthenticated, token });
       toast.info("Please log in to view your orders.");
-      navigate("/selectpath");
+      navigate("/selectpath", { replace: true });
       return;
     }
 
     const loadOrders = async () => {
       try {
-        const data = await getOrdersWithSession(token!, userId!);
+        console.log("Calling getOrdersWithSession with:", { token });
+        const data = await getOrdersWithSession(token);
         setOrders(data);
       } catch (err: any) {
         const errorMessage = err.message || "Failed to load orders";
@@ -41,10 +46,11 @@ export default function OrderList() {
         if (
           errorMessage.includes("Authentication token is missing") ||
           errorMessage.includes("Access denied") ||
-          errorMessage.includes("User ID is missing")
+          errorMessage.includes("User ID is required") ||
+          errorMessage.includes("Failed to fetch orders")
         ) {
-          toast.error("Session expired. Please log in again.");
-          navigate("/selectpath");
+          toast.error("Session expired or invalid authentication. Please log in again.");
+          navigate("/selectpath", { replace: true });
         } else {
           toast.error(errorMessage);
         }
@@ -53,12 +59,13 @@ export default function OrderList() {
       }
     };
     loadOrders();
-  }, [navigate, isAuthenticated, userId, token]);
+  }, [navigate, isAuthenticated, token]);
 
   const handleConfirmReceipt = async (orderId: string) => {
     if (!isAuthenticated || !token) {
+      console.log("Authentication failed for confirm:", { isAuthenticated, token });
       toast.info("Please log in to confirm order receipt.");
-      navigate("/selectpath");
+      navigate("/selectpath", { replace: true });
       return;
     }
     setConfirmingOrderId(orderId);
@@ -67,7 +74,7 @@ export default function OrderList() {
       setOrders(
         orders.map((order) =>
           order.id === orderId
-            ? { ...order, orderStatus: status ?? "Delivered" } // Default to "Delivered"
+            ? { ...order, orderStatus: status ?? "Delivered" }
             : order
         )
       );
@@ -78,10 +85,11 @@ export default function OrderList() {
         toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
       } else if (
         errorMessage.includes("Access denied") ||
-        errorMessage.includes("Authentication token is missing")
+        errorMessage.includes("Authentication token is missing") ||
+        errorMessage.includes("User ID is required")
       ) {
-        toast.error("Session expired. Please log in again.");
-        navigate("/selectpath");
+        toast.error("Session expired or invalid authentication. Please log in again.");
+        navigate("/selectpath", { replace: true });
       } else {
         toast.error(errorMessage);
       }
@@ -107,7 +115,11 @@ export default function OrderList() {
       <div className="flex items-center justify-center min-h-screen p-4">
         <div className="text-center text-red-500">
           <p className="text-lg font-medium">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => window.location.reload()}
+          >
             Retry
           </Button>
         </div>
@@ -125,15 +137,22 @@ export default function OrderList() {
 
         <div className="space-y-4">
           {orders.map((order) => (
-            <Card key={order.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md">
+            <Card
+              key={order.id}
+              className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
+            >
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-semibold text-gray-900">#{order.orderId}</span>
+                    <span className="text-lg font-semibold text-gray-900">
+                      #{order.orderId}
+                    </span>
                     <Badge className={`${getStatusColor(order.orderStatus)} border`}>
                       {order.orderStatus}
                     </Badge>
-                    <Badge className={`${getPaymentStatusColor(order.paymentStatus)} border`}>
+                    <Badge
+                      className={`${getPaymentStatusColor(order.paymentStatus)} border`}
+                    >
                       {order.paymentStatus}
                     </Badge>
                   </div>
@@ -152,7 +171,9 @@ export default function OrderList() {
                       Customer Details
                     </h3>
                     <div className="space-y-2 text-sm">
-                      <p className="font-medium text-gray-900">{order.buyer.fullName}</p>
+                      <p className="font-medium text-gray-900">
+                        {order.buyer.fullName}
+                      </p>
                       <div className="flex items-center gap-2 text-gray-600">
                         <Mail className="w-3 h-3" />
                         {order.buyer.email}
@@ -192,17 +213,23 @@ export default function OrderList() {
                         className="object-cover border border-gray-200 rounded-lg"
                       />
                       <div className="flex-1 space-y-2">
-                        <h4 className="font-medium text-gray-900">{order.product.name}</h4>
+                        <h4 className="font-medium text-gray-900">
+                          {order.product.name}
+                        </h4>
                         <div className="text-sm text-gray-600">
                           <p>
                             {order.product.category} → {order.product.subCategory}
                           </p>
-                          <p>Quantity: <span className="font-medium">{order.quantity}</span></p>
                           <p>
-                            Price: <span className="font-medium">
-                              {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
-                                order.product.price
-                              )}
+                            Quantity: <span className="font-medium">{order.quantity}</span>
+                          </p>
+                          <p>
+                            Price:{" "}
+                            <span className="font-medium">
+                              {new Intl.NumberFormat("en-NG", {
+                                style: "currency",
+                                currency: "NGN",
+                              }).format(order.product.price)}
                             </span>
                           </p>
                         </div>
@@ -224,15 +251,18 @@ export default function OrderList() {
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Total Amount:</span>
                         <span className="text-lg font-bold text-gray-900">
-                          {new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(
-                            order.totalPrice
-                          )}
+                          {new Intl.NumberFormat("en-NG", {
+                            style: "currency",
+                            currency: "NGN",
+                          }).format(order.totalPrice)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Payment Method:</span>
                         <span className="text-sm font-medium text-gray-900">
-                          {order.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}
+                          {order.paymentOption === "Pay Before Delivery"
+                            ? "Credit Card"
+                            : "Cash on Delivery"}
                         </span>
                       </div>
                     </div>
@@ -271,7 +301,9 @@ export default function OrderList() {
             <Card className="bg-white border border-gray-200 shadow-sm">
               <CardContent className="py-12 text-center">
                 <Package className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">No orders found</h3>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                  No orders found
+                </h3>
                 <p className="text-gray-600">Place an order to see it here.</p>
               </CardContent>
             </Card>

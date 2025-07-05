@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define the User type
 interface User {
-  id: string; 
+  _id: string; 
   name: string;
   email: string;
   phoneNumber: string;

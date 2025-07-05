@@ -1,6 +1,7 @@
 // src/utils/getOrderApi.ts
 import axios from "axios";
-
+import { toast } from "react-toastify";
+import { OrderStatus } from "./orderApi";
 
 export interface Order {
   id: string;
@@ -27,7 +28,7 @@ export interface Order {
   quantity: number;
   totalPrice: number;
   paymentStatus: "Paid" | "Pending" | "Failed";
-  orderStatus: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed";
+  orderStatus: OrderStatus;
   paymentOption: string;
   createdAt: string;
 }
@@ -44,22 +45,30 @@ const api = axios.create({
   timeout: 20000,
 });
 
-export const fetchOrders = async (token: string, userId: string): Promise<Order[]> => {
+export const fetchOrders = async (token: string): Promise<Order[]> => {
   try {
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-    if (!userId) {
-      throw new Error("User ID is missing. Please log in again.");
-    }
+    console.log("Fetching orders with token:", { token });
     const response = await api.get<ApiResponse>("/get_orders_user", {
-      params: { userId },
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    console.log("API response:", response.data);
 
     if (!response.data.success || !Array.isArray(response.data.orders)) {
       throw new Error(response.data.message || "Failed to fetch orders");
     }
+
+    const validStatuses: OrderStatus[] = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Completed",
+    ];
 
     return response.data.orders.map((order): Order => ({
       id: order._id,
@@ -91,16 +100,16 @@ export const fetchOrders = async (token: string, userId: string): Promise<Order[
           : order.payStatus === "Failed"
           ? "Failed"
           : "Pending",
-      orderStatus: order.status || "Pending",
+      orderStatus: validStatuses.includes(order.status) ? order.status : "Pending",
       paymentOption: order.paymentOption || "Unknown",
       createdAt: order.createdAt || new Date().toISOString(),
     }));
   } catch (error: any) {
-    console.error("Fetch Orders Error:", error.message, error.response?.data);
+    console.error("Fetch Orders Error:", error.message, error.response?.data, error.config);
     throw new Error(error.response?.data?.message || error.message || "Failed to fetch orders");
   }
 };
 
-export const getOrdersWithSession = async (token: string, userId: string): Promise<Order[]> => {
-  return fetchOrders(token, userId);
+export const getOrdersWithSession = async (token: string): Promise<Order[]> => {
+  return fetchOrders(token);
 };

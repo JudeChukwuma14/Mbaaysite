@@ -27,7 +27,7 @@ interface FormData {
 }
 
 const craftCategories = [
-  "Art & Sculpture",
+  "Art & Sculptures",
   "Beauty and Wellness",
   "Books and Poetry",
   "Fashion Clothing and Fabrics",
