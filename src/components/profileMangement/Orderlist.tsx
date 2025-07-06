@@ -16,7 +16,7 @@ export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
+  const [confirmedOrders, setConfirmedOrders] = useState<string[]>([]);
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
   const isAuthenticated = !!user.token;
@@ -62,42 +62,14 @@ export default function OrderList() {
   }, [navigate, isAuthenticated, token]);
 
   const handleConfirmReceipt = async (orderId: string) => {
-    if (!isAuthenticated || !token) {
-      console.log("Authentication failed for confirm:", { isAuthenticated, token });
-      toast.info("Please log in to confirm order receipt.");
-      navigate("/selectpath", { replace: true });
-      return;
-    }
-    setConfirmingOrderId(orderId);
     try {
-      const { status } = await confirmOrderReceived(orderId, token);
-      setOrders(
-        orders.map((order) =>
-          order.id === orderId
-            ? { ...order, orderStatus: status ?? "Delivered" }
-            : order
-        )
-      );
-      toast.success("Order receipt confirmed successfully!");
+      await confirmOrderReceived(orderId);
+      setConfirmedOrders((prev) => [...prev, orderId]);
+      toast.success("Payment confirmed successfully!");
     } catch (error: any) {
-      const errorMessage = error.message || "Failed to confirm order receipt";
-      if (errorMessage.includes("order is not marked as delivered yet")) {
-        toast.error("This order must be marked as Delivered by the vendor before you can confirm receipt.");
-      } else if (
-        errorMessage.includes("Access denied") ||
-        errorMessage.includes("Authentication token is missing") ||
-        errorMessage.includes("User ID is required")
-      ) {
-        toast.error("Session expired or invalid authentication. Please log in again.");
-        navigate("/selectpath", { replace: true });
-      } else {
-        toast.error(errorMessage);
-      }
-    } finally {
-      setConfirmingOrderId(null);
+      toast.error(error.message || "Failed to confirm payment");
     }
   };
-
   const handleViewDetails = (orderId: string) => {
     navigate(`/orders/${orderId}`);
   };
@@ -280,16 +252,10 @@ export default function OrderList() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleConfirmReceipt(order.id)}
-                        disabled={confirmingOrderId === order.id || order.orderStatus !== "Delivered"}
+                        disabled={confirmedOrders.includes(order.id)} // Disable if confirmed
                         className="flex items-center gap-2"
                       >
-                        {confirmingOrderId === order.id ? (
-                          <div className="w-4 h-4 border-2 rounded-full border-t-gray-900 animate-spin" />
-                        ) : order.orderStatus !== "Delivered" ? (
-                          "Waiting for Delivery"
-                        ) : (
-                          "Confirm Receipt"
-                        )}
+                        {confirmedOrders.includes(order.id) ? "Confirmed" : "Confirm Payment"}
                       </Button>
                     </div>
                   </div>

@@ -127,46 +127,13 @@ export const getPaymentStatus = async (
   }
 };
 
-export const confirmOrderReceived = async (
-  orderId: string,
-  token: string
-): Promise<{ success: boolean; message: string; status?: OrderStatus }> => {
+export const confirmOrderReceived = async (orderId: string): Promise<void> => {
   try {
-    if (!token) {
-      throw new Error("Authentication token is missing. Please log in again.");
-    }
-    const response = await api.patch(
-      `/confirmOrderReceived/${orderId}`,
-      {},
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`);
     if (!response.data.success) {
-      throw new Error(
-        response.data.message || "Failed to confirm order receipt"
-      );
+      throw new Error(response.data.message || "Failed to confirm payment");
     }
-    const validStatuses: OrderStatus[] = [
-      "Pending",
-      "Processing",
-      "Shipped",
-      "Delivered",
-      "Cancelled",
-      "Completed",
-    ];
-    const status = response.data.order?.status;
-    return {
-      success: true,
-      message: response.data.message || "Order receipt confirmed",
-      status: validStatuses.includes(status) ? status : "Delivered", // Default to "Delivered"
-    };
   } catch (error: any) {
-    console.error("Confirm Order Error:", error.message, error.response?.data);
-    throw new Error(
-      error.response?.data?.message ||
-        error.message ||
-        "Failed to confirm order receipt"
-    );
+    throw new Error(error.response?.data?.message || error.message || "Failed to confirm payment");
   }
 };
