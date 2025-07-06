@@ -51,10 +51,16 @@ export interface PaymentStatusResponse {
   orderData?: OrderData;
 }
 
-export type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Completed";
+export type OrderStatus =
+  | "Pending"
+  | "Processing"
+  | "Shipped"
+  | "Delivered"
+  | "Cancelled"
+  | "Completed";
 
 const api = axios.create({
-  baseURL: "https://mbayy-be.vercel.app/api/v1/order",
+  baseURL: "https://mbayy-be.onrender.com/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -79,22 +85,28 @@ api.interceptors.response.use(
 
 export const submitOrder = async (
   sessionId: string,
-  orderData: OrderData,
-  token: string
+  userId: string,
+  orderData: OrderData
 ): Promise<CheckoutResponse> => {
   try {
+    if (!sessionId) {
+      throw new Error("Session ID is missing.");
+    }
+    if (!userId) {
+      throw new Error("User ID is missing.");
+    }
+    console.log("Initiating checkout:", { sessionId, userId, orderData });
     const response = await api.post(
-      `/order_checkout/${sessionId}`,
-      orderData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+      `/order_checkout/${sessionId}/${userId}`,
+      orderData
     );
     return response.data.data || response.data;
   } catch (error: any) {
-    console.error("Order Submission Error:", error.message, error.response?.data);
+    console.error(
+      "Order Submission Error:",
+      error.message,
+      error.response?.data
+    );
     throw new Error(error.response?.data?.message || "Failed to place order");
   }
 };
@@ -115,7 +127,6 @@ export const getPaymentStatus = async (
   }
 };
 
-
 export const confirmOrderReceived = async (
   orderId: string,
   token: string
@@ -124,11 +135,17 @@ export const confirmOrderReceived = async (
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.patch(
+      `/confirmOrderReceived/${orderId}`,
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
     if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to confirm order receipt");
+      throw new Error(
+        response.data.message || "Failed to confirm order receipt"
+      );
     }
     const validStatuses: OrderStatus[] = [
       "Pending",
@@ -146,6 +163,10 @@ export const confirmOrderReceived = async (
     };
   } catch (error: any) {
     console.error("Confirm Order Error:", error.message, error.response?.data);
-    throw new Error(error.response?.data?.message || error.message || "Failed to confirm order receipt");
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to confirm order receipt"
+    );
   }
 };

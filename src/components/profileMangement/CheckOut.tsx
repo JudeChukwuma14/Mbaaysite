@@ -18,6 +18,7 @@ import { CiDeliveryTruck } from "react-icons/ci";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
 import { initializeSession } from "@/redux/slices/sessionSlice";
+import { clearSession } from "@/utils/session";
 
 interface FormValues {
   first_name: string;
@@ -469,7 +470,8 @@ export default function CheckoutForm() {
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const user = useSelector((state: RootState) => state.user); // Access full user state
   const vendor = useSelector((state: RootState) => state.vendor); // Access full 
-  const isAuthenticated = !!user.token || !!vendor.token; // Fixed token access
+  const userId = user.user?._id;
+  const isAuthenticated = !!userId && !!sessionId;
 
   if (!isAuthenticated) {
     toast.info("Please log in to proceed with checkout.");
@@ -642,8 +644,10 @@ export default function CheckoutForm() {
         pricing,
       };
 
-      const response = await submitOrder(sessionId, orderData, user?.token || vendor?.token || "");
+      const response = await submitOrder(sessionId, userId, orderData);
+      console.log("Checkout response:", response);
       toast.success("Order placed successfully!");
+      clearSession()
       dispatch(clearCart());
 
       if (data.paymentOption === "Pay Before Delivery") {

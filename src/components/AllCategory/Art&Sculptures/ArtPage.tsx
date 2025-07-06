@@ -148,7 +148,7 @@ const Artifacts: React.FC = () => {
 
                 const filtered = allProducts.filter(
                     (product: Product) =>
-                        product.category?.toLowerCase() === "artifacts"
+                        product.category?.toLowerCase() === "art & sculptures"
                 );
 
                 setProducts(filtered);

@@ -43,7 +43,7 @@ const Sculptures = () => {
                     const sub1 = product.sub_category?.toLowerCase() || "";
                     const sub2 = product.sub_category2?.toLowerCase() || "";
                     return (
-                        category === "art" &&
+                        category === "art & sculptures" &&
                         (keywords.includes(sub1) ||
                             keywords.includes(sub2) ||
                             sub1 === subcategory?.toLowerCase() ||

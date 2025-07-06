@@ -351,7 +351,7 @@ export default function PaymentSuccess() {
               className="flex flex-col gap-3 sm:flex-row"
             >
               <Link
-                to={`/order-details/${orderId}`}
+                to={"/dashboard/orderlist"}
                 className="flex items-center justify-center flex-1 px-4 py-3 font-medium text-white bg-orange-600 rounded-lg hover:bg-orange-700"
               >
                 View Order Details
