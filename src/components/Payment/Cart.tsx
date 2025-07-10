@@ -222,7 +222,7 @@ const Cart: React.FC = () => {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        {t("remove")}
+                        {t("Remove")}
                       </motion.button>
                     </td>
                   </motion.tr>
@@ -243,14 +243,14 @@ const Cart: React.FC = () => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {t("returnToShop")}
+          {t("Return To Shop")}
         </motion.button>
         <motion.button
           className="w-full px-4 py-2 font-bold text-white bg-orange-500 rounded hover:bg-orange-700 sm:w-auto"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          {t("updateCart")}
+          {t("Update Cart")}
         </motion.button>
       </motion.div>
       <motion.div
@@ -264,7 +264,7 @@ const Cart: React.FC = () => {
             type="text"
             value={couponCode}
             onChange={handleCouponChange}
-            placeholder={t("couponPlaceholder")}
+            placeholder={t("Coupon")}
             className="flex-grow px-3 py-2 border border-gray-300 rounded"
             whileFocus={{ scale: 1.02 }}
           />
@@ -274,7 +274,7 @@ const Cart: React.FC = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            {t("applyCoupon")}
+            {t("Apply Coupon")}
           </motion.button>
         </div>
       </motion.div>
@@ -314,7 +314,7 @@ const Cart: React.FC = () => {
           onClick={handleCheckout}
           className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
         >
-          {t("checkout")}
+          {t("Checkout")}
         </button>
       </motion.div>
     </motion.div>
