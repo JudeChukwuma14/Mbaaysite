@@ -468,11 +468,12 @@ export default function CheckoutForm() {
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
-  const user = useSelector((state: RootState) => state.user); // Access full user state
-  const vendor = useSelector((state: RootState) => state.vendor); // Access full 
+  const user = useSelector((state: RootState) => state.user); 
+  const vendor = useSelector((state: RootState) => state.vendor);
   const userId = user.user?._id;
+ console.log(vendor)
   const isAuthenticated = !!userId && !!sessionId;
-
+  console.log(isAuthenticated)
   if (!isAuthenticated) {
     toast.info("Please log in to proceed with checkout.");
     return <Navigate to="/selectpath" replace />;

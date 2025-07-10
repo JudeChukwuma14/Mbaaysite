@@ -114,7 +114,7 @@ const AllVendor = () => {
               }
               avatar={vendor.avatar || createInitialAvatar(vendor.storeName || "V")}
               name={vendor.storeName}
-              craft={vendor.craftCategories.join(", ") || "No categories"}
+              craft={vendor.craftCategories[0] || "No categories"}
             />
           </Link>
         ))}

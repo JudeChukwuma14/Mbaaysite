@@ -22,6 +22,7 @@ import Logo from "@/assets/image/mbbaylogo.png";
 import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { IoIosPricetag } from "react-icons/io";
+import { clearSessionId } from "@/redux/slices/sessionSlice";
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
@@ -46,6 +47,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handle_logOut = () => {
+     dispatch(clearSessionId())
     dispatch(logoutVendor());
     navigate("/login-vendor");
   };

@@ -1,11 +1,6 @@
-"use client";
-
-import type React from "react";
-
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-
 // Import components
 import Slider from "@/components/Slider";
 // import CategoryCard from "@/components/categorycardprops/CategoryCard";
@@ -18,8 +13,6 @@ import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import NewArrival from "@/components/Cards/NewArrival";
 import Spinner from "@/components/Common/Spinner";
-
-// Import data and APIs
 import {
   Auction,
   ExploreData,
@@ -28,9 +21,6 @@ import {
 } from "@/components/mockdata/data";
 import { getAllProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
-
-// Import images
-
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
@@ -105,9 +95,7 @@ const HomeArea: React.FC = () => {
     const getVendor = async () => {
       try {
         const vendor = await getAllVendor();
-        console.log(vendor)
         setGetVendor(vendor.vendors);
-
       } catch (error) {
         console.log(error);
       }
@@ -139,11 +127,7 @@ const HomeArea: React.FC = () => {
       <section className="mb-12">
         <Slider />
       </section>
-
-
       <CategoriesSection />
-      {/* Explore Products */}
-
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -152,7 +136,6 @@ const HomeArea: React.FC = () => {
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
             Explore Our Products
-
           </h2>
           <Link
             to="/random-product"
