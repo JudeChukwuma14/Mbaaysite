@@ -37,7 +37,7 @@ const Header: React.FC = () => {
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.user?.user || null);
-  const vendor = useSelector((state: RootState) => state.vendor?.vendor || null);
+  const vendor = useSelector((state: RootState) => state.vendor || null);
   const settings = useSelector((state: RootState) => state.settings);
 
   const countries = Country.getAllCountries();
@@ -63,15 +63,14 @@ const Header: React.FC = () => {
     setCountrySearch("");
   };
 
-  const firstLetter = vendor?.storeName
-    ? vendor.storeName.charAt(0).toUpperCase()
-    : vendor?.id
+  const firstLetter = vendor?.vendor?.storeName
+    ? vendor.vendor.storeName.charAt(0).toUpperCase()
+    : vendor?.vendor?._id
       ? "V"
       : user?.name
         ? user.name.charAt(0).toUpperCase()
         : "";
   const dashboardLink = vendor ? "/app" : "/dashboard";
-
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -136,9 +135,9 @@ const Header: React.FC = () => {
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
         <p className="font-medium ">
           {t("welcome")}{" "}
-          {vendor?.storeName
-            ? `, ${vendor.storeName}`
-            : vendor?.id
+          {vendor.vendor?.storeName
+            ? `, ${vendor.vendor.storeName}`
+            : vendor?.vendor?._id
               ? ", Vendor"
               : user?.name
                 ? `, ${user.name}`
