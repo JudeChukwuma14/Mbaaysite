@@ -2,37 +2,50 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setSettings } from "@/redux/slices/settingsSlice";
-import { getUserCountry } from "@/utils/geolocation";
+import axios from "axios";
 import i18next from "@/utils/i18n";
-import { toast } from "react-toastify";
-import { fetchExchangeRates } from "@/utils/currencyCoverter";
 
 export const useInitializeSettings = () => {
   const dispatch = useDispatch();
-  const { countryCode } = useSelector((state: RootState) => state.settings);
+  const { countryCode, currency, language } = useSelector((state: RootState) => state.settings);
   const [hasInitialized, setHasInitialized] = useState(false);
 
   useEffect(() => {
     const initializeSettings = async () => {
-      // Only run on first load
       if (hasInitialized) {
-        console.log("Settings already initialized, skipping geolocation");
+        console.log("Settings already initialized:", { countryCode, currency, language });
         return;
       }
 
-      console.log("Current settings:", { countryCode });
-      const locationData = await getUserCountry();
-      if (locationData) {
-        const { countryCode, currency, language } = locationData;
-        console.log("Updating settings:", { countryCode, currency, language });
-        dispatch(setSettings({ countryCode, currency, language }));
-        await i18next.changeLanguage(language);
-        await fetchExchangeRates(currency);
+      console.log("Current settings:", { countryCode, currency, language });
+      try {
+        const response = await axios.get("https://api.ipapi.com/api/check", {
+          params: { access_key: process.env.REACT_APP_IPAPI_KEY || "cb5d9768299e8e50169f3852db196ebc" },
+        });
+        console.log("ipapi.com response:", response.data);
+
+        const { country_code, currency: apiCurrency, languages } = response.data;
+        const newCountryCode = country_code?.toUpperCase() || "NG";
+        const newCurrency = apiCurrency?.code || (newCountryCode === "NG" ? "NGN" : "USD");
+        const newLanguage = languages?.split(",")[0]?.split("-")[0] || (newCountryCode === "NG" ? "ng" : "en");
+
+        dispatch(setSettings({
+          countryCode: newCountryCode,
+          currency: newCurrency,
+          language: newLanguage,
+        }));
+        await i18next.changeLanguage(newLanguage);
+        console.log("Updated settings:", { countryCode: newCountryCode, currency: newCurrency, language: newLanguage });
         setHasInitialized(true);
-      } else {
-        console.log("Location detection failed, using defaults");
-        toast.warn("Unable to detect location. Using default settings.");
-        dispatch(setSettings({ countryCode: "US", currency: "USD", language: "en" }));
+      } catch (error) {
+        console.error("Geolocation failed:", error);
+        dispatch(setSettings({
+          countryCode: "NG",
+          currency: "NGN",
+          language: "ng",
+        }));
+        await i18next.changeLanguage("ng");
+        console.log("Applied default settings: NG/NGN/ng");
         setHasInitialized(true);
       }
     };

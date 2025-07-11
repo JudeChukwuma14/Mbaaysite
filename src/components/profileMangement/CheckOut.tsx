@@ -17,8 +17,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
-import { initializeSession } from "@/redux/slices/sessionSlice";
-import { clearSession } from "@/utils/session";
+import { clearSessionId, initializeSession } from "@/redux/slices/sessionSlice";
 
 interface FormValues {
   first_name: string;
@@ -468,12 +467,11 @@ export default function CheckoutForm() {
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
-  const user = useSelector((state: RootState) => state.user); 
+  const user = useSelector((state: RootState) => state.user);
   const vendor = useSelector((state: RootState) => state.vendor);
-  const userId = user.user?._id;
- console.log(vendor)
-  const isAuthenticated = !!userId && !!sessionId;
-  console.log(isAuthenticated)
+  const userId = user.user?._id || vendor.vendor?._id || null;
+  const isAuthenticated = !!(userId && sessionId && (user.token || vendor.token));
+
   if (!isAuthenticated) {
     toast.info("Please log in to proceed with checkout.");
     return <Navigate to="/selectpath" replace />;
@@ -601,17 +599,16 @@ export default function CheckoutForm() {
       toast.error("Session not initialized. Please try again.");
       return;
     }
-
-    if (!user?.token && !vendor?.token) {
+    if (!userId || !(user?.token || vendor?.token)) {
       toast.error("Please log in again.");
       navigate("/selectpath");
       return;
     }
 
+
     setIsSubmitting(true);
     try {
       const pricing = calculatePricing(cartItems, discountRate);
-
       const address = [
         data.apartment ? `Apt ${data.apartment}` : "",
         data.city,
@@ -644,11 +641,11 @@ export default function CheckoutForm() {
         })),
         pricing,
       };
-
+      console.log("userid.........", userId)
       const response = await submitOrder(sessionId, userId, orderData);
       console.log("Checkout response:", response);
       toast.success("Order placed successfully!");
-      clearSession()
+      dispatch(clearSessionId())
       dispatch(clearCart());
 
       if (data.paymentOption === "Pay Before Delivery") {

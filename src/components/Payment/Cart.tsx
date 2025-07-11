@@ -28,6 +28,7 @@ const Cart: React.FC = () => {
   const { t } = useTranslation();
   const [couponCode, setCouponCode] = useState<string>("");
   const [discount, setDiscount] = useState<number>(0);
+  console.log(vendor)
 
   useEffect(() => {
     const fetchCart = async () => {

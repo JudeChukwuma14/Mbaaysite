@@ -96,7 +96,7 @@ export default function CurrencyInput({
   return (
     <div className="relative">
       <div className="relative w-full">
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium">
+        <div className="absolute font-medium text-gray-500 transform -translate-y-1/2 left-3 top-1/2">
           {currencyData.symbol}
         </div>
         <input
