@@ -70,7 +70,7 @@ const COUNTRY_CURRENCY_MAP: Record<
   "New Zealand": { code: "NZD", symbol: "NZ$", name: "New Zealand Dollar" },
 
   // Default
-  DEFAULT: { code: "USD", symbol: "$", name: "US Dollar" },
+  DEFAULT: { code: "NGN", symbol: "₦", name: "Nigerian Naira" },
 };
 
 export default function CurrencyInput({
