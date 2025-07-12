@@ -640,7 +640,6 @@ export default function CheckoutForm() {
         })),
         pricing,
       };
-      console.log("userid.........", userId)
       const response = await submitOrder(sessionId, userId, orderData);
       console.log("Checkout response:", response);
       dispatch(clearSessionId())
