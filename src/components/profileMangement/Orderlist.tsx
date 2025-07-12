@@ -39,7 +39,6 @@ export default function OrderList() {
 
     const loadOrders = async () => {
       try {
-        console.log("Calling getOrdersWithSession with:", { token });
         const data = await getOrdersWithSession(token);
         setOrders(data);
       } catch (err: any) {
