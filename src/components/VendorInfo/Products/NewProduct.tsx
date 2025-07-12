@@ -414,10 +414,10 @@ const NewProduct = () => {
       };
 
       localStorage.setItem("productDraft", JSON.stringify(draftData));
-      toast.success("Draft saved successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      // toast.success("Draft saved successfully!", {
+      //   position: "top-right",
+      //   autoClose: 3000,
+      // });
     } catch (error) {
       console.error("Error saving draft:", error);
       toast.error(
