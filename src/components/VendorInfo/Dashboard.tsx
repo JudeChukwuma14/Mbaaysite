@@ -215,7 +215,7 @@ const Dashboard = () => {
       </div>
 
       {/* Chart and Notifications */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="w-full gap-4">
         <motion.div
           className="col-span-2 bg-white rounded-lg p-5 shadow"
           initial={{ opacity: 0, y: 20 }}
@@ -243,7 +243,7 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        <motion.div
+        {/* <motion.div
           className="bg-white rounded-lg p-5 shadow"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -261,7 +261,7 @@ const Dashboard = () => {
               </li>
             ))}
           </ul>
-        </motion.div>
+        </motion.div> */}
       </div>
 
       {/* Orders Table */}

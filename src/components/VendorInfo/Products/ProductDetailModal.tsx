@@ -10,6 +10,7 @@ import {
   Save,
   AlertTriangle,
   Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -146,15 +147,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     `product_image_${id}_${index}`;
   const getLocalStorageVideoKey = (id: string) => `product_video_${id}`;
 
-  const dummyVideoUrl =
-    "https://static.videezy.com/system/resources/previews/000/005/529/original/Reaviling_Sjusj%C3%B8en_Ski_Senter.mp4";
-  const dummyImages = [
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1582562124811-c09040d0a901?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&q=80",
-  ];
-
   const { data: vendor_products } = useQuery({
     queryKey: ["one_product", productId],
     queryFn: () => getVendorProductById(productId),
@@ -193,7 +185,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         autoClose: 3000,
       });
       setIsEditing(false);
-      // Don't clear newImages and newVideo here as we want to keep them in localStorage
     },
     onError: (error) => {
       console.error("Error updating product:", error);
@@ -309,24 +300,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     setIsVideoSelected(isVideo);
   };
 
-  // Use editedProduct.images if available, otherwise fall back to productData.images
-  const displayImages = editedProduct.images || productData.images || [];
-
-  const allImages: string[] = [
-    ...displayImages,
-    ...dummyImages.slice(0, 4 - displayImages.length),
-  ];
-
-  const videoUrl =
-    editedProduct.product_video || productData.product_video || dummyVideoUrl;
-  const isYouTube =
-    videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
-  const embedUrl = isYouTube
-    ? videoUrl
-        .replace("watch?v=", "embed/")
-        .replace("youtu.be/", "youtube.com/embed/")
-    : videoUrl;
-
   // Get YouTube video ID for thumbnail
   const getYouTubeThumbnail = (url: string): string => {
     let videoId = "";
@@ -341,9 +314,29 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       : "/video-placeholder.jpg";
   };
 
-  const videoThumbnail = isYouTube
-    ? getYouTubeThumbnail(videoUrl)
-    : "/video-placeholder.jpg"; // Use a placeholder for non-YouTube videos
+  // Use editedProduct.images if available, otherwise fall back to productData.images
+  const displayImages = editedProduct.images || productData.images || [];
+
+  // Video handling
+  const videoUrl = editedProduct.product_video || productData.product_video;
+  const hasVideo = !!videoUrl;
+  const isYouTube =
+    hasVideo &&
+    (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be"));
+
+  const embedUrl =
+    hasVideo && isYouTube
+      ? videoUrl
+          .replace("watch?v=", "embed/")
+          .replace("youtu.be/", "youtube.com/embed/")
+      : videoUrl;
+
+  const videoThumbnail =
+    hasVideo && isYouTube
+      ? getYouTubeThumbnail(videoUrl)
+      : hasVideo
+      ? "/video-placeholder.jpg"
+      : null;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -380,7 +373,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       const newImageUrl = URL.createObjectURL(file);
 
       // Update the editedProduct images array
-      const updatedImages = [...(editedProduct.images || allImages)];
+      const updatedImages = [...displayImages];
       updatedImages[index] = newImageUrl;
       setEditedProduct({ ...editedProduct, images: updatedImages });
 
@@ -390,7 +383,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       setNewImages(updatedNewImages);
 
       // Update selected media if the changed image is currently selected
-      if (selectedMedia === allImages[index]) {
+      if (selectedMedia === displayImages[index]) {
         setSelectedMedia(newImageUrl);
       }
 
@@ -401,6 +394,53 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           newImageUrl
         );
       }
+    }
+  };
+
+  const handleAddNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const newImageUrl = URL.createObjectURL(file);
+
+      // Add to images array
+      const updatedImages = [...displayImages, newImageUrl];
+      setEditedProduct({ ...editedProduct, images: updatedImages });
+
+      // Add to newImages array
+      const updatedNewImages = [...newImages, file];
+      setNewImages(updatedNewImages);
+
+      // Select the new image
+      setSelectedMedia(newImageUrl);
+
+      // Store in localStorage
+      if (productId) {
+        localStorage.setItem(
+          getLocalStorageImageKey(productId, updatedImages.length - 1),
+          newImageUrl
+        );
+      }
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...displayImages];
+    updatedImages.splice(index, 1);
+    setEditedProduct({ ...editedProduct, images: updatedImages });
+
+    const updatedNewImages = [...newImages];
+    updatedNewImages.splice(index, 1);
+    setNewImages(updatedNewImages);
+
+    // Remove from localStorage
+    if (productId) {
+      localStorage.removeItem(getLocalStorageImageKey(productId, index));
+    }
+
+    // Update selected media if needed
+    if (selectedMedia === displayImages[index]) {
+      setSelectedMedia(updatedImages[0] || null);
+      setIsVideoSelected(false);
     }
   };
 
@@ -419,6 +459,18 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       if (productId) {
         localStorage.setItem(getLocalStorageVideoKey(productId), newVideoUrl);
       }
+    }
+  };
+
+  const handleRemoveVideo = () => {
+    setEditedProduct({ ...editedProduct, product_video: undefined });
+    setNewVideo(null);
+    setSelectedMedia(displayImages[0] || null);
+    setIsVideoSelected(false);
+
+    // Remove from localStorage
+    if (productId) {
+      localStorage.removeItem(getLocalStorageVideoKey(productId));
     }
   };
 
@@ -443,8 +495,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const toggleEdit = () => {
-    if (isEditing) {
-    }
     setIsEditing(!isEditing);
   };
 
@@ -517,7 +567,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <div className="space-y-3 sm:space-y-4">
               <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-                {isVideoSelected ? (
+                {isVideoSelected && hasVideo ? (
                   isYouTube ? (
                     <iframe
                       src={embedUrl}
@@ -528,7 +578,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     />
                   ) : (
                     <video
-                      src={selectedMedia || embedUrl}
+                      src={videoUrl}
                       controls
                       autoPlay
                       className="w-full h-full object-cover"
@@ -538,82 +588,143 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       }}
                     />
                   )
-                ) : (
+                ) : displayImages.length > 0 ? (
                   <img
-                    src={selectedMedia || allImages[0]}
+                    src={selectedMedia || displayImages[0]}
                     alt={productData.name}
                     className="w-full h-full object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder.svg";
+                    }}
                   />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <ImageIcon className="w-16 h-16 text-gray-300" />
+                  </div>
                 )}
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
-                {allImages.map((image: string, index: number) => (
+                {displayImages.map((image: string, index: number) => (
                   <div
                     key={`img-${index}`}
                     className={`w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer 
-                    relative transition-all duration-300 ${
-                      selectedMedia === image
-                        ? "ring-2 ring-blue-500"
-                        : "opacity-80"
-                    }`}
+                      relative transition-all duration-300 ${
+                        selectedMedia === image && !isVideoSelected
+                          ? "ring-2 ring-blue-500"
+                          : "opacity-80"
+                      }`}
                     onClick={() => handleMediaSelect(image)}
                   >
                     <img
-                      src={image || "/placeholder.svg"}
-                      alt={`Thumbnail ${index + 1}`}
+                      src={image}
+                      alt={`Product image ${index + 1}`}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder.svg";
                       }}
                     />
                     {isEditing && (
-                      <label
-                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
-                        title="Replace image"
-                      >
-                        <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
-                        <motion.input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleImageChange(e, index)}
-                        />
-                      </label>
+                      <>
+                        <label
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                          title="Replace image"
+                        >
+                          <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                          <motion.input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageChange(e, index)}
+                          />
+                        </label>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveImage(index);
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          title="Remove image"
+                        >
+                          <X size={14} />
+                        </button>
+                      </>
                     )}
                   </div>
                 ))}
 
-                <div
-                  key="video"
-                  className={`w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative 
-                    transition-all duration-300 hover:scale-105 ${
-                      isVideoSelected ? "ring-2 ring-blue-500" : "opacity-80"
-                    }`}
-                  onClick={() =>
-                    handleMediaSelect(
-                      editedProduct.product_video || videoUrl,
-                      true
-                    )
-                  }
-                >
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                    <Play className="text-white w-6 sm:w-8 h-6 sm:h-8" />
+                {/* Video thumbnail - only show if video exists */}
+                {hasVideo && (
+                  <div
+                    key="video"
+                    className={`w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative 
+                      transition-all duration-300 hover:scale-105 ${
+                        isVideoSelected ? "ring-2 ring-blue-500" : "opacity-80"
+                      }`}
+                    onClick={() => handleMediaSelect(videoUrl, true)}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                      <Play className="text-white w-6 sm:w-8 h-6 sm:h-8" />
+                    </div>
+                    <img
+                      src={videoThumbnail || "/video-placeholder.jpg"}
+                      alt="Video thumbnail"
+                      className="w-full h-full object-cover opacity-70"
+                      onError={(e) => {
+                        e.currentTarget.src = "/video-placeholder.jpg";
+                      }}
+                    />
+                    {isEditing && (
+                      <>
+                        <label
+                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                          title="Replace video"
+                        >
+                          <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                          <motion.input
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            onChange={handleVideoChange}
+                          />
+                        </label>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveVideo();
+                          }}
+                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          title="Remove video"
+                        >
+                          <X size={14} />
+                        </button>
+                      </>
+                    )}
                   </div>
-                  <img
-                    src={videoThumbnail || "/placeholder.svg"}
-                    alt="Video thumbnail"
-                    className="w-full h-full object-cover opacity-70"
-                    onError={(e) => {
-                      e.currentTarget.src = "/video-placeholder.jpg";
-                    }}
-                  />
-                  {isEditing && (
-                    <label
-                      className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
-                      title="Replace video"
-                    >
-                      <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                )}
+
+                {/* Add new image button (only in edit mode) */}
+                {isEditing && (
+                  <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative">
+                    <label className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Upload className="text-gray-400 w-8 h-8 mb-1" />
+                      <span className="text-xs text-gray-500">Add Image</span>
+                      <motion.input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAddNewImage}
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {/* Add video button (only in edit mode when no video exists) */}
+                {isEditing && !hasVideo && (
+                  <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative">
+                    <label className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+                      <Play className="text-gray-400 w-8 h-8 mb-1" />
+                      <span className="text-xs text-gray-500">Add Video</span>
                       <motion.input
                         type="file"
                         accept="video/*"
@@ -621,8 +732,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         onChange={handleVideoChange}
                       />
                     </label>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -701,7 +812,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <div className="mt-1">
                       <div className="relative">
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
-                          $
+                          ₦
                         </span>
                         <motion.input
                           type="number"
@@ -718,7 +829,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </div>
                   ) : (
                     <p className="text-lg sm:text-xl font-bold">
-                      ${productData.price?.toFixed(2)}
+                      ₦{productData.price?.toFixed(2)}
                     </p>
                   )}
                 </div>

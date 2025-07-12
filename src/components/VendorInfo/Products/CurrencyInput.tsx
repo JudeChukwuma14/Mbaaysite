@@ -76,7 +76,7 @@ const COUNTRY_CURRENCY_MAP: Record<
 export default function CurrencyInput({
   value,
   onChange,
-  country = "United States",
+  country = "Nigeria",
   className = "",
 }: CurrencyInputProps) {
   // Get currency data based on country name

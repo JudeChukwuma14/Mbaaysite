@@ -16,30 +16,30 @@ import { ChevronDown } from "lucide-react";
 
 import CurrencyInput from "./CurrencyInput";
 
-interface ProductData {
-  productName: string;
-  description: string;
-  descriptionFileName: string;
-  activeCategory: string;
-  subCategory: string;
-  subSubCategory: string;
-  quantity: string;
-  sku: string;
-  price: string;
-  vendorCountry?: string;
-  imagePreviewUrls: string[];
-  youtubeUrl: string;
-  youtubeEmbedUrl: string;
-  uploadedVideoInfo: {
-    name?: string;
-    size?: number;
-    type?: string;
-    thumbnailUrl?: string;
-    file?: File;
-  } | null;
-  selectedCategories: string[];
-  productImages?: File[];
-}
+// interface ProductData {
+//   productName: string;
+//   description: string;
+//   descriptionFileName: string;
+//   activeCategory: string;
+//   subCategory: string;
+//   subSubCategory: string;
+//   quantity: string;
+//   sku: string;
+//   price: string;
+//   vendorCountry?: string;
+//   imagePreviewUrls: string[];
+//   youtubeUrl: string;
+//   youtubeEmbedUrl: string;
+//   uploadedVideoInfo: {
+//     name?: string;
+//     size?: number;
+//     type?: string;
+//     thumbnailUrl?: string;
+//     file?: File;
+//   } | null;
+//   selectedCategories: string[];
+//   productImages?: File[];
+// }
 
 const NewProduct = () => {
   const user = useSelector((state: any) => state.vendor);
@@ -219,11 +219,36 @@ const NewProduct = () => {
     uploadedVideoInfo,
   ]);
 
+  // Add these utility functions
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const base64ToFile = (base64: string, filename: string): File => {
+    const arr = base64.split(",");
+    const mime = arr[0].match(/:(.*?);/)![1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  // Update the draft loading in useEffect
   useEffect(() => {
     const savedDraft = localStorage.getItem("productDraft");
     if (savedDraft) {
       try {
-        const draftData = JSON.parse(savedDraft) as Partial<ProductData>;
+        const draftData = JSON.parse(savedDraft) as any;
+
+        // Restore all basic fields
         if (draftData.productName) setProductName(draftData.productName);
         if (draftData.description) setValue(draftData.description);
         if (draftData.descriptionFileName)
@@ -240,23 +265,65 @@ const NewProduct = () => {
         if (draftData.youtubeUrl) setYoutubeUrl(draftData.youtubeUrl);
         if (draftData.youtubeEmbedUrl)
           setYoutubeEmbedUrl(draftData.youtubeEmbedUrl);
-        if (draftData.uploadedVideoInfo)
-          setUploadedVideoInfo(draftData.uploadedVideoInfo);
-        if (
-          draftData.imagePreviewUrls &&
-          draftData.imagePreviewUrls?.length > 0
-        )
-          setImagePreviewUrls(draftData.imagePreviewUrls);
-        if (
-          draftData.selectedCategories &&
-          draftData.selectedCategories?.length > 0
-        )
+        if (draftData.selectedCategories)
           setSelectedCategories(draftData.selectedCategories);
+
+        // Restore images from base64
+        if (draftData.imagePreviewsWithBase64?.length > 0) {
+          const restoredImages = draftData.imagePreviewsWithBase64.map(
+            (img: any) => base64ToFile(img.base64, img.name)
+          );
+          setProductImages(restoredImages);
+
+          // Create preview URLs
+          const urls = restoredImages.map((file: File) =>
+            URL.createObjectURL(file)
+          );
+          setImagePreviewUrls(urls);
+        }
+
+        // Restore video from base64 if present
+        if (draftData.uploadedVideoInfo?.base64) {
+          const videoFile = base64ToFile(
+            draftData.uploadedVideoInfo.base64,
+            draftData.uploadedVideoInfo.name || "video"
+          );
+          setUploadedVideoInfo({
+            ...draftData.uploadedVideoInfo,
+            file: videoFile,
+          });
+        }
       } catch (error) {
         console.error("Error loading draft:", error);
       }
     }
   }, []);
+
+  // Add auto-save effect
+  useEffect(() => {
+    if (isDirty) {
+      const timer = setTimeout(() => {
+        saveDraft();
+      }, 2000); // Save after 2 seconds of inactivity
+
+      return () => clearTimeout(timer);
+    }
+  }, [
+    productName,
+    value,
+    activeCategory,
+    subCategory,
+    subSubCategory,
+    quantity,
+    sku,
+    price,
+    productImages,
+    youtubeUrl,
+    youtubeEmbedUrl,
+    uploadedVideoInfo,
+    selectedCategories,
+    isDirty,
+  ]);
 
   const handleCategoryChange = (category: string) => {
     if (category && selectedCategories.includes(category)) {
@@ -300,23 +367,34 @@ const NewProduct = () => {
     setUploadedVideoInfo(info);
   };
 
-  const saveDraft = () => {
+  // Update the saveDraft function
+  const saveDraft = async () => {
     setIsLoading(true);
 
     try {
-      if (!productName.trim()) throw new Error("Product name is required");
-      if (!activeCategory) throw new Error("Please select a category");
-      if (!subCategory || subCategory === "")
-        throw new Error("Please select a subcategory");
-      if (!quantity || isNaN(Number(quantity)))
-        throw new Error("Please enter a valid quantity");
-      if (Number(quantity) < 0) throw new Error("Quantity cannot be negative");
-      const numericPrice = Number(price.replace(/[^0-9.-]+/g, ""));
-      if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
-      if (productImages?.length === 0)
-        throw new Error("Please upload at least one product image");
+      // Convert images to base64 for storage
+      const imagePreviewsWithBase64 = await Promise.all(
+        productImages.map(async (file) => {
+          return {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            lastModified: file.lastModified,
+            base64: await fileToBase64(file),
+          };
+        })
+      );
 
-      const draftData: Partial<ProductData> = {
+      // Convert video to base64 if present
+      let videoBase64 = null;
+      if (uploadedVideoInfo?.file) {
+        videoBase64 = {
+          ...uploadedVideoInfo,
+          base64: await fileToBase64(uploadedVideoInfo.file),
+        };
+      }
+
+      const draftData = {
         productName,
         description: value,
         descriptionFileName,
@@ -329,11 +407,12 @@ const NewProduct = () => {
         vendorCountry,
         youtubeUrl,
         youtubeEmbedUrl,
-        uploadedVideoInfo,
-        imagePreviewUrls,
+        uploadedVideoInfo: videoBase64,
+        imagePreviewsWithBase64, // Save the base64 versions
         selectedCategories,
-        productImages: productImages,
+        // Don't try to save File objects directly
       };
+
       localStorage.setItem("productDraft", JSON.stringify(draftData));
       toast.success("Draft saved successfully!", {
         position: "top-right",
@@ -344,7 +423,7 @@ const NewProduct = () => {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to save draft. Please fill all required fields.",
+          : "Failed to save draft. Please try again.",
         {
           position: "top-right",
           autoClose: 4000,
