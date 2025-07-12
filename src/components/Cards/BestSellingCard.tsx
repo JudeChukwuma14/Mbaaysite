@@ -1,100 +1,134 @@
-import React, { useState } from "react";
-import { FiHeart, FiPlus, FiX, FiChevronDown } from "react-icons/fi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { addItem } from "@/redux/slices/cartSlice";
+import { addWishlistItem } from "@/redux/slices/wishlistSlice";
+import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import { Heart, ShoppingCart } from "lucide-react";
+import { convertPrice } from "@/utils/currencyCoverter";
+import { addToCart } from "@/utils/cartApi";
+import { initializeSession } from "@/redux/slices/sessionSlice";
+import { useEffect } from "react";
 
 
-interface ProductCardProps {
-  product: {
-    id: number;
-    name: string;
-    price: number;
-    image: string;
-  };
-  showAddToCartButton?: boolean;
-  onAddToCart?: () => void;
-  onToggleFavorite?: () => void;
+interface Product {
+  _id: string;
+  id: string;
+  name: string;
+  price: number;
+  images: string[];
+  poster: string;
 }
 
-const BestSellingCard: React.FC<ProductCardProps> = ({
-  product,
-  showAddToCartButton = true,
-  onAddToCart,
-  onToggleFavorite,
-}) => {
-  const [showAddToCart, setShowAddToCart] = useState(false);
-  // const dispatch = useDispatch();
+interface BestSellingCardProps {
+  product: Product;
+}
 
-  const toggleAddToCart = () => {
-    setShowAddToCart((prev) => !prev);
+const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
+  const dispatch = useDispatch();
+  const { currency, language } = useSelector((state: RootState) => state.settings);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
+
+  // Ensure sessionId is initialized
+  useEffect(() => {
+    if (!sessionId) {
+      dispatch(initializeSession());
+    }
+  }, [dispatch, sessionId]);
+
+  const handleAddToCartClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!sessionId) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
+
+    try {
+      await addToCart(sessionId, product._id, 1);
+      dispatch(
+        addItem({
+          id: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          image: product.images[0] || product.poster || "/placeholder.svg",
+        })
+      );
+      toast.success(`${product.name} added to cart!`);
+    } catch (error) {
+      toast.error((error as Error)?.message || "Failed to add item to cart", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
   };
 
-  // const handleAddToCartClick = () => {
-  //   toggleAddToCart();
-  //   dispatch(addItem({
-  //     id: product.id,
-  //     name: product.name,
-  //     price: parseFloat(product.price.replace('$', '')),
-  //     quantity: 1,
-  //     image: product.image,
-  //   }));
-  //   toast.success(`${product.name} added to cart!`, {
-  //     position: "bottom-right",
-  //     autoClose: 3000,
-  //   });
-  // };
+  const handleAddWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const handleToggleFavoriteClick = () => {
-    onToggleFavorite?.();
-    toast.info(`${product.name} added to favorites!`, {
-      position: "bottom-right",
-      autoClose: 3000,
-    });
+    dispatch(
+      addWishlistItem({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        image: product.images[0] || product.poster,
+      })
+    );
+    toast.success(`${product.name} added to your wishlist!`);
   };
+
+  const convertedPrice = convertPrice(product.price, "USD", currency);
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white hover:shadow-lg transition relative">
-      <ToastContainer />
-      <div className="h-64 flex justify-center items-center bg-white">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="object-contain h-full"
-        />
-        <button
-          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition"
-          onClick={handleToggleFavoriteClick}
-        >
-          <FiHeart size={20} />
-        </button>
-      </div>
-      <div className="p-4 flex flex-col gap-2">
-        <h3 className="text-sm font-semibold">{product.name}</h3>
-        <p className="text-sm font-bold">{product.price}</p>
-      </div>
-      {showAddToCartButton && (
-        <div
-          className={`transition-opacity duration-300 ${
-            showAddToCart ? "opacity-100" : "opacity-0"
-          }`}
-        >
+    <Link to={`/product/${product._id}`} className="block group">
+      <div className="overflow-hidden transition-all duration-300 bg-white border border-gray-200 rounded-lg hover:shadow-md">
+        <div className="relative overflow-hidden aspect-square">
+          <img
+            src={product.images[0] || product.poster || "/placeholder.svg"}
+            alt={product.name}
+            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+          />
+
+          <div className="absolute flex flex-col gap-2 transition-all duration-300 transform translate-x-2 opacity-0 top-3 right-3 group-hover:opacity-100 group-hover:translate-x-0">
+            <button
+              className="flex items-center justify-center text-gray-700 bg-white rounded-full shadow-md w-9 h-9 hover:bg-gray-100"
+              onClick={handleAddWishlist}
+              aria-label="Add to wishlist"
+            >
+              <Heart className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div className="p-4">
+          <h3 className="mb-1 text-base font-medium text-gray-800 line-clamp-1">{product.name}</h3>
+          <div className="flex items-center">
+            <span className="text-sm font-semibold text-gray-900">
+              {convertedPrice.toLocaleString(language, {
+                style: "currency",
+                currency: currency,
+              })}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 pt-0">
           <button
-            className="w-full py-2 bg-orange-400 text-white flex justify-center items-center gap-2 hover:bg-orange-500 transition"
-            onClick={onAddToCart}
+            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-300 bg-orange-500 border border-orange-300 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-600"
+            onClick={handleAddToCartClick}
           >
-            <FiPlus size={18} />
-            <span>Add to Cart</span>
+            <ShoppingCart className="w-4 h-4 mr-2" />
+            Add to Cart
           </button>
         </div>
-      )}
-      <button
-        className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow hover:bg-gray-100 transition"
-        onClick={toggleAddToCart}
-      >
-        {showAddToCart ? <FiX size={20} /> : <FiChevronDown size={20} />}
-      </button>
-    </div>
+      </div>
+    </Link>
   );
 };
 
 export default BestSellingCard;
+

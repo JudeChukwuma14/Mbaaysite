@@ -11,7 +11,6 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
-
 import { searchProducts } from "@/utils/productApi";
 import { useTranslation } from "react-i18next";
 import i18next from "@/utils/i18n";

@@ -50,7 +50,6 @@ const Sculptures = () => {
                             sub2 === subcategory?.toLowerCase())
                     );
                 });
-
                 setProducts(filtered);
             } catch (err) {
                 console.error("Error fetching products:", err);

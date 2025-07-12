@@ -3,11 +3,8 @@ import { Link, NavLink } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 // Import components
 import Slider from "@/components/Slider";
-// import CategoryCard from "@/components/categorycardprops/CategoryCard";
-import FirstCartCard from "@/components/Cards/FirstCartCard";
 import NewCard from "@/components/Cards/NewCard";
 import VendorCard from "@/components/VendorCard";
-import ExploreCard from "@/components/Cards/ExploreCard";
 import AuctionCard from "@/components/AuctionPage/AuctionCard";
 import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
@@ -15,9 +12,7 @@ import NewArrival from "@/components/Cards/NewArrival";
 import Spinner from "@/components/Common/Spinner";
 import {
   Auction,
-  ExploreData,
   flashSale,
-  ProductData,
 } from "@/components/mockdata/data";
 import { getAllProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
@@ -26,6 +21,7 @@ import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import CategoriesSection from "@/components/Reuseable/CategoriesSection";
+import BestSellingCard from "@/components/Cards/BestSellingCard";
 
 interface Product {
   _id: string;
@@ -47,27 +43,22 @@ interface VendorProfile {
 
 const HomeArea: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [bestSellingProducts, setBestSellingProducts] = useState<Product[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [getVender, setGetVendor] = useState<VendorProfile[]>([]);
 
-
   const createInitialAvatar = (name: string) => {
-    // Get first letter and ensure it's uppercase
     const firstLetter = name.trim().charAt(0).toUpperCase();
-
-    // Color options (you can customize these)
     const colors = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899"];
     const color = colors[firstLetter.charCodeAt(0) % colors.length];
-
-    // Create SVG with just the first letter
     const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'>
       <rect width='100' height='100' fill='${color}' rx='50' />
       <text x='50%' y='50%' font-size='60' fill='white' 
             font-weight='bold'
             text-anchor='middle' dominant-baseline='middle'>${firstLetter}</text>
     </svg>`;
-
     return `data:image/svg+xml;base64,${btoa(svg)}`;
   };
 
@@ -79,7 +70,39 @@ const HomeArea: React.FC = () => {
         const productsData = Array.isArray(result)
           ? result
           : result.products || [];
-        setProducts(productsData);
+
+        // Mock saleCount for testing
+        const productsWithSales = productsData.map((product: Product) => ({
+          ...product,
+          saleCount: Math.floor(Math.random() * 100), // Random sales count (0-99)
+        }));
+
+        // Filter for best-selling products (top 5 by mock saleCount)
+        const bestSelling = productsWithSales
+          .sort(
+            (
+              a: Product & { saleCount: number },
+              b: Product & { saleCount: number }
+            ) => b.saleCount - a.saleCount
+          )
+          .slice(0, 5);
+
+        // Filter for new arrivals (last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const newArrivals = productsData
+          .filter(
+            (product: Product) => new Date(product.createdAt) >= thirtyDaysAgo
+          )
+          .sort(
+            (a: Product, b: Product) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+          .slice(0, 15); // Match your current limit
+        setProducts(productsData); // Store original data
+        setBestSellingProducts(bestSelling);
+        setNewArrivals(newArrivals);
+        console.log(productsData);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to fetch products. Please try again.");
@@ -176,17 +199,22 @@ const HomeArea: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
             Best Selling Products
           </h2>
-          <Link
-            to="/random-product"
-            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All
-          </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {ProductData.map((item) => (
-            <FirstCartCard key={item.id} product={item} />
-          ))}
+          {bestSellingProducts.length > 0 ? (
+            bestSellingProducts.map((product) => (
+              <BestSellingCard
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500">No best-selling products available.</p>
+          )}
         </div>
       </section>
 
@@ -220,8 +248,7 @@ const HomeArea: React.FC = () => {
               ? profile.avatar
               : createInitialAvatar(profile.storeName || "V");
             return (
-              <Link
-                to={`/veiws-profile/${profile._id}`}>
+              <Link to={`/veiws-profile/${profile._id}`}>
                 <VendorCard
                   key={profile._id}
                   name={profile.storeName}
@@ -238,6 +265,7 @@ const HomeArea: React.FC = () => {
         </div>
       </section>
       {/* New Arrivals Section */}
+
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -254,12 +282,22 @@ const HomeArea: React.FC = () => {
             View All <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {ExploreData.map((item, index) => (
-            <ExploreCard key={index} {...item} />
-          ))}
+        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+          {newArrivals.length > 0 ? (
+            newArrivals.slice(0, 10).map((product) => (
+              <NewArrival
+                key={product._id}
+                product={{
+                  ...product,
+                  id: product._id,
+                  poster: product.images[0] || "",
+                }}
+              />
+            ))
+          ) : (
+            <p className="text-gray-500">No new arrivals available.</p>
+          )}
         </div>
-
         <div className="flex justify-center">
           <Link
             to="/random-product"
@@ -269,7 +307,6 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
       </section>
-      {/* ............................... */}
       {/* Second Promotional Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">

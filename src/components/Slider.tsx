@@ -9,28 +9,34 @@ import { motion } from "framer-motion";
 const slides = [
   {
     image: image1,
-    text: "Discover the latest fashion trends",
+    text: "Well made pieces you can wear every day",
     buttonText: "Shop now",
     link: "/",
   },
   {
     image: image2,
-    text: "Upgrade your wardrobe today",
+    text: "Jewellery with weight and story",
     buttonText: "Shop now",
     link: "/",
   },
   {
     image: image3,
-    text: "Upgrade your wardrobe today",
+    text: "Clean skincare made with simple",
     buttonText: "Shop now",
     link: "/",
   },
   {
     image: image4,
-    text: "Upgrade your wardrobe today",
+    text: "Designed to feel good, not just look good",
     buttonText: "Shop now",
     link: "/",
   },
+  {
+    image:"https://i.pinimg.com/1200x/79/d2/ef/79d2ef34e6ec39c61a584ec22373014f.jpg",
+     text: "Original pieces from working artists",
+    buttonText: "Shop now",
+    link: "/",
+  }
 ];
 
 const Slider: React.FC = () => {

@@ -36,7 +36,7 @@ const TraditionalCraft = () => {
                     "beaded art",
                     "raffia & bamboo work",
                     "gourd art",
-                    "rope/thread work",
+                    "rope & thread work",
                 ];
                 const filtered = allProducts.filter((product: Product) => {
                     const category = product.category?.toLowerCase() || "";
@@ -50,7 +50,7 @@ const TraditionalCraft = () => {
                             sub2 === subcategory?.toLowerCase())
                     );
                 });
-
+                console.log(result)
                 setProducts(filtered);
             } catch (err) {
                 console.error("Error fetching products:", err);
