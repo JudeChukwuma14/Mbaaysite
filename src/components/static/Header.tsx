@@ -327,21 +327,33 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-
             <div className="ml-2">
-              {firstLetter ? (
+              {vendor?.vendor?.businessLogo ? (
+                <Link
+                  to="/app"
+                  aria-label="Vendor Dashboard"
+                >
+                  <div className="w-10 h-10 overflow-hidden border-2 border-orange-400 rounded-full">
+                    <img
+                      src={vendor.vendor.avatar || "/placeholder.svg"}
+                      alt={`${vendor.vendor.storeName} logo`}
+                      className="object-cover h-[100%] w-[100%]"
+                    />
+                  </div>
+                </Link>
+              ) : firstLetter ? (
                 <Link
                   to={dashboardLink}
                   aria-label={vendor ? "Vendor Dashboard" : "User Dashboard"}
                 >
-                  <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
+                  <div className="flex items-center justify-center w-8 h-8 text-lg font-bold text-white bg-orange-500 rounded-full shadow-md ring-2 ring-orange-400">
                     {firstLetter}
                   </div>
                 </Link>
               ) : (
                 <Link
                   to="/selectpath"
-                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bordering-white hover:bg-orange-600"
+                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bg-orange-600"
                 >
                   Get started
                 </Link>
