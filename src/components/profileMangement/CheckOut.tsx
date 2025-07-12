@@ -600,7 +600,6 @@ export default function CheckoutForm() {
       return;
     }
     if (!userId || !(user?.token || vendor?.token)) {
-      toast.error("Please log in again.");
       navigate("/selectpath");
       return;
     }
@@ -644,7 +643,6 @@ export default function CheckoutForm() {
       console.log("userid.........", userId)
       const response = await submitOrder(sessionId, userId, orderData);
       console.log("Checkout response:", response);
-      toast.success("Order placed successfully!");
       dispatch(clearSessionId())
       dispatch(clearCart());
 
