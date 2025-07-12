@@ -54,8 +54,6 @@ export const fetchOrders = async (token: string): Promise<Order[]> => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log("API response:", response.data);
-
     if (!response.data.success || !Array.isArray(response.data.orders)) {
       throw new Error(response.data.message || "Failed to fetch orders");
     }
@@ -104,7 +102,6 @@ export const fetchOrders = async (token: string): Promise<Order[]> => {
       createdAt: order.createdAt || new Date().toISOString(),
     }));
   } catch (error: any) {
-    console.error("Fetch Orders Error:", error.message, error.response?.data, error.config);
     throw new Error(error.response?.data?.message || error.message || "Failed to fetch orders");
   }
 };

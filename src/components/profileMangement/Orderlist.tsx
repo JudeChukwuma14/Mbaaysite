@@ -19,13 +19,15 @@ export default function OrderList() {
   const [confirmedOrders, setConfirmedOrders] = useState<string[]>([]);
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
-  const isAuthenticated = !!user.token;
-  const token = user.token;
+  const vendor = useSelector((state: RootState)=>state.vendor)
+  const isAuthenticated = !!user.token || !!vendor.token
+  const token = user.token || vendor.token
 
   // Debug Redux state
   useEffect(() => {
     console.log("Redux state:", { user, token });
-  }, [user, token]);
+    console.log("Redux state vendor", {vendor, token})
+  }, [user, vendor, token]);
 
   useEffect(() => {
     if (!isAuthenticated || !token) {
