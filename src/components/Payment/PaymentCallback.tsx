@@ -6,6 +6,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { getPaymentStatus, PaymentStatusResponse, OrderData } from "@/utils/orderApi";
 import { clearCart } from "@/redux/slices/cartSlice";
+import { clearSessionId } from "@/redux/slices/sessionSlice";
 
 
 export default function PaymentCallback() {
@@ -18,16 +19,12 @@ export default function PaymentCallback() {
     try {
       dispatch(clearCart());
     } catch (error: any) {
-      console.error("Error clearing cart:", error);
       toast.error("Failed to clear cart. Please clear it manually.");
     }
   };
 
   const mapBackendOrderData = (backendOrderData: any[]): OrderData | null => {
-    console.log("Mapping backend orderData:", JSON.stringify(backendOrderData, null, 2));
-
     if (!backendOrderData || !Array.isArray(backendOrderData) || backendOrderData.length === 0) {
-      console.warn("Invalid or empty orderData array:", backendOrderData);
       return null;
     }
 
@@ -35,7 +32,6 @@ export default function PaymentCallback() {
     const product = backendOrderData[0].product;
 
     if (!firstOrder || !product || !firstOrder.buyerInfo) {
-      console.warn("Missing order, product, or buyerInfo in orderData:", backendOrderData);
       return null;
     }
 
@@ -70,8 +66,6 @@ export default function PaymentCallback() {
         total: firstOrder.totalPrice?.toString() || "0.00",
       },
     };
-
-    console.log("Mapped orderData:", JSON.stringify(mappedData, null, 2));
     return mappedData;
   };
 
@@ -90,14 +84,9 @@ export default function PaymentCallback() {
         setIsLoading(false);
         return;
       }
-
-      console.log("Verifying payment with reference:", reference);
-
       try {
         const response: PaymentStatusResponse = await getPaymentStatus(reference);
-        console.log("Payment Status Response:", JSON.stringify(response, null, 2));
 
-        // Map backend orderData to expected OrderData
         const mappedOrderData = mapBackendOrderData(
           Array.isArray(response.orderData) ? response.orderData : []
         );
@@ -113,23 +102,14 @@ export default function PaymentCallback() {
           mappedOrderData.cartItems &&
           mappedOrderData.cartItems.length > 0
         ) {
-          console.log("Navigating to success with state:", {
-            orderId: response.orderId,
-            orderData: mappedOrderData,
-          });
-          // Clear cart on successful payment
-          handleClearCart();
 
+          dispatch(clearSessionId())
+          handleClearCart();
           toast.success("Payment verified successfully!");
           navigate(`/${response.orderId}/success`, {
             state: { orderId: response.orderId, orderData: mappedOrderData },
           });
         } else {
-          console.warn("Invalid or missing orderId or orderData in response:", {
-            orderId: response.orderId,
-            orderData: response.orderData,
-            mappedOrderData,
-          });
           toast.error("Payment failed. Please try again.");
           navigate("/failed", {
             state: {
@@ -141,11 +121,6 @@ export default function PaymentCallback() {
           });
         }
       } catch (error: any) {
-        console.error("Payment Verification Error:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-        });
         const errorMessage = error.response?.data?.message || "Failed to verify payment status.";
         toast.error(errorMessage);
         navigate("/failed", {
