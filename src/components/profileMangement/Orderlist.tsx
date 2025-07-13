@@ -17,6 +17,7 @@ export default function OrderList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmedOrders, setConfirmedOrders] = useState<string[]>([]);
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
   const vendor = useSelector((state: RootState) => state.vendor);
@@ -62,19 +63,22 @@ export default function OrderList() {
   }, [navigate, isAuthenticated, token]);
 
   const handleConfirmReceipt = async (orderId: string) => {
+    setConfirmingOrderId(orderId); // Set loading state
     try {
       await confirmOrderReceived(orderId);
       setConfirmedOrders((prev) => [...prev, orderId]);
       setOrders((prevOrders) =>
         prevOrders.map((order) =>
           order.id === orderId
-            ? { ...order, paymentStatus: "Paid", orderStatus: "Completed" }
+            ? { ...order, paymentStatus: "Paid", orderStatus: "Delivered" }
             : order
         )
       );
       toast.success("Order confirmed and vendor paid.");
     } catch (error: any) {
       toast.error(error.message || "Failed to confirm payment");
+    } finally {
+      setConfirmingOrderId(null); // Clear loading state
     }
   };
 
@@ -261,10 +265,16 @@ export default function OrderList() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleConfirmReceipt(order.id)}
-                        disabled={confirmedOrders.includes(order.id)} // Disable if confirmed
-                        className="flex items-center gap-2"
+                        disabled={confirmedOrders.includes(order.id) || confirmingOrderId === order.id}
+                        className={`flex items-center gap-2 ${order.orderStatus === "Delivered" ? "hidden" : ""}`}
                       >
-                        {confirmedOrders.includes(order.id) ? "Confirmed" : "Confirm Payment"}
+                        {confirmingOrderId === order.id ? (
+                          <div className="w-4 h-4 border-2 rounded-full border-t-gray-900 animate-spin" />
+                        ) : confirmedOrders.includes(order.id) ? (
+                          "Confirmed"
+                        ) : (
+                          "Confirm Payment"
+                        )}
                       </Button>
                     </div>
                   </div>

@@ -106,7 +106,7 @@ const MSC: React.FC = () => {
             category === "fashion clothing and fabrics" &&
             sub1 === "footwear & shoes" &&
             sub2 ===
-               "modern shoes with cultural designs (e.g., sneakers, african prints,embroidered flats)"
+               "modern shoes with cultural designs(e.g., sneakers, african prints,embroidered flats)"
           );
         });
         console.log("Filtered products:", filtered);
