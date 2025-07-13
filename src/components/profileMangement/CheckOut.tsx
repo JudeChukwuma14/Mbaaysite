@@ -603,8 +603,6 @@ export default function CheckoutForm() {
       navigate("/selectpath");
       return;
     }
-
-
     setIsSubmitting(true);
     try {
       const pricing = calculatePricing(cartItems, discountRate);
@@ -634,29 +632,26 @@ export default function CheckoutForm() {
         cartItems: cartItems.map((item) => ({
           productId: item.id,
           name: item.name,
-          price: Number(item.price), // Ensure number
-          quantity: Number(item.quantity), // Ensure number
+          price: Number(item.price), 
+          quantity: Number(item.quantity), 
           image: item.image,
         })),
         pricing,
       };
       const response = await submitOrder(sessionId, userId, orderData);
-      console.log("Checkout response:", response);
       dispatch(clearSessionId())
       dispatch(clearCart());
 
       if (data.paymentOption === "Pay Before Delivery") {
         if (response.authorization_url) {
-          window.location.href = response.authorization_url; // Redirect to Paystack
+          window.location.href = response.authorization_url;
         } else {
           throw new Error("Payment initialization failed: No authorization URL provided");
         }
       } else {
-        // Pay After Delivery: Redirect to success page
         navigate(`/${response.orderId}/success`, { state: { orderId: response.orderId, orderData } });
       }
     } catch (error: any) {
-      console.error("Order submission failed:", error);
       toast.error(error.message || "Failed to place order. Please try again.");
       navigate("/failed", {
         state: {

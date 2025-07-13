@@ -21,8 +21,6 @@ export default function OrderList() {
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
   const vendor = useSelector((state: RootState) => state.vendor);
-
-  // Determine role and token
   const role = user.token ? "user" : vendor.token ? "vendor" : null;
   const token = role === "user" ? user.token : role === "vendor" ? vendor.token : null;
   const isAuthenticated = !!token && !!role;
@@ -78,7 +76,7 @@ export default function OrderList() {
     } catch (error: any) {
       toast.error(error.message || "Failed to confirm payment");
     } finally {
-      setConfirmingOrderId(null); // Clear loading state
+      setConfirmingOrderId(null);
     }
   };
 
