@@ -44,16 +44,16 @@ const api = axios.create({
   timeout: 20000,
 });
 
-export const fetchOrders = async (token: string): Promise<Order[]> => {
+export const fetchOrders = async (token: string, role?: "user" | "vendor"): Promise<Order[]> => {
   try {
     if (!token) {
       throw new Error("Authentication token is missing. Please log in again.");
     }
-    console.log("Fetching orders with token:", { token });
+    console.log("Fetching orders with token:", { token, role });
     const response = await api.get<ApiResponse>("/get_orders_user", {
       headers: { Authorization: `Bearer ${token}` },
     });
-
+    console.log(response)
     if (!response.data.success || !Array.isArray(response.data.orders)) {
       throw new Error(response.data.message || "Failed to fetch orders");
     }
@@ -106,6 +106,7 @@ export const fetchOrders = async (token: string): Promise<Order[]> => {
   }
 };
 
-export const getOrdersWithSession = async (token: string): Promise<Order[]> => {
-  return fetchOrders(token);
+export const getOrdersWithSession = async (token: string, role?: "user" | "vendor"): Promise<Order[]> => {
+  return fetchOrders(token, role);
 };
+

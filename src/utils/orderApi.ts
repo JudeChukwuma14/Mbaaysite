@@ -130,10 +130,16 @@ export const getPaymentStatus = async (
 export const confirmOrderReceived = async (orderId: string): Promise<void> => {
   try {
     const response = await api.patch(`/confirmOrderReceived/${orderId}`);
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to confirm payment");
+
+    if (response.status === 200) {
+      return; 
     }
+    throw new Error(response.data.message || "Failed to confirm payment");
   } catch (error: any) {
-    throw new Error(error.response?.data?.message || error.message || "Failed to confirm payment");
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to confirm payment"
+    );
   }
 };

@@ -18,7 +18,7 @@ const currencySymbols: Record<string, string> = {
   INR: "₹",
 };
 
-export const fetchExchangeRates = async (baseCurrency: string = "USD") => {
+export const fetchExchangeRates = async (baseCurrency: string = "NGN") => {
   if (lastFetched && Date.now() - lastFetched < CACHE_DURATION) return exchangeRates;
   try {
     const response = await axios.get(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
@@ -43,7 +43,7 @@ export const getCurrencySymbol = (currency: string): string => {
 
 const countryCurrencyMap: Record<string, string> = Country.getAllCountries().reduce(
   (map, country: ICountry) => {
-    map[country.isoCode.toUpperCase()] = country.currency && country.currency !== "UNDEFINED" ? country.currency : "USD";
+    map[country.isoCode.toUpperCase()] = country.currency && country.currency !== "UNDEFINED" ? country.currency : "NGN";
     return map;
   },
   {} as Record<string, string>
@@ -51,20 +51,57 @@ const countryCurrencyMap: Record<string, string> = Country.getAllCountries().red
 
 const countryLanguageMap: Record<string, string> = {
   US: "en",
-  ES: "es",
-  FR: "fr",
-  NG: "ng",
   GB: "en",
-  JP: "en",
-  CA: "en",
+  NG: "en",
+  ZA: "en",
+  KE: "en",
+  JP: "ja",
+  FR: "fr",
+  DE: "de",
+  ES: "es",
+  CN: "zh",
+  HK: "zh",
+  TW: "zh",
+  IN: "hi",
+  PK: "ur",
+  BD: "bn",
+  RU: "ru",
+  IT: "it",
+  NL: "nl",
+  BE: "nl",
+  CH: "de",
+  SE: "sv",
+  NO: "no",
+  DK: "da",
+  FI: "fi",
+  PL: "pl",
+  PT: "pt",
+  BR: "pt",
+  MX: "es",
+  AR: "es",
+  CO: "es",
+  VE: "es",
+  CA: "en", // English majority
   AU: "en",
-  CH: "en",
-  CN: "en",
-  IN: "en",
+  NZ: "en",
+  KR: "ko",
+  TH: "th",
+  TR: "tr",
+  IR: "fa",
+  SA: "ar",
+  AE: "ar",
+  EG: "ar",
+  MA: "ar",
+  DZ: "ar",
+  ET: "am",
+  VN: "vi",
+  MY: "ms",
+  ID: "id",
+  PH: "en",
 };
 
 export const getCurrencyByCountry = (countryCode: string): string =>
-  countryCurrencyMap[countryCode.toUpperCase()] || "USD";
+  countryCurrencyMap[countryCode.toUpperCase()] || "NGN";
 
 export const getLanguageByCountry = (countryCode: string): string =>
   countryLanguageMap[countryCode.toUpperCase()] || "en";

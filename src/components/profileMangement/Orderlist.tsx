@@ -19,27 +19,27 @@ export default function OrderList() {
   const [confirmedOrders, setConfirmedOrders] = useState<string[]>([]);
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
-  const vendor = useSelector((state: RootState)=>state.vendor)
-  const isAuthenticated = !!user.token || !!vendor.token
-  const token = user.token || vendor.token
+  const vendor = useSelector((state: RootState) => state.vendor);
 
-  // Debug Redux state
-  useEffect(() => {
-    console.log("Redux state:", { user, token });
-    console.log("Redux state vendor", {vendor, token})
-  }, [user, vendor, token]);
+  // Determine role and token
+  const role = user.token ? "user" : vendor.token ? "vendor" : null;
+  const token = role === "user" ? user.token : role === "vendor" ? vendor.token : null;
+  const isAuthenticated = !!token && !!role;
 
   useEffect(() => {
-    if (!isAuthenticated || !token) {
-      console.log("Authentication failed:", { isAuthenticated, token });
-      toast.info("Please log in to view your orders.");
+    console.log("Redux state:", { user, vendor, role, token });
+  }, [user, vendor, role, token]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !token || !role) {
+      console.log("Authentication failed:", { isAuthenticated, token, role });
       navigate("/selectpath", { replace: true });
       return;
     }
 
     const loadOrders = async () => {
       try {
-        const data = await getOrdersWithSession(token);
+        const data = await getOrdersWithSession(token, role);
         setOrders(data);
       } catch (err: any) {
         const errorMessage = err.message || "Failed to load orders";
@@ -50,7 +50,6 @@ export default function OrderList() {
           errorMessage.includes("User ID is required") ||
           errorMessage.includes("Failed to fetch orders")
         ) {
-          toast.error("Session expired or invalid authentication. Please log in again.");
           navigate("/selectpath", { replace: true });
         } else {
           toast.error(errorMessage);
@@ -66,11 +65,20 @@ export default function OrderList() {
     try {
       await confirmOrderReceived(orderId);
       setConfirmedOrders((prev) => [...prev, orderId]);
-      toast.success("Payment confirmed successfully!");
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId
+            ? { ...order, paymentStatus: "Paid", orderStatus: "Completed" }
+            : order
+        )
+      );
+      toast.success("Order confirmed and vendor paid.");
     } catch (error: any) {
       toast.error(error.message || "Failed to confirm payment");
     }
   };
+
+
   const handleViewDetails = (orderId: string) => {
     navigate(`/orders/${orderId}`);
   };
