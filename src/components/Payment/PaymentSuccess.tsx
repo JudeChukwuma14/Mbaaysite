@@ -134,7 +134,6 @@ export default function PaymentSuccess() {
       if (pricing.discount && Number(pricing.discount) !== 0) {
         doc.text(`Discount: -₦${Number(pricing.discount).toFixed(2)}`, 140, finalY + 20, { align: "right" });
       }
-      doc.text(`Commission: ₦${Number(pricing.commission).toFixed(2)}`, 140, finalY + 25, { align: "right" });
       doc.setFont("helvetica", "bold");
       doc.setTextColor(234, 88, 12);
       doc.text(`Total: ₦${Number(pricing.total).toFixed(2)}`, 140, finalY + 30, { align: "right" });
@@ -325,7 +324,6 @@ export default function PaymentSuccess() {
               )}
               <div className="flex justify-between">
                 <span className="text-gray-600">Commission</span>
-                <span className="font-medium text-gray-800">₦{Number(pricing.commission).toFixed(2)}</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-gray-200">
                 <span className="font-medium text-gray-800">Total Paid</span>
