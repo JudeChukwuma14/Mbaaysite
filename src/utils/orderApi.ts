@@ -15,7 +15,6 @@ interface OrderPricing {
   shipping: string; // Changed to string
   tax: string;
   discount: string;
-  commission: string;
   total: string;
 }
 

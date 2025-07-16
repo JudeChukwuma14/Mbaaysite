@@ -1,17 +1,21 @@
-// src/utils/pricingUtils.ts
+import { convertPrice, fetchExchangeRates } from "./currencyCoverter";
+
 export interface Pricing {
-  subtotal: string; // Original product amount before commission
+  subtotal: string; // Original product amount in selected currency
   shipping: string;
   tax: string;
   discount: string;
-  commission: string; // Mbaay's commission (deducted from subtotal)
-  total: string; // Total user pays (after commission, tax, discount)
+  total: string; // Total user pays (subtotal + tax - discount) in selected currency
 }
 
-export const calculatePricing = (
+export const calculatePricing = async (
   cartItems: { id: string; name: string; price: number | string; quantity: number | string; image: string }[],
-  discountRate: number | string | undefined
-): Pricing => {
+  discountRate: number | string | undefined,
+  currency: string = "NGN" // Default to NGN if no currency provided
+): Promise<Pricing> => {
+  // Ensure exchange rates are available
+  await fetchExchangeRates("NGN"); // Base currency is NGN
+
   // Validate inputs
   if (!Array.isArray(cartItems)) {
     console.error("Invalid cartItems: expected array, got", cartItems);
@@ -20,13 +24,12 @@ export const calculatePricing = (
       shipping: "0.00",
       tax: "0.00",
       discount: "0.00",
-      commission: "0.00",
       total: "0.00",
     };
   }
 
-  // Calculate original subtotal
-  const subtotal = cartItems.reduce((sum, item) => {
+  // Calculate subtotal in base currency (NGN)
+  const subtotalNGN = cartItems.reduce((sum, item) => {
     const price = Number(item.price);
     const quantity = Number(item.quantity);
     if (isNaN(price) || isNaN(quantity)) {
@@ -36,14 +39,12 @@ export const calculatePricing = (
     return sum + price * quantity;
   }, 0);
 
-  // Deduct 10% commission from subtotal
-  const commissionRate = 0.1; // 10% for Mbaay
-  const commission = subtotal * commissionRate;
-  const adjustedSubtotal = subtotal - commission;
+  // Convert subtotal to target currency
+  const subtotal = convertPrice(subtotalNGN, "NGN", currency);
 
-  // Calculate tax and discount on adjusted subtotal
+  // Calculate tax on subtotal in target currency
   const taxRate = 0.1; // 10% tax
-  const tax = adjustedSubtotal * taxRate;
+  const tax = subtotal * taxRate;
 
   // Validate discountRate
   let validDiscountRate = Number(discountRate);
@@ -51,17 +52,16 @@ export const calculatePricing = (
     console.warn("Invalid discountRate:", discountRate);
     validDiscountRate = 0;
   }
-  const discount = adjustedSubtotal * validDiscountRate;
+  const discount = subtotal * validDiscountRate;
 
-  // Total user pays
-  const total = Math.max(adjustedSubtotal + tax - discount, 0);
+  // Total user pays in target currency
+  const total = Math.max(subtotal + tax - discount, 0);
 
   return {
     subtotal: subtotal.toFixed(2),
     shipping: "0.00", // Free shipping
     tax: tax.toFixed(2),
     discount: discount.toFixed(2),
-    commission: commission.toFixed(2),
     total: total.toFixed(2),
   };
 };

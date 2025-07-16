@@ -9,7 +9,7 @@ import { FaCreditCard } from "react-icons/fa";
 import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { useDispatch, useSelector } from "react-redux";
-import { applyCoupon, clearCart, removeCoupon } from "@/redux/slices/cartSlice";
+import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
 import store, { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
@@ -17,7 +17,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { CiDeliveryTruck } from "react-icons/ci";
 import { submitOrder, OrderData } from "@/utils/orderApi";
 import { calculatePricing } from "@/utils/pricingUtils";
-import { clearSessionId, initializeSession } from "@/redux/slices/sessionSlice";
+import {  initializeSession } from "@/redux/slices/sessionSlice";
 
 interface FormValues {
   first_name: string;
@@ -605,7 +605,7 @@ export default function CheckoutForm() {
     }
     setIsSubmitting(true);
     try {
-      const pricing = calculatePricing(cartItems, discountRate);
+      const pricing = await calculatePricing(cartItems, discountRate);
       const address = [
         data.apartment ? `Apt ${data.apartment}` : "",
         data.city,
@@ -639,9 +639,7 @@ export default function CheckoutForm() {
         pricing,
       };
       const response = await submitOrder(sessionId, userId, orderData);
-      dispatch(clearSessionId())
-      dispatch(clearCart());
-
+   
       if (data.paymentOption === "Pay Before Delivery") {
         if (response.authorization_url) {
           window.location.href = response.authorization_url;

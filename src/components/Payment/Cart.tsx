@@ -7,7 +7,8 @@ import { toast } from "react-toastify";
 import { getCart, removeFromCart, updateCartQuantity } from "@/utils/cartApi";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { convertPrice } from "@/utils/currencyCoverter";
+import { calculatePricing } from "@/utils/pricingUtils";
+import { convertPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 
 interface CartItem {
   id: string;
@@ -22,25 +23,41 @@ const Cart: React.FC = () => {
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  const { currency, language } = useSelector((state: RootState) => state.settings);
+  const currency = useSelector((state: RootState) => state.settings.currency || "NGN");
+  const discount = useSelector((state: RootState) => state.cart.discount);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [couponCode, setCouponCode] = useState<string>("");
-  const [discount, setDiscount] = useState<number>(0);
-  console.log(vendor)
+  const [isLoading, setIsLoading] = useState(false);
+  const [pricing, setPricing] = useState({
+    subtotal: "0.00",
+    shipping: "0.00",
+    tax: "0.00",
+    discount: "0.00",
+    total: "0.00",
+  });
 
+  // Fetch cart items and pricing
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchCartAndPricing = async () => {
       if (!sessionId) {
         toast.error(t("sessionError"));
         return;
       }
+      setIsLoading(true);
       try {
         const items = await getCart(sessionId);
         if (!items || !Array.isArray(items)) {
           toast.error(t("noItems"));
           dispatch(setCartItems([]));
+          setPricing({
+            subtotal: "0.00",
+            shipping: "0.00",
+            tax: "0.00",
+            discount: "0.00",
+            total: "0.00",
+          });
           return;
         }
         const mappedItems: CartItem[] = items.map((item: any) => ({
@@ -51,13 +68,26 @@ const Cart: React.FC = () => {
           image: item.product.images[0] || item.product.poster || "/placeholder.jpg",
         }));
         dispatch(setCartItems(mappedItems));
+
+        // Calculate pricing
+        const pricingData = await calculatePricing(mappedItems, discount, currency);
+        setPricing(pricingData);
       } catch (error) {
         toast.error(t("loadError"));
         dispatch(setCartItems([]));
+        setPricing({
+          subtotal: "0.00",
+          shipping: "0.00",
+          tax: "0.00",
+          discount: "0.00",
+          total: "0.00",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchCart();
-  }, [dispatch, sessionId, t]);
+    fetchCartAndPricing();
+  }, [dispatch, sessionId, t, discount, currency]);
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
     if (isNaN(newQuantity) || newQuantity < 1) {
@@ -72,6 +102,9 @@ const Cart: React.FC = () => {
     try {
       await updateCartQuantity(sessionId, itemId, newQuantity);
       dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+      // Recalculate pricing after quantity update
+      const pricingData = await calculatePricing(cartItems, discount, currency);
+      setPricing(pricingData);
     } catch (error) {
       toast.error(t("updateError"));
     }
@@ -88,35 +121,62 @@ const Cart: React.FC = () => {
       dispatch(removeItem(itemId));
       const removedItem = cartItems.find((item) => item.id === itemId);
       toast.success(t("removeSuccess", { name: removedItem ? removedItem.name : "Item" }));
+      // Recalculate pricing after item removal
+      const updatedItems = cartItems.filter((item) => item.id !== itemId);
+      const pricingData = await calculatePricing(updatedItems, discount, currency);
+      setPricing(pricingData);
     } catch (error) {
       toast.error(t("removeError"));
     }
-  };
-
-  const calculateSubtotal = () => {
-    return cartItems.reduce((sum, item) => {
-      const convertedPrice = convertPrice(item.price, "USD", currency);
-      return sum + convertedPrice * item.quantity;
-    }, 0);
   };
 
   const handleCouponChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCouponCode(e.target.value);
   };
 
-  const applyCoupon = () => {
-    if (couponCode === "SUMMER10") {
-      setDiscount(0.1);
-      toast.success(t("couponApplied"));
-    } else {
-      setDiscount(0);
-      toast.error(t("invalidCoupon"));
+  // const applyCoupon = async () => {
+  //   if (couponCode === "SUMMER10") {
+  //     dispatch(setDiscount(0.1));
+  //     toast.success(t("couponApplied"));
+  //     // Recalculate pricing with new discount
+  //     const pricingData = await calculatePricing(cartItems, 0.1, currency);
+  //     setPricing(pricingData);
+  //   } else {
+  //     dispatch(setDiscount(0));
+  //     toast.error(t("invalidCoupon"));
+  //     // Recalculate pricing without discount
+  //     const pricingData = await calculatePricing(cartItems, 0, currency);
+  //     setPricing(pricingData);
+  //   }
+  // };
+
+  const handleUpdateCart = async () => {
+    if (!sessionId) {
+      toast.error(t("sessionError"));
+      return;
+    }
+    try {
+      const items = await getCart(sessionId);
+      if (!items || !Array.isArray(items)) {
+        toast.error(t("noItems"));
+        dispatch(setCartItems([]));
+        return;
+      }
+      const mappedItems: CartItem[] = items.map((item: any) => ({
+        id: item.product._id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.images[0] || item.product.poster || "/placeholder.jpg",
+      }));
+      dispatch(setCartItems(mappedItems));
+      const pricingData = await calculatePricing(mappedItems, discount, currency);
+      setPricing(pricingData);
+      toast.success(t("cartUpdated"));
+    } catch (error) {
+      toast.error(t("updateError"));
     }
   };
-
-  const subtotal = calculateSubtotal();
-  const shipping = 0;
-  const total = (subtotal + shipping) * (1 - discount);
 
   const handleCheckout = () => {
     const isAuthenticated = !!user || !!vendor;
@@ -131,6 +191,8 @@ const Cart: React.FC = () => {
     }
     navigate("/dashboard/checkout");
   };
+
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <motion.div
@@ -147,7 +209,16 @@ const Cart: React.FC = () => {
       >
         {t("Shopping Cart")}
       </motion.h1>
-      {cartItems.length === 0 ? (
+      {isLoading ? (
+        <motion.p
+          className="py-4 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          {t("loading")}
+        </motion.p>
+      ) : cartItems.length === 0 ? (
         <motion.p
           className="py-4 text-center"
           initial={{ opacity: 0 }}
@@ -175,7 +246,7 @@ const Cart: React.FC = () => {
             </thead>
             <tbody>
               {cartItems.map((item) => {
-                const convertedPrice = convertPrice(item.price, "USD", currency);
+                const convertedPrice = convertPrice(item.price, "NGN", currency);
                 return (
                   <motion.tr
                     key={item.id}
@@ -195,10 +266,7 @@ const Cart: React.FC = () => {
                       <span className="truncate">{item.name}</span>
                     </td>
                     <td className="px-4 py-2">
-                      {convertedPrice.toLocaleString(language, {
-                        style: "currency",
-                        currency: currency,
-                      })}
+                      {currencySymbol}{Number(convertedPrice).toFixed(2)}
                     </td>
                     <td className="px-4 py-2">
                       <motion.input
@@ -211,10 +279,7 @@ const Cart: React.FC = () => {
                       />
                     </td>
                     <td className="px-4 py-2">
-                      {(convertedPrice * item.quantity).toLocaleString(language, {
-                        style: "currency",
-                        currency: currency,
-                      })}
+                      {currencySymbol}{(convertedPrice * item.quantity).toFixed(2)}
                     </td>
                     <td className="px-4 py-2">
                       <motion.button
@@ -243,6 +308,7 @@ const Cart: React.FC = () => {
           className="w-full px-4 py-2 font-bold text-gray-800 bg-gray-300 rounded hover:bg-gray-400 sm:w-auto"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={() => navigate("/shop")} // Assuming a shop page exists
         >
           {t("Return To Shop")}
         </motion.button>
@@ -250,6 +316,8 @@ const Cart: React.FC = () => {
           className="w-full px-4 py-2 font-bold text-white bg-orange-500 rounded hover:bg-orange-700 sm:w-auto"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={handleUpdateCart}
+          disabled={isLoading}
         >
           {t("Update Cart")}
         </motion.button>
@@ -268,12 +336,14 @@ const Cart: React.FC = () => {
             placeholder={t("Coupon")}
             className="flex-grow px-3 py-2 border border-gray-300 rounded"
             whileFocus={{ scale: 1.02 }}
+            disabled={isLoading}
           />
           <motion.button
-            onClick={applyCoupon}
+            // onClick={applyCoupon}
             className="w-full px-4 py-2 font-bold text-white bg-orange-500 rounded hover:bg-orange-700 sm:w-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            disabled={isLoading}
           >
             {t("Apply Coupon")}
           </motion.button>
@@ -295,28 +365,33 @@ const Cart: React.FC = () => {
         </motion.h2>
         <div className="flex justify-between mb-2">
           <span>{t("subtotal")}</span>
-          <span>
-            {subtotal.toLocaleString(language, { style: "currency", currency })}
-          </span>
+          <span>{currencySymbol}{pricing.subtotal}</span>
         </div>
         <div className="flex justify-between mb-2">
+          <span>{t("tax")}</span>
+          <span>{currencySymbol}{pricing.tax}</span>
+        </div>
+        {Number(pricing.discount) > 0 && (
+          <div className="flex justify-between mb-2">
+            <span>{t("discount")} ({couponCode})</span>
+            <span className="text-green-600">-{currencySymbol}{pricing.discount}</span>
+          </div>
+        )}
+        <div className="flex justify-between mb-2">
           <span>{t("shipping")}</span>
-          <span>
-            {shipping.toLocaleString(language, { style: "currency", currency })}
-          </span>
+          <span>{t("free")}</span>
         </div>
         <div className="flex justify-between font-bold">
           <span>{t("total")}</span>
-          <span>
-            {total.toLocaleString(language, { style: "currency", currency })}
-          </span>
+          <span>{currencySymbol}{pricing.total}</span>
         </div>
-        <button
+        <motion.button
           onClick={handleCheckout}
           className="w-full px-4 py-2 mt-4 font-bold text-white bg-orange-500 rounded hover:bg-orange-700"
+          disabled={isLoading || cartItems.length === 0}
         >
           {t("Checkout")}
-        </button>
+        </motion.button>
       </motion.div>
     </motion.div>
   );
