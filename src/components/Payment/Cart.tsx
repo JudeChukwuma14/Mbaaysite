@@ -8,7 +8,7 @@ import { getCart, removeFromCart, updateCartQuantity } from "@/utils/cartApi";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { calculatePricing } from "@/utils/pricingUtils";
-import { convertPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 
 interface CartItem {
   id: string;
@@ -266,7 +266,7 @@ const Cart: React.FC = () => {
                       <span className="truncate">{item.name}</span>
                     </td>
                     <td className="px-4 py-2">
-                      {currencySymbol}{Number(convertedPrice).toFixed(2)}
+                      {currencySymbol}{formatPrice(Number(convertedPrice))}
                     </td>
                     <td className="px-4 py-2">
                       <motion.input
@@ -279,7 +279,7 @@ const Cart: React.FC = () => {
                       />
                     </td>
                     <td className="px-4 py-2">
-                      {currencySymbol}{(convertedPrice * item.quantity).toFixed(2)}
+                      {currencySymbol}{formatPrice(Number(convertedPrice) * item.quantity)}
                     </td>
                     <td className="px-4 py-2">
                       <motion.button

@@ -5,7 +5,7 @@ import { addWishlistItem } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
-import { convertPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 import { addToCart } from "@/utils/cartApi";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import { useEffect, useState } from "react";
@@ -128,7 +128,7 @@ const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
               <span className="text-sm font-semibold text-gray-900">Loading...</span>
             ) : (
               <span className="text-sm font-semibold text-gray-900">
-                {currencySymbol}{convertedPrice.toFixed(2)}
+                 {currencySymbol} {formatPrice(convertedPrice)}
               </span>
             )}
           </div>

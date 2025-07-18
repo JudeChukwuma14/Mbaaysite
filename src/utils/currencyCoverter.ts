@@ -100,6 +100,18 @@ const countryLanguageMap: Record<string, string> = {
   PH: "en",
 };
 
+export const formatPrice = (price: number): string => {
+    if (isNaN(price) || price < 0) {
+    console.warn("Invalid price for formatting:", price);
+    return "0.00";
+  }
+  return price.toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+};
+
+
 export const getCurrencyByCountry = (countryCode: string): string =>
   countryCurrencyMap[countryCode.toUpperCase()] || "NGN";
 
