@@ -25,6 +25,7 @@ interface Product {
   name: string;
   description: string;
   price: number;
+  shippingprice: number;
   inventory: number;
   category: string;
   sub_category: string;
@@ -161,6 +162,8 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         formData.append("description", updatedProduct.description);
       if (updatedProduct.price)
         formData.append("price", updatedProduct.price.toString());
+      if (updatedProduct.shippingprice)
+        formData.append("price", updatedProduct.shippingprice.toString());
       if (updatedProduct.inventory)
         formData.append("inventory", updatedProduct.inventory.toString());
       // Append new images
@@ -266,6 +269,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           name: productData.name,
           description: productData.description,
           price: productData.price,
+          shippingprice: productData.shippingprice,
           inventory: productData.inventory,
           images: productData.images,
           product_video: productData.product_video,
@@ -343,7 +347,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     setEditedProduct({
       ...editedProduct,
       [name]:
-        name === "price" || name === "inventory"
+        name === "price" || name === "inventory" || name === "shippingprice"
           ? Number.parseFloat(value)
           : value,
     });
@@ -389,32 +393,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       if (productId) {
         localStorage.setItem(
           getLocalStorageImageKey(productId, index),
-          newImageUrl
-        );
-      }
-    }
-  };
-
-  const handleAddNewImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const newImageUrl = URL.createObjectURL(file);
-
-      // Add to images array
-      const updatedImages = [...displayImages, newImageUrl];
-      setEditedProduct({ ...editedProduct, images: updatedImages });
-
-      // Add to newImages array
-      const updatedNewImages = [...newImages, file];
-      setNewImages(updatedNewImages);
-
-      // Select the new image
-      setSelectedMedia(newImageUrl);
-
-      // Store in localStorage
-      if (productId) {
-        localStorage.setItem(
-          getLocalStorageImageKey(productId, updatedImages.length - 1),
           newImageUrl
         );
       }
@@ -701,22 +679,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </div>
                 )}
 
-                {/* Add new image button (only in edit mode) */}
-                {isEditing && (
-                  <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative">
-                    <label className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
-                      <Upload className="text-gray-400 w-8 h-8 mb-1" />
-                      <span className="text-xs text-gray-500">Add Image</span>
-                      <motion.input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAddNewImage}
-                      />
-                    </label>
-                  </div>
-                )}
-
                 {/* Add video button (only in edit mode when no video exists) */}
                 {isEditing && !hasVideo && (
                   <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative">
@@ -807,9 +769,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     Price
                   </h3>
                   {isEditing ? (
-                    <div className="mt-1">
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                    <div className="">
+                      <div className="flex">
+                        <span className=" flex items-center pl-3 text-gray-500 mr-2">
                           ₦
                         </span>
                         <motion.input
@@ -818,7 +780,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           name="price"
                           value={editedProduct.price || ""}
                           onChange={handleInputChange}
-                          className="w-full pl-7 p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                          className="w-[80%] pl-7 p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
                           step="0.01"
                           min="0"
                           required
@@ -828,6 +790,35 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   ) : (
                     <p className="text-lg sm:text-xl font-bold">
                       ₦{productData.price?.toFixed(2)}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                    Shipping fee
+                  </h3>
+                  {isEditing ? (
+                    <div className="">
+                      <div className="flex ">
+                        <span className="flex items-center pl-3 text-gray-500 mr-2">
+                          ₦
+                        </span>
+                        <motion.input
+                          type="number"
+                          id="price"
+                          name="price"
+                          value={editedProduct.shippingprice || "50"}
+                          onChange={handleInputChange}
+                          className="w-[80%] pl-7 p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                          step="0.01"
+                          min="0"
+                          required
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-lg sm:text-xl font-bold">
+                      ₦{productData.shippingprice?.toFixed(2)}
                     </p>
                   )}
                 </div>

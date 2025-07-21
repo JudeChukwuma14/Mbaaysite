@@ -16,31 +16,6 @@ import { ChevronDown } from "lucide-react";
 
 import CurrencyInput from "./CurrencyInput";
 
-// interface ProductData {
-//   productName: string;
-//   description: string;
-//   descriptionFileName: string;
-//   activeCategory: string;
-//   subCategory: string;
-//   subSubCategory: string;
-//   quantity: string;
-//   sku: string;
-//   price: string;
-//   vendorCountry?: string;
-//   imagePreviewUrls: string[];
-//   youtubeUrl: string;
-//   youtubeEmbedUrl: string;
-//   uploadedVideoInfo: {
-//     name?: string;
-//     size?: number;
-//     type?: string;
-//     thumbnailUrl?: string;
-//     file?: File;
-//   } | null;
-//   selectedCategories: string[];
-//   productImages?: File[];
-// }
-
 const NewProduct = () => {
   const user = useSelector((state: any) => state.vendor);
   const { data: vendors } = useQuery({
@@ -105,9 +80,9 @@ const NewProduct = () => {
   const [quantity, setQuantity] = useState("0");
   const [sku, setSku] = useState("");
   const [price, setPrice] = useState("");
+  const [shippingprice, setShippingPrice] = useState("");
   const [productImages, setProductImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  // const [returnPolicy] = useState<File | null>(null);
   const [descriptionFileName, setDescriptionFileName] = useState("");
   const [showYoutubeInput, setShowYoutubeInput] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -201,6 +176,7 @@ const NewProduct = () => {
       quantity !== "0" ||
       sku ||
       price ||
+      shippingprice ||
       productImages?.length > 0 ||
       youtubeEmbedUrl ||
       uploadedVideoInfo
@@ -261,6 +237,7 @@ const NewProduct = () => {
         if (draftData.quantity) setQuantity(draftData.quantity);
         if (draftData.sku) setSku(draftData.sku);
         if (draftData.price) setPrice(draftData.price);
+        if (draftData.shippingprice) setShippingPrice(draftData.shippingprice);
         if (draftData.vendorCountry) setVendorCountry(draftData.vendorCountry);
         if (draftData.youtubeUrl) setYoutubeUrl(draftData.youtubeUrl);
         if (draftData.youtubeEmbedUrl)
@@ -317,6 +294,7 @@ const NewProduct = () => {
     quantity,
     sku,
     price,
+    shippingprice,
     productImages,
     youtubeUrl,
     youtubeEmbedUrl,
@@ -404,6 +382,7 @@ const NewProduct = () => {
         quantity,
         sku,
         price,
+        shippingprice,
         vendorCountry,
         youtubeUrl,
         youtubeEmbedUrl,
@@ -450,6 +429,7 @@ const NewProduct = () => {
     setQuantity("0");
     setSku("");
     setPrice("");
+    setShippingPrice("");
     setProductImages([]);
     setImagePreviewUrls([]);
     setYoutubeUrl("");
@@ -474,6 +454,7 @@ const NewProduct = () => {
     setQuantity("0");
     setSku("");
     setPrice("");
+    setShippingPrice("");
     setProductImages([]);
     setImagePreviewUrls([]);
     setYoutubeUrl("");
@@ -500,7 +481,10 @@ const NewProduct = () => {
         throw new Error("Please enter a valid quantity");
       if (Number(quantity) < 0) throw new Error("Quantity cannot be negative");
       const numericPrice = Number(price.replace(/[^0-9.-]+/g, ""));
+      const numericPrices = Number(shippingprice.replace(/[^0-9.-]+/g, ""));
       if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
+      if (isNaN(numericPrice))
+        throw new Error("Please enter a valid shippingfee");
       if (productImages?.length === 0)
         throw new Error("Please upload at least one product image");
 
@@ -512,6 +496,7 @@ const NewProduct = () => {
       formData.append("sub_category2", subSubCategory);
       formData.append("inventory", quantity);
       formData.append("price", numericPrice.toString());
+      formData.append("shippingfee", numericPrices.toString());
 
       productImages.forEach((image) => {
         formData.append("images", image);
@@ -809,12 +794,24 @@ const NewProduct = () => {
               <h3 className="font-medium">Pricing</h3>
               <div>
                 <label className="block text-sm text-gray-600 mb-1">
-                  Price
+                  Product Price
                 </label>
                 <CurrencyInput
                   value={price}
                   onChange={setPrice}
-                  country={vendors?.country}
+                  country={"Nigeria"}
+                />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Shipping fee
+                </label>
+                <CurrencyInput
+                  value={shippingprice}
+                  onChange={setShippingPrice}
+                  country={"Nigeria"}
                 />
               </div>
             </div>
@@ -826,7 +823,7 @@ const NewProduct = () => {
         <button
           className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg"
           onClick={handleDiscard}
-          disabled={isLoading}
+          // disabled={isLoading}
         >
           Discard
         </button>

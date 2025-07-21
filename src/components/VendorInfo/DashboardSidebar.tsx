@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Home,
   Box,
@@ -17,11 +17,11 @@ import { MdOutlineReviews } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
-// import { useDarkMode } from "../Context/DarkModeContext";
 import Logo from "@/assets/image/mbbaylogo.png";
 import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { IoIosPricetag } from "react-icons/io";
+
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
@@ -36,19 +36,35 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
       };
     };
   }
-  const user = useSelector((state: RootState) => state.vendor);
 
+  const user = useSelector((state: RootState) => state.vendor);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
-  // const { darkMode } = useDarkMode();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const handle_logOut = () => {
     dispatch(logoutVendor());
     navigate("/login-vendor");
   };
+
   return (
     <aside
       className={`w-64 p-5 h-screen flex flex-col justify-between overflow-y-auto transition-colors ${
@@ -108,9 +124,17 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
             {vendors?.storeName}
           </p>
           <div className="flex items-center justify-center mt-2">
-            <div className="w-[12px] h-[12px] bg-green-500 rounded-full "></div>
-            <span className="text-green-500 text-xs rounded ml-[3px]">
-              Online
+            <div
+              className={`w-[12px] h-[12px] rounded-full ${
+                isOnline ? "bg-green-500" : "bg-red-500"
+              }`}
+            ></div>
+            <span
+              className={`text-xs rounded ml-[3px] ${
+                isOnline ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {isOnline ? "Online" : "Offline"}
             </span>
           </div>
         </div>

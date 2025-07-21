@@ -61,7 +61,6 @@ import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
 
-
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
@@ -128,7 +127,7 @@ const EditVendorProfile = lazy(
 const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
 );
-const Inbox = lazy(() => import("@/components/VendorInfo/Inbox"));
+const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
 const CommunitySection = lazy(
   () => import("../components/VendorInfo/Community&Res/CommunitySection")
@@ -636,11 +635,9 @@ const Spicesi = lazy(
     )
 );
 
-
 // Furniture
 const Seating = lazy(
-  () =>
-    import("@/components/AllCategory/Furniture/subcategory/Seating")
+  () => import("@/components/AllCategory/Furniture/subcategory/Seating")
 );
 const Table = lazy(
   () => import("@/components/AllCategory/Furniture/subcategory/Table")
@@ -655,8 +652,7 @@ const DecorUtility = lazy(
   () => import("@/components/AllCategory/Furniture/subcategory/DecorUtility")
 );
 const OutdoorPatio = lazy(
-  () =>
-    import("@/components/AllCategory/Furniture/subcategory/OutdoorPatio")
+  () => import("@/components/AllCategory/Furniture/subcategory/OutdoorPatio")
 );
 
 // Local Food
@@ -763,7 +759,6 @@ const TraditionalSweet = lazy(
     )
 );
 
-
 // PAYMENT
 const SuccessPayment = lazy(
   () => import("@/components/Payment/PaymentSuccess")
@@ -807,7 +802,6 @@ const routesConfig: RouteObject[] = [
         element: withSuspense(VendorProfileProduct),
         errorElement: <ErrorPage />,
       },
-      
 
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
@@ -941,10 +935,13 @@ const routesConfig: RouteObject[] = [
 
       // Vintage Jewelry
 
-      {path: "/festive-jewelry", element: withSuspense(FestiveRitualJewelry)},
-      {path: "/Vintage-jewelrys", element: withSuspense(VintageJewelry)},
-      {path: "/cultural-gemstones", element: withSuspense(CulturalGemstones)},
-      {path: "/religious-jewelry", element: withSuspense(ReligiousSpiritualJewelry)},
+      { path: "/festive-jewelry", element: withSuspense(FestiveRitualJewelry) },
+      { path: "/Vintage-jewelrys", element: withSuspense(VintageJewelry) },
+      { path: "/cultural-gemstones", element: withSuspense(CulturalGemstones) },
+      {
+        path: "/religious-jewelry",
+        element: withSuspense(ReligiousSpiritualJewelry),
+      },
       // Plant Seed
 
       { path: "/plant", element: withSuspense(Plant) },
@@ -1022,11 +1019,13 @@ const routesConfig: RouteObject[] = [
       { path: "/religious-jewelry", element: withSuspense(Rja) },
       { path: "/altars-shrines", element: withSuspense(As) },
       { path: "/ceremonial-ritual-tools", element: withSuspense(Crt) },
-      { path: "/Spiritual Healing & Meditation Items", element: withSuspense(Shmi) },
+      {
+        path: "/Spiritual Healing & Meditation Items",
+        element: withSuspense(Shmi),
+      },
       { path: "/cultural-festive", element: withSuspense(Cfi) },
       { path: "/ritual-tools", element: withSuspense(Rt) },
 
-            
       // Fashion Subcategory
       { path: "/traditional-fashion", element: withSuspense(TF) },
       { path: "/men-tf-wear", element: withSuspense(MenWear) },
@@ -1067,9 +1066,6 @@ const routesConfig: RouteObject[] = [
       { path: "/wedding-attire", element: withSuspense(WA) },
       { path: "/festival-ceremony", element: withSuspense(FCO) },
       { path: "/religious-clothing", element: withSuspense(REC) },
-
-
-
 
       { path: "/regional-fashion", element: withSuspense(RF) },
       { path: "/seasonal-fashion", element: withSuspense(SF) },
@@ -1168,11 +1164,10 @@ const routesConfig: RouteObject[] = [
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
 
-  // Payment 
+  // Payment
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
   { path: "/failed", element: withSuspense(FaliedPayment) },
   { path: "/payment_callback", element: withSuspense(PaymentCallback) },
-
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
 ];
