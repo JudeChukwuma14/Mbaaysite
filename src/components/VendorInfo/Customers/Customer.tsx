@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { User, UserCheck } from "lucide-react";
 
 interface Customer {
-  id: number;
   name: string;
   phone: string;
   email: string;
@@ -17,7 +16,6 @@ const CustomersPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [customers] = useState<Customer[]>([
     {
-      id: 1,
       name: "Janet Clerk",
       phone: "+234 7077283490",
       email: "janetclerk@gmail.com",
@@ -26,7 +24,6 @@ const CustomersPage: React.FC = () => {
       avatar: "https://via.placeholder.com/40",
     },
     {
-      id: 2,
       name: "Joseph Bankole",
       phone: "+234 7077283490",
       email: "josephbankole@gmail.com",
@@ -35,7 +32,6 @@ const CustomersPage: React.FC = () => {
       avatar: "https://via.placeholder.com/40",
     },
     {
-      id: 3,
       name: "James Koppier",
       phone: "+234 7077283490",
       email: "jameskoppier@gmail.com",
@@ -44,7 +40,6 @@ const CustomersPage: React.FC = () => {
       avatar: "https://via.placeholder.com/40",
     },
     {
-      id: 4,
       name: "Flora Camper",
       phone: "+234 7077283490",
       email: "floracamper@gmail.com",
@@ -53,7 +48,6 @@ const CustomersPage: React.FC = () => {
       avatar: "https://via.placeholder.com/40",
     },
     {
-      id: 5,
       name: "Steve Fisher",
       phone: "+234 7077283490",
       email: "stevefisher@gmail.com",
@@ -62,7 +56,6 @@ const CustomersPage: React.FC = () => {
       avatar: "https://via.placeholder.com/40",
     },
     {
-      id: 6,
       name: "Monday Henry",
       phone: "+234 7077283490",
       email: "mondayhenry@gmail.com",
@@ -146,7 +139,7 @@ const CustomersPage: React.FC = () => {
               .slice(0, 5)
               .map((c) => (
                 <motion.div
-                  key={c.id}
+                  // key={c.id}
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   whileHover={{ scale: 1.2 }}
@@ -174,7 +167,9 @@ const CustomersPage: React.FC = () => {
         <h1 className="text-2xl font-bold">Customers</h1>
         <motion.select
           value={filter}
-          onChange={(e) => setFilter(e.target.value as "All" | "Active" | "Inactive")}
+          onChange={(e) =>
+            setFilter(e.target.value as "All" | "Active" | "Inactive")
+          }
           className="border border-orange-500 p-2 rounded shadow-sm focus:ring-2 focus:ring-orange-500 outline-orange-500"
           whileFocus={{ scale: 1.05 }}
         >
@@ -193,29 +188,33 @@ const CustomersPage: React.FC = () => {
         <table className="min-w-full bg-white rounded-lg">
           <thead>
             <tr className="bg-gray-100">
-              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">ID</th>
               <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">
                 Customer Name
               </th>
-              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">Phone</th>
-              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">Email</th>
+              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">
+                Phone
+              </th>
+              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">
+                Email
+              </th>
               <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">
                 Location
               </th>
-              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">Status</th>
+              <th className="py-2 px-4 text-left text-sm font-medium text-gray-600">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody>
             {paginatedCustomers.map((customer) => (
               <motion.tr
-                key={customer.id}
+                // key={customer.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.1 * customer.id }}
+                transition={{ delay: 0.1 }}
                 className="border-b"
                 whileHover={{ scale: 1.02 }}
               >
-                <td className="py-2 px-4 text-sm">{customer.id}</td>
                 <td className="py-2 px-4 text-sm">{customer.name}</td>
                 <td className="py-2 px-4 text-sm">{customer.phone}</td>
                 <td className="py-2 px-4 text-sm">{customer.email}</td>
@@ -244,7 +243,8 @@ const CustomersPage: React.FC = () => {
         transition={{ duration: 0.5 }}
       >
         <p className="text-sm text-gray-600">
-          Showing {paginatedCustomers.length} of {filteredCustomers.length} results
+          Showing {paginatedCustomers.length} of {filteredCustomers.length}{" "}
+          results
         </p>
         <div className="flex items-center space-x-2">
           <motion.button

@@ -80,8 +80,8 @@ export default function CurrencyInput({
   className = "",
 }: CurrencyInputProps) {
   // Get currency data based on country name
-  const getCurrencyData = (countryName: string) => {
-    return COUNTRY_CURRENCY_MAP[countryName] || COUNTRY_CURRENCY_MAP["DEFAULT"];
+  const getCurrencyData = (name: string) => {
+    return COUNTRY_CURRENCY_MAP[name] || COUNTRY_CURRENCY_MAP["DEFAULT"];
   };
 
   const currencyData = getCurrencyData(country);
