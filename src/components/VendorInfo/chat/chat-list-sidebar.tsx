@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
+import { Label } from "@/components/ui/label";
 
 interface Message {
   id: string;
@@ -162,9 +162,9 @@ export function ChatListSidebar({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div className="relative mb-2">
-                {/* <Label htmlFor="search-users" className="sr-only">
+                <Label htmlFor="search-users" className="sr-only">
                   Search Users/Vendors
-                </Label> */}
+                </Label>
                 <Input
                   id="search-users"
                   type="text"
@@ -218,7 +218,7 @@ export function ChatListSidebar({
         <AnimatePresence>
           {chats.length === 0 ? (
             <p className="p-4 text-center text-gray-500">
-              Currently don't have Chat list
+              Currently you don't have Chat list
             </p>
           ) : (
             chats.map((chat) => (
