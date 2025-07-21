@@ -4,7 +4,6 @@ import logo from "@/assets/image/MBLogo.png";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import Sliding from "../Reuseable/Sliding";
 import { LoginVendorAPI, get_single_vendor } from "@/utils/vendorApi";
 import { Link, NavLink, useNavigate } from "react-router-dom";
@@ -35,7 +34,7 @@ const LoginVendor: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-        if (!sessionId) {
+      if (!sessionId) {
         dispatch(initializeSession());
       }
       const loginResponse = await LoginVendorAPI({
@@ -186,9 +185,7 @@ const LoginVendor: React.FC = () => {
               </button>
 
               <div className="mt-4 text-left">
-                <a href="#" className="text-orange-500 hover:underline">
-                  <Link to={"/signin"}>Login as a user</Link>
-                </a>
+                <Link to={"/signin"} className="text-orange-500 hover:underline">Login as a user</Link>
               </div>
               <div className="flex items-center justify-between mb-4">
                 <div className="block my-2 text-left lg:hidden">
@@ -201,9 +198,7 @@ const LoginVendor: React.FC = () => {
                   </Link>
                 </div>
                 <div className="text-left ">
-                  <a href="#" className="text-blue-500 hover:underline">
-                    <Link to={"/forgot-password"}>Forgot Password ?</Link>
-                  </a>
+                  <Link to={"/forgot-password"} className="text-blue-500 hover:underline">Forgot Password ?</Link>
                 </div>
               </div>
             </div>

@@ -1,15 +1,15 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SettingsState {
-  language: string; // e.g., "en", "es", "fr", "ng"
-  currency: string; // e.g., "USD", "EUR", "NGN"
-  countryCode: string; // e.g., "US", "ES", "NG"
+  language: string; 
+  currency: string; 
+  countryCode: string; 
 }
 
 const initialState: SettingsState = {
   language: "en",
-  currency: "USD",
-  countryCode: "US",
+  currency: "NGN",
+  countryCode: "ng",
 };
 
 const settingsSlice = createSlice({

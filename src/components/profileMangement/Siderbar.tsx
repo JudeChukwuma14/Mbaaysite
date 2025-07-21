@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { logout } from "@/redux/slices/userSlice";
+import { clearSessionId } from "@/redux/slices/sessionSlice";
 
 interface SidebarItem {
   icons: React.ReactNode;
@@ -79,11 +80,12 @@ const Siderbar: React.FC = () => {
   };
 
   const handleLogout = () => {
+    dispatch(clearSessionId())
     dispatch(logout());
     navigate("/signin");
   };
 
- return (
+  return (
     <section className="sticky left-0 top-0 flex h-screen w-full flex-col justify-between p-6 pt-24 text-black bg-[#F3F4F6] max-sm:hidden lg:w-[264px]">
       <div className="flex flex-col gap-2">
         {sidebarLayout.map((item) => {
@@ -95,9 +97,8 @@ const Siderbar: React.FC = () => {
               {item.urlLink ? (
                 <NavLink
                   to={item.urlLink}
-                  className={`flex items-center p-3 gap-3 ${
-                    isActive ? "bg-orange-500 text-white" : "hover:bg-orange-300"
-                  }`}
+                  className={`flex items-center p-3 gap-3 ${isActive ? "bg-orange-500 text-white" : "hover:bg-orange-300"
+                    }`}
                   onClick={() => handleItemClick(item.label)}
                 >
                   {item.icons}
@@ -105,9 +106,8 @@ const Siderbar: React.FC = () => {
                 </NavLink>
               ) : (
                 <motion.div
-                  className={`flex items-center p-3 gap-3 cursor-pointer ${
-                    openDropdown === item.label ? "bg-orange-500 text-white" : "hover:bg-orange-300"
-                  }`}
+                  className={`flex items-center p-3 gap-3 cursor-pointer ${openDropdown === item.label ? "bg-orange-500 text-white" : "hover:bg-orange-300"
+                    }`}
                   onClick={() => toggleDropdown(item.label)}
                   whileHover={{ scale: 1.02 }} // Subtle hover animation
                   transition={{ duration: 0.2 }}

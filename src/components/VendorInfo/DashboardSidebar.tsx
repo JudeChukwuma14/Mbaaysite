@@ -22,6 +22,8 @@ import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { IoIosPricetag } from "react-icons/io";
 
+
+
 interface DashboardSidebarProps {
   darkMode: boolean;
 }
@@ -61,6 +63,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
   }, []);
 
   const handle_logOut = () => {
+     dispatch(clearSessionId())
     dispatch(logoutVendor());
     navigate("/login-vendor");
   };

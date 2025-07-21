@@ -1,5 +1,4 @@
 // src/utils/orderApi.ts
-import store from "@/redux/store";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -16,16 +15,15 @@ interface OrderPricing {
   shipping: string; // Changed to string
   tax: string;
   discount: string;
-  commission: string;
   total: string;
 }
 
 export interface OrderData {
-  id?:string
+  id?: string;
   first_name: string;
   last_name: string;
   email: string;
-  phone: string;  
+  phone: string;
   address: string;
   country: string;
   apartment: string;
@@ -52,11 +50,18 @@ export interface PaymentStatusResponse {
   orderData?: OrderData;
 }
 
+export type OrderStatus =
+  | "Pending"
+  | "Processing"
+  | "Shipped"
+  | "Delivered"
+  | "Cancelled"
+  | "Completed";
+
 const api = axios.create({
-  baseURL: "https://mbayy-be.vercel.app/api/v1/order",
+  baseURL: "https://mbayy-be.onrender.com/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
-
 
 api.interceptors.response.use(
   (response) => response,
@@ -77,14 +82,24 @@ api.interceptors.response.use(
   }
 );
 
-
 export const submitOrder = async (
   sessionId: string,
+  userId: string,
   orderData: OrderData
 ): Promise<CheckoutResponse> => {
   try {
-    const response = await api.post(`/order_checkout/${sessionId}`, orderData);
-    return response.data.data || response.data; // Handle nested data
+    if (!sessionId) {
+      throw new Error("Session ID is missing.");
+    }
+    if (!userId) {
+      throw new Error("User ID is missing.");
+    }
+    console.log("Initiating checkout:", { sessionId, userId, orderData });
+    const response = await api.post(
+      `/order_checkout/${sessionId}/${userId}`,
+      orderData
+    );
+    return response.data.data || response.data;
   } catch (error: any) {
     console.error(
       "Order Submission Error:",
@@ -111,25 +126,19 @@ export const getPaymentStatus = async (
   }
 };
 
-
-// src/utils/orderApi.ts
-export const confirmOrderReceived = async (orderId: string): Promise<boolean> => {
+export const confirmOrderReceived = async (orderId: string): Promise<void> => {
   try {
-    const token = store.getState().user.token || store.getState().vendor.token;
-    if (!token) {
-      throw new Error("Authentication token is missing. Please log in again.");
+    const response = await api.patch(`/confirmOrderReceived/${orderId}`);
+
+    if (response.status === 200) {
+      return; 
     }
-    console.log("Sending PATCH to:", `/confirmOrderReceived/${orderId}`, "with token:", token);
-    const response = await api.patch(`/confirmOrderReceived/${orderId}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    console.log("Confirm Order Response:", response.data);
-    if (!response.data.success) {
-      throw new Error(response.data.message || "Failed to confirm order receipt");
-    }
-    return true;
+    throw new Error(response.data.message || "Failed to confirm payment");
   } catch (error: any) {
-    console.error("Confirm Order Error:", error.message, error.response?.data);
-    throw error; // Let interceptor handle error messaging
+    throw new Error(
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to confirm payment"
+    );
   }
 };
