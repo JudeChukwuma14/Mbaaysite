@@ -1,4 +1,3 @@
-
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { addItem } from "@/redux/slices/cartSlice";
@@ -6,11 +5,10 @@ import { addWishlistItem } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
-import { convertPrice } from "@/utils/currencyCoverter";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 import { addToCart } from "@/utils/cartApi";
 import { initializeSession } from "@/redux/slices/sessionSlice";
-import { useEffect } from "react";
-
+import { useEffect, useState } from "react";
 
 interface Product {
   _id: string;
@@ -27,8 +25,10 @@ interface NewArrivalProps {
 
 const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   const dispatch = useDispatch();
-  const { currency, language } = useSelector((state: RootState) => state.settings);
+  const { currency } = useSelector((state: RootState) => state.settings);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
+  const [isLoading, setIsLoading] = useState(false);
+  const [convertedPrice, setConvertedPrice] = useState(product.price);
 
   // Ensure sessionId is initialized
   useEffect(() => {
@@ -36,6 +36,23 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
       dispatch(initializeSession());
     }
   }, [dispatch, sessionId]);
+
+  // Convert price when currency changes
+  useEffect(() => {
+    const convert = async () => {
+      setIsLoading(true);
+      try {
+        const price = await convertPrice(product.price, "NGN", currency);
+        setConvertedPrice(price);
+      } catch (error) {
+        console.error("Failed to convert price:", error);
+        setConvertedPrice(product.price); // Fallback to base price
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    convert();
+  }, [product.price, currency]);
 
   const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -52,7 +69,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
         addItem({
           id: product._id,
           name: product.name,
-          price: product.price,
+          price: product.price, // Store base price (NGN) in cart
           quantity: 1,
           image: product.images[0] || product.poster || "/placeholder.svg",
         })
@@ -74,7 +91,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
       addWishlistItem({
         id: product._id,
         name: product.name,
-        price: product.price,
+        price: product.price, // Store base price (NGN) in wishlist
         quantity: 1,
         image: product.images[0] || product.poster,
       })
@@ -82,7 +99,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
     toast.success(`${product.name} added to your wishlist!`);
   };
 
-  const convertedPrice = convertPrice(product.price, "USD", currency);
+  const currencySymbol = getCurrencySymbol(currency);
 
   return (
     <Link to={`/product/${product._id}`} className="block group">
@@ -93,7 +110,6 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
             alt={product.name}
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           />
-
           <div className="absolute flex flex-col gap-2 transition-all duration-300 transform translate-x-2 opacity-0 top-3 right-3 group-hover:opacity-100 group-hover:translate-x-0">
             <button
               className="flex items-center justify-center text-gray-700 bg-white rounded-full shadow-md w-9 h-9 hover:bg-gray-100"
@@ -108,12 +124,13 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
         <div className="p-4">
           <h3 className="mb-1 text-base font-medium text-gray-800 line-clamp-1">{product.name}</h3>
           <div className="flex items-center">
-            <span className="text-sm font-semibold text-gray-900">
-              {convertedPrice.toLocaleString(language, {
-                style: "currency",
-                currency: currency,
-              })}
-            </span>
+            {isLoading ? (
+              <span className="text-sm font-semibold text-gray-900">Loading...</span>
+            ) : (
+              <span className="text-sm font-semibold text-gray-900">
+                {currencySymbol} {formatPrice(convertedPrice)}
+              </span>
+            )}
           </div>
         </div>
 

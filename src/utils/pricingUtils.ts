@@ -1,49 +1,104 @@
-// src/utils/pricingUtils.ts
+import { convertPrice, fetchExchangeRates, formatPrice } from "./currencyCoverter";
+
 export interface Pricing {
-  subtotal: string; // Original product amount before commission
+  subtotal: string;
   shipping: string;
   tax: string;
   discount: string;
-  commission: string; // Mbaay's commission (deducted from subtotal)
-  total: string; // Total user pays (after commission, tax, discount)
+  total: string;
 }
 
-export const calculatePricing = (
+export const calculatePricing = async (
   cartItems: { id: string; name: string; price: number | string; quantity: number | string; image: string }[],
-  discountRate: number | string | undefined
-): Pricing => {
-  // Validate inputs
-  if (!Array.isArray(cartItems)) {
-    console.error("Invalid cartItems: expected array, got", cartItems);
+  discountRate: number | string | undefined,
+  currency: string = "NGN"
+): Promise<Pricing> => {
+  // Ensure exchange rates are available
+  try {
+    await fetchExchangeRates("NGN");
+  } catch (error) {
+    console.error("Failed to fetch exchange rates:", error);
     return {
       subtotal: "0.00",
       shipping: "0.00",
       tax: "0.00",
       discount: "0.00",
-      commission: "0.00",
       total: "0.00",
     };
   }
 
-  // Calculate original subtotal
-  const subtotal = cartItems.reduce((sum, item) => {
+  // Validate inputs
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    console.error("Invalid cartItems: expected non-empty array, got", cartItems);
+    return {
+      subtotal: "0.00",
+      shipping: "0.00",
+      tax: "0.00",
+      discount: "0.00",
+      total: "0.00",
+    };
+  }
+
+  // Calculate subtotal in base currency (NGN)
+  const subtotalNGN = cartItems.reduce((sum, item) => {
     const price = Number(item.price);
     const quantity = Number(item.quantity);
-    if (isNaN(price) || isNaN(quantity)) {
+    if (isNaN(price) || isNaN(quantity) || price < 0 || quantity < 0) {
       console.warn("Invalid item data:", { item, price, quantity });
       return sum;
     }
     return sum + price * quantity;
   }, 0);
 
-  // Deduct 10% commission from subtotal
-  const commissionRate = 0.1; // 10% for Mbaay
-  const commission = subtotal * commissionRate;
-  const adjustedSubtotal = subtotal - commission;
+  if (isNaN(subtotalNGN) || subtotalNGN < 0) {
+    console.error("Invalid subtotalNGN:", subtotalNGN);
+    return {
+      subtotal: "0.00",
+      shipping: "0.00",
+      tax: "0.00",
+      discount: "0.00",
+      total: "0.00",
+    };
+  }
 
-  // Calculate tax and discount on adjusted subtotal
+  // Convert subtotal to target currency
+  let subtotal: number;
+  try {
+    subtotal = convertPrice(subtotalNGN, "NGN", currency);
+    if (isNaN(subtotal) || subtotal < 0) {
+      console.error("Invalid converted subtotal:", subtotal, "Currency:", currency);
+      return {
+        subtotal: "0.00",
+        shipping: "0.00",
+        tax: "0.00",
+        discount: "0.00",
+        total: "0.00",
+      };
+    }
+  } catch (error) {
+    console.error("Currency conversion failed:", error);
+    return {
+      subtotal: "0.00",
+      shipping: "0.00",
+      tax: "0.00",
+      discount: "0.00",
+      total: "0.00",
+    };
+  }
+
+  // Calculate tax on subtotal in target currency
   const taxRate = 0.1; // 10% tax
-  const tax = adjustedSubtotal * taxRate;
+  const tax = subtotal * taxRate;
+  if (isNaN(tax) || tax < 0) {
+    console.error("Invalid tax:", tax);
+    return {
+      subtotal: formatPrice(subtotal),
+      shipping: "0.00",
+      tax: "0.00",
+      discount: "0.00",
+      total: "0.00",
+    };
+  }
 
   // Validate discountRate
   let validDiscountRate = Number(discountRate);
@@ -51,17 +106,26 @@ export const calculatePricing = (
     console.warn("Invalid discountRate:", discountRate);
     validDiscountRate = 0;
   }
-  const discount = adjustedSubtotal * validDiscountRate;
+  const discount = subtotal * validDiscountRate;
+  if (isNaN(discount) || discount < 0) {
+    console.error("Invalid discount:", discount);
+    return {
+      subtotal: formatPrice(subtotal),
+      shipping: "0.00",
+      tax: formatPrice(tax),
+      discount: "0.00",
+      total: "0.00",
+    };
+  }
 
-  // Total user pays
-  const total = Math.max(adjustedSubtotal + tax - discount, 0);
+  // Total user pays in target currency
+  const total = Math.max(subtotal + tax - discount, 0);
 
   return {
-    subtotal: subtotal.toFixed(2),
-    shipping: "0.00", // Free shipping
-    tax: tax.toFixed(2),
-    discount: discount.toFixed(2),
-    commission: commission.toFixed(2),
-    total: total.toFixed(2),
+    subtotal: formatPrice(subtotal),
+    shipping: "0.00",
+    tax: formatPrice(tax),
+    discount: formatPrice(discount),
+    total: formatPrice(total),
   };
 };

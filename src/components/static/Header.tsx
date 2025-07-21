@@ -11,7 +11,6 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
-
 import { searchProducts } from "@/utils/productApi";
 import { useTranslation } from "react-i18next";
 import i18next from "@/utils/i18n";
@@ -37,7 +36,7 @@ const Header: React.FC = () => {
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.user?.user || null);
-  const vendor = useSelector((state: RootState) => state.vendor?.vendor || null);
+  const vendor = useSelector((state: RootState) => state.vendor || null);
   const settings = useSelector((state: RootState) => state.settings);
 
   const countries = Country.getAllCountries();
@@ -63,15 +62,14 @@ const Header: React.FC = () => {
     setCountrySearch("");
   };
 
-  const firstLetter = vendor?.storeName
-    ? vendor.storeName.charAt(0).toUpperCase()
-    : vendor?.id
+  const firstLetter = vendor?.vendor?.storeName
+    ? vendor.vendor.storeName.charAt(0).toUpperCase()
+    : vendor?.vendor?._id
       ? "V"
       : user?.name
         ? user.name.charAt(0).toUpperCase()
         : "";
   const dashboardLink = vendor ? "/app" : "/dashboard";
-
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -136,9 +134,9 @@ const Header: React.FC = () => {
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
         <p className="font-medium ">
           {t("welcome")}{" "}
-          {vendor?.storeName
-            ? `, ${vendor.storeName}`
-            : vendor?.id
+          {vendor.vendor?.storeName
+            ? `, ${vendor.vendor.storeName}`
+            : vendor?.vendor?._id
               ? ", Vendor"
               : user?.name
                 ? `, ${user.name}`
@@ -329,21 +327,33 @@ const Header: React.FC = () => {
                 </span>
               )}
             </Link>
-
             <div className="ml-2">
-              {firstLetter ? (
+              {vendor?.vendor?.businessLogo ? (
+                <Link
+                  to="/app"
+                  aria-label="Vendor Dashboard"
+                >
+                  <div className="w-10 h-10 overflow-hidden border-2 border-orange-400 rounded-full">
+                    <img
+                      src={vendor.vendor.avatar || "/placeholder.svg"}
+                      alt={`${vendor.vendor.storeName} logo`}
+                      className="object-cover h-[100%] w-[100%]"
+                    />
+                  </div>
+                </Link>
+              ) : firstLetter ? (
                 <Link
                   to={dashboardLink}
                   aria-label={vendor ? "Vendor Dashboard" : "User Dashboard"}
                 >
-                  <div className="flex items-center justify-center text-lg font-bold text-white bg-orange-500 rounded-full shadow-md w-7 h-7 ring-4 ring-orange-400">
+                  <div className="flex items-center justify-center w-8 h-8 text-lg font-bold text-white bg-orange-500 rounded-full shadow-md ring-2 ring-orange-400">
                     {firstLetter}
                   </div>
                 </Link>
               ) : (
                 <Link
                   to="/selectpath"
-                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bordering-white hover:bg-orange-600"
+                  className="px-3 py-2 text-sm text-white transition-colors duration-300 border border-orange-600 rounded-md hover:bg-orange-600"
                 >
                   Get started
                 </Link>

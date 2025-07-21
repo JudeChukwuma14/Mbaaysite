@@ -23,6 +23,7 @@ import { useState } from "react";
 import { logout } from "@/redux/slices/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
+import { clearSessionId } from "@/redux/slices/sessionSlice";
 
 // Define the interface for sidebar items
 interface SidebarItem {
@@ -102,6 +103,7 @@ const MobileNavbar = () => {
   };
 
   const handleLogout = () => {
+    dispatch(clearSessionId())
     dispatch(logout());
     navigate("/signin");
   };

@@ -10,7 +10,7 @@ import { Loader2, MapPin } from "lucide-react";
 import { Country, State, City } from "country-state-city";
 import { useDispatch, useSelector } from "react-redux";
 import { applyCoupon, removeCoupon } from "@/redux/slices/cartSlice";
-import { RootState } from "@/redux/store";
+import store, { RootState } from "@/redux/store";
 import OrderSummary from "./OrderSummary";
 import { toast } from "react-toastify";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -187,8 +187,8 @@ function BillingDetails({
               </motion.p>
             )}
           </motion.div>
-
         </div>
+
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="postalCode" className="block mb-1 text-sm font-medium text-gray-700">
@@ -227,8 +227,8 @@ function BillingDetails({
             )}
           </motion.div>
         </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
           <motion.div variants={inputVariants}>
             <label htmlFor="region" className="block mb-1 text-sm font-medium text-gray-700">
               State*
@@ -318,6 +318,7 @@ function BillingDetails({
             )}
           </motion.div>
         </div>
+
         <motion.div variants={inputVariants}>
           <label htmlFor="apartment" className="block mb-1 text-sm font-medium text-gray-700">
             Apartment, Suite, etc. (Optional)
@@ -332,7 +333,7 @@ function BillingDetails({
           />
         </motion.div>
       </motion.div>
-    </motion.div >
+    </motion.div>
   );
 }
 
@@ -341,13 +342,13 @@ function PaymentDetails({
   activePaymentOption,
   setActivePaymentOption,
   isSubmitting,
-  isSessionLoading, // Add isSessionLoading prop
+  isSessionLoading,
 }: {
   register: UseFormRegister<FormValues>;
   activePaymentOption: "Pay Before Delivery" | "Pay After Delivery";
   setActivePaymentOption: (option: "Pay Before Delivery" | "Pay After Delivery") => void;
   isSubmitting: boolean;
-  isSessionLoading: boolean; // Add isSessionLoading prop
+  isSessionLoading: boolean;
 }) {
   const paymentOptions = [
     { option: "Pay Before Delivery", label: "Pay Now", icon: FaCreditCard },
@@ -376,10 +377,11 @@ function PaymentDetails({
               <motion.button
                 key={option}
                 type="button"
-                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${activePaymentOption === option
-                  ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-                  }`}
+                className={`py-3 px-4 font-medium text-sm flex items-center gap-2 transition-all duration-200 ${
+                  activePaymentOption === option
+                    ? "border-b-2 border-orange-500 text-orange-600 bg-orange-50"
+                    : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+                }`}
                 onClick={() => {
                   setActivePaymentOption(option as "Pay Before Delivery" | "Pay After Delivery");
                   register("paymentOption").onChange({ target: { value: option } });
@@ -456,8 +458,10 @@ function PaymentDetails({
 
 export default function CheckoutForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSessionLoading, setIsSessionLoading] = useState(false); // Add session loading state
-  const [activePaymentOption, setActivePaymentOption] = useState<"Pay Before Delivery" | "Pay After Delivery">("Pay Before Delivery");
+  const [isSessionLoading, setIsSessionLoading] = useState(false);
+  const [activePaymentOption, setActivePaymentOption] = useState<"Pay Before Delivery" | "Pay After Delivery">(
+    "Pay Before Delivery"
+  );
   const [cityOptions, setCityOptions] = useState<CityOption[]>([]);
   const [isCityLoading, setIsCityLoading] = useState(false);
   const [couponLoading, setCouponLoading] = useState(false);
@@ -467,15 +471,17 @@ export default function CheckoutForm() {
   const cartCoupon = useSelector((state: RootState) => state.cart.couponCode);
   const discountRate = useSelector((state: RootState) => state.cart.discount);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
-  const user = useSelector((state: RootState) => state.user.user);
-  const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  const isAuthenticated = !!user || !!vendor;
+  const user = useSelector((state: RootState) => state.user);
+  const vendor = useSelector((state: RootState) => state.vendor);
+  const currency = useSelector((state: RootState) => state.settings.currency || "NGN");
+  const userId = user.user?._id || vendor.vendor?._id || null;
+  const isAuthenticated = !!(userId && sessionId && (user.token || vendor.token));
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     toast.info("Please log in to proceed with checkout.");
     return <Navigate to="/selectpath" replace />;
   }
+
   const {
     register,
     handleSubmit,
@@ -509,7 +515,15 @@ export default function CheckoutForm() {
     if (!sessionId) {
       setIsSessionLoading(true);
       dispatch(initializeSession());
-      setIsSessionLoading(false);
+      const newSessionId = (store.getState() as RootState).session.sessionId;
+      if (newSessionId) {
+        setIsSessionLoading(false);
+      } else {
+        setTimeout(() => {
+          setIsSessionLoading(false);
+          toast.error("Failed to initialize session. Please try again.");
+        }, 1000);
+      }
     }
   }, [dispatch, sessionId]);
 
@@ -525,33 +539,33 @@ export default function CheckoutForm() {
     }
 
     setIsCityLoading(true);
-    setTimeout(() => {
-      try {
-        const country = Country.getAllCountries().find((c) => c.name === selectedCountry);
-        if (!country) {
-          toast.error("Country not found. Please try again.");
-          setCityOptions([]);
-          return;
-        }
-
-        const states = State.getStatesOfCountry(country.isoCode);
-        const state = states.find((s) => s.name === selectedRegion);
-        if (!state) {
-          toast.error("State not found. Please try again.");
-          setCityOptions([]);
-          return;
-        }
-
-        const cities = City.getCitiesOfState(country.isoCode, state.isoCode);
-        setCityOptions(cities.map((city) => ({ value: city.name, label: city.name })));
-      } catch (error) {
-        console.error("Failed to load cities:", error);
-        toast.error("Failed to load cities. Please try again.");
+    try {
+      const country = Country.getAllCountries().find((c) => c.name === selectedCountry);
+      if (!country) {
+        toast.error("Country not found.");
         setCityOptions([]);
-      } finally {
         setIsCityLoading(false);
+        return;
       }
-    }, 500);
+
+      const states = State.getStatesOfCountry(country.isoCode);
+      const state = states.find((s) => s.name === selectedRegion);
+      if (!state) {
+        toast.error("State not found.");
+        setCityOptions([]);
+        setIsCityLoading(false);
+        return;
+      }
+
+      const cities = City.getCitiesOfState(country.isoCode, state.isoCode);
+      setCityOptions(cities.map((city) => ({ value: city.name, label: city.name })));
+    } catch (error) {
+      console.error("Failed to load cities:", error);
+      toast.error("Failed to load cities.");
+      setCityOptions([]);
+    } finally {
+      setIsCityLoading(false);
+    }
   }, [selectedCountry, selectedRegion, resetField]);
 
   const handleApplyCoupon = (code: string) => {
@@ -589,11 +603,13 @@ export default function CheckoutForm() {
       toast.error("Session not initialized. Please try again.");
       return;
     }
-
+    if (!userId || !(user?.token || vendor?.token)) {
+      navigate("/selectpath");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const pricing = calculatePricing(cartItems, discountRate);
-
+      const pricing = await calculatePricing(cartItems, discountRate, currency);
       const address = [
         data.apartment ? `Apt ${data.apartment}` : "",
         data.city,
@@ -620,28 +636,24 @@ export default function CheckoutForm() {
         cartItems: cartItems.map((item) => ({
           productId: item.id,
           name: item.name,
-          price: Number(item.price), // Ensure number
-          quantity: Number(item.quantity), // Ensure number
+          price: Number(item.price),
+          quantity: Number(item.quantity),
           image: item.image,
         })),
         pricing,
       };
-
-      const response = await submitOrder(sessionId, orderData);
-      toast.success("Order placed successfully!");
+      const response = await submitOrder(sessionId, userId, orderData);
 
       if (data.paymentOption === "Pay Before Delivery") {
         if (response.authorization_url) {
-          window.location.href = response.authorization_url; // Redirect to Paystack
+          window.location.href = response.authorization_url;
         } else {
           throw new Error("Payment initialization failed: No authorization URL provided");
         }
       } else {
-        // Pay After Delivery: Redirect to success page
         navigate(`/${response.orderId}/success`, { state: { orderId: response.orderId, orderData } });
       }
     } catch (error: any) {
-      console.error("Order submission failed:", error);
       toast.error(error.message || "Failed to place order. Please try again.");
       navigate("/failed", {
         state: {
@@ -687,7 +699,7 @@ export default function CheckoutForm() {
               activePaymentOption={activePaymentOption}
               setActivePaymentOption={setActivePaymentOption}
               isSubmitting={isSubmitting}
-              isSessionLoading={isSessionLoading} // Pass isSessionLoading
+              isSessionLoading={isSessionLoading}
             />
           </form>
         </motion.div>

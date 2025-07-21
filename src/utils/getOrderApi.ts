@@ -1,15 +1,6 @@
-// src/services/orderApi.ts
+// src/utils/getOrderApi.ts
 import axios from "axios";
-import { initializeSession } from "@/redux/slices/sessionSlice";
-import store from "@/redux/store";
-
-const api = axios.create({
-  baseURL: "https://mbayy-be.onrender.com/api/v1/user",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 20000,
-});
+import { OrderStatus } from "./orderApi";
 
 export interface Order {
   id: string;
@@ -36,12 +27,7 @@ export interface Order {
   quantity: number;
   totalPrice: number;
   paymentStatus: "Paid" | "Pending" | "Failed";
-  orderStatus:
-    | "Processing"
-    | "Shipped"
-    | "Delivered"
-    | "Cancelled"
-    | "Completed";
+  orderStatus: OrderStatus;
   paymentOption: string;
   createdAt: string;
 }
@@ -52,82 +38,75 @@ interface ApiResponse {
   orders: any[];
 }
 
-export const fetchOrders = async (sessionId: string): Promise<Order[]> => {
-    if (!sessionId) {
-    throw new Error("Session ID is missing. Please try again.");
-  }
+const api = axios.create({
+  baseURL: "https://mbayy-be.onrender.com/api/v1/user",
+  headers: { "Content-Type": "application/json" },
+  timeout: 20000,
+});
 
+export const fetchOrders = async (token: string, role?: "user" | "vendor"): Promise<Order[]> => {
   try {
+    if (!token) {
+      throw new Error("Authentication token is missing. Please log in again.");
+    }
+    console.log("Fetching orders with token:", { token, role });
     const response = await api.get<ApiResponse>("/get_orders_user", {
-      params: { sessionId },
+      headers: { Authorization: `Bearer ${token}` },
     });
-
+    console.log(response)
     if (!response.data.success || !Array.isArray(response.data.orders)) {
       throw new Error(response.data.message || "Failed to fetch orders");
     }
 
-    return response.data.orders.map(
-      (order): Order => ({
-        id: order._id,
-        orderId: order._id,
-        buyer: {
-          fullName: `${order.buyerInfo.first_name} ${order.buyerInfo.last_name}`,
-          email: order.buyerInfo.email,
-          phone: order.buyerInfo.phone,
-        },
-        shippingAddress: {
-          street: order.buyerInfo.address,
-          city: order.buyerInfo.city,
-          region: order.buyerInfo.region,
-          country: order.buyerInfo.country,
-          postalCode: order.buyerInfo.postalCode,
-        },
-        product: {
-          name: order.product.name,
-          category: order.product.category,
-          subCategory: order.product.sub_category,
-          image: order.product.images?.[0] || "/placeholder.svg",
-          price: order.product.price,
-        },
-        quantity: order.quantity,
-        totalPrice: order.totalPrice,
-        paymentStatus:
-          order.payStatus === "Successful"
-            ? "Paid"
-            : order.payStatus === "Failed"
-            ? "Failed"
-            : "Pending",
-        orderStatus:
-          order.status === "Processing"
-            ? "Processing"
-            : order.status === "Shipped"
-            ? "Shipped"
-            : order.status === "Delivered"
-            ? "Delivered"
-            : order.status === "Cancelled"
-            ? "Cancelled"
-            : "Completed",
-        paymentOption: order.paymentOption,
-        createdAt: order.createdAt,
-      })
-    );
+    const validStatuses: OrderStatus[] = [
+      "Pending",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+      "Completed",
+    ];
+
+    return response.data.orders.map((order): Order => ({
+      id: order._id,
+      orderId: order._id,
+      buyer: {
+        fullName: `${order.buyerInfo.first_name || ""} ${order.buyerInfo.last_name || ""}`.trim(),
+        email: order.buyerInfo.email || "",
+        phone: order.buyerInfo.phone || "",
+      },
+      shippingAddress: {
+        street: order.buyerInfo.address || "",
+        city: order.buyerInfo.city || "",
+        region: order.buyerInfo.region || "",
+        country: order.buyerInfo.country || "",
+        postalCode: order.buyerInfo.postalCode || "",
+      },
+      product: {
+        name: order.product?.name || "Unknown Product",
+        category: order.product?.category || "Unknown",
+        subCategory: order.product?.sub_category || "Unknown",
+        image: order.product?.images?.[0] || "https://via.placeholder.com/80",
+        price: Number(order.product?.price) || 0,
+      },
+      quantity: Number(order.quantity) || 1,
+      totalPrice: Number(order.totalPrice) || 0,
+      paymentStatus:
+        order.payStatus === "Successful"
+          ? "Paid"
+          : order.payStatus === "Failed"
+          ? "Failed"
+          : "Pending",
+      orderStatus: validStatuses.includes(order.status) ? order.status : "Pending",
+      paymentOption: order.paymentOption || "Unknown",
+      createdAt: order.createdAt || new Date().toISOString(),
+    }));
   } catch (error: any) {
-    console.error("Fetch orders error:", error);
-    throw error.message || "Failed to fetch orders";
+    throw new Error(error.response?.data?.message || error.message || "Failed to fetch orders");
   }
 };
 
-
-export const getOrdersWithSession = async (): Promise<Order[]> => {
-  let sessionId = store.getState().session.sessionId;
-  if (!sessionId) {
-    // Initialize session if missing
-    store.dispatch(initializeSession());
-    sessionId = store.getState().session.sessionId;
-
-    if (!sessionId) {
-      throw new Error("Failed to initialize session ID");
-    }
-  }
-  return fetchOrders(sessionId);
+export const getOrdersWithSession = async (token: string, role?: "user" | "vendor"): Promise<Order[]> => {
+  return fetchOrders(token, role);
 };
+

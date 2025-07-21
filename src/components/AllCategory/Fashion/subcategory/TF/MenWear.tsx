@@ -100,8 +100,9 @@ const MenWear: React.FC = () => {
                         category === "fashion clothing and fabrics" &&
                         sub1 === "traditional clothing" &&
                         sub2 ===
-                        "men’s traditional wear ( e.g., dashiki, agbada, buba, sokoto, boubous, sherwanis, kimono kente cloth)"
+                       "men’s traditional wear( e.g., dashiki, agbada, buba, sokoto, boubous, sherwanis, kimono kente cloth)"
                     );
+                    
                 });
                 console.log(filtered)
                 setProducts(filtered);
