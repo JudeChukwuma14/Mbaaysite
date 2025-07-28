@@ -3,11 +3,18 @@ export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    container: {
+			center: true,
+			padding: '2rem',
+			screens: {
+				'2xl': '1400px'
+			}
+		},
     extend: {
       transformStyle: ["preserve-3d"],
       perspective: {
         1000: "1000px",
-      },
+      }, 
       translate: {
         "z-20": "20px",
       },
@@ -17,6 +24,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
+        border: 'hsl(var(--border))',
+				input: 'hsl(var(--input))',
+				ring: 'hsl(var(--ring))',
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -58,7 +68,61 @@ export default {
           5: "hsl(var(--chart-5))",
         },
       },
-    },
+      chat: {
+					primary: 'hsl(var(--chat-primary))',
+					secondary: 'hsl(var(--chat-secondary))',
+					accent: 'hsl(var(--chat-accent))',
+					muted: 'hsl(var(--chat-muted))',
+					border: 'hsl(var(--chat-border))'
+				},
+				message: {
+					sent: 'hsl(var(--message-sent))',
+					'sent-foreground': 'hsl(var(--message-sent-foreground))',
+					received: 'hsl(var(--message-received))',
+					'received-foreground': 'hsl(var(--message-received-foreground))'
+				},
+				hover: {
+					primary: 'hsl(var(--hover-primary))',
+					secondary: 'hsl(var(--hover-secondary))'
+				},
+				sidebar: {
+					DEFAULT: 'hsl(var(--sidebar-background))',
+					foreground: 'hsl(var(--sidebar-foreground))',
+					primary: 'hsl(var(--sidebar-primary))',
+					'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
+					accent: 'hsl(var(--sidebar-accent))',
+					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
+					border: 'hsl(var(--sidebar-border))',
+					ring: 'hsl(var(--sidebar-ring))'
+				}
+			},
+			borderRadius: {
+				lg: 'var(--radius)',
+				md: 'calc(var(--radius) - 2px)',
+				sm: 'calc(var(--radius) - 4px)'
+			},
+			keyframes: {
+				'accordion-down': {
+					from: {
+						height: '0'
+					},
+					to: {
+						height: 'var(--radix-accordion-content-height)'
+					}
+				},
+				'accordion-up': {
+					from: {
+						height: 'var(--radix-accordion-content-height)'
+					},
+					to: {
+						height: '0'
+					}
+				}
+			},
+			animation: {
+				'accordion-down': 'accordion-down 0.2s ease-out',
+				'accordion-up': 'accordion-up 0.2s ease-out'
+			}
   },
   plugins: [require("tailwindcss-animate")],
 };

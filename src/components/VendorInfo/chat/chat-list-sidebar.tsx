@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, User, Store } from "lucide-react";
@@ -140,10 +138,10 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="bg-white border-r w-80 flex flex-col"
+      className="flex flex-col bg-white border-r w-80"
     >
       {/* Fixed Header Section */}
-      <div className="p-4 border-b flex-shrink-0">
+      <div className="flex-shrink-0 p-4 border-b">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold">Chats</h1>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>

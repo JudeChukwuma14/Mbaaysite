@@ -70,15 +70,15 @@ const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
   () => import("@/components/profileMangement/EditProfile")
 );
-const OrderList = lazy(() => import("@/components/profileMangement/Orderlist"));
+const OrderList = lazy(() => import("@/components/profileMangement/payment/Orderlist"));
 const Canclellation = lazy(
-  () => import("@/components/profileMangement/CancellationForm")
+  () => import("@/components/profileMangement/payment/CancellationForm")
 );
 const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
-  () => import("@/components/profileMangement/OrderDetail")
+  () => import("@/components/profileMangement/payment/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
+const CheckOut = lazy(() => import("@/components/profileMangement/payment/CheckOut"));
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -148,7 +148,7 @@ const ProductDetailModal = lazy(
 const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 const Error = lazy(() => import("@/components/Error/Error"));
-const userIndex = lazy(() => import("@/components/profileMangement/Index"));
+const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
@@ -1090,7 +1090,7 @@ const routesConfig: RouteObject[] = [
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
-      { path: "/dashboard/user-index", element: withSuspense(userIndex) },
+      { path: "/dashboard/messages", element: withSuspense(userIndex) },
     ],
   },
   {
