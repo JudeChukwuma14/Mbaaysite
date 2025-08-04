@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -23,11 +21,22 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import EmojiPicker from "emoji-picker-react"; // Import the new sidebar component
+import EmojiPicker from "emoji-picker-react";
 import { ChatListSidebar } from "./chat-list-sidebar";
+import {
+  useChats,
+  useCreateOrGetChat,
+  useDeleteMessage,
+  useEditMessage,
+  useMessages,
+  useSendMediaMessage,
+  useSendMessage,
+} from "@/hook/chatQueries";
+import { FaFacebookMessenger } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 interface Message {
-  id: string;
+  _id: string;
   content: string;
   sender: string;
   timestamp: string;
@@ -43,28 +52,31 @@ interface Message {
   isPinned?: boolean;
   isEdited?: boolean;
   deletedFor: "none" | "me" | "everyone";
+  isOptimistic?: boolean;
 }
 
 interface Chat {
-  id: string;
+  _id: string;
   name: string;
   avatar: string;
   lastMessage: string;
-  timestamp: string; // This timestamp will be used for sorting chats
+  timestamp: string;
   isVendor: boolean;
   isOnline: boolean;
   messages: Message[];
   pinnedMessages: {
     messageId: string;
-    unpinTimestamp: number; // Unix timestamp in milliseconds
+    unpinTimestamp: number;
   }[];
 }
 
 interface UserOrVendor {
-  id: string;
+  _id: string;
   name: string;
   avatar: string;
   isVendor: boolean;
+  userName?: string;
+  storeName?: string;
 }
 
 interface DeleteDialogState {
@@ -88,16 +100,13 @@ interface PinDurationDialogState {
   messageId: string | null;
 }
 
-const LOCAL_STORAGE_KEY = "chatInterfaceData";
-
-interface StoredData {
-  chats: Chat[];
-  activeChat: string;
+interface ChatInterfaceProps {
+  token: string | null;
 }
 
-export default function ChatInterface() {
-  const [chats, setChats] = useState<Chat[]>([]);
+export default function ChatInterface({ token }: ChatInterfaceProps) {
   const [activeChat, setActiveChat] = useState<string>("");
+  const [chats, setChats] = useState<Chat[]>([]);
   const [message, setMessage] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -129,353 +138,89 @@ export default function ChatInterface() {
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const fallbackStorage = useRef(new Map<string, string>());
+  const [isVendorTyping, setIsVendorTyping] = useState(false);
+
+  const user = useSelector((state: any) => state.vendor);
+
+  // API Queries
+  const { data: apiChats = [], refetch: refetchChats } = useChats(user.token);
+  const { data: apiMessages = [], refetch: refetchMessages } = useMessages(
+    activeChat,
+    token
+  );
+  const createOrGetChatMutation = useCreateOrGetChat();
+  const sendMessageMutation = useSendMessage();
+  const editMessageMutation = useEditMessage();
+  const deleteMessageMutation = useDeleteMessage();
+  const sendMediaMessageMutation = useSendMediaMessage();
+
+  // Sync API data with local state
+  useEffect(() => {
+    if (apiChats.length > 0) {
+      setChats((prevChats) => {
+        const updatedChats = apiChats.map((apiChat: any) => {
+          const existingChat = prevChats.find((c) => c._id === apiChat._id);
+          return {
+            _id: apiChat._id,
+            name: apiChat.receiver?.name,
+            storeName: apiChat.receiver?.storeName,
+            avatar: apiChat.receiver?.avatar,
+            lastMessage: apiChat.lastMessage?.content || "No messages yet",
+            timestamp: apiChat?.updatedAt,
+            isVendor: apiChat.receiver?.isVendor,
+            isOnline: apiChat.receiver?.isOnline,
+            messages: existingChat?.messages || [],
+            pinnedMessages: existingChat?.pinnedMessages || [],
+          };
+        });
+        return updatedChats;
+      });
+    }
+  }, [apiChats]);
 
   useEffect(() => {
-    loadFromLocalStorage();
-  }, []);
-
-  useEffect(() => {
-    saveToLocalStorage();
-  }, [chats, activeChat]);
-
-  const isLocalStorageAvailable = () => {
-    try {
-      localStorage.setItem("test", "test");
-      localStorage.removeItem("test");
-      return true;
-    } catch (e) {
-      return false;
-    }
-  };
-
-  const loadFromLocalStorage = () => {
-    let storedData: StoredData | null = null;
-    if (isLocalStorageAvailable()) {
-      try {
-        const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (data) {
-          storedData = JSON.parse(data);
-        }
-      } catch (error) {
-        console.error("Failed to load from localStorage:", error);
-      }
-    }
-
-    if (!storedData || !storedData.chats || storedData.chats.length === 0) {
-      storedData = loadFallback();
-      if (!storedData || !storedData.chats || storedData.chats.length === 0) {
-        initializeDefaultData();
-        return;
-      }
-    }
-
-    setChats(storedData.chats);
-    setActiveChat(storedData.activeChat);
-  };
-
-  const saveToLocalStorage = () => {
-    const dataToStore: StoredData = {
-      chats,
-      activeChat,
-    };
-    if (isLocalStorageAvailable()) {
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dataToStore));
-      } catch (error) {
-        console.error("Failed to save to localStorage:", error);
-        if (
-          error instanceof DOMException &&
-          (error.name === "QuotaExceededError" ||
-            error.name === "NS_ERROR_DOM_QUOTA_REACHED")
-        ) {
-          showFeedback(
-            "Local storage is full. Your changes may not persist across sessions."
-          );
-        } else {
-          showFeedback(
-            "Unable to save data locally. Your changes may not persist."
-          );
-        }
-        saveFallback(dataToStore);
-      }
-    } else {
-      console.warn("localStorage is not available. Using fallback storage.");
-      saveFallback(dataToStore);
-      showFeedback(
-        "Unable to use local storage. Your changes may not persist across sessions."
+    if (activeChat && apiMessages.length > 0) {
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat._id === activeChat
+            ? {
+                ...chat,
+                messages: apiMessages.map((msg: any) => ({
+                  _id: msg._id,
+                  content: msg.content,
+                  sender:
+                    msg.sender._id === "current-user-id"
+                      ? "You"
+                      : msg.sender?.name,
+                  timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  isVendor: msg.sender.isVendor,
+                  files: msg.files?.map((file: any) => ({
+                    type: file.type,
+                    url: file.url,
+                    name: file?.name,
+                    size: file.size,
+                    duration: file.duration,
+                  })),
+                  replyTo: msg.replyTo,
+                  isEdited: msg.isEdited,
+                  deletedFor: msg.deletedFor || "none",
+                })),
+              }
+            : chat
+        )
       );
     }
-  };
+  }, [apiMessages, activeChat]);
 
-  const saveFallback = (data: StoredData) => {
-    try {
-      fallbackStorage.current.set(LOCAL_STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.error("Failed to save to fallback storage:", error);
-      showFeedback("Unable to save data. Your changes may not persist.");
-    }
-  };
-
-  const loadFallback = (): StoredData | null => {
-    const data = fallbackStorage.current.get(LOCAL_STORAGE_KEY);
-    if (data) {
-      try {
-        return JSON.parse(data);
-      } catch (error) {
-        console.error("Failed to parse fallback data:", error);
-        return null;
-      }
-    }
-    return null;
-  };
-
-  const initializeDefaultData = () => {
-    const defaultChats: Chat[] = [
-      {
-        id: "1",
-        name: "Ricky Smith",
-        avatar:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-02-11%20170005-w7p56CC6KmLQ43N0vioZq5pqM0k03k.png",
-        lastMessage: "Hi!, How are You? 👋",
-        timestamp: new Date().toISOString(), // Use ISO string for consistent sorting
-        isVendor: true,
-        isOnline: true,
-        messages: [
-          {
-            id: "1",
-            content: "Hi!, How are You? 👋",
-            sender: "Ricky Smith",
-            timestamp: "11:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-          {
-            id: "2",
-            content: "I'm doing great, thanks! How about you?",
-            sender: "You",
-            timestamp: "11:01AM",
-            isVendor: false,
-            deletedFor: "none",
-          },
-          {
-            id: "3",
-            content: "I'm good too! Just working on some new products.",
-            sender: "Ricky Smith",
-            timestamp: "11:05AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "2",
-        name: "Jane Doe",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Got it, thanks!",
-        timestamp: new Date(Date.now() - 3600 * 1000).toISOString(), // 1 hour ago
-        isVendor: false,
-        isOnline: false,
-        messages: [
-          {
-            id: "4",
-            content: "Hello, I have a question about my order.",
-            sender: "Jane Doe",
-            timestamp: "10:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-          {
-            id: "5",
-            content: "Sure, how can I help you?",
-            sender: "You",
-            timestamp: "10:05AM",
-            isVendor: false,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "3",
-        name: "John Smith",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "See you later!",
-        timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), // 2 hours ago
-        isVendor: false,
-        isOnline: true,
-        messages: [
-          {
-            id: "6",
-            content: "Hey, how's it going?",
-            sender: "John Smith",
-            timestamp: "09:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-          {
-            id: "7",
-            content: "All good here! Just finished a project.",
-            sender: "You",
-            timestamp: "09:05AM",
-            isVendor: false,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "4",
-        name: "Alice Wonderland",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Thanks for the update!",
-        timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(), // 3 hours ago
-        isVendor: true,
-        isOnline: false,
-        messages: [
-          {
-            id: "8",
-            content: "Your order has been shipped.",
-            sender: "Alice Wonderland",
-            timestamp: "08:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "5",
-        name: "Bob The Builder",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Can we fix it? Yes we can!",
-        timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), // 4 hours ago
-        isVendor: false,
-        isOnline: true,
-        messages: [
-          {
-            id: "9",
-            content: "Need help with construction.",
-            sender: "Bob The Builder",
-            timestamp: "07:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "6",
-        name: "Charlie Chaplin",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Silent but deadly.",
-        timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(), // 5 hours ago
-        isVendor: false,
-        isOnline: false,
-        messages: [
-          {
-            id: "10",
-            content: "Just checking in.",
-            sender: "Charlie Chaplin",
-            timestamp: "06:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "7",
-        name: "David Lee",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Checking in on the project.",
-        timestamp: new Date(Date.now() - 6 * 3600 * 1000).toISOString(),
-        isVendor: true,
-        isOnline: true,
-        messages: [
-          {
-            id: "11",
-            content: "Project update?",
-            sender: "David Lee",
-            timestamp: "05:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "8",
-        name: "Eve Adams",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Thanks for the quick response!",
-        timestamp: new Date(Date.now() - 7 * 3600 * 1000).toISOString(),
-        isVendor: false,
-        isOnline: false,
-        messages: [
-          {
-            id: "12",
-            content: "Got it!",
-            sender: "Eve Adams",
-            timestamp: "04:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "9",
-        name: "Frank White",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Meeting scheduled for tomorrow.",
-        timestamp: new Date(Date.now() - 8 * 3600 * 1000).toISOString(),
-        isVendor: true,
-        isOnline: true,
-        messages: [
-          {
-            id: "13",
-            content: "Confirming meeting.",
-            sender: "Frank White",
-            timestamp: "03:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-      {
-        id: "10",
-        name: "Grace Green",
-        avatar: "/placeholder.svg?height=48&width=48",
-        lastMessage: "Looking forward to it!",
-        timestamp: new Date(Date.now() - 9 * 3600 * 1000).toISOString(),
-        isVendor: false,
-        isOnline: false,
-        messages: [
-          {
-            id: "14",
-            content: "See you then!",
-            sender: "Grace Green",
-            timestamp: "02:00AM",
-            isVendor: true,
-            deletedFor: "none",
-          },
-        ],
-        pinnedMessages: [],
-      },
-    ];
-    setChats(defaultChats);
-    setActiveChat(""); // Do not set an active chat initially to show the GIF
-  };
-
-  const activeChatDetails = chats.find((chat) => chat.id === activeChat);
+  const activeChatDetails = chats.find((chat) => chat._id === activeChat);
   const activeMessages = activeChatDetails?.messages || [];
 
   useEffect(() => {
     scrollToBottom();
-  }, [chats, activeChat]);
+  }, [chats, activeChat, activeMessages]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -488,74 +233,22 @@ export default function ChatInterface() {
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
-    const newFiles: Message["files"] = [];
+    const formData = new FormData();
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-
-      await new Promise<void>((resolve) => {
-        reader.onloadend = () => {
-          if (type === "video" && file.type.startsWith("video/")) {
-            const video = document.createElement("video");
-            video.src = URL.createObjectURL(file);
-            video.onloadedmetadata = () => {
-              const duration = Math.round(video.duration);
-              const minutes = Math.floor(duration / 60);
-              const seconds = duration % 60;
-              const durationString = `${minutes}:${seconds
-                .toString()
-                .padStart(2, "0")}`;
-              newFiles.push({
-                type: "video",
-                url: reader.result as string,
-                name: file.name,
-                size: file.size,
-                duration: durationString,
-              });
-              URL.revokeObjectURL(video.src);
-              resolve();
-            };
-          } else if (file.type.startsWith("image/")) {
-            newFiles.push({
-              type: "image",
-              url: reader.result as string,
-              name: file.name,
-              size: file.size,
-            });
-            resolve();
-          } else {
-            newFiles.push({
-              type: "document",
-              url: reader.result as string,
-              name: file.name,
-              size: file.size,
-            });
-            resolve();
-          }
-        };
-        reader.readAsDataURL(file);
-      });
+      formData.append("files", files[i]);
     }
 
-    if (newFiles.length > 0) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        content:
-          newFiles.length === 1
-            ? newFiles[0].name
-            : `${newFiles.length} files uploaded`,
-        sender: "You",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        isVendor: false,
-        files: newFiles,
-        replyTo: replyingTo || undefined,
-        deletedFor: "none",
-      };
-      addMessageToChat(newMessage);
+    try {
+      await sendMediaMessageMutation.mutateAsync({
+        chatId: activeChat,
+        formData,
+        token,
+      });
       setReplyingTo(null);
+      showFeedback("Files uploaded successfully");
+    } catch (error) {
+      showFeedback("Failed to upload files");
+      console.error("Error uploading files:", error);
     }
   };
 
@@ -564,46 +257,18 @@ export default function ChatInterface() {
   };
 
   const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
+    if (message.trim() && activeChat) {
+      sendMessageMutation.mutate({
+        chatId: activeChat,
         content: message,
-        sender: "You",
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        isVendor: false,
+        token: user.token, // Changed from user?.token to token
         replyTo: replyingTo || undefined,
-        deletedFor: "none",
-      };
-      addMessageToChat(newMessage);
+      });
+
       setMessage("");
       setReplyingTo(null);
       setShowEmojiPicker(false);
     }
-  };
-
-  const addMessageToChat = (newMessage: Message) => {
-    setChats((prevChats) => {
-      const updatedChats = prevChats.map((chat) =>
-        chat.id === activeChat
-          ? {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-              lastMessage: `You: ${newMessage.content.slice(0, 20)}${
-                newMessage.content.length > 20 ? "..." : ""
-              }`,
-              timestamp: new Date().toISOString(), // Update chat timestamp for sorting
-            }
-          : chat
-      );
-      // Sort chats to bring the most recently updated chat to the top
-      return updatedChats.sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-    });
   };
 
   const handleReply = (messageId: string) => {
@@ -620,50 +285,13 @@ export default function ChatInterface() {
 
   const handleDeleteConfirm = () => {
     if (deleteDialog.messageId) {
-      setChats((prevChats) => {
-        const updatedChats = prevChats.map((chat) => {
-          if (chat.id === activeChat) {
-            const updatedMessages = chat.messages.map((msg) =>
-              msg.id === deleteDialog.messageId
-                ? { ...msg, deletedFor: "everyone" }
-                : msg
-            );
-            const nonDeletedMessages = updatedMessages.filter(
-              (msg) => msg.deletedFor === "none"
-            );
-            const newLastMessage =
-              nonDeletedMessages.length > 0
-                ? `You: ${nonDeletedMessages[
-                    nonDeletedMessages.length - 1
-                  ].content.slice(0, 20)}${
-                    nonDeletedMessages[nonDeletedMessages.length - 1].content
-                      .length > 20
-                      ? "..."
-                      : ""
-                  }`
-                : "No messages yet.";
-
-            return {
-              ...chat,
-              messages: updatedMessages,
-              pinnedMessages: chat.pinnedMessages.filter(
-                (p) => p.messageId !== deleteDialog.messageId
-              ), // Also unpin if deleted
-              lastMessage: newLastMessage,
-              timestamp: new Date().toISOString(), // Update chat timestamp for sorting
-            };
-          }
-          return chat;
-        });
-        // Sort chats to bring the most recently updated chat to the top
-        return updatedChats.sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
+      deleteMessageMutation.mutate({
+        messageId: deleteDialog.messageId,
+        token,
       });
-      showFeedback("Message deleted.");
+      setDeleteDialog({ isOpen: false, messageId: null });
+      showFeedback("Message deleted");
     }
-    setDeleteDialog({ isOpen: false, messageId: null });
   };
 
   const handleDeleteCancel = () => {
@@ -672,7 +300,7 @@ export default function ChatInterface() {
 
   const handleEdit = (messageId: string) => {
     setEditingMessageId(messageId);
-    const messageToEdit = activeMessages.find((msg) => msg.id === messageId);
+    const messageToEdit = activeMessages.find((msg) => msg._id === messageId);
     if (messageToEdit) {
       setMessage(messageToEdit.content);
     }
@@ -681,51 +309,11 @@ export default function ChatInterface() {
 
   const handleSaveEdit = () => {
     if (editingMessageId) {
-      setChats(
-        (prevChats) =>
-          prevChats
-            .map((chat) => {
-              if (chat.id === activeChat) {
-                const updatedMessages = chat.messages.map((msg) =>
-                  msg.id === editingMessageId
-                    ? {
-                        ...msg,
-                        content: message,
-                        isEdited: true,
-                        timestamp: new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }),
-                      }
-                    : msg
-                );
-                const editedMessage = updatedMessages.find(
-                  (msg) => msg.id === editingMessageId
-                );
-                const newLastMessage =
-                  editedMessage &&
-                  editedMessage.id ===
-                    updatedMessages[updatedMessages.length - 1].id
-                    ? `You: ${editedMessage.content.slice(0, 20)}${
-                        editedMessage.content.length > 20 ? "..." : ""
-                      }`
-                    : chat.lastMessage; // Keep current last message if not the edited one
-
-                return {
-                  ...chat,
-                  messages: updatedMessages,
-                  lastMessage: newLastMessage,
-                  timestamp: new Date().toISOString(), // Update chat timestamp for sorting
-                };
-              }
-              return chat;
-            })
-            .sort(
-              (a, b) =>
-                new Date(b.timestamp).getTime() -
-                new Date(a.timestamp).getTime()
-            ) // Re-sort
-      );
+      editMessageMutation.mutate({
+        messageId: editingMessageId,
+        content: message,
+        token,
+      });
       setEditingMessageId(null);
       setMessage("");
       showFeedback("Message edited");
@@ -733,16 +321,15 @@ export default function ChatInterface() {
   };
 
   const handlePinClick = (messageId: string) => {
-    const currentChat = chats.find((chat) => chat.id === activeChat);
+    const currentChat = chats.find((chat) => chat._id === activeChat);
     const isAlreadyPinned = currentChat?.pinnedMessages.some(
       (p) => p.messageId === messageId
     );
 
     if (isAlreadyPinned) {
-      // If already pinned, unpin it
       setChats((prevChats) =>
         prevChats.map((chat) =>
-          chat.id === activeChat
+          chat._id === activeChat
             ? {
                 ...chat,
                 pinnedMessages: chat.pinnedMessages.filter(
@@ -754,17 +341,16 @@ export default function ChatInterface() {
       );
       showFeedback("Message unpinned");
     } else {
-      // If not pinned, open duration dialog
       setPinDurationDialog({ isOpen: true, messageId });
     }
   };
 
   const handleSelectPinDuration = (durationHours: number) => {
     if (pinDurationDialog.messageId && activeChatDetails) {
-      const unpinTimestamp = Date.now() + durationHours * 60 * 60 * 1000; // Convert hours to milliseconds
+      const unpinTimestamp = Date.now() + durationHours * 60 * 60 * 1000;
       setChats((prevChats) =>
         prevChats.map((chat) =>
-          chat.id === activeChat
+          chat._id === activeChat
             ? {
                 ...chat,
                 pinnedMessages: [
@@ -784,7 +370,6 @@ export default function ChatInterface() {
     setPinDurationDialog({ isOpen: false, messageId: null });
   };
 
-  // Effect to unpin messages after their duration
   useEffect(() => {
     const interval = setInterval(() => {
       setChats((prevChats) =>
@@ -794,7 +379,6 @@ export default function ChatInterface() {
             (p) => p.unpinTimestamp > now
           );
           if (updatedPinnedMessages.length !== chat.pinnedMessages.length) {
-            // If any message was unpinned, show feedback
             const unpinnedCount =
               chat.pinnedMessages.length - updatedPinnedMessages.length;
             if (unpinnedCount > 0) {
@@ -807,8 +391,7 @@ export default function ChatInterface() {
           return chat;
         })
       );
-    }, 60 * 1000); // Check every minute
-
+    }, 60 * 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -940,54 +523,31 @@ export default function ChatInterface() {
     }
   };
 
-  const handleStartNewChat = (user: UserOrVendor) => {
-    setChats((prevChats) => {
-      // Check if a chat with this user already exists
-      const existingChat = prevChats.find(
-        (chat) => chat.name === user.name && chat.isVendor === user.isVendor
-      );
-
-      if (existingChat) {
-        setActiveChat(existingChat.id);
-        return prevChats; // No change to chats array if already exists
-      }
-
-      // Create a new chat
-      const newChat: Chat = {
-        id: `chat-${Date.now()}`, // Unique ID for the new chat
-        name: user.name,
-        avatar: user.avatar,
-        lastMessage: "New chat started!",
-        timestamp: new Date().toISOString(),
-        isVendor: user.isVendor,
-        isOnline: true, // Assume new chat is with an online user for simplicity
-        messages: [],
-        pinnedMessages: [],
-      };
-
-      // Add new chat to the beginning and sort
-      const updatedChats = [newChat, ...prevChats].sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-      setActiveChat(newChat.id); // Set the new chat as active
-      return updatedChats;
-    });
+  const handleStartNewChat = async (user: UserOrVendor) => {
+    try {
+      const result = await createOrGetChatMutation.mutateAsync({
+        receiverId: user._id,
+        token,
+      });
+      setActiveChat(result._id);
+      refetchChats();
+    } catch (error) {
+      showFeedback("Failed to start new chat");
+      console.error("Error creating new chat:", error);
+    }
   };
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Chat List Sidebar Component */}
       <ChatListSidebar
         chats={chats}
         activeChat={activeChat}
         setActiveChat={setActiveChat}
-        onStartNewChat={handleStartNewChat}
+        token={token}
+        onNewChatCreated={handleStartNewChat}
       />
 
-      {/* Chat Area */}
       <div className="flex flex-col flex-1">
-        {/* Chat Header or No Chat Selected Message */}
         {activeChatDetails ? (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
@@ -997,7 +557,7 @@ export default function ChatInterface() {
             <div className="relative">
               <img
                 src={activeChatDetails.avatar || "/placeholder.svg"}
-                alt={activeChatDetails.name}
+                alt={activeChatDetails?.name}
                 className="w-10 h-10 rounded-full"
               />
               {activeChatDetails.isOnline && (
@@ -1005,40 +565,36 @@ export default function ChatInterface() {
               )}
             </div>
             <div>
-              <h2 className="font-semibold">{activeChatDetails.name}</h2>
+              <h2 className="font-semibold">{activeChatDetails?.name}</h2>
               <span className="text-xs text-green-500">
-                {activeChatDetails.isOnline ? "Online" : "Offline"}
+                {isVendorTyping && activeChatDetails.isVendor ? (
+                  <span className="text-orange-500">Typing...</span>
+                ) : activeChatDetails.isOnline ? (
+                  "Online"
+                ) : (
+                  "Offline"
+                )}
               </span>
             </div>
           </motion.div>
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center text-gray-500">
-            <img
-              src="/placeholder.svg?height=200&width=200" // Placeholder GIF
-              alt="No chat selected"
-              className="mb-4"
-            />
-            <p className="text-lg font-semibold">
-              GIF Display for No Chat Selected
-            </p>
+            <FaFacebookMessenger size={60} className="text-orange-500" />
+            <p className="text-lg font-semibold">No Messages Yet</p>
+            <p className="text-sm">You have no chats at the moment.</p>
             <p className="text-sm">
-              Added a GIF animation when no chat is selected
-            </p>
-            <p className="text-sm">
-              Shows a friendly message prompting the admin to select a chat
+              New messages from customers and vendors will appear here.
             </p>
           </div>
         )}
 
-        {/* Pinned Messages */}
         {activeChatDetails && activeChatDetails.pinnedMessages.length > 0 && (
           <div className="flex flex-col p-2 bg-orange-100 flex-shrink-0">
             {activeChatDetails.pinnedMessages.map((pinnedMsg) => {
               const originalMessage = activeMessages.find(
-                (msg) => msg.id === pinnedMsg.messageId
+                (msg) => msg._id === pinnedMsg.messageId
               );
               if (!originalMessage) return null;
-
               const unpinDate = new Date(pinnedMsg.unpinTimestamp);
               const timeLeft = unpinDate.getTime() - Date.now();
               const daysLeft = Math.ceil(timeLeft / (1000 * 60 * 60 * 24));
@@ -1076,22 +632,20 @@ export default function ChatInterface() {
           </div>
         )}
 
-        {/* Feedback Message */}
         {feedbackMessage && (
           <div className="p-2 text-center text-green-800 bg-green-100 flex-shrink-0">
             {feedbackMessage}
           </div>
         )}
 
-        {/* Messages */}
         {activeChatDetails && (
           <div className="flex-1 p-4 overflow-y-auto">
             <AnimatePresence>
               {activeMessages
-                .filter((msg) => msg.deletedFor === "none") // Only show messages not deleted for everyone
+                .filter((msg) => msg.deletedFor === "none")
                 .map((msg, index) => (
                   <motion.div
-                    key={msg.id}
+                    key={msg._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
@@ -1116,7 +670,7 @@ export default function ChatInterface() {
                         <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 rounded-t-lg">
                           Replying to:{" "}
                           {activeMessages
-                            .find((m) => m.id === msg.replyTo)
+                            .find((m) => m._id === msg.replyTo)
                             ?.content.slice(0, 50)}
                           ...
                         </div>
@@ -1156,7 +710,7 @@ export default function ChatInterface() {
                                   {file.type === "image" ? (
                                     <img
                                       src={file.url || "/placeholder.svg"}
-                                      alt={file.name}
+                                      alt={file?.name}
                                       className={
                                         msg.files && msg.files.length === 1
                                           ? "object-contain w-full h-full"
@@ -1168,7 +722,7 @@ export default function ChatInterface() {
                                       <video
                                         src={file.url}
                                         className={
-                                          msg.files.length === 1
+                                          msg.files && msg.files.length === 1
                                             ? "object-contain w-full h-full"
                                             : "object-cover w-full h-full"
                                         }
@@ -1181,7 +735,7 @@ export default function ChatInterface() {
                                     <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center bg-gray-200 text-gray-700">
                                       <Paperclip className="w-6 h-6 mb-1" />
                                       <span className="text-xs truncate w-full px-1">
-                                        {file.name}
+                                        {file?.name}
                                       </span>
                                     </div>
                                   )}
@@ -1209,7 +763,7 @@ export default function ChatInterface() {
                         )}
                         <div className="flex gap-2 ml-2">
                           <button
-                            onClick={() => handleReply(msg.id)}
+                            onClick={() => handleReply(msg._id)}
                             className="relative hover:text-orange-500 group"
                           >
                             <Reply className="w-4 h-4" />
@@ -1229,7 +783,7 @@ export default function ChatInterface() {
                           {!msg.isVendor && (
                             <>
                               <button
-                                onClick={() => handleEdit(msg.id)}
+                                onClick={() => handleEdit(msg._id)}
                                 className="relative hover:text-orange-500 group"
                               >
                                 <Edit className="w-4 h-4" />
@@ -1238,7 +792,7 @@ export default function ChatInterface() {
                                 </span>
                               </button>
                               <button
-                                onClick={() => handleDeleteClick(msg.id)}
+                                onClick={() => handleDeleteClick(msg._id)}
                                 className="relative hover:text-orange-500 group"
                               >
                                 <Trash className="w-4 h-4" />
@@ -1249,13 +803,13 @@ export default function ChatInterface() {
                             </>
                           )}
                           <button
-                            onClick={() => handlePinClick(msg.id)}
+                            onClick={() => handlePinClick(msg._id)}
                             className="relative hover:text-orange-500 group"
                           >
                             <Pin className="w-4 h-4" />
                             <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
                               {activeChatDetails?.pinnedMessages.some(
-                                (p) => p.messageId === msg.id
+                                (p) => p.messageId === msg._id
                               )
                                 ? "Unpin"
                                 : "Pin"}
@@ -1278,13 +832,12 @@ export default function ChatInterface() {
           </div>
         )}
 
-        {/* Reply Preview */}
         {activeChatDetails && replyingTo && (
           <div className="flex items-center justify-between p-2 bg-gray-100 flex-shrink-0">
             <p className="text-sm text-gray-600">
               Replying to:{" "}
               {activeMessages
-                .find((m) => m.id === replyingTo)
+                .find((m) => m._id === replyingTo)
                 ?.content.slice(0, 50)}
               ...
             </p>
@@ -1297,7 +850,6 @@ export default function ChatInterface() {
           </div>
         )}
 
-        {/* Message Input */}
         {activeChatDetails && (
           <motion.div
             initial={{ y: 50, opacity: 0 }}
@@ -1362,7 +914,6 @@ export default function ChatInterface() {
                 </motion.button>
               </div>
             </div>
-            {/* Emoji Picker */}
             {showEmojiPicker && (
               <div className="absolute right-0 mb-2 bg-white border rounded-lg shadow-lg bottom-full">
                 <EmojiPicker
@@ -1370,14 +921,13 @@ export default function ChatInterface() {
                     handleEmojiSelect(emojiObject.emoji)
                   }
                   autoFocusSearch={false}
-                  // native
                 />
               </div>
             )}
           </motion.div>
         )}
       </div>
-      {/* Delete Dialog */}
+
       {deleteDialog.isOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="p-6 bg-white rounded-lg w-96">
@@ -1402,7 +952,7 @@ export default function ChatInterface() {
           </div>
         </div>
       )}
-      {/* Enhanced Video Player */}
+
       {videoPlayer.isOpen && videoPlayer.videoUrl && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
           <div className="relative w-full max-w-4xl p-4 bg-white rounded-lg aspect-video">
@@ -1469,30 +1019,30 @@ export default function ChatInterface() {
           </div>
         </div>
       )}
-      {/* Media Gallery Dialog */}
+
       {mediaGallery.isOpen && mediaGallery.files && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
           <div className="relative w-full h-full max-w-5xl max-h-5xl flex items-center justify-center">
-            <button
+            <motion.button
               onClick={handleCloseMediaGallery}
               className="absolute top-4 right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
             >
               <X className="w-6 h-6" />
-            </button>
+            </motion.button>
             {mediaGallery.files.length > 1 && (
               <>
-                <button
+                <motion.button
                   onClick={handlePrevMedia}
                   className="absolute left-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
                 >
                   <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   onClick={handleNextMedia}
                   className="absolute right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
                 >
                   <ChevronRight className="w-6 h-6" />
-                </button>
+                </motion.button>
               </>
             )}
             <div className="relative w-full h-full flex items-center justify-center">
@@ -1540,7 +1090,7 @@ export default function ChatInterface() {
           </div>
         </div>
       )}
-      {/* Pin Duration Dialog */}
+
       {pinDurationDialog.isOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="p-6 bg-white rounded-lg w-96">
@@ -1562,7 +1112,7 @@ export default function ChatInterface() {
                 <input
                   type="radio"
                   name="pinDuration"
-                  value="168" // 7 days * 24 hours
+                  value="168"
                   onChange={() => handleSelectPinDuration(168)}
                   className="mr-2"
                 />
@@ -1572,7 +1122,7 @@ export default function ChatInterface() {
                 <input
                   type="radio"
                   name="pinDuration"
-                  value="720" // 30 days * 24 hours (approx)
+                  value="720"
                   onChange={() => handleSelectPinDuration(720)}
                   className="mr-2"
                 />
