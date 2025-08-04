@@ -41,21 +41,6 @@ export const get_single_vendor = async (token: string | null) => {
   }
 };
 
-//   if (!token) {
-//     throw new Error("No token provided");
-//   }
-//   try {
-//     const response = await api.get("/find_one_vendor", {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//       },
-//     });
-//     return response.data.data;
-//   } catch (error: any) {
-//     console.error("Fetch Vendor Profile Error:", error.response?.data || error);
-//     throw error.response?.data?.message || "Failed to fetch vendor profile";
-//   }
-// };
 export const upload_return_policy = async (token: string | null, data: any) => {
   try {
     const response = await api.post("/upload_return_policy", data, {
@@ -74,7 +59,18 @@ export const upload_return_policy = async (token: string | null, data: any) => {
 export const getAllVendor = async () => {
   try {
     const response = await api.get("/get_all_vendors");
+    console.log(response);
     return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAlllVendor = async () => {
+  try {
+    const response = await api.get("/get_all_vendors");
+    // console.log(response.data.vendors);
+    return response.data.vendors;
   } catch (error) {
     console.log(error);
   }
