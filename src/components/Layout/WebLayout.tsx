@@ -4,6 +4,7 @@ import { Outlet } from 'react-router-dom';
 import Footer from '../static/Footer';
 import Header from '../static/Header';
 import ScrollToTop from '../Reuseable/ScrollToTop';
+import { ChatWidget } from '../CustomerSupport/ChatWidget';
 
 const useLoading = (delay = 1500) =>{
     const [loading, setLoading] = useState(true)
@@ -23,6 +24,7 @@ const useLoading = (delay = 1500) =>{
                 <ScrollToTop/>
                 <Header/>
                 <Outlet/>
+                <ChatWidget/>
                 <Footer/>
             </div>
         )

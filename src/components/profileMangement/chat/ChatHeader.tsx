@@ -1,4 +1,5 @@
-import { ArrowLeft, MoreVertical, Users } from "lucide-react";
+import React from "react";
+import { ArrowLeft, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,11 +9,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface Chat {
-  id: number;
+  _id: string;
   name: string;
   online: boolean;
-  avatar: string;
-  isGroup?: boolean;
+  avatar?: string;
 }
 
 interface ChatHeaderProps {
@@ -20,15 +20,22 @@ interface ChatHeaderProps {
   onBack?: () => void;
 }
 
-const ChatHeader = ({ chat, onBack }: ChatHeaderProps) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
   const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    console.log("DEBUG: Generating initials for name:", name);
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
   };
 
+  console.log("DEBUG: ChatHeader rendering with chat:", JSON.stringify(chat, null, 2));
+
   return (
-    <div className="flex items-center justify-between p-4 bg-card border-b">
+    <div className="flex items-center justify-between p-4 border-b bg-card">
       <div className="flex items-center space-x-3">
-        {/* Back Button (Mobile) */}
         {onBack && (
           <Button
             variant="ghost"
@@ -39,38 +46,27 @@ const ChatHeader = ({ chat, onBack }: ChatHeaderProps) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
         )}
-
-        {/* Avatar */}
         <div className="relative">
-          <div className="w-10 h-10 bg-black rounded-[50%] flex items-center justify-center text-white font-semibold text-sm">
-           {chat.isGroup ? (
-              <Users className="w-6 h-6" />
-            ) : chat.avatar ? (
-              <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[50%] object-cover" />
+          <div className="w-10 h-10 bg-orange-500 rounded-[50%] flex items-center justify-center text-white font-semibold text-sm">
+            {chat.avatar ? (
+              <img
+                src={chat.avatar}
+                alt={chat.name}
+                className="w-full h-full rounded-[50%] object-cover"
+              />
             ) : (
               getInitials(chat.name)
             )}
           </div>
-          {chat.online && !chat.isGroup && (
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-lg border-2 border-white"></div>
+          {chat.online && (
+            <div className="absolute w-3 h-3 bg-green-500 border-2 border-white rounded-lg -bottom-1 -right-1"></div>
           )}
         </div>
-
-        {/* Chat Info */}
         <div>
           <h3 className="font-semibold text-foreground">{chat.name}</h3>
-          <p className="text-sm text-muted-foreground">
-            {chat.isGroup 
-              ? "Group chat" 
-              : chat.online 
-                ? "Online" 
-                : "Last seen recently"
-            }
-          </p>
+          <p className="text-sm text-muted-foreground">{chat.online ? "Online" : "Last seen recently"}</p>
         </div>
       </div>
-
-      {/* Action Buttons */}
       <div className="flex items-center space-x-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -83,15 +79,9 @@ const ChatHeader = ({ chat, onBack }: ChatHeaderProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-card border-chat-border">
-            <DropdownMenuItem className="cursor-pointer">
-              View Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Mute Notifications
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer">
-              Clear Chat
-            </DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">View Profile</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">Mute Notifications</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer">Clear Chat</DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">
               Block User
             </DropdownMenuItem>

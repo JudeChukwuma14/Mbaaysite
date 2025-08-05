@@ -1,302 +1,651 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 import ChatList from "./ChatList";
 import { useIsMobile } from "@/hook/use-mobile";
 import ChatHeader from "./ChatHeader";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import { Send } from "lucide-react";
-const mockChats = [
-    {
-        id: 1,
-        name: "John Doe",
-        lastMessage: "Hey, how are you doing?",
-        time: "2:30 PM",
-        unread: 2,
-        avatar:
-            "https://i.pinimg.com/736x/dc/2a/c0/dc2ac088c51bdc168db8b8e6acd1964f.jpg",
-        online: true,
-        pinned: true,
-    },
-    {
-        id: 2,
-        name: "Sarah Wilson",
-        lastMessage: "Can you send me the files?",
-        time: "1:45 PM",
-        unread: 0,
-        avatar: "",
-        online: false,
-        pinned: false,
-    },
-    {
-        id: 3,
-        name: "Team Project",
-        lastMessage: "Meeting tomorrow at 10 AM",
-        time: "12:20 PM",
-        unread: 5,
-        avatar: "",
-        online: true,
-        pinned: true,
-        isGroup: true,
-    },
-    {
-        id: 4,
-        name: "Jane Smith",
-        lastMessage: "I'll call you later.",
-        time: "11:15 AM",
-        unread: 1,
-        avatar: "",
-        online: false,
-        pinned: false,
-    },
-    {
-        id: 5,
-        name: "Alex Johnson",
-        lastMessage: "Got the documents!",
-        time: "10:00 AM",
-        unread: 0,
-        avatar:
-            "https://i.pinimg.com/736x/f0/71/36/f071360dddfe7088975d0b4813ea9591.jpg",
-        online: true,
-        pinned: false,
-    },
-    {
-        id: 6,
-        name: "Family Group",
-        lastMessage: "Dinner at 8?",
-        time: "9:45 AM",
-        unread: 3,
-        avatar: "",
-        online: true,
-        pinned: true,
-        isGroup: true,
-    },
-    {
-        id: 7,
-        name: "Dev Team",
-        lastMessage: "Code review complete.",
-        time: "9:00 AM",
-        unread: 0,
-        avatar: "",
-        online: false,
-        pinned: false,
-        isGroup: true,
-    },
-    {
-        id: 8,
-        name: "Linda Green",
-        lastMessage: "Thanks for the gift!",
-        time: "8:10 AM",
-        unread: 4,
-        avatar:
-            "https://i.pinimg.com/474x/c6/0a/d0/c60ad03621a3caebd7cd75b551fc56c0.jpg",
-        online: true,
-        pinned: false,
-    },
-    {
-        id: 9,
-        name: "Customer Support",
-        lastMessage: "Your issue has been resolved.",
-        time: "Yesterday",
-        unread: 0,
-        avatar: "",
-        online: false,
-        pinned: false,
-    },
-    {
-        id: 10,
-        name: "Mike Tyson",
-        lastMessage: "Let’s hit the gym later.",
-        time: "Sunday",
-        unread: 2,
-        avatar: "",
-        online: true,
-        pinned: false,
-    },
-];
+import {
+  startChat,
+  getUserChats,
+  getChatMessages,
+  sendMessage,
+  editMessage,
+  deleteMessage,
+  sendMediaMessage,
+} from "@/utils/UserChat";
+import { toast } from "react-toastify";
 
-type MessageType = "text" | "image" | "video" | "file";
-
-interface Message {
-    id: number;
-    content: string;
-    time: string;
-    sent: boolean;
-    type: MessageType;
+interface Chat {
+  _id: string;
+  name: string;
+  lastMessage: string;
+  time: string;
+  unread: number;
+  avatar?: string;
+  online: boolean;
+  pinned: boolean;
+  isGroup?: boolean;
 }
 
-const mockMessages: Message[] = [
-    {
-        id: 1,
-        content: "Hey, how are you doing?",
-        time: "2:30 PM",
-        sent: false,
-        type: "text",
-    },
-    {
-        id: 2,
-        content: "I'm doing great! How about you?",
-        time: "2:32 PM",
-        sent: true,
-        type: "text",
-    },
-    {
-        id: 3,
-        content: "https://example.com/image.jpg",
-        time: "2:35 PM",
-        sent: false,
-        type: "image",
-    },
-    {
-        id: 4,
-        content: "That's a beautiful photo!",
-        time: "2:36 PM",
-        sent: true,
-        type: "text",
-    },
-];
+interface Message {
+  _id: string;
+  content: string;
+  time: string;
+  sent: boolean;
+  type: "text" | "image" | "video" | "file";
+  replyTo?: string;
+}
 
 const ChatInterface: React.FC = () => {
-    const [selectedChat, setSelectedChat] = useState<number | null>(1);
-    const [messages, setMessages] = useState<Message[]>(mockMessages);
-    const [chats, setChats] = useState(mockChats);
-    const [showChatList, setShowChatList] = useState(true);
-    const isMobile = useIsMobile();
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [selectedChat, setSelectedChat] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [chats, setChats] = useState<Chat[]>([]);
+  const [showChatList, setShowChatList] = useState(true);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
+  const user = useSelector((state: RootState) => state.user.user);
+  const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  console.log("DEBUG: userRedux:", JSON.stringify(user, null, 2));
+  console.log("DEBUG: vendorRedux:", JSON.stringify(vendor, null, 2));
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+  const currentUserId = user?._id || vendor?._id;
+  if (!currentUserId) {
+    console.log(
+      "DEBUG: No user or vendor ID found, user must be authenticated"
+    );
+    setError("Please log in to use chat.");
+    toast.error("Please log in to use chat.");
+  }
 
-    // Handle mobile responsiveness
-    useEffect(() => {
-        if (isMobile && selectedChat) {
-            setShowChatList(false);
-        }
-    }, [selectedChat, isMobile]);
+  const scrollToBottom = () => {
+    console.log("DEBUG: Scrolling to bottom");
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
-    const handleSendMessage = (content: string, type: MessageType = "text") => {
-        const newMessage: Message = {
-            id: messages.length + 1,
-            content,
-            time: new Date().toLocaleTimeString([], {
+  useEffect(() => {
+    const fetchChats = async () => {
+      if (!currentUserId) {
+        console.log("DEBUG: Skipping fetchChats, no user or vendor ID");
+        return;
+      }
+      setIsLoadingChats(true);
+      setError(null);
+      try {
+        console.log("DEBUG: Fetching chats...");
+        const chatData = await getUserChats();
+        console.log("DEBUG: chatData:", JSON.stringify(chatData, null, 2));
+        console.log(
+          "DEBUG: Participants for each chat:",
+          chatData.chats.map((chat: any) => ({
+            chatId: chat._id,
+            participants: chat.participants,
+          }))
+        );
+        console.log("DEBUG: Current user/vendor ID:", currentUserId);
+        const formattedChats: Chat[] = (chatData.chats || []).map(
+          (chat: any) => {
+            const otherParticipant = chat.participants.find(
+              (p: any) => p.participantId !== currentUserId
+            );
+            console.log(
+              "DEBUG: Other participant for chat",
+              chat._id,
+              ":",
+              JSON.stringify(otherParticipant, null, 2)
+            );
+            return {
+              _id: chat._id,
+              name:
+                chat.name ||
+                otherParticipant?.storeName ||
+                otherParticipant?.name ||
+                `User ${
+                  otherParticipant?.participantId?.slice(-4) || "Unknown"
+                }`,
+              lastMessage: chat.lastMessage?.content || "",
+              time: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
-            }),
-            sent: true,
-            type,
-        };
-        setMessages([...messages, newMessage]);
-    };
-
-    const handleDeleteMessage = (messageId: number) => {
-        setMessages(messages.filter((msg) => msg.id !== messageId));
-    };
-
-    const handleEditMessage = (messageId: number, newContent: string) => {
-        setMessages(
-            messages.map((msg) =>
-                msg.id === messageId ? { ...msg, content: newContent } : msg
-            )
+              }),
+              unread: chat.unreadCount || 0,
+              avatar: otherParticipant?.avatar || "",
+              online: otherParticipant?.online || false,
+              pinned: chat.pinned || false,
+              isGroup: chat.isCustomerCareChat || false,
+            };
+          }
         );
-    };
-
-    const handlePinChat = (chatId: number) => {
-        setChats(
-            chats.map((chat) =>
-                chat.id === chatId ? { ...chat, pinned: !chat.pinned } : chat
-            )
+        console.log(
+          "DEBUG: Formatted chats:",
+          JSON.stringify(formattedChats, null, 2)
         );
-    };
-
-    const handleDeleteChat = (chatId: number) => {
-        setChats(chats.filter((chat) => chat.id !== chatId));
-        if (selectedChat === chatId) {
-            setSelectedChat(null);
+        setChats(formattedChats);
+        if (!selectedChat && formattedChats.length > 0) {
+          console.log(
+            "DEBUG: Setting initial selectedChat:",
+            formattedChats[0]._id
+          );
+          setSelectedChat(formattedChats[0]._id);
         }
+      } catch (error: any) {
+        const errorMsg =
+          error.response?.data?.message ||
+          "Failed to load chats. Please try again.";
+        console.error("DEBUG: Error fetching chats:", error);
+        setError(errorMsg);
+        toast.error(errorMsg);
+        setChats([]);
+      } finally {
+        setIsLoadingChats(false);
+      }
     };
+    if (currentUserId) {
+      console.log("DEBUG: Triggering fetchChats with user or vendor present");
+      fetchChats();
+    } else {
+      console.log("DEBUG: No user or vendor in Redux, skipping fetchChats");
+    }
+  }, [currentUserId]);
 
-    const selectedChatData = chats.find((chat) => chat.id === selectedChat);
-
-    const handleBackToList = () => {
-        setShowChatList(true);
-        setSelectedChat(null);
+// Update the message formatting in the fetchMessages useEffect
+useEffect(() => {
+  if (selectedChat && currentUserId) {
+    const fetchMessages = async () => {
+      setIsLoadingMessages(true);
+      setError(null);
+      try {
+        console.log("DEBUG: Fetching messages for chat:", selectedChat);
+        const messageData = await getChatMessages(selectedChat);
+        console.log("DEBUG: messageData for chat", selectedChat, ":", JSON.stringify(messageData, null, 2));
+        const formattedMessages: Message[] = (messageData.messages || []).map((msg: any) => {
+          const isSentByCurrentUser = msg.sender._id === currentUserId;
+          const formattedMessage = {
+            _id: msg._id,
+            content: msg.content || "",
+            time: new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            sent: isSentByCurrentUser,
+            type: msg.type || "text",
+            replyTo: msg.replyTo || undefined,
+          };
+          console.log("DEBUG: Formatted message:", JSON.stringify(formattedMessage, null, 2));
+          return formattedMessage;
+        });
+        setMessages(formattedMessages);
+      } catch (error: any) {
+        const errorMsg = error.response?.data?.message || "Failed to load messages. Please try again.";
+        console.error("DEBUG: Error fetching messages:", error);
+        setError(errorMsg);
+        toast.error(errorMsg);
+      } finally {
+        setIsLoadingMessages(false);
+      }
     };
+    fetchMessages();
+  }
+}, [selectedChat, currentUserId]);
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
-    return (
-        <div className="flex h-[calc(100vh-10rem)] lg:h-[calc(95vh-7rem)] bg-background border rounded">
-            <div
-                className={`${isMobile
-                    ? showChatList
-                        ? "w-full"
-                        : "hidden"
-                    : "w-80 border-r border-chat-border"
-                    } bg-card`}
-            >
-                <ChatList
-                    chats={chats}
-                    selectedChat={selectedChat}
-                    onSelectChat={(chatId) => {
-                        setSelectedChat(chatId);
-                        if (isMobile) setShowChatList(false);
-                    }}
-                    onPinChat={handlePinChat}
-                    onDeleteChat={handleDeleteChat}
-                />
-            </div>
-            <div
-                className={`${isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
-                    } flex flex-col`}
-            >
-                {selectedChatData ? (
-                    <>
-                        <div className="sticky top-0 z-10">
-                            <ChatHeader
-                                chat={selectedChatData}
-                                onBack={isMobile ? handleBackToList : undefined}
-                            />
-                        </div>
+  useEffect(() => {
+    if (isMobile && selectedChat) {
+      console.log("DEBUG: Mobile view, hiding chat list");
+      setShowChatList(false);
+    }
+  }, [selectedChat, isMobile]);
 
-                        {/* Messages Area */}
-                        <ScrollArea className="flex-1 overflow-y-auto">
-                            <div className="p-4 space-y-4">
-                                {messages.map((message) => (
-                                    <MessageBubble
-                                        key={message.id}
-                                        message={message}
-                                        onDelete={() => handleDeleteMessage(message.id)}
-                                        onEdit={(content) => handleEditMessage(message.id, content)}
-                                    />
-                                ))}
-                                <div ref={messagesEndRef} />
-                            </div>
-                        </ScrollArea>
-                        <div className="sticky bottom-0 z-10 border">
-                            <MessageInput onSendMessage={handleSendMessage} />
-                        </div>
-                    </>
-                ) : (
-                    <div className="flex-1 flex items-center justify-center bg-chat-muted">
-                        <div className="text-center">
-                            <div className="w-20 h-20 bg-chat-primary rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Send className="w-8 h-8 text-white" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-foreground mb-2">
-                                Welcome to Chat
-                            </h3>
-                            <p className="text-muted-foreground">
-                                Select a conversation to start messaging
-                            </p>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+  const handleSendMessage = async (
+    content: string,
+    type: "text" | "image" | "video" | "file" = "text",
+    files?: File[]
+  ) => {
+    if (!selectedChat) {
+      console.log("DEBUG: No selectedChat, cannot send message");
+      toast.error("No chat selected.");
+      return;
+    }
+    if (!currentUserId) {
+      console.log("DEBUG: No user or vendor ID, cannot send message");
+      toast.error("Please log in to send messages.");
+      return;
+    }
+    try {
+      if (type === "text" && content.trim()) {
+        console.log("DEBUG: Sending text message:", content);
+        const newMessage = await sendMessage(selectedChat, content);
+        console.log(
+          "DEBUG: Sent message:",
+          JSON.stringify(newMessage, null, 2)
+        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            _id: newMessage.message._id,
+            content: content, // Use input content since API lacks it
+            time: new Date(newMessage.message.createdAt).toLocaleTimeString(
+              [],
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            ),
+            sent: newMessage.message.sender === currentUserId,
+            type: newMessage.message.type || "text",
+            replyTo: newMessage.message.replyTo || undefined,
+          },
+        ]);
+        // Refresh chats to update lastMessage
+        console.log("DEBUG: Refreshing chats after sending message");
+        const chatData = await getUserChats();
+        const formattedChats: Chat[] = (chatData.chats || []).map(
+          (chat: any) => {
+            const otherParticipant = chat.participants.find(
+              (p: any) => p.participantId !== currentUserId
+            );
+            return {
+              _id: chat._id,
+              name:
+                chat.name ||
+                otherParticipant?.storeName ||
+                otherParticipant?.name ||
+                `User ${
+                  otherParticipant?.participantId?.slice(-4) || "Unknown"
+                }`,
+              lastMessage: chat.lastMessage?.content || "",
+              time: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              unread: chat.unreadCount || 0,
+              avatar: otherParticipant?.avatar || "",
+              online: otherParticipant?.online || false,
+              pinned: chat.pinned || false,
+              isGroup: chat.isCustomerCareChat || false,
+            };
+          }
+        );
+        setChats(formattedChats);
+        // Refresh messages to ensure the new message appears
+        console.log("DEBUG: Refreshing messages after sending");
+        const messageData = await getChatMessages(selectedChat);
+        const formattedMessages: Message[] = (messageData.messages || []).map(
+          (msg: any) => ({
+            _id: msg._id,
+            content: msg.content || "",
+            time: new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            sent: msg.sender === currentUserId,
+            type: msg.type || "text",
+            replyTo: msg.replyTo || undefined,
+          })
+        );
+        setMessages(formattedMessages);
+      } else if (files && files.length > 0) {
+        console.log(
+          "DEBUG: Sending media message with files:",
+          files.map((f) => f.name)
+        );
+        const mediaMessage = await sendMediaMessage(selectedChat, files);
+        console.log(
+          "DEBUG: Sent media message:",
+          JSON.stringify(mediaMessage, null, 2)
+        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            _id: mediaMessage.message._id,
+            content: mediaMessage.message.content || "",
+            time: new Date(mediaMessage.message.createdAt).toLocaleTimeString(
+              [],
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            ),
+            sent: mediaMessage.message.sender === currentUserId,
+            type: mediaMessage.message.type,
+            replyTo: mediaMessage.message.replyTo || undefined,
+          },
+        ]);
+        // Refresh chats
+        console.log("DEBUG: Refreshing chats after sending media message");
+        const chatData = await getUserChats();
+        const formattedChats: Chat[] = (chatData.chats || []).map(
+          (chat: any) => {
+            const otherParticipant = chat.participants.find(
+              (p: any) => p.participantId !== currentUserId
+            );
+            return {
+              _id: chat._id,
+              name:
+                chat.name ||
+                otherParticipant?.storeName ||
+                otherParticipant?.name ||
+                `User ${
+                  otherParticipant?.participantId?.slice(-4) || "Unknown"
+                }`,
+              lastMessage: chat.lastMessage?.content || "",
+              time: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              unread: chat.unreadCount || 0,
+              avatar: otherParticipant?.avatar || "",
+              online: otherParticipant?.online || false,
+              pinned: chat.pinned || false,
+              isGroup: chat.isCustomerCareChat || false,
+            };
+          }
+        );
+        setChats(formattedChats);
+        // Refresh messages
+        console.log("DEBUG: Refreshing messages after sending media");
+        const messageData = await getChatMessages(selectedChat);
+        const formattedMessages: Message[] = (messageData.messages || []).map(
+          (msg: any) => ({
+            _id: msg._id,
+            content: msg.content || "",
+            time: new Date(msg.createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            sent: msg.sender === currentUserId,
+            type: msg.type || "text",
+            replyTo: msg.replyTo || undefined,
+          })
+        );
+        setMessages(formattedMessages);
+      }
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to send message. Please try again.";
+      console.error("DEBUG: Error sending message:", error);
+      setError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      console.log("DEBUG: Deleting message:", messageId);
+      await deleteMessage(messageId);
+      setMessages(messages.filter((msg) => msg._id !== messageId));
+      console.log("DEBUG: Message deleted successfully");
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to delete message. Please try again.";
+      console.error("DEBUG: Error deleting message:", error);
+      setError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  const handleEditMessage = async (messageId: string, newContent: string) => {
+    try {
+      console.log(
+        "DEBUG: Editing message:",
+        messageId,
+        "with content:",
+        newContent
+      );
+      await editMessage(messageId, newContent);
+      setMessages(
+        messages.map((msg) =>
+          msg._id === messageId ? { ...msg, content: newContent } : msg
+        )
+      );
+      console.log("DEBUG: Message edited successfully");
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to edit message. Please try again.";
+      console.error("DEBUG: Error editing message:", error);
+      setError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  const handlePinChat = (chatId: string) => {
+    console.log("DEBUG: Pinning/unpinning chat:", chatId);
+    setChats(
+      chats.map((chat) =>
+        chat._id === chatId ? { ...chat, pinned: !chat.pinned } : chat
+      )
     );
+  };
+
+  const handleDeleteChat = (chatId: string) => {
+    console.log("DEBUG: Deleting chat:", chatId);
+    setChats(chats.filter((chat) => chat._id !== chatId));
+    if (selectedChat === chatId) {
+      console.log("DEBUG: Clearing selectedChat as it was deleted");
+      setSelectedChat(null);
+    }
+  };
+
+  const handleNewChat = async (receiverId: string) => {
+    if (!currentUserId) {
+      console.log("DEBUG: No user or vendor ID, cannot start chat");
+      toast.error("Please log in to start a chat.");
+      return;
+    }
+    if (receiverId === currentUserId) {
+      const errorMsg = "Cannot start a chat with yourself.";
+      console.log("DEBUG: Attempted to start chat with self:", receiverId);
+      setError(errorMsg);
+      toast.error(errorMsg);
+      return;
+    }
+    try {
+      console.log("DEBUG: Starting chat with receiverId:", receiverId);
+      const newChat = await startChat(receiverId);
+      console.log("DEBUG: New chat data:", JSON.stringify(newChat, null, 2));
+      const otherParticipant = newChat.data.participants.find(
+        (p: any) => p.participantId !== currentUserId
+      );
+      console.log(
+        "DEBUG: Other participant in new chat:",
+        JSON.stringify(otherParticipant, null, 2)
+      );
+      const formattedChat: Chat = {
+        _id: newChat.data._id,
+        name:
+          newChat.data.name ||
+          otherParticipant?.storeName ||
+          otherParticipant?.name ||
+          `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
+        lastMessage: newChat.data.lastMessage?.content || "",
+        time: new Date(
+          newChat.data.lastMessage?.createdAt ||
+            newChat.data.createdAt ||
+            Date.now()
+        ).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        unread: newChat.data.unreadCount || 0,
+        avatar: otherParticipant?.avatar || "",
+        online: otherParticipant?.online || false,
+        pinned: newChat.data.pinned || false,
+        isGroup: newChat.data.isCustomerCareChat || false,
+      };
+      console.log(
+        "DEBUG: Formatted new chat:",
+        JSON.stringify(formattedChat, null, 2)
+      );
+      setChats((prev) => [formattedChat, ...prev]);
+      setSelectedChat(formattedChat._id);
+      if (isMobile) {
+        console.log(
+          "DEBUG: Mobile view, hiding chat list after starting new chat"
+        );
+        setShowChatList(false);
+      }
+      // Refresh chats to ensure consistency
+      console.log("DEBUG: Refreshing chats after starting new chat");
+      const chatData = await getUserChats();
+      const formattedChats: Chat[] = (chatData.chats || []).map((chat: any) => {
+        const otherParticipant = chat.participants.find(
+          (p: any) => p.participantId !== currentUserId
+        );
+        return {
+          _id: chat._id,
+          name:
+            chat.name ||
+            otherParticipant?.storeName ||
+            otherParticipant?.name ||
+            `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
+          lastMessage: chat.lastMessage?.content || "",
+          time: new Date(
+            chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+          ).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          unread: chat.unreadCount || 0,
+          avatar: otherParticipant?.avatar || "",
+          online: otherParticipant?.online || false,
+          pinned: chat.pinned || false,
+          isGroup: chat.isCustomerCareChat || false,
+        };
+      });
+      setChats(formattedChats);
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to start chat. Please try again.";
+      console.error(
+        "DEBUG: Error starting chat:",
+        JSON.stringify(error, null, 2)
+      );
+      setError(errorMsg);
+      toast.error(errorMsg);
+    }
+  };
+
+  const selectedChatData = chats.find((chat) => chat._id === selectedChat);
+  console.log(
+    "DEBUG: selectedChatData:",
+    JSON.stringify(selectedChatData, null, 2)
+  );
+
+  const handleBackToList = () => {
+    console.log("DEBUG: Returning to chat list");
+    setShowChatList(true);
+    setSelectedChat(null);
+  };
+
+  return (
+    <div className="flex h-[calc(100vh-7rem)] bg-background rounded border">
+      <div
+        className={`${
+          isMobile
+            ? showChatList
+              ? "w-full"
+              : "hidden"
+            : "w-80 border-r border-chat-border"
+        } bg-card`}
+      >
+        {isLoadingChats ? (
+          <div className="p-4">Loading chats...</div>
+        ) : error ? (
+          <div className="p-4 text-red-500">{error}</div>
+        ) : (
+          <ChatList
+            chats={chats || []}
+            selectedChat={selectedChat}
+            onSelectChat={(chatId) => {
+              console.log("DEBUG: Selecting chat:", chatId);
+              setSelectedChat(chatId);
+              if (isMobile) setShowChatList(false);
+            }}
+            onPinChat={handlePinChat}
+            onDeleteChat={handleDeleteChat}
+            onNewChat={handleNewChat}
+          />
+        )}
+      </div>
+      <div
+        className={`${
+          isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
+        } flex flex-col relative`}
+      >
+        {selectedChatData ? (
+          <>
+            <div className="sticky top-0 z-10">
+              <ChatHeader
+                chat={selectedChatData}
+                onBack={isMobile ? handleBackToList : undefined}
+              />
+            </div>
+            <ScrollArea className="flex-1 pt-16 pb-20 overflow-y-auto">
+              <div className="p-4 space-y-4">
+                {isLoadingMessages ? (
+                  <div>Loading messages...</div>
+                ) : error ? (
+                  <div className="text-red-500">{error}</div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-muted-foreground">
+                    No messages yet
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <MessageBubble
+                      key={message._id}
+                      message={message}
+                      onDelete={() => handleDeleteMessage(message._id)}
+                      onEdit={(content) =>
+                        handleEditMessage(message._id, content)
+                      }
+                    />
+                  ))
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+            <div className="sticky bottom-0 z-10">
+              <MessageInput onSendMessage={handleSendMessage} />
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center justify-center flex-1 bg-chat-muted">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-20 h-20 mx-auto mb-4 bg-orange-500 rounded-full">
+                <Send className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-foreground">
+                Welcome to Chat
+              </h3>
+              <p className="text-muted-foreground">
+                Select a conversation to start messaging
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ChatInterface;

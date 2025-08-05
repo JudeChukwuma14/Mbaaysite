@@ -48,7 +48,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface Vendor {
-  _id: string; // Changed from `id` to `_id` to match backend
+  _id: string; 
   storeName: string;
   email: string;
   storePhone: string;

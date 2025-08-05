@@ -11,7 +11,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 interface MessageInputProps {
-  onSendMessage: (content: string, type?: "text" | "image" | "video" | "file") => void;
+  onSendMessage: (
+    content: string,
+    type?: "text" | "image" | "video" | "file",
+    files?: File[]
+  ) => void;
 }
 
 const MessageInput = ({ onSendMessage }: MessageInputProps) => {
@@ -24,54 +28,55 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
 
   const handleSend = () => {
     if (message.trim()) {
-      onSendMessage(message.trim());
+      console.log("DEBUG: Sending text message from MessageInput:", message);
+      onSendMessage(message.trim(), "text");
       setMessage("");
     }
-    
-    // Send attached files
-    attachedFiles.forEach(file => {
-      const fileURL = URL.createObjectURL(file);
-      if (file.type.startsWith('image/')) {
-        onSendMessage(fileURL, "image");
-      } else if (file.type.startsWith('video/')) {
-        onSendMessage(fileURL, "video");
-      } else {
-        onSendMessage(file.name, "file");
-      }
-    });
-    
-    setAttachedFiles([]);
+    if (attachedFiles.length > 0) {
+      console.log("DEBUG: Sending media message with files:", attachedFiles.map(f => f.name));
+      onSendMessage(
+        "",
+        attachedFiles[0].type.startsWith("image/") ? "image" : "video",
+        attachedFiles
+      );
+      setAttachedFiles([]);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      console.log("DEBUG: Enter key pressed, triggering send");
       e.preventDefault();
       handleSend();
     }
   };
 
   const handleFileSelect = (type: "file" | "image" | "video") => {
-    const inputRef = type === "image" ? imageInputRef : type === "video" ? videoInputRef : fileInputRef;
+    console.log("DEBUG: Selecting file type:", type);
+    const inputRef =
+      type === "image" ? imageInputRef : type === "video" ? videoInputRef : fileInputRef;
     inputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setAttachedFiles(prev => [...prev, ...files]);
+    console.log("DEBUG: Selected files:", files.map(f => f.name));
+    setAttachedFiles((prev) => [...prev, ...files]);
   };
 
   const removeAttachedFile = (index: number) => {
-    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    console.log("DEBUG: Removing attached file at index:", index);
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
   const toggleRecording = () => {
+    console.log("DEBUG: Toggling recording state:", !isRecording);
     setIsRecording(!isRecording);
-    // Implement voice recording logic here
+    // Voice recording not implemented
   };
 
   return (
     <div className="bg-card">
-      {/* Attached Files Preview */}
       {attachedFiles.length > 0 && (
         <div className="p-3">
           <div className="flex flex-wrap gap-2">
@@ -81,7 +86,7 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-4 w-4 p-0 hover:bg-transparent"
+                  className="w-4 h-4 p-0 hover:bg-transparent"
                   onClick={() => removeAttachedFile(index)}
                 >
                   <X className="w-3 h-3" />
@@ -91,10 +96,8 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
           </div>
         </div>
       )}
-
       <div className="p-4">
         <div className="flex items-end space-x-2">
-          {/* Attachment Options */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -129,42 +132,34 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Message Input */}
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <Input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
-              className="bg-chat-muted border-chat-border focus-visible:ring-chat-primary rounded-full"
+              className="rounded-full bg-chat-muted border-chat-border focus-visible:ring-chat-primary"
             />
           </div>
-
-          {/* Voice Recording */}
           <Button
             variant="ghost"
             size="sm"
             className={`text-muted-foreground hover:text-chat-primary hover:bg-chat-muted ${
-              isRecording ? 'text-red-500 bg-red-50' : ''
+              isRecording ? "text-red-500 bg-red-50" : ""
             }`}
             onClick={toggleRecording}
           >
-            <Mic className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
+            <Mic className={`w-5 h-5 ${isRecording ? "animate-pulse" : ""}`} />
           </Button>
-
-          {/* Send Button */}
           <Button
             onClick={handleSend}
             disabled={!message.trim() && attachedFiles.length === 0}
-            className="bg-orange-600 hover:bg-orange-500 text-white rounded-full h-10 w-10 p-0"
+            className="w-10 h-10 p-0 text-white bg-orange-600 rounded-full hover:bg-orange-500"
           >
             <Send className="w-4 h-4" />
           </Button>
         </div>
       </div>
-
-      {/* Hidden File Inputs */}
       <input
         ref={fileInputRef}
         type="file"
