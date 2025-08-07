@@ -66,8 +66,7 @@ export const getUserChats = async (token: string | null) => {
 // Get messages in a chat
 export const getChatMessages = async (chatId: string) => {
   try {
-    const response = await api.get(`/chat/${chatId}/messages`, {});
-    console.log(response);
+    const response = await api.get(`/chat/${chatId}/messages`);
     return response.data;
   } catch (error) {
     console.error("Error getting chat messages:", error);

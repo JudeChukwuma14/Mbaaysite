@@ -61,9 +61,10 @@ interface Chat {
   avatar: string;
   lastMessage: string;
   timestamp: string;
-  isVendor: boolean;
+  isVendor: string;
   isOnline: boolean;
   messages: Message[];
+  storeName?: string;
   pinnedMessages: {
     messageId: string;
     unpinTimestamp: number;
@@ -141,13 +142,16 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
   const [isVendorTyping, setIsVendorTyping] = useState(false);
 
   const user = useSelector((state: any) => state.vendor);
-
+  console.log("user", user);
   // API Queries
   const { data: apiChats = [], refetch: refetchChats } = useChats(user.token);
-  const { data: apiMessages = [], refetch: refetchMessages } = useMessages(
-    activeChat,
-    token
-  );
+  console.log("API Chats:", apiChats);
+  const { data: apiMessagesResponse = null, refetch: refetchMessages } =
+    useMessages(activeChat);
+  console.log("API Messages:", apiMessagesResponse);
+
+  // Extract the actual messages array from the API response
+  const apiMessages = apiMessagesResponse?.messages || [];
   const createOrGetChatMutation = useCreateOrGetChat();
   const sendMessageMutation = useSendMessage();
   const editMessageMutation = useEditMessage();
@@ -158,64 +162,89 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
   useEffect(() => {
     if (apiChats.length > 0) {
       setChats((prevChats) => {
-        const updatedChats = apiChats.map((apiChat: any) => {
+        return apiChats.map((apiChat: any) => {
           const existingChat = prevChats.find((c) => c._id === apiChat._id);
           return {
             _id: apiChat._id,
-            name: apiChat.receiver?.name,
-            storeName: apiChat.receiver?.storeName,
-            avatar: apiChat.receiver?.avatar,
+            name:
+              apiChat.participants[1].details.name ||
+              apiChat.participants[0].details.name,
+            storeName: apiChat.participants[1].details.storeName,
+            avatar: apiChat.participants[1].details.avatar,
             lastMessage: apiChat.lastMessage?.content || "No messages yet",
             timestamp: apiChat?.updatedAt,
-            isVendor: apiChat.receiver?.isVendor,
+            isVendor:
+              apiChat.participants?.[0]?.model === "vendors" ||
+              apiChat.participants?.[1]?.model === "users"
+                ? "vendors"
+                : "users",
             isOnline: apiChat.receiver?.isOnline,
-            messages: existingChat?.messages || [],
+            messages: existingChat?.messages,
             pinnedMessages: existingChat?.pinnedMessages || [],
           };
         });
-        return updatedChats;
+        return;
       });
     }
   }, [apiChats]);
-
+  console.log("activeChat", activeChat);
   useEffect(() => {
     if (activeChat && apiMessages.length > 0) {
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat._id === activeChat
-            ? {
-                ...chat,
-                messages: apiMessages.map((msg: any) => ({
-                  _id: msg._id,
-                  content: msg.content,
-                  sender:
-                    msg.sender._id === "current-user-id"
-                      ? "You"
-                      : msg.sender?.name,
-                  timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  isVendor: msg.sender.isVendor,
-                  files: msg.files?.map((file: any) => ({
-                    type: file.type,
-                    url: file.url,
-                    name: file?.name,
-                    size: file.size,
-                    duration: file.duration,
-                  })),
-                  replyTo: msg.replyTo,
-                  isEdited: msg.isEdited,
-                  deletedFor: msg.deletedFor || "none",
-                })),
-              }
-            : chat
-        )
-      );
+      console.log("✅ Processing messages for chat:", activeChat);
+
+      const processedMessages = apiMessages.map((msg: any) => {
+        console.log("Processing individual message:", msg);
+        return {
+          _id: msg._id,
+          content: msg.content,
+          sender:
+            msg.sender._id === user._id
+              ? "You"
+              : msg.sender?.storeName || "Unknown",
+          timestamp: new Date(msg.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          isVendor: msg.sender.isVendor || false,
+          files:
+            msg.files?.map((file: any) => ({
+              type: file.type,
+              url: file.url,
+              name: file?.name || "Unknown file",
+              size: file.size || 0,
+              duration: file.duration,
+            })) || [],
+          replyTo: msg.replyTo,
+          isEdited: msg.isEdited || false,
+          deletedFor: msg.deletedFor || "none",
+        };
+      });
+
+      setChats((prevChats) => {
+        console.log("Previous chats:", prevChats);
+        const updatedChats = prevChats.map((chat) => {
+          if (chat._id === activeChat) {
+            console.log(
+              "✅ Found matching chat, updating messages for:",
+              chat._id
+            );
+            return {
+              ...chat,
+              messages: processedMessages,
+            };
+          }
+          return chat;
+        });
+        return updatedChats;
+      });
+    } else {
+      console.log("❌ Skipping message processing:");
+      console.log("- activeChat exists:", !!activeChat);
+      console.log("- apiMessages has data:", apiMessages.length > 0);
     }
   }, [apiMessages, activeChat]);
-
   const activeChatDetails = chats.find((chat) => chat._id === activeChat);
+  console.log("Active chat details:", activeChatDetails);
   const activeMessages = activeChatDetails?.messages || [];
 
   useEffect(() => {
@@ -230,6 +259,9 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
     event: React.ChangeEvent<HTMLInputElement>,
     type: "image" | "video" | "document"
   ) => {
+    if (type === "image" && !event.target.files) return;
+    if (type === "video" && !event.target.files) return;
+    if (type === "document" && !event.target.files) return;
     const files = event.target.files;
     if (!files || files.length === 0) return;
 
@@ -256,18 +288,55 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
     setMessage((prev) => prev + emoji);
   };
 
-  const handleSendMessage = () => {
-    if (message.trim() && activeChat) {
-      sendMessageMutation.mutate({
-        chatId: activeChat,
-        content: message,
-        token: user.token, // Changed from user?.token to token
-        replyTo: replyingTo || undefined,
-      });
+  const handleSendMessage = async () => {
+    if (!message.trim()) {
+      console.log("Cannot send empty message");
+      showFeedback("Please enter a message");
+      return;
+    }
+
+    if (!activeChat) {
+      console.log("No active chat selected");
+      showFeedback("Please select a chat first");
+      return;
+    }
+
+    const authToken = token || user.token;
+    if (!authToken) {
+      console.log("No authentication token available");
+      showFeedback("Authentication required");
+      return;
+    }
+
+    console.log("Sending message:", message, "to chat:", activeChat);
+    console.log("Token:", authToken);
+
+    try {
+      const messageData = {
+        chatId: activeChat as string,
+        content: message.trim(),
+        token: authToken,
+        ...(replyingTo && { replyTo: replyingTo }),
+      };
+
+      console.log("Message data being sent:", messageData);
+
+      const result = await sendMessageMutation.mutateAsync(messageData);
+      console.log(messageData.chatId, "Message sent successfully:", result);
+
+      console.log("Message sent successfully:", result);
 
       setMessage("");
       setReplyingTo(null);
       setShowEmojiPicker(false);
+      // Refetch messages to get the latest
+      setTimeout(() => {
+        refetchMessages();
+      }, 500);
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      console.error("Error details:", error.response?.data || error.message);
+      showFeedback("Failed to send message");
     }
   };
 
@@ -300,6 +369,8 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
 
   const handleEdit = (messageId: string) => {
     setEditingMessageId(messageId);
+    console.log("ID", messageId);
+
     const messageToEdit = activeMessages.find((msg) => msg._id === messageId);
     if (messageToEdit) {
       setMessage(messageToEdit.content);
@@ -314,6 +385,10 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         content: message,
         token,
       });
+
+      setTimeout(() => {
+        refetchMessages();
+      }, 500);
       setEditingMessageId(null);
       setMessage("");
       showFeedback("Message edited");
@@ -529,6 +604,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         receiverId: user._id,
         token,
       });
+      console.log(result);
       setActiveChat(result._id);
       refetchChats();
     } catch (error) {
@@ -552,20 +628,53 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center gap-3 p-4 bg-white border-b flex-shrink-0"
+            className="flex items-center flex-shrink-0 gap-3 p-4 bg-white border-b"
           >
             <div className="relative">
-              <img
-                src={activeChatDetails.avatar || "/placeholder.svg"}
-                alt={activeChatDetails?.name}
-                className="w-10 h-10 rounded-full"
-              />
+              {activeChatDetails.isVendor === "vendors" ? (
+                <div>
+                  {activeChatDetails.avatar ? (
+                    <img
+                      src={activeChatDetails.avatar || "/placeholder.svg"}
+                      alt={activeChatDetails.name}
+                      className="object-cover w-10 h-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-10 h-10 bg-[#F97316] rounded-full">
+                      <span className="text-white text-[20px] font-bold">
+                        {activeChatDetails.storeName
+                          ? `${activeChatDetails.storeName
+                              .charAt(0)
+                              .toUpperCase()}${
+                              activeChatDetails.storeName
+                                .split(" ")[1]
+                                ?.charAt(0)
+                                .toUpperCase() || ""
+                            }`
+                          : activeChatDetails.name?.charAt(0).toUpperCase() ||
+                            "?"}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center w-10 h-10 bg-[#F97316] rounded-full">
+                  <span className="text-white text-[20px] font-bold">
+                    {activeChatDetails.name?.charAt(0).toUpperCase() || "?"}
+                  </span>
+                </div>
+              )}
               {activeChatDetails.isOnline && (
                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
               )}
             </div>
             <div>
-              <h2 className="font-semibold">{activeChatDetails?.name}</h2>
+              <h2 className="font-semibold">
+                {" "}
+                {activeChatDetails.isVendor === "vendors"
+                  ? activeChatDetails.storeName
+                  : activeChatDetails.name}
+              </h2>
               <span className="text-xs text-green-500">
                 {isVendorTyping && activeChatDetails.isVendor ? (
                   <span className="text-orange-500">Typing...</span>
@@ -589,7 +698,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {activeChatDetails && activeChatDetails.pinnedMessages.length > 0 && (
-          <div className="flex flex-col p-2 bg-orange-100 flex-shrink-0">
+          <div className="flex flex-col flex-shrink-0 p-2 bg-orange-100">
             {activeChatDetails.pinnedMessages.map((pinnedMsg) => {
               const originalMessage = activeMessages.find(
                 (msg) => msg._id === pinnedMsg.messageId
@@ -633,7 +742,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {feedbackMessage && (
-          <div className="p-2 text-center text-green-800 bg-green-100 flex-shrink-0">
+          <div className="flex-shrink-0 p-2 text-center text-green-800 bg-green-100">
             {feedbackMessage}
           </div>
         )}
@@ -641,199 +750,206 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         {activeChatDetails && (
           <div className="flex-1 p-4 overflow-y-auto">
             <AnimatePresence>
-              {activeMessages
-                .filter((msg) => msg.deletedFor === "none")
-                .map((msg, index) => (
-                  <motion.div
-                    key={msg._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`flex gap-3 mb-4 ${
-                      msg.isVendor ? "" : "justify-end"
-                    }`}
-                  >
-                    {msg.isVendor && activeChatDetails && (
-                      <img
-                        src={activeChatDetails.avatar || "/placeholder.svg"}
-                        alt={msg.sender}
-                        className="w-8 h-8 rounded-full"
-                      />
-                    )}
-                    <div
-                      className={`max-w-[70%] ${
-                        msg.isVendor ? "order-2" : "order-1"
+              {activeMessages.length === 0 ? (
+                <div className="py-8 text-center text-gray-500">
+                  <p>No messages in this chat yet.</p>
+                  <p>Start the conversation!</p>
+                </div>
+              ) : (
+                activeMessages
+                  .filter((msg) => msg.deletedFor === "none")
+                  .map((msg, index) => (
+                    <motion.div
+                      key={msg._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.05 }}
+                      className={`flex gap-3 mb-4 ${
+                        msg.isVendor ? "" : "justify-end"
                       }`}
                     >
-                      {msg.replyTo && (
-                        <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 rounded-t-lg">
-                          Replying to:{" "}
-                          {activeMessages
-                            .find((m) => m._id === msg.replyTo)
-                            ?.content.slice(0, 50)}
-                          ...
-                        </div>
+                      {msg.isVendor && activeChatDetails && (
+                        <img
+                          src={activeChatDetails.avatar || "/placeholder.svg"}
+                          alt={msg.sender}
+                          className="w-8 h-8 rounded-full"
+                        />
                       )}
                       <div
-                        className={`p-3 rounded-lg ${
-                          msg.isVendor
-                            ? "bg-white border"
-                            : "bg-orange-500 text-white"
+                        className={`max-w-[70%] ${
+                          msg.isVendor ? "order-2" : "order-1"
                         }`}
                       >
-                        {msg.files && msg.files.length > 0 && (
-                          <div
-                            className={
-                              msg.files && msg.files.length === 1
-                                ? "mb-2"
-                                : "grid grid-cols-2 gap-2 mb-2"
-                            }
-                          >
-                            {msg.files
-                              .slice(
-                                0,
-                                msg.files.length > 4 ? 4 : msg.files.length
-                              )
-                              .map((file, i) => (
-                                <div
-                                  key={i}
-                                  className={
-                                    msg.files && msg.files.length === 1
-                                      ? "relative w-full h-auto max-h-64 overflow-hidden rounded-lg cursor-pointer group"
-                                      : "relative w-32 h-32 overflow-hidden rounded-lg cursor-pointer group"
-                                  }
-                                  onClick={() =>
-                                    handleOpenMediaGallery(msg.files, i)
-                                  }
-                                >
-                                  {file.type === "image" ? (
-                                    <img
-                                      src={file.url || "/placeholder.svg"}
-                                      alt={file?.name}
-                                      className={
-                                        msg.files && msg.files.length === 1
-                                          ? "object-contain w-full h-full"
-                                          : "object-cover w-full h-full"
-                                      }
-                                    />
-                                  ) : file.type === "video" ? (
-                                    <>
-                                      <video
-                                        src={file.url}
+                        {msg.replyTo && (
+                          <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 rounded-t-lg">
+                            Replying to:{" "}
+                            {activeMessages
+                              .find((m) => m._id === msg.replyTo)
+                              ?.content.slice(0, 50)}
+                            ...
+                          </div>
+                        )}
+                        <div
+                          className={`p-3 rounded-lg ${
+                            msg.isVendor
+                              ? "bg-white border"
+                              : "bg-orange-500 text-white"
+                          }`}
+                        >
+                          {msg.files && msg.files.length > 0 && (
+                            <div
+                              className={
+                                msg.files && msg.files.length === 1
+                                  ? "mb-2"
+                                  : "grid grid-cols-2 gap-2 mb-2"
+                              }
+                            >
+                              {msg.files
+                                .slice(
+                                  0,
+                                  msg.files.length > 4 ? 4 : msg.files.length
+                                )
+                                .map((file, i) => (
+                                  <div
+                                    key={i}
+                                    className={
+                                      msg.files && msg.files.length === 1
+                                        ? "relative w-full h-auto max-h-64 overflow-hidden rounded-lg cursor-pointer group"
+                                        : "relative w-32 h-32 overflow-hidden rounded-lg cursor-pointer group"
+                                    }
+                                    onClick={() =>
+                                      handleOpenMediaGallery(msg.files, i)
+                                    }
+                                  >
+                                    {file.type === "image" ? (
+                                      <img
+                                        src={file.url || "/placeholder.svg"}
+                                        alt={file?.name}
                                         className={
                                           msg.files && msg.files.length === 1
                                             ? "object-contain w-full h-full"
                                             : "object-cover w-full h-full"
                                         }
                                       />
-                                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 group-hover:bg-opacity-20">
-                                        <Play className="w-8 h-8 text-white" />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center bg-gray-200 text-gray-700">
-                                      <Paperclip className="w-6 h-6 mb-1" />
-                                      <span className="text-xs truncate w-full px-1">
-                                        {file?.name}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {msg.files &&
-                                    msg.files.length > 4 &&
-                                    i === 3 && (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white text-xl font-bold">
-                                        +{msg.files.length - 4}
+                                    ) : file.type === "video" ? (
+                                      <>
+                                        <video
+                                          src={file.url}
+                                          className={
+                                            msg.files && msg.files.length === 1
+                                              ? "object-contain w-full h-full"
+                                              : "object-cover w-full h-full"
+                                          }
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 group-hover:bg-opacity-20">
+                                          <Play className="w-8 h-8 text-white" />
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center text-gray-700 bg-gray-200">
+                                        <Paperclip className="w-6 h-6 mb-1" />
+                                        <span className="w-full px-1 text-xs truncate">
+                                          {file?.name}
+                                        </span>
                                       </div>
                                     )}
-                                </div>
-                              ))}
-                          </div>
-                        )}
-                        <p className="whitespace-pre-line">{msg.content}</p>
-                      </div>
-                      <div
-                        className={`flex items-center gap-1 mt-1 text-xs text-gray-500 ${
-                          msg.isVendor ? "justify-start" : "justify-end"
-                        }`}
-                      >
-                        {msg.timestamp}
-                        {msg.isEdited && (
-                          <span className="ml-1 text-gray-400">(edited)</span>
-                        )}
-                        <div className="flex gap-2 ml-2">
-                          <button
-                            onClick={() => handleReply(msg._id)}
-                            className="relative hover:text-orange-500 group"
-                          >
-                            <Reply className="w-4 h-4" />
-                            <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
-                              Reply
-                            </span>
-                          </button>
-                          <button
-                            onClick={() => handleCopyText(msg.content)}
-                            className="relative hover:text-orange-500 group"
-                          >
-                            <Copy className="w-4 h-4" />
-                            <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
-                              Copy
-                            </span>
-                          </button>
-                          {!msg.isVendor && (
-                            <>
-                              <button
-                                onClick={() => handleEdit(msg._id)}
-                                className="relative hover:text-orange-500 group"
-                              >
-                                <Edit className="w-4 h-4" />
-                                <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
-                                  Edit
-                                </span>
-                              </button>
-                              <button
-                                onClick={() => handleDeleteClick(msg._id)}
-                                className="relative hover:text-orange-500 group"
-                              >
-                                <Trash className="w-4 h-4" />
-                                <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
-                                  Delete
-                                </span>
-                              </button>
-                            </>
+                                    {msg.files &&
+                                      msg.files.length > 4 &&
+                                      i === 3 && (
+                                        <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-white bg-black bg-opacity-70">
+                                          +{msg.files.length - 4}
+                                        </div>
+                                      )}
+                                  </div>
+                                ))}
+                            </div>
                           )}
-                          <button
-                            onClick={() => handlePinClick(msg._id)}
-                            className="relative hover:text-orange-500 group"
-                          >
-                            <Pin className="w-4 h-4" />
-                            <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
-                              {activeChatDetails?.pinnedMessages.some(
-                                (p) => p.messageId === msg._id
-                              )
-                                ? "Unpin"
-                                : "Pin"}
-                            </span>
-                          </button>
+                          <p className="whitespace-pre-line">{msg.content}</p>
+                        </div>
+                        <div
+                          className={`flex items-center gap-1 mt-1 text-xs text-gray-500 ${
+                            msg.isVendor ? "justify-start" : "justify-end"
+                          }`}
+                        >
+                          {msg.timestamp}
+                          {msg.isEdited && (
+                            <span className="ml-1 text-gray-400">(edited)</span>
+                          )}
+                          <div className="flex gap-2 ml-2">
+                            <button
+                              onClick={() => handleReply(msg._id)}
+                              className="relative hover:text-orange-500 group"
+                            >
+                              <Reply className="w-4 h-4" />
+                              <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
+                                Reply
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => handleCopyText(msg.content)}
+                              className="relative hover:text-orange-500 group"
+                            >
+                              <Copy className="w-4 h-4" />
+                              <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
+                                Copy
+                              </span>
+                            </button>
+                            {!msg.isVendor && (
+                              <>
+                                <button
+                                  onClick={() => handleEdit(msg._id)}
+                                  className="relative hover:text-orange-500 group"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
+                                    Edit
+                                  </span>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteClick(msg._id)}
+                                  className="relative hover:text-orange-500 group"
+                                >
+                                  <Trash className="w-4 h-4" />
+                                  <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
+                                    Delete
+                                  </span>
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => handlePinClick(msg._id)}
+                              className="relative hover:text-orange-500 group"
+                            >
+                              <Pin className="w-4 h-4" />
+                              <span className="absolute px-2 py-1 text-xs text-white transition-opacity transform -translate-x-1/2 bg-gray-800 rounded opacity-0 bottom-full left-1/2 group-hover:opacity-100">
+                                {activeChatDetails?.pinnedMessages.some(
+                                  (p) => p.messageId === msg._id
+                                )
+                                  ? "Unpin"
+                                  : "Pin"}
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    {!msg.isVendor && (
-                      <img
-                        src="/placeholder.svg"
-                        alt="You"
-                        className="order-3 w-8 h-8 rounded-full"
-                      />
-                    )}
-                  </motion.div>
-                ))}
+                      {!msg.isVendor && (
+                        <img
+                          src={user.vendor.avatar}
+                          alt="You"
+                          className="order-3 w-8 h-8 rounded-full"
+                        />
+                      )}
+                    </motion.div>
+                  ))
+              )}
             </AnimatePresence>
             <div ref={messagesEndRef} />
           </div>
         )}
 
         {activeChatDetails && replyingTo && (
-          <div className="flex items-center justify-between p-2 bg-gray-100 flex-shrink-0">
+          <div className="flex items-center justify-between flex-shrink-0 p-2 bg-gray-100">
             <p className="text-sm text-gray-600">
               Replying to:{" "}
               {activeMessages
@@ -854,7 +970,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="relative p-4 bg-white border-t flex-shrink-0"
+            className="relative flex-shrink-0 p-4 bg-white border-t"
           >
             <div className="flex items-center gap-2">
               <motion.input
@@ -888,7 +1004,14 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                 <input
                   type="text"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (e.target.value.trim() !== "") {
+                      setIsVendorTyping(true);
+                    } else {
+                      setIsVendorTyping(false);
+                    }
+                  }}
                   placeholder={
                     editingMessageId ? "Edit message..." : "Write Something..."
                   }
@@ -929,7 +1052,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
       </div>
 
       {deleteDialog.isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="p-6 bg-white rounded-lg w-96">
             <h3 className="mb-4 text-lg font-semibold">Delete message?</h3>
             <p className="mb-4 text-sm text-gray-600">
@@ -1022,10 +1145,10 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
 
       {mediaGallery.isOpen && mediaGallery.files && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-          <div className="relative w-full h-full max-w-5xl max-h-5xl flex items-center justify-center">
+          <div className="relative flex items-center justify-center w-full h-full max-w-5xl max-h-5xl">
             <motion.button
               onClick={handleCloseMediaGallery}
-              className="absolute top-4 right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+              className="absolute z-10 p-2 text-white bg-gray-800 rounded-full top-4 right-4 hover:bg-gray-700"
             >
               <X className="w-6 h-6" />
             </motion.button>
@@ -1033,19 +1156,19 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
               <>
                 <motion.button
                   onClick={handlePrevMedia}
-                  className="absolute left-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+                  className="absolute z-10 p-2 text-white bg-gray-800 rounded-full left-4 hover:bg-gray-700"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </motion.button>
                 <motion.button
                   onClick={handleNextMedia}
-                  className="absolute right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+                  className="absolute z-10 p-2 text-white bg-gray-800 rounded-full right-4 hover:bg-gray-700"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </motion.button>
               </>
             )}
-            <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative flex items-center justify-center w-full h-full">
               {mediaGallery.files[mediaGallery.startIndex] &&
                 (mediaGallery.files[mediaGallery.startIndex].type ===
                 "image" ? (
@@ -1055,17 +1178,17 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                       "/placeholder.svg"
                     }
                     alt={mediaGallery.files[mediaGallery.startIndex].name}
-                    className="max-w-full max-h-full object-contain"
+                    className="object-contain max-w-full max-h-full"
                   />
                 ) : mediaGallery.files[mediaGallery.startIndex].type ===
                   "video" ? (
                   <video
                     src={mediaGallery.files[mediaGallery.startIndex].url}
                     controls
-                    className="max-w-full max-h-full object-contain"
+                    className="object-contain max-w-full max-h-full"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-white text-center p-4">
+                  <div className="flex flex-col items-center justify-center p-4 text-center text-white">
                     <Paperclip className="w-12 h-12 mb-4" />
                     <p className="text-xl font-semibold">
                       {mediaGallery.files[mediaGallery.startIndex].name}
@@ -1080,7 +1203,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                       download={
                         mediaGallery.files[mediaGallery.startIndex].name
                       }
-                      className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                      className="px-4 py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600"
                     >
                       Download
                     </a>
@@ -1092,7 +1215,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
       )}
 
       {pinDurationDialog.isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="p-6 bg-white rounded-lg w-96">
             <h3 className="mb-4 text-lg font-semibold">
               Pin message for how long?

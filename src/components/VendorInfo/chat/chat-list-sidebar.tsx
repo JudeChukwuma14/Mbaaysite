@@ -92,9 +92,11 @@ export function ChatListSidebar({
     queryKey: ["chats"],
     queryFn: () => getUserChats(user.token),
   });
+  console.log("my_chats", my_chats);
 
   const { data: searchResults = [], isLoading: isSearchLoading } =
     useSearchContacts(searchQuery);
+  console.log("searchResults", searchResults);
   const createChatMutation = useCreateOrGetChat();
 
   const handleSelectContact = async (contact: Contact) => {
@@ -161,10 +163,12 @@ export function ChatListSidebar({
       };
     }) || [];
 
+  console.log("chatList", chatList);
+
   // Add loading state
   if (isChatsLoading) {
     return (
-      <div className="bg-white border-r w-80 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center bg-white border-r w-80">
         <Spinner className="w-8 h-8" />
       </div>
     );
@@ -173,9 +177,9 @@ export function ChatListSidebar({
   // Add error state
   if (chatsError) {
     return (
-      <div className="bg-white border-r w-80 flex flex-col items-center justify-center p-4 text-center text-red-500">
+      <div className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80">
         <p>Error loading chats</p>
-        <p className="text-sm mt-2">Please try again later</p>
+        <p className="mt-2 text-sm">Please try again later</p>
       </div>
     );
   }
@@ -184,10 +188,10 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="bg-white border-r w-80 flex flex-col"
+      className="flex flex-col bg-white border-r w-80"
     >
       {/* Header */}
-      <div className="p-4 border-b flex-shrink-0">
+      <div className="flex-shrink-0 p-4 border-b">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold">Chats</h1>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -211,7 +215,7 @@ export function ChatListSidebar({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   ref={searchInputRef}
                 />
-                <Search className="absolute w-4 h-4 text-gray-400 left-2 top-1/2 transform -translate-y-1/2" />
+                <Search className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-2 top-1/2" />
               </div>
 
               {isSearchLoading ? (
@@ -224,17 +228,21 @@ export function ChatListSidebar({
                     key={contact._id}
                     onSelect={() => handleSelectContact(contact)}
                   >
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex items-center w-full gap-3">
                       <div className="relative">
-                        <img
-                          src={
-                            contact.profileImage ||
-                            contact.avatar ||
-                            "/placeholder.svg"
-                          }
-                          alt={contact.name}
-                          className="w-8 h-8 rounded-full"
-                        />
+                        {contact.avatar ? (
+                          <img
+                            src={contact.avatar}
+                            alt={"orrr"}
+                            className="w-8 h-8 rounded-full"
+                          />
+                        ) : (
+                          <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
+                            {contact.storeName
+                              ? contact.storeName?.charAt(0).toUpperCase()
+                              : contact.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
                         <div
                           className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
                             contact.isVendor ? "bg-orange-500" : "bg-blue-500"
@@ -263,7 +271,7 @@ export function ChatListSidebar({
           </DropdownMenu>
         </div>
         <div className="relative">
-          <Search className="absolute w-5 h-5 text-gray-400 left-3 top-1/2 transform -translate-y-1/2" />
+          <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
           <input
             type="text"
             placeholder="Search chats..."
@@ -278,7 +286,7 @@ export function ChatListSidebar({
           {chatList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
               <p>No chats yet</p>
-              <p className="text-sm mt-2">
+              <p className="mt-2 text-sm">
                 Start a new chat by clicking the + button
               </p>
             </div>
@@ -297,13 +305,24 @@ export function ChatListSidebar({
               >
                 <div className="relative">
                   {chat.isVendor === "vendors" ? (
-                    <img
-                      src={chat.avatar}
-                      alt={chat.name}
-                      className="w-12 h-12 rounded-full"
-                    />
+                    <div>
+                      {chat.avatar && chat.avatar !== "/placeholder.svg" ? (
+                        <img
+                          src={chat.avatar}
+                          alt={chat.name}
+                          className="w-12 h-12 rounded-full"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-12 h-12 text-white bg-orange-500 rounded-ful text-[17px] font-bold rounded-full">
+                          {`${chat.name.charAt(0).toUpperCase()}${
+                            chat.name.split(" ")[1]?.charAt(0).toUpperCase() ||
+                            ""
+                          }`}
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <div className="w-12 h-12 rounded-full flex justify-center items-center bg-orange-500 text-white text-[17px]">
+                    <div className="w-12 h-12 rounded-full flex justify-center items-center bg-orange-500 text-white text-[17px] font-bold">
                       {`${chat.name.charAt(0).toUpperCase()}${
                         chat.name.split(" ")[1]?.charAt(0).toUpperCase() || ""
                       }`}
@@ -313,7 +332,7 @@ export function ChatListSidebar({
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                   )}
                 </div>
-                <div className="flex-1 text-left min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-start justify-between">
                     <div className="truncate">
                       <p className="font-semibold truncate">{chat.name}</p>

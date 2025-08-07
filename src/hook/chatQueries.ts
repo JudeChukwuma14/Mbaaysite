@@ -17,11 +17,11 @@ export const useChats = (token: string | null) => {
   });
 };
 
-export const useMessages = (chatId: string, token: string | null) => {
+export const useMessages = (chatId: string) => {
   return useQuery({
     queryKey: ["messages", chatId],
     queryFn: () => getChatMessages(chatId),
-    enabled: !!chatId && !!token,
+    enabled: !!chatId,
   });
 };
 
@@ -61,32 +61,85 @@ export const useSendMessage = () => {
         variables.chatId,
       ]);
 
-      queryClient.setQueryData(["messages", variables.chatId], (old: any) => [
-        ...(old || []),
-        {
-          _id: `optimistic-${Date.now()}`,
-          content: variables.content,
-          sender: "You",
-          timestamp: new Date().toISOString(),
-          isVendor: false,
-          replyTo: variables.replyTo,
-          isOptimistic: true,
-        },
-      ]);
+      // Fix: Handle the API response structure properly
+      queryClient.setQueryData(["messages", variables.chatId], (old: any) => {
+        // If old is an object with messages array (like {success: true, messages: [...]})
+        if (old && old.messages && Array.isArray(old.messages)) {
+          return {
+            ...old,
+            messages: [
+              ...old.messages,
+              {
+                _id: `optimistic-${Date.now()}`,
+                content: variables.content,
+                sender: { _id: "current-user", name: "You", isVendor: false },
+                createdAt: new Date().toISOString(),
+                isVendor: false,
+                replyTo: variables.replyTo,
+                isOptimistic: true,
+                files: [],
+                deletedFor: "none",
+              },
+            ],
+          };
+        }
+        // If old is directly an array
+        else if (Array.isArray(old)) {
+          return [
+            ...old,
+            {
+              _id: `optimistic-${Date.now()}`,
+              content: variables.content,
+              sender: { _id: "current-user", name: "You", isVendor: false },
+              createdAt: new Date().toISOString(),
+              isVendor: false,
+              replyTo: variables.replyTo,
+              isOptimistic: true,
+              files: [],
+              deletedFor: "none",
+            },
+          ];
+        }
+        // If old is null/undefined, create new structure
+        else {
+          return {
+            success: true,
+            messages: [
+              {
+                _id: `optimistic-${Date.now()}`,
+                content: variables.content,
+                sender: { _id: "current-user", name: "You", isVendor: false },
+                createdAt: new Date().toISOString(),
+                isVendor: false,
+                replyTo: variables.replyTo,
+                isOptimistic: true,
+                files: [],
+                deletedFor: "none",
+              },
+            ],
+          };
+        }
+      });
 
       return { previousMessages };
     },
     onError: (err, variables, context) => {
+      console.log("Send message error:", err);
       queryClient.setQueryData(
         ["messages", variables.chatId],
         context?.previousMessages
       );
     },
-    onSettled: (variables: any) => {
-      queryClient.invalidateQueries({
-        queryKey: ["messages", variables.chatId],
-      });
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    onSettled: (data, error, variables) => {
+      // Fix: onSettled receives (data, error, variables) not just variables
+      console.log("onSettled called with:", { data, error, variables });
+
+      if (variables && variables.chatId) {
+        queryClient.invalidateQueries({
+          queryKey: ["messages", variables.chatId],
+        });
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+      }
     },
   });
 };
@@ -103,9 +156,90 @@ export const useEditMessage = () => {
       content: string;
       token: string | null;
     }) => editMessage(messageId, { content }, token),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["messages"] });
-      queryClient.invalidateQueries({ queryKey: ["chats"] });
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({
+        queryKey: ["messages"],
+      });
+
+      let chatIdForOptimisticUpdate: string | undefined;
+      const allQueryData = queryClient.getQueriesData({
+        queryKey: ["messages"],
+      });
+
+      for (const [queryKey, data] of allQueryData) {
+        if (
+          queryKey[0] === "messages" &&
+          data &&
+          typeof data === "object" &&
+          "messages" in data &&
+          Array.isArray(data.messages)
+        ) {
+          const foundMessage = data.messages.find(
+            (msg: any) => msg._id === variables.messageId
+          );
+          if (foundMessage) {
+            chatIdForOptimisticUpdate = queryKey[1] as string;
+            break;
+          }
+        }
+      }
+
+      const previousMessages = chatIdForOptimisticUpdate
+        ? queryClient.getQueryData(["messages", chatIdForOptimisticUpdate])
+        : undefined;
+
+      if (chatIdForOptimisticUpdate) {
+        queryClient.setQueryData(
+          ["messages", chatIdForOptimisticUpdate],
+          (old: any) => {
+            if (old && old.messages && Array.isArray(old.messages)) {
+              return {
+                ...old,
+                messages: old.messages.map((msg: any) =>
+                  msg._id === variables.messageId
+                    ? { ...msg, content: variables.content, isEdited: true }
+                    : msg
+                ),
+              };
+            } else if (Array.isArray(old)) {
+              return old.map((msg: any) =>
+                msg._id === variables.messageId
+                  ? { ...msg, content: variables.content, isEdited: true }
+                  : msg
+              );
+            }
+            return old;
+          }
+        );
+      }
+
+      return { previousMessages, chatId: chatIdForOptimisticUpdate };
+    },
+    onError: (err, _unused, context) => {
+      console.error("Edit message error:", err);
+      if (context?.chatId && context?.previousMessages) {
+        queryClient.setQueryData(
+          ["messages", context.chatId],
+          context.previousMessages
+        );
+      }
+    },
+    onSettled: (data, error, variables, context) => {
+      console.log("onSettled for editMessage called with:", {
+        data,
+        error,
+        variables,
+        context,
+      });
+
+      const targetChatId = context?.chatId;
+      if (targetChatId) {
+        queryClient.invalidateQueries({
+          queryKey: ["messages", targetChatId],
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["messages"] });
+      }
     },
   });
 };
