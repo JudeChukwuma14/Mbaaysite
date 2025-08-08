@@ -477,9 +477,9 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
     else return (bytes / 1073741824).toFixed(1) + " GB";
   };
 
-  const handlePlayVideo = (videoUrl: string) => {
-    setVideoPlayer({ isOpen: true, videoUrl });
-  };
+  // const handlePlayVideo = (videoUrl: string) => {
+  //   setVideoPlayer({ isOpen: true, videoUrl });
+  // };
 
   const handleCloseVideoPlayer = () => {
     setVideoPlayer({ isOpen: false, videoUrl: null });
