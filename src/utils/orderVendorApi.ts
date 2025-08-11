@@ -68,7 +68,7 @@ export interface Orders {
   };
   totalPrice: number;
   status: "Processing" | "Delivered" | "Cancelled" | "Pending";
-  items: Array<{
+  product: Array<{
     _id: string;
     name: string;
     quantity: number;
