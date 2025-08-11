@@ -552,7 +552,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center gap-3 p-4 bg-white border-b flex-shrink-0"
+            className="flex items-center flex-shrink-0 gap-3 p-4 bg-white border-b"
           >
             <div className="relative">
               <img
@@ -589,7 +589,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {activeChatDetails && activeChatDetails.pinnedMessages.length > 0 && (
-          <div className="flex flex-col p-2 bg-orange-100 flex-shrink-0">
+          <div className="flex flex-col flex-shrink-0 p-2 bg-orange-100">
             {activeChatDetails.pinnedMessages.map((pinnedMsg) => {
               const originalMessage = activeMessages.find(
                 (msg) => msg._id === pinnedMsg.messageId
@@ -633,7 +633,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {feedbackMessage && (
-          <div className="p-2 text-center text-green-800 bg-green-100 flex-shrink-0">
+          <div className="flex-shrink-0 p-2 text-center text-green-800 bg-green-100">
             {feedbackMessage}
           </div>
         )}
@@ -732,9 +732,9 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                                       </div>
                                     </>
                                   ) : (
-                                    <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center bg-gray-200 text-gray-700">
+                                    <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center text-gray-700 bg-gray-200">
                                       <Paperclip className="w-6 h-6 mb-1" />
-                                      <span className="text-xs truncate w-full px-1">
+                                      <span className="w-full px-1 text-xs truncate">
                                         {file?.name}
                                       </span>
                                     </div>
@@ -742,7 +742,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                                   {msg.files &&
                                     msg.files.length > 4 &&
                                     i === 3 && (
-                                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white text-xl font-bold">
+                                      <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-white bg-black bg-opacity-70">
                                         +{msg.files.length - 4}
                                       </div>
                                     )}
@@ -833,7 +833,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {activeChatDetails && replyingTo && (
-          <div className="flex items-center justify-between p-2 bg-gray-100 flex-shrink-0">
+          <div className="flex items-center justify-between flex-shrink-0 p-2 bg-gray-100">
             <p className="text-sm text-gray-600">
               Replying to:{" "}
               {activeMessages
@@ -854,7 +854,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="relative p-4 bg-white border-t flex-shrink-0"
+            className="relative flex-shrink-0 p-4 bg-white border-t"
           >
             <div className="flex items-center gap-2">
               <motion.input
@@ -929,7 +929,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
       </div>
 
       {deleteDialog.isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="p-6 bg-white rounded-lg w-96">
             <h3 className="mb-4 text-lg font-semibold">Delete message?</h3>
             <p className="mb-4 text-sm text-gray-600">
@@ -1022,10 +1022,10 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
 
       {mediaGallery.isOpen && mediaGallery.files && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-          <div className="relative w-full h-full max-w-5xl max-h-5xl flex items-center justify-center">
+          <div className="relative flex items-center justify-center w-full h-full max-w-5xl max-h-5xl">
             <motion.button
               onClick={handleCloseMediaGallery}
-              className="absolute top-4 right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+              className="absolute z-10 p-2 text-white bg-gray-800 rounded-full top-4 right-4 hover:bg-gray-700"
             >
               <X className="w-6 h-6" />
             </motion.button>
@@ -1033,19 +1033,19 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
               <>
                 <motion.button
                   onClick={handlePrevMedia}
-                  className="absolute left-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+                  className="absolute z-10 p-2 text-white bg-gray-800 rounded-full left-4 hover:bg-gray-700"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </motion.button>
                 <motion.button
                   onClick={handleNextMedia}
-                  className="absolute right-4 p-2 text-white bg-gray-800 rounded-full hover:bg-gray-700 z-10"
+                  className="absolute z-10 p-2 text-white bg-gray-800 rounded-full right-4 hover:bg-gray-700"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </motion.button>
               </>
             )}
-            <div className="relative w-full h-full flex items-center justify-center">
+            <div className="relative flex items-center justify-center w-full h-full">
               {mediaGallery.files[mediaGallery.startIndex] &&
                 (mediaGallery.files[mediaGallery.startIndex].type ===
                 "image" ? (
@@ -1055,17 +1055,17 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                       "/placeholder.svg"
                     }
                     alt={mediaGallery.files[mediaGallery.startIndex].name}
-                    className="max-w-full max-h-full object-contain"
+                    className="object-contain max-w-full max-h-full"
                   />
                 ) : mediaGallery.files[mediaGallery.startIndex].type ===
                   "video" ? (
                   <video
                     src={mediaGallery.files[mediaGallery.startIndex].url}
                     controls
-                    className="max-w-full max-h-full object-contain"
+                    className="object-contain max-w-full max-h-full"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-white text-center p-4">
+                  <div className="flex flex-col items-center justify-center p-4 text-center text-white">
                     <Paperclip className="w-12 h-12 mb-4" />
                     <p className="text-xl font-semibold">
                       {mediaGallery.files[mediaGallery.startIndex].name}
@@ -1080,7 +1080,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                       download={
                         mediaGallery.files[mediaGallery.startIndex].name
                       }
-                      className="mt-4 px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600"
+                      className="px-4 py-2 mt-4 text-white bg-orange-500 rounded-md hover:bg-orange-600"
                     >
                       Download
                     </a>
@@ -1092,7 +1092,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
       )}
 
       {pinDurationDialog.isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="p-6 bg-white rounded-lg w-96">
             <h3 className="mb-4 text-lg font-semibold">
               Pin message for how long?

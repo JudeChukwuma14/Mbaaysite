@@ -20,8 +20,9 @@ interface MessageInputProps {
 
 const MessageInput = ({ onSendMessage }: MessageInputProps) => {
   const [message, setMessage] = useState("");
+  const [isRecording, setIsRecording] = useState<boolean>(false)
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [isRecording, setIsRecording] = useState(false);
+  const [previews, setPreviews] = useState<string[]>([]); // Store preview URLs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -34,12 +35,16 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
     }
     if (attachedFiles.length > 0) {
       console.log("DEBUG: Sending media message with files:", attachedFiles.map(f => f.name));
-      onSendMessage(
-        "",
-        attachedFiles[0].type.startsWith("image/") ? "image" : "video",
-        attachedFiles
-      );
+      const type = attachedFiles[0].type.startsWith("image/")
+        ? "image"
+        : attachedFiles[0].type.startsWith("video/")
+        ? "video"
+        : "file";
+      onSendMessage("", type, attachedFiles);
+      // Clear files and previews
+      previews.forEach((url) => URL.revokeObjectURL(url)); // Clean up object URLs
       setAttachedFiles([]);
+      setPreviews([]);
     }
   };
 
@@ -60,13 +65,27 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) {
+      console.log("DEBUG: No files selected");
+      return;
+    }
     console.log("DEBUG: Selected files:", files.map(f => f.name));
+    const newPreviews = files
+      .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"))
+      .map((file) => URL.createObjectURL(file));
     setAttachedFiles((prev) => [...prev, ...files]);
+    setPreviews((prev) => [...prev, ...newPreviews]);
   };
 
   const removeAttachedFile = (index: number) => {
     console.log("DEBUG: Removing attached file at index:", index);
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => {
+      const newPreviews = prev.filter((_, i) => i !== index);
+      // Revoke the object URL for the removed file
+      if (prev[index]) URL.revokeObjectURL(prev[index]);
+      return newPreviews;
+    });
   };
 
   const toggleRecording = () => {
@@ -81,17 +100,52 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
         <div className="p-3">
           <div className="flex flex-wrap gap-2">
             {attachedFiles.map((file, index) => (
-              <Badge key={index} variant="secondary" className="flex items-center gap-2">
-                <span className="truncate max-w-32">{file.name}</span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-4 h-4 p-0 hover:bg-transparent"
-                  onClick={() => removeAttachedFile(index)}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-              </Badge>
+              <div key={index} className="relative">
+                {previews[index] && file.type.startsWith("image/") ? (
+                  <div className="relative w-24 h-24">
+                    <img
+                      src={previews[index]}
+                      alt={file.name}
+                      className="object-cover w-full h-full rounded-lg"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-0 right-0 w-6 h-6 p-0 bg-black/50 hover:bg-black/70"
+                      onClick={() => removeAttachedFile(index)}
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </Button>
+                  </div>
+                ) : previews[index] && file.type.startsWith("video/") ? (
+                  <div className="relative w-24 h-24">
+                    <video
+                      src={previews[index]}
+                      className="object-cover w-full h-full rounded-lg"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-0 right-0 w-6 h-6 p-0 bg-black/50 hover:bg-black/70"
+                      onClick={() => removeAttachedFile(index)}
+                    >
+                      <X className="w-4 h-4 text-white" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Badge variant="secondary" className="flex items-center gap-2">
+                    <span className="truncate max-w-32">{file.name}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-4 h-4 p-0 hover:bg-transparent"
+                      onClick={() => removeAttachedFile(index)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </Badge>
+                )}
+              </div>
             ))}
           </div>
         </div>

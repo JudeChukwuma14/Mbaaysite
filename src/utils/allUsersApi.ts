@@ -9,7 +9,7 @@ export const api = axios.create({
 export const getAllUsers = async () => {
   try {
     const response = await api.get("/alll_users");
-    // console.log(response.data.data);
+    console.log(response.data.data, "All users");
     return response.data.data;
   } catch (error) {
     console.log(error);

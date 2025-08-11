@@ -33,6 +33,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
 
   console.log("DEBUG: ChatHeader rendering with chat:", JSON.stringify(chat, null, 2));
 
+  const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent default behavior (e.g., form submission or page reload)
+    e.stopPropagation(); // Stop event propagation
+    console.log("DEBUG: Back button clicked, triggering onBack");
+    onBack?.();
+  };
+
   return (
     <div className="flex items-center justify-between p-4 border-b bg-card">
       <div className="flex items-center space-x-3">
@@ -40,7 +47,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={onBack}
+            onClick={handleBackClick}
             className="md:hidden text-muted-foreground hover:text-chat-primary"
           >
             <ArrowLeft className="w-5 h-5" />

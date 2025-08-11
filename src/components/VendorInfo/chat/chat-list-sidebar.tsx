@@ -1,8 +1,7 @@
-<<<<<<< HEAD
-import { useState, useEffect, useRef } from "react";
-=======
-import { useState, useRef } from "react";
->>>>>>> a89a6acec031ae98b3281af6b459a94331fc4850
+
+import { useRef, useState } from "react";
+
+
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus } from "lucide-react";
 import {
@@ -168,7 +167,7 @@ export function ChatListSidebar({
   // Add loading state
   if (isChatsLoading) {
     return (
-      <div className="bg-white border-r w-80 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center bg-white border-r w-80">
         <Spinner className="w-8 h-8" />
       </div>
     );
@@ -177,9 +176,9 @@ export function ChatListSidebar({
   // Add error state
   if (chatsError) {
     return (
-      <div className="bg-white border-r w-80 flex flex-col items-center justify-center p-4 text-center text-red-500">
+      <div className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80">
         <p>Error loading chats</p>
-        <p className="text-sm mt-2">Please try again later</p>
+        <p className="mt-2 text-sm">Please try again later</p>
       </div>
     );
   }
@@ -190,13 +189,9 @@ export function ChatListSidebar({
       animate={{ x: 0, opacity: 1 }}
       className="flex flex-col bg-white border-r w-80"
     >
-<<<<<<< HEAD
-      {/* Fixed Header Section */}
-      <div className="flex-shrink-0 p-4 border-b">
-=======
       {/* Header */}
-      <div className="p-4 border-b flex-shrink-0">
->>>>>>> a89a6acec031ae98b3281af6b459a94331fc4850
+      <div className="flex-shrink-0 p-4 border-b">
+
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-bold">Chats</h1>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
@@ -220,7 +215,7 @@ export function ChatListSidebar({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   ref={searchInputRef}
                 />
-                <Search className="absolute w-4 h-4 text-gray-400 left-2 top-1/2 transform -translate-y-1/2" />
+                <Search className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-2 top-1/2" />
               </div>
 
               {isSearchLoading ? (
@@ -233,7 +228,7 @@ export function ChatListSidebar({
                     key={contact._id}
                     onSelect={() => handleSelectContact(contact)}
                   >
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex items-center w-full gap-3">
                       <div className="relative">
                         <img
                           src={
@@ -272,7 +267,7 @@ export function ChatListSidebar({
           </DropdownMenu>
         </div>
         <div className="relative">
-          <Search className="absolute w-5 h-5 text-gray-400 left-3 top-1/2 transform -translate-y-1/2" />
+          <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
           <input
             type="text"
             placeholder="Search chats..."
@@ -287,7 +282,7 @@ export function ChatListSidebar({
           {chatList.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
               <p>No chats yet</p>
-              <p className="text-sm mt-2">
+              <p className="mt-2 text-sm">
                 Start a new chat by clicking the + button
               </p>
             </div>
@@ -322,7 +317,7 @@ export function ChatListSidebar({
                     <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
                   )}
                 </div>
-                <div className="flex-1 text-left min-w-0">
+                <div className="flex-1 min-w-0 text-left">
                   <div className="flex items-start justify-between">
                     <div className="truncate">
                       <p className="font-semibold truncate">{chat.name}</p>

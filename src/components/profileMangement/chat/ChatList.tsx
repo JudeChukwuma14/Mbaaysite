@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
   DialogContent,
@@ -43,8 +44,8 @@ const ChatList: React.FC<ChatListProps> = ({
   chats = [],
   selectedChat,
   onSelectChat,
-  onPinChat,
-  onDeleteChat,
+  // onPinChat,
+  // onDeleteChat,
   onNewChat,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -65,7 +66,7 @@ const ChatList: React.FC<ChatListProps> = ({
         setVendors(response.vendors || []);
       } catch (error: any) {
         const errorMsg = error.response?.data?.message || "Failed to load vendors.";
-        console.error("DEBUG: Error fetching vendors:", error);
+        console.error("DEBUG: Error fetching vendors:", JSON.stringify(error, null, 2));
         setVendorError(errorMsg);
         toast.error(errorMsg);
       } finally {
@@ -96,7 +97,7 @@ const ChatList: React.FC<ChatListProps> = ({
   };
 
   return (
-    <div className="h-full">
+    <div className="flex flex-col h-full">
       <div className="p-4 border-b border-chat-border">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-xl font-bold text-foreground">Messages</h2>
@@ -165,45 +166,47 @@ const ChatList: React.FC<ChatListProps> = ({
           />
         </div>
       </div>
-      <div className="p-4">
-        {filteredChats.length === 0 ? (
-          <div className="text-center text-muted-foreground">
-            No chats available. Start a new chat!
-          </div>
-        ) : (
-          filteredChats.map((chat) => (
-            <div
-              key={chat._id}
-              className={`p-3 rounded-lg cursor-pointer ${
-                selectedChat === chat._id ? "bg-orange-500 text-white" : "hover:bg-orange-600"
-              }`}
-              onClick={() => onSelectChat(chat._id)}
-            >
-              <div className="flex items-center space-x-3">
-                <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full">
-                  {chat.avatar ? (
-                    <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
-                  ) : (
-                    <span className="font-semibold">{chat.name[0]}</span>
+      <ScrollArea className="flex-1">
+        <div className="p-4">
+          {filteredChats.length === 0 ? (
+            <div className="text-center text-muted-foreground">
+              No chats available. Start a new chat!
+            </div>
+          ) : (
+            filteredChats.map((chat) => (
+              <div
+                key={chat._id}
+                className={`p-3 rounded-lg cursor-pointer ${
+                  selectedChat === chat._id ? "bg-orange-500 text-white" : "hover:bg-orange-600"
+                }`}
+                onClick={() => onSelectChat(chat._id)}
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full">
+                    {chat.avatar ? (
+                      <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
+                    ) : (
+                      <span className="font-semibold">{chat.name[0]}</span>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between">
+                      <h3 className="font-semibold">{chat.name}</h3>
+                      <span className="text-xs text-muted-foreground">{chat.time}</span>
+                    </div>
+                    <p className="text-sm truncate text-muted-foreground">{chat.lastMessage}</p>
+                  </div>
+                  {chat.unread > 0 && (
+                    <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
+                      {chat.unread}
+                    </span>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex justify-between">
-                    <h3 className="font-semibold">{chat.name}</h3>
-                    <span className="text-xs text-muted-foreground">{chat.time}</span>
-                  </div>
-                  <p className="text-sm truncate text-muted-foreground">{chat.lastMessage}</p>
-                </div>
-                {chat.unread > 0 && (
-                  <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
-                    {chat.unread}
-                  </span>
-                )}
               </div>
-            </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
+      </ScrollArea>
     </div>
   );
 };

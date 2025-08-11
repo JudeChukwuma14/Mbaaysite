@@ -28,7 +28,10 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
 
-  console.log("DEBUG: Rendering MessageBubble with message:", JSON.stringify(message, null, 2));
+  console.log(
+    "DEBUG: Rendering MessageBubble with message:",
+    JSON.stringify({ ...message, sent: message.sent }, null, 2)
+  );
 
   const handleEdit = () => {
     if (editContent.trim() && editContent !== message.content) {
