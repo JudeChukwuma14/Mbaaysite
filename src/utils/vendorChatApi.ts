@@ -112,7 +112,6 @@ export const deleteMessage = async (
   }
 };
 
-// Send media message
 export const sendMediaMessage = async (
   chatId: string,
   formData: FormData,
@@ -125,12 +124,12 @@ export const sendMediaMessage = async (
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       }
     );
+
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error sending media message:", error);
     throw error;
   }
@@ -138,18 +137,15 @@ export const sendMediaMessage = async (
 
 // Prepare form data for media messages
 export const prepareMediaFormData = (
-  files: {
-    images?: File[];
-    video?: File;
-  },
+  files: { images?: File[]; video?: File },
   content?: string,
   replyTo?: string
 ): FormData => {
   const formData = new FormData();
 
   // Add text content if provided
-  if (content) {
-    formData.append("content", content);
+  if (content && content.trim()) {
+    formData.append("content", content.trim());
   }
 
   // Add replyTo if provided
@@ -157,14 +153,15 @@ export const prepareMediaFormData = (
     formData.append("replyTo", replyTo);
   }
 
-  // Add images if provided
+  // Add images if provided (max 5 as per backend)
   if (files.images && files.images.length > 0) {
-    files.images.forEach((image) => {
+    const imagesToUpload = files.images.slice(0, 5); // Limit to 5 images
+    imagesToUpload.forEach((image) => {
       formData.append("images", image);
     });
   }
 
-  // Add video if provided
+  // Add video if provided (max 1 as per backend)
   if (files.video) {
     formData.append("video", files.video);
   }

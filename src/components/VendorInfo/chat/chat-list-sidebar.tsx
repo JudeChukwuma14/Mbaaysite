@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo, useCallback, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, MessageCircle, Users, Clock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,6 +73,140 @@ interface ChatListSidebarProps {
   onNewChatCreated: (newChat: Chat) => void;
 }
 
+// Utility functions
+const formatTime = (timestamp: string) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+  
+  if (diffInHours < 24) {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } else if (diffInHours < 48) {
+    return "Yesterday";
+  } else {
+    return date.toLocaleDateString([], { month: "short", day: "numeric" });
+  }
+};
+
+const getInitials = (name: string) => {
+  return `${name.charAt(0).toUpperCase()}${name.split(" ")[1]?.charAt(0).toUpperCase() || ""}`;
+};
+
+const getContactName = (contact: Contact) => {
+  return contact?.storeName || contact?.name;
+};
+
+// Skeleton loading component
+const ChatSkeleton = memo(() => (
+  <div className="flex items-start gap-3 p-4 border-b animate-pulse">
+    <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+    <div className="flex-1 space-y-2">
+      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  </div>
+));
+
+// Memoized contact item component
+const ContactItem = memo(({ contact, onSelect }: { contact: Contact; onSelect: (contact: Contact) => void }) => (
+  <DropdownMenuItem onSelect={() => onSelect(contact)}>
+    <div className="flex items-center w-full gap-3">
+      <div className="relative">
+        {contact.avatar ? (
+          <img
+            src={contact.avatar}
+            alt={contact.name}
+            className="w-8 h-8 rounded-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
+            {getInitials(getContactName(contact))}
+          </div>
+        )}
+        <div
+          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
+            contact.isVendor ? "bg-orange-500" : "bg-blue-500"
+          }`}
+        />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="font-medium truncate">{getContactName(contact)}</p>
+        <p className="text-xs text-gray-500 truncate">
+          {contact.storeName ? "Vendor" : "User"}
+        </p>
+      </div>
+    </div>
+  </DropdownMenuItem>
+));
+
+// Memoized chat item component
+const ChatItem = memo(({ 
+  chat, 
+  isActive, 
+  onSelect 
+}: { 
+  chat: Chat; 
+  isActive: boolean; 
+  onSelect: (chatId: string) => void;
+}) => {
+  const isVendor = chat.isVendor === "vendors";
+  const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
+  
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => onSelect(chat._id)}
+      className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
+        isActive ? "bg-orange-50 border-l-4 border-l-orange-500" : "hover:bg-gray-50"
+      }`}
+    >
+      <div className="relative">
+        {hasAvatar ? (
+          <img
+            src={chat.avatar}
+            alt={chat.name}
+            className="w-12 h-12 rounded-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+            isVendor ? "bg-gradient-to-br from-orange-500 to-orange-600" : "bg-gradient-to-br from-blue-500 to-blue-600"
+          }`}>
+            {getInitials(chat.name)}
+          </div>
+        )}
+        {chat.isOnline && (
+          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+        )}
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <div className="flex items-start justify-between">
+          <div className="truncate">
+            <p className="font-semibold truncate text-gray-900">{chat.name}</p>
+            <span className={`text-xs px-2 py-1 rounded-full ${
+              isVendor ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
+            }`}>
+              {isVendor ? "Vendor" : "User"}
+            </span>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+            <Clock className="w-3 h-3" />
+            {formatTime(chat.timestamp)}
+          </div>
+        </div>
+        <p className="mt-2 text-sm text-gray-600 truncate leading-relaxed">
+          {chat.lastMessage}
+        </p>
+      </div>
+    </motion.button>
+  );
+});
+
 export function ChatListSidebar({
   activeChat,
   setActiveChat,
@@ -88,18 +222,19 @@ export function ChatListSidebar({
     data: my_chats,
     isLoading: isChatsLoading,
     error: chatsError,
+    refetch: refetchChats,
   } = useQuery({
     queryKey: ["chats"],
     queryFn: () => getUserChats(user.token),
+    refetchInterval: 30000,
+    staleTime: 10000,
   });
-  console.log("my_chats", my_chats);
 
   const { data: searchResults = [], isLoading: isSearchLoading } =
     useSearchContacts(searchQuery);
-  console.log("searchResults", searchResults);
   const createChatMutation = useCreateOrGetChat();
 
-  const handleSelectContact = async (contact: Contact) => {
+  const handleSelectContact = useCallback(async (contact: Contact) => {
     try {
       const result = await createChatMutation.mutateAsync({
         receiverId: contact._id,
@@ -108,7 +243,7 @@ export function ChatListSidebar({
 
       const newChat: Chat = {
         _id: result.chatId,
-        name: contact.storeName || contact.name,
+        name: getContactName(contact),
         avatar: contact.profileImage || contact.avatar || "/placeholder.svg",
         lastMessage: "Chat started",
         timestamp: new Date().toISOString(),
@@ -121,40 +256,26 @@ export function ChatListSidebar({
       setActiveChat(result.chatId);
       setSearchQuery("");
       setIsDropdownOpen(false);
+      refetchChats();
     } catch (error) {
-      console.error("Error creating chat:", error);
+      // Error handling is managed by the mutation
     }
-  };
-
-  const formatContactName = (contact: Contact) => {
-    return contact?.storeName
-      ? contact?.storeName || contact?.name
-      : contact?.name;
-  };
+  }, [createChatMutation, user.token, onNewChatCreated, setActiveChat, refetchChats]);
 
   // Helper function to get the other participant in the chat
-  const getOtherParticipant = (participants: any[], currentUserId: any) => {
-    return (
-      participants?.find((p) => p.participantId !== currentUserId) ||
-      participants?.[1]
-    );
-  };
+  const getOtherParticipant = useCallback((participants: any[], currentUserId: any) => {
+    return participants?.find((p) => p.participantId !== currentUserId) || participants?.[1];
+  }, []);
 
-  // Transform API response to match Chat interface
-  const chatList =
-    my_chats?.map((chat: ApiChat) => {
-      const participant = getOtherParticipant(
-        chat.participants,
-        user.vendor._id
-      );
+  // Transform API response to match Chat interface with useMemo for performance
+  const chatList = useMemo(() => {
+    return my_chats?.map((chat: ApiChat) => {
+      const participant = getOtherParticipant(chat.participants, user.vendor._id);
 
       return {
         _id: chat._id,
         name: participant?.details?.name || participant?.details?.storeName,
-        avatar:
-          participant?.profileImage ||
-          participant?.details?.avatar ||
-          "/placeholder.svg",
+        avatar: participant?.profileImage || participant?.details?.avatar || "/placeholder.svg",
         lastMessage: chat.lastMessage?.content || "No messages yet",
         timestamp: chat.updatedAt || new Date().toISOString(),
         isVendor: participant?.model || false,
@@ -162,25 +283,65 @@ export function ChatListSidebar({
         messages: chat.messages || [],
       };
     }) || [];
+  }, [my_chats, getOtherParticipant, user.vendor._id]);
 
-  console.log("chatList", chatList);
+  // Filter chats based on search query
+  const filteredChats = useMemo(() => {
+    if (!searchQuery.trim()) return chatList;
+    const query = searchQuery.toLowerCase();
+    return chatList.filter((chat: any) => 
+      chat.name.toLowerCase().includes(query) ||
+      chat.lastMessage.toLowerCase().includes(query)
+    );
+  }, [chatList, searchQuery]);
 
-  // Add loading state
+  const handleChatSelect = useCallback((chatId: string) => {
+    setActiveChat(chatId);
+  }, [setActiveChat]);
+
+  // Loading state with skeleton
   if (isChatsLoading) {
     return (
-      <div className="flex flex-col items-center justify-center bg-white border-r w-80">
-        <Spinner className="w-8 h-8" />
-      </div>
+      <motion.div
+        initial={{ x: -300, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="flex flex-col bg-white border-r w-80"
+      >
+        <div className="flex-shrink-0 p-4 border-b">
+          <div className="flex items-center justify-between mb-4">
+            <div className="h-6 bg-gray-200 rounded w-20 animate-pulse"></div>
+            <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+          </div>
+          <div className="h-10 bg-gray-200 rounded-full animate-pulse"></div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {Array.from({ length: 8 }).map((_, index) => (
+            <ChatSkeleton key={index} />
+          ))}
+        </div>
+      </motion.div>
     );
   }
 
-  // Add error state
+  // Error state
   if (chatsError) {
     return (
-      <div className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80">
-        <p>Error loading chats</p>
-        <p className="mt-2 text-sm">Please try again later</p>
-      </div>
+      <motion.div
+        initial={{ x: -300, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80"
+      >
+        <div className="p-4 bg-red-50 rounded-lg">
+          <p className="font-semibold">Error loading chats</p>
+          <p className="mt-2 text-sm text-red-600">Please try again later</p>
+          <button 
+            onClick={() => refetchChats()}
+            className="mt-3 px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </motion.div>
     );
   }
 
@@ -188,29 +349,36 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="flex flex-col bg-white border-r w-80"
+      className="flex flex-col bg-white border-r w-80 shadow-lg"
     >
       {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b">
+      <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold">Chats</h1>
+          <div className="flex items-center gap-2">
+            <MessageCircle className="w-6 h-6 text-orange-500" />
+            <h1 className="text-xl font-bold text-gray-900">Chats</h1>
+          </div>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-2 rounded-full hover:bg-gray-100"
+                className="p-2 rounded-full hover:bg-orange-100 transition-colors"
                 whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-5 h-5 text-orange-500" />
               </motion.button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[320px] p-2 mr-60">
-              <DropdownMenuItem>New Chat</DropdownMenuItem>
+            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0">
+              <DropdownMenuItem className="font-semibold text-orange-600">
+                <Users className="w-4 h-4 mr-2" />
+                New Chat
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <div className="relative mb-2">
                 <Input
                   type="text"
                   placeholder="Search users/vendors..."
-                  className="w-full py-2 pl-8 pr-2 text-sm bg-gray-100 rounded-md"
+                  className="w-full py-2 pl-8 pr-2 text-sm bg-gray-50 rounded-md border-0 focus:ring-2 focus:ring-orange-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   ref={searchInputRef}
@@ -219,51 +387,25 @@ export function ChatListSidebar({
               </div>
 
               {isSearchLoading ? (
-                <div className="flex items-center justify-center p-2">
-                  <Spinner className="w-4 h-4" />
+                <div className="flex items-center justify-center p-4">
+                  <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-                searchResults.map((contact: Contact) => (
-                  <DropdownMenuItem
-                    key={contact._id}
-                    onSelect={() => handleSelectContact(contact)}
-                  >
-                    <div className="flex items-center w-full gap-3">
-                      <div className="relative">
-                        {contact.avatar ? (
-                          <img
-                            src={contact.avatar}
-                            alt={"orrr"}
-                            className="w-8 h-8 rounded-full"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
-                            {contact.storeName
-                              ? contact.storeName?.charAt(0).toUpperCase()
-                              : contact.name?.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div
-                          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
-                            contact.isVendor ? "bg-orange-500" : "bg-blue-500"
-                          }`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {formatContactName(contact)}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {contact.storeName ? "Vendor" : "User"}
-                        </p>
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                ))
+                <div className="max-h-60 overflow-y-auto">
+                  {searchResults.map((contact: Contact) => (
+                    <ContactItem
+                      key={contact._id}
+                      contact={contact}
+                      onSelect={handleSelectContact}
+                    />
+                  ))}
+                </div>
               ) : searchQuery.trim() !== "" ? (
-                <DropdownMenuItem disabled>No results found</DropdownMenuItem>
+                <DropdownMenuItem disabled className="text-gray-500">
+                  No results found
+                </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem disabled className="text-gray-500">
                   Start typing to search
                 </DropdownMenuItem>
               )}
@@ -275,83 +417,36 @@ export function ChatListSidebar({
           <input
             type="text"
             placeholder="Search chats..."
-            className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full py-2 pl-10 pr-4 text-sm bg-gray-50 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 border-0 transition-all duration-200"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto">
-        <AnimatePresence>
-          {chatList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
-              <p>No chats yet</p>
-              <p className="mt-2 text-sm">
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <AnimatePresence mode="wait">
+          {filteredChats.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500"
+            >
+              <MessageCircle className="w-16 h-16 text-gray-300 mb-4" />
+              <p className="text-lg font-semibold text-gray-400">No chats yet</p>
+              <p className="mt-2 text-sm text-gray-400">
                 Start a new chat by clicking the + button
               </p>
-            </div>
+            </motion.div>
           ) : (
-            chatList.map((chat: Chat) => (
-              <motion.button
+            filteredChats.map((chat: Chat) => (
+              <ChatItem
                 key={chat._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                onClick={() => setActiveChat(chat._id)}
-                className={`w-full p-4 flex items-start gap-3 border-b ${
-                  activeChat === chat._id ? "bg-orange-50" : ""
-                }`}
-              >
-                <div className="relative">
-                  {chat.isVendor === "vendors" ? (
-                    <div>
-                      {chat.avatar && chat.avatar !== "/placeholder.svg" ? (
-                        <img
-                          src={chat.avatar}
-                          alt={chat.name}
-                          className="w-12 h-12 rounded-full"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-12 h-12 text-white bg-orange-500 rounded-ful text-[17px] font-bold rounded-full">
-                          {`${chat.name.charAt(0).toUpperCase()}${
-                            chat.name.split(" ")[1]?.charAt(0).toUpperCase() ||
-                            ""
-                          }`}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-12 h-12 rounded-full flex justify-center items-center bg-orange-500 text-white text-[17px] font-bold">
-                      {`${chat.name.charAt(0).toUpperCase()}${
-                        chat.name.split(" ")[1]?.charAt(0).toUpperCase() || ""
-                      }`}
-                    </div>
-                  )}
-                  {chat.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <div className="flex items-start justify-between">
-                    <div className="truncate">
-                      <p className="font-semibold truncate">{chat.name}</p>
-                      <span className="text-xs text-orange-500">
-                        {chat?.isVendor === "vendors" ? "Vendor" : "User"}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
-                      {new Date(chat.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500 truncate">
-                    {chat.lastMessage}
-                  </p>
-                </div>
-              </motion.button>
+                chat={chat}
+                isActive={activeChat === chat._id}
+                onSelect={handleChatSelect}
+              />
             ))
           )}
         </AnimatePresence>

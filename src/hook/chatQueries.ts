@@ -7,6 +7,7 @@ import {
   editMessage,
   deleteMessage,
   sendMediaMessage,
+  prepareMediaFormData,
 } from "../utils/vendorChatApi";
 
 export const useChats = (token: string | null) => {
@@ -263,17 +264,125 @@ export const useDeleteMessage = () => {
 
 export const useSendMediaMessage = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       chatId,
-      formData,
+      files,
       token,
+      content,
+      replyTo,
     }: {
       chatId: string;
-      formData: FormData;
+      files: { images?: File[]; video?: File };
       token: string | null;
-    }) => sendMediaMessage(chatId, formData, token),
-    onSuccess: (variables) => {
+      content?: string;
+      replyTo?: string;
+    }) => {
+      const formData = prepareMediaFormData(files, content, replyTo);
+      return sendMediaMessage(chatId, formData, token);
+    },
+    onMutate: async (variables) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({
+        queryKey: ["messages", variables.chatId],
+      });
+
+      const previousMessages = queryClient.getQueryData([
+        "messages",
+        variables.chatId,
+      ]);
+
+      // Create optimistic files array
+      interface OptimisticFile {
+        type: "image" | "video";
+        url: string;
+        name: string;
+        size: number;
+      }
+      const optimisticFiles: OptimisticFile[] = [];
+      if (variables.files.images) {
+        variables.files.images.forEach((image) => {
+          optimisticFiles.push({
+            type: "image" as const,
+            url: URL.createObjectURL(image),
+            name: image.name,
+            size: image.size,
+          });
+        });
+      }
+      if (variables.files.video) {
+        optimisticFiles.push({
+          type: "video" as const,
+          url: URL.createObjectURL(variables.files.video),
+          name: variables.files.video.name,
+          size: variables.files.video.size,
+        });
+      }
+
+      // Add optimistic media message
+      queryClient.setQueryData(["messages", variables.chatId], (old: any) => {
+        if (old && old.messages && Array.isArray(old.messages)) {
+          return {
+            ...old,
+            messages: [
+              ...old.messages,
+              {
+                _id: `optimistic-media-${Date.now()}`,
+                content: variables.content || "",
+                sender: { _id: "current-user", name: "You", isVendor: false },
+                createdAt: new Date().toISOString(),
+                isVendor: false,
+                replyTo: variables.replyTo,
+                isOptimistic: true,
+                files: optimisticFiles,
+                deletedFor: "none",
+              },
+            ],
+          };
+        } else if (Array.isArray(old)) {
+          return [
+            ...old,
+            {
+              _id: `optimistic-media-${Date.now()}`,
+              content: variables.content || "",
+              sender: { _id: "current-user", name: "You", isVendor: false },
+              createdAt: new Date().toISOString(),
+              isVendor: false,
+              replyTo: variables.replyTo,
+              isOptimistic: true,
+              files: optimisticFiles,
+              deletedFor: "none",
+            },
+          ];
+        }
+        return old;
+      });
+
+      return { previousMessages, chatId: variables.chatId };
+    },
+    onError: (err, _unused, context) => {
+      console.error("Send media message error:", err);
+
+      if (context?.chatId && context?.previousMessages) {
+        queryClient.setQueryData(
+          ["messages", context.chatId],
+          context.previousMessages
+        );
+      }
+    },
+    onSuccess: (_unused, variables) => {
+      // Clean up object URLs to prevent memory leaks
+      if (variables.files.images) {
+        variables.files.images.forEach((image) => {
+          URL.revokeObjectURL(URL.createObjectURL(image));
+        });
+      }
+      if (variables.files.video) {
+        URL.revokeObjectURL(URL.createObjectURL(variables.files.video));
+      }
+
+      // Invalidate queries to get fresh data
       queryClient.invalidateQueries({
         queryKey: ["messages", variables.chatId],
       });

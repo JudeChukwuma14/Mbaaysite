@@ -56,6 +56,7 @@ const OrderDetailsPage = () => {
     error,
     refetch,
   } = useOneOrder(orderId);
+  console.log("Order Details:", order);
 
   // Geocoding function using Nominatim
   const geocodeAddress = async (address: string) => {
@@ -105,11 +106,27 @@ const OrderDetailsPage = () => {
     }
   }, [order?.buyerInfo?.address]);
 
-  const calculateTotal = (items: Orders["items"]) => {
-    const subtotal = items?.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    );
+  type ProductType = {
+    price: number;
+    quantity?: number;
+    image?: string;
+    name?: string;
+    _id?: string;
+  };
+
+  const calculateTotal = (
+    product: ProductType | ProductType[],
+    quantity?: number
+  ) => {
+    let subtotal = 0;
+    if (Array.isArray(product)) {
+      subtotal = product.reduce(
+        (sum, item) => sum + item.price * (item.quantity ?? 1),
+        0
+      );
+    } else if (product?.price) {
+      subtotal = product.price * (quantity ?? 1);
+    }
     const tax = subtotal * 0.1;
     return { subtotal, tax, total: subtotal + tax };
   };
@@ -156,10 +173,10 @@ const OrderDetailsPage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <main className="p-5 bg-gray-100 min-h-screen">
+      <main className="min-h-screen p-5 bg-gray-100">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+            <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
             <span className="text-lg text-gray-600">
               Loading order details...
             </span>
@@ -172,14 +189,14 @@ const OrderDetailsPage = () => {
   // Error state
   if (isError || !order) {
     return (
-      <main className="p-5 bg-gray-100 min-h-screen">
+      <main className="min-h-screen p-5 bg-gray-100">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <AlertCircle className="w-16 h-16 text-red-500" />
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="mb-2 text-xl font-semibold text-gray-900">
               Failed to load order details
             </h3>
-            <p className="text-gray-600 mb-4">
+            <p className="mb-4 text-gray-600">
               {error instanceof Error
                 ? error.message
                 : "Order not found or an unexpected error occurred"}
@@ -189,7 +206,7 @@ const OrderDetailsPage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => refetch()}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                className="px-4 py-2 text-white transition-colors bg-orange-500 rounded-lg hover:bg-orange-600"
               >
                 Try Again
               </motion.button>
@@ -197,7 +214,7 @@ const OrderDetailsPage = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => window.history.back()}
-                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2"
+                className="flex items-center gap-2 px-4 py-2 text-white transition-colors bg-gray-500 rounded-lg hover:bg-gray-600"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Go Back
@@ -209,10 +226,13 @@ const OrderDetailsPage = () => {
     );
   }
 
-  const { subtotal, tax, total } = calculateTotal(order.items);
+  const { subtotal, tax, total } = calculateTotal(
+    order.product,
+    order.quantity
+  );
 
   return (
-    <main className="p-5 bg-gray-100 min-h-screen">
+    <main className="min-h-screen p-5 bg-gray-100">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -220,7 +240,7 @@ const OrderDetailsPage = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => window.history.back()}
-            className="p-2 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            className="p-2 transition-shadow bg-white rounded-lg shadow hover:shadow-md"
           >
             <ArrowLeft className="w-5 h-5" />
           </motion.button>
@@ -235,11 +255,11 @@ const OrderDetailsPage = () => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
       >
         {/* Map and Delivery Status */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-5 relative">
-          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+        <div className="relative p-5 bg-white rounded-lg shadow lg:col-span-2">
+          <h2 className="flex items-center gap-2 mb-4 text-lg font-bold">
             <MapPin className="w-5 h-5 text-orange-500" />
             Delivery Status
           </h2>
@@ -251,11 +271,11 @@ const OrderDetailsPage = () => {
             {order.status}
           </div>
 
-          <div className="h-64 rounded overflow-hidden bg-gray-200 relative">
+          <div className="relative h-64 overflow-hidden bg-gray-200 rounded">
             {isGeocodingLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                  <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
                   <span className="text-gray-600">Loading map...</span>
                 </div>
               </div>
@@ -283,14 +303,14 @@ const OrderDetailsPage = () => {
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <MapPin className="w-12 h-12 mx-auto mb-2 text-gray-400" />
                   <p className="text-gray-600">
                     {geocodingError || "Unable to load map"}
                   </p>
                   {order.buyerInfo?.address && (
                     <button
                       onClick={() => geocodeAddress(order.buyerInfo.address)}
-                      className="mt-2 px-3 py-1 bg-orange-500 text-white rounded text-sm hover:bg-orange-600"
+                      className="px-3 py-1 mt-2 text-sm text-white bg-orange-500 rounded hover:bg-orange-600"
                     >
                       Retry
                     </button>
@@ -300,13 +320,13 @@ const OrderDetailsPage = () => {
             )}
           </div>
 
-          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-2">
+          <div className="p-3 mt-4 rounded-lg bg-gray-50">
+            <h4 className="mb-2 font-semibold text-gray-800">
               Delivery Address
             </h4>
             <p className="text-gray-600">{order?.buyerInfo?.address}</p>
             {coordinates && (
-              <p className="text-sm text-gray-500 mt-1">
+              <p className="mt-1 text-sm text-gray-500">
                 Coordinates: {coordinates.lat.toFixed(6)},{" "}
                 {coordinates.lng.toFixed(6)}
               </p>
@@ -319,21 +339,21 @@ const OrderDetailsPage = () => {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
-          className="bg-white rounded-lg shadow p-5 flex flex-col items-center"
+          className="flex flex-col items-center p-5 bg-white rounded-lg shadow"
         >
           <div className="w-[220px] h-[200px] mb-3 bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
             <User className="w-20 h-20 text-white" />
           </div>
-          <h3 className="font-bold text-lg text-center">
+          <h3 className="text-lg font-bold text-center">
             {order.buyerInfo.first_name}
           </h3>
-          <p className="text-gray-600 mb-4">Customer</p>
+          <p className="mb-4 text-gray-600">Customer</p>
           <div className="flex space-x-3">
             <motion.a
               href={`tel:${order.buyerInfo.phone}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="bg-orange-500 text-white p-3 rounded-full hover:bg-orange-600 transition-colors"
+              className="p-3 text-white transition-colors bg-orange-500 rounded-full hover:bg-orange-600"
             >
               <Phone className="w-5 h-5" />
             </motion.a>
@@ -343,7 +363,7 @@ const OrderDetailsPage = () => {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition-colors"
+              className="p-3 text-white transition-colors bg-green-500 rounded-full hover:bg-green-600"
             >
               <FaWhatsapp className="w-5 h-5" />
             </motion.a>
@@ -351,7 +371,7 @@ const OrderDetailsPage = () => {
               href={`mailto:${order.buyerInfo.email}`}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 transition-colors"
+              className="p-3 text-white transition-colors bg-blue-500 rounded-full hover:bg-blue-600"
             >
               <Mail className="w-5 h-5" />
             </motion.a>
@@ -367,55 +387,55 @@ const OrderDetailsPage = () => {
         </motion.div>
 
         {/* Order Items */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow p-5">
-          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+        <div className="p-5 bg-white rounded-lg shadow lg:col-span-2">
+          <h2 className="flex items-center gap-2 mb-4 text-lg font-bold">
             <Package className="w-5 h-5 text-orange-500" />
             Order Items
           </h2>
           <div className="space-y-4">
-            {order?.items?.map((item: any, index: any) => (
-              <div
-                key={index}
-                className="flex items-center justify-between border-b pb-4 last:border-b-0"
-              >
+            {order?.product && (
+              <div className="flex items-center justify-between pb-4 border-b last:border-b-0">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden">
-                    {item.image ? (
+                  <div className="w-16 h-16 overflow-hidden bg-gray-200 rounded-lg">
+                    {order?.product.image ? (
                       <img
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
+                        src={order?.product.image || "/placeholder.svg"}
+                        alt={order.product.name}
+                        className="object-cover w-full h-full"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
+                      <div className="flex items-center justify-center w-full h-full">
                         <Package className="w-6 h-6 text-gray-400" />
                       </div>
                     )}
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800">
-                      {order.product.name}
+                      {order.product?.name || "Unknown Product"}
                     </h4>
                     <p className="text-sm text-gray-500">
-                      Product ID: {order.product._id}
+                      Product ID: {order.product?._id || "N/A"}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
-                    Quantity: {item.quantity}
+                    Quantity: {order.quantity}
                   </p>
-                  <p className="font-bold">{formatCurrency(order.price)}</p>
+                  <p className="font-bold">
+                    {formatCurrency(order?.product.price)}
+                  </p>
                   <p className="text-sm text-gray-600">
-                    Total: {formatCurrency(item.price * item.quantity)}
+                    Total:{" "}
+                    {formatCurrency(order?.product.price * order.quantity)}
                   </p>
                 </div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Order Summary */}
-          <div className="mt-6 pt-4 border-t">
+          <div className="pt-4 mt-6 border-t">
             <div className="space-y-2 text-right">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal:</span>
@@ -425,7 +445,7 @@ const OrderDetailsPage = () => {
                 <span className="text-gray-600">Tax (10%):</span>
                 <span>{formatCurrency(tax)}</span>
               </div>
-              <div className="flex justify-between font-bold text-lg border-t pt-2">
+              <div className="flex justify-between pt-2 text-lg font-bold border-t">
                 <span>Total:</span>
                 <span>{formatCurrency(total)}</span>
               </div>
@@ -434,8 +454,8 @@ const OrderDetailsPage = () => {
         </div>
 
         {/* Order Information */}
-        <div className="bg-white rounded-lg shadow p-5">
-          <h2 className="font-bold text-lg mb-4 flex items-center gap-2">
+        <div className="p-5 bg-white rounded-lg shadow">
+          <h2 className="flex items-center gap-2 mb-4 text-lg font-bold">
             <Clock className="w-5 h-5 text-orange-500" />
             Order Information
           </h2>
