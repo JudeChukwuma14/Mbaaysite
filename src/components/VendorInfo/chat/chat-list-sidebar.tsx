@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-
-import { useRef, useState } from "react";
-
-
-=======
 import { useState, useRef, useMemo, useCallback, memo } from "react";
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, MessageCircle, Users, Clock } from "lucide-react";
 import {
@@ -85,7 +78,7 @@ const formatTime = (timestamp: string) => {
   const date = new Date(timestamp);
   const now = new Date();
   const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-  
+
   if (diffInHours < 24) {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   } else if (diffInHours < 48) {
@@ -96,7 +89,9 @@ const formatTime = (timestamp: string) => {
 };
 
 const getInitials = (name: string) => {
-  return `${name.charAt(0).toUpperCase()}${name.split(" ")[1]?.charAt(0).toUpperCase() || ""}`;
+  return `${name.charAt(0).toUpperCase()}${
+    name.split(" ")[1]?.charAt(0).toUpperCase() || ""
+  }`;
 };
 
 const getContactName = (contact: Contact) => {
@@ -108,111 +103,133 @@ const ChatSkeleton = memo(() => (
   <div className="flex items-start gap-3 p-4 border-b animate-pulse">
     <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
     <div className="flex-1 space-y-2">
-      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+      <div className="w-1/2 h-3 bg-gray-200 rounded"></div>
     </div>
   </div>
 ));
 
 // Memoized contact item component
-const ContactItem = memo(({ contact, onSelect }: { contact: Contact; onSelect: (contact: Contact) => void }) => (
-  <DropdownMenuItem onSelect={() => onSelect(contact)}>
-    <div className="flex items-center w-full gap-3">
-      <div className="relative">
-        {contact.avatar ? (
-          <img
-            src={contact.avatar}
-            alt={contact.name}
-            className="w-8 h-8 rounded-full object-cover"
-            loading="lazy"
+const ContactItem = memo(
+  ({
+    contact,
+    onSelect,
+  }: {
+    contact: Contact;
+    onSelect: (contact: Contact) => void;
+  }) => (
+    <DropdownMenuItem onSelect={() => onSelect(contact)}>
+      <div className="flex items-center w-full gap-3">
+        <div className="relative">
+          {contact.avatar ? (
+            <img
+              src={contact.avatar}
+              alt={contact.name}
+              className="object-cover w-8 h-8 rounded-full"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
+              {getInitials(getContactName(contact))}
+            </div>
+          )}
+          <div
+            className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
+              contact.isVendor ? "bg-orange-500" : "bg-blue-500"
+            }`}
           />
-        ) : (
-          <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
-            {getInitials(getContactName(contact))}
-          </div>
-        )}
-        <div
-          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
-            contact.isVendor ? "bg-orange-500" : "bg-blue-500"
-          }`}
-        />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium truncate">{getContactName(contact)}</p>
+          <p className="text-xs text-gray-500 truncate">
+            {contact.storeName ? "Vendor" : "User"}
+          </p>
+        </div>
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium truncate">{getContactName(contact)}</p>
-        <p className="text-xs text-gray-500 truncate">
-          {contact.storeName ? "Vendor" : "User"}
-        </p>
-      </div>
-    </div>
-  </DropdownMenuItem>
-));
+    </DropdownMenuItem>
+  )
+);
 
 // Memoized chat item component
-const ChatItem = memo(({ 
-  chat, 
-  isActive, 
-  onSelect 
-}: { 
-  chat: Chat; 
-  isActive: boolean; 
-  onSelect: (chatId: string) => void;
-}) => {
-  const isVendor = chat.isVendor === "vendors";
-  const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
-  
-  return (
-    <motion.button
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => onSelect(chat._id)}
-      className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
-        isActive ? "bg-orange-50 border-l-4 border-l-orange-500" : "hover:bg-gray-50"
-      }`}
-    >
-      <div className="relative">
-        {hasAvatar ? (
-          <img
-            src={chat.avatar}
-            alt={chat.name}
-            className="w-12 h-12 rounded-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
-            isVendor ? "bg-gradient-to-br from-orange-500 to-orange-600" : "bg-gradient-to-br from-blue-500 to-blue-600"
-          }`}>
-            {getInitials(chat.name)}
-          </div>
-        )}
-        {chat.isOnline && (
-          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
-        )}
-      </div>
-      <div className="flex-1 min-w-0 text-left">
-        <div className="flex items-start justify-between">
-          <div className="truncate">
-            <p className="font-semibold truncate text-gray-900">{chat.name}</p>
-            <span className={`text-xs px-2 py-1 rounded-full ${
-              isVendor ? "bg-orange-100 text-orange-700" : "bg-blue-100 text-blue-700"
-            }`}>
-              {isVendor ? "Vendor" : "User"}
-            </span>
-          </div>
-          <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-            <Clock className="w-3 h-3" />
-            {formatTime(chat.timestamp)}
-          </div>
+const ChatItem = memo(
+  ({
+    chat,
+    isActive,
+    onSelect,
+  }: {
+    chat: Chat;
+    isActive: boolean;
+    onSelect: (chatId: string) => void;
+  }) => {
+    const isVendor = chat.isVendor === "vendors";
+    const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
+
+    return (
+      <motion.button
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => onSelect(chat._id)}
+        className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
+          isActive
+            ? "bg-orange-50 border-l-4 border-l-orange-500"
+            : "hover:bg-gray-50"
+        }`}
+      >
+        <div className="relative">
+          {hasAvatar ? (
+            <img
+              src={chat.avatar}
+              alt={chat.name}
+              className="object-cover w-12 h-12 rounded-full"
+              loading="lazy"
+            />
+          ) : (
+            <div
+              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+                isVendor
+                  ? "bg-gradient-to-br from-orange-500 to-orange-600"
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              }`}
+            >
+              {getInitials(chat.name)}
+            </div>
+          )}
+          {chat.isOnline && (
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+          )}
         </div>
-        <p className="mt-2 text-sm text-gray-600 truncate leading-relaxed">
-          {chat.lastMessage}
-        </p>
-      </div>
-    </motion.button>
-  );
-});
+        <div className="flex-1 min-w-0 text-left">
+          <div className="flex items-start justify-between">
+            <div className="truncate">
+              <p className="font-semibold text-gray-900 truncate">
+                {chat.name}
+              </p>
+              <span
+                className={`text-xs px-2 py-1 rounded-full ${
+                  isVendor
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-blue-100 text-blue-700"
+                }`}
+              >
+                {isVendor ? "Vendor" : "User"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+              <Clock className="w-3 h-3" />
+              {formatTime(chat.timestamp)}
+            </div>
+          </div>
+          <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
+            {chat.lastMessage}
+          </p>
+        </div>
+      </motion.button>
+    );
+  }
+);
 
 export function ChatListSidebar({
   activeChat,
@@ -241,79 +258,101 @@ export function ChatListSidebar({
     useSearchContacts(searchQuery);
   const createChatMutation = useCreateOrGetChat();
 
-  const handleSelectContact = useCallback(async (contact: Contact) => {
-    try {
-      const result = await createChatMutation.mutateAsync({
-        receiverId: contact._id,
-        token: user.token,
-      });
+  const handleSelectContact = useCallback(
+    async (contact: Contact) => {
+      try {
+        const result = await createChatMutation.mutateAsync({
+          receiverId: contact._id,
+          token: user.token,
+        });
 
-      const newChat: Chat = {
-        _id: result.chatId,
-        name: getContactName(contact),
-        avatar: contact.profileImage || contact.avatar || "/placeholder.svg",
-        lastMessage: "Chat started",
-        timestamp: new Date().toISOString(),
-        isVendor: contact.isVendor,
-        isOnline: true,
-        messages: [],
-      };
+        const newChat: Chat = {
+          _id: result.chatId,
+          name: getContactName(contact),
+          avatar: contact.profileImage || contact.avatar || "/placeholder.svg",
+          lastMessage: "Chat started",
+          timestamp: new Date().toISOString(),
+          isVendor: contact.isVendor,
+          isOnline: true,
+          messages: [],
+        };
 
-      onNewChatCreated(newChat);
-      setActiveChat(result.chatId);
-      setSearchQuery("");
-      setIsDropdownOpen(false);
-      refetchChats();
-    } catch (error) {
-      // Error handling is managed by the mutation
-    }
-  }, [createChatMutation, user.token, onNewChatCreated, setActiveChat, refetchChats]);
+        onNewChatCreated(newChat);
+        setActiveChat(result.chatId);
+        setSearchQuery("");
+        setIsDropdownOpen(false);
+        refetchChats();
+      } catch (error) {
+        // Error handling is managed by the mutation
+      }
+    },
+    [
+      createChatMutation,
+      user.token,
+      onNewChatCreated,
+      setActiveChat,
+      refetchChats,
+    ]
+  );
 
   // Helper function to get the other participant in the chat
-  const getOtherParticipant = useCallback((participants: any[], currentUserId: any) => {
-    return participants?.find((p) => p.participantId !== currentUserId) || participants?.[1];
-  }, []);
+  const getOtherParticipant = useCallback(
+    (participants: any[], currentUserId: any) => {
+      return (
+        participants?.find((p) => p.participantId !== currentUserId) ||
+        participants?.[1]
+      );
+    },
+    []
+  );
 
   // Transform API response to match Chat interface with useMemo for performance
   const chatList = useMemo(() => {
-    return my_chats?.map((chat: ApiChat) => {
-      const participant = getOtherParticipant(chat.participants, user.vendor._id);
+    return (
+      my_chats?.map((chat: ApiChat) => {
+        const participant = getOtherParticipant(
+          chat.participants,
+          user.vendor._id
+        );
 
-      return {
-        _id: chat._id,
-        name: participant?.details?.name || participant?.details?.storeName,
-        avatar: participant?.profileImage || participant?.details?.avatar || "/placeholder.svg",
-        lastMessage: chat.lastMessage?.content || "No messages yet",
-        timestamp: chat.updatedAt || new Date().toISOString(),
-        isVendor: participant?.model || false,
-        isOnline: participant?.isOnline || false,
-        messages: chat.messages || [],
-      };
-    }) || [];
+        return {
+          _id: chat._id,
+          name: participant?.details?.name || participant?.details?.storeName,
+          avatar:
+            participant?.profileImage ||
+            participant?.details?.avatar ||
+            "/placeholder.svg",
+          lastMessage: chat.lastMessage?.content || "No messages yet",
+          timestamp: chat.updatedAt || new Date().toISOString(),
+          isVendor: participant?.model || false,
+          isOnline: participant?.isOnline || false,
+          messages: chat.messages || [],
+        };
+      }) || []
+    );
   }, [my_chats, getOtherParticipant, user.vendor._id]);
 
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
     const query = searchQuery.toLowerCase();
-    return chatList.filter((chat: any) => 
-      chat.name.toLowerCase().includes(query) ||
-      chat.lastMessage.toLowerCase().includes(query)
+    return chatList.filter(
+      (chat: any) =>
+        chat.name.toLowerCase().includes(query) ||
+        chat.lastMessage.toLowerCase().includes(query)
     );
   }, [chatList, searchQuery]);
 
-  const handleChatSelect = useCallback((chatId: string) => {
-    setActiveChat(chatId);
-  }, [setActiveChat]);
+  const handleChatSelect = useCallback(
+    (chatId: string) => {
+      setActiveChat(chatId);
+    },
+    [setActiveChat]
+  );
 
   // Loading state with skeleton
   if (isChatsLoading) {
     return (
-<<<<<<< HEAD
-      <div className="flex flex-col items-center justify-center bg-white border-r w-80">
-        <Spinner className="w-8 h-8" />
-      </div>
-=======
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -321,7 +360,7 @@ export function ChatListSidebar({
       >
         <div className="flex-shrink-0 p-4 border-b">
           <div className="flex items-center justify-between mb-4">
-            <div className="h-6 bg-gray-200 rounded w-20 animate-pulse"></div>
+            <div className="w-20 h-6 bg-gray-200 rounded animate-pulse"></div>
             <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
           </div>
           <div className="h-10 bg-gray-200 rounded-full animate-pulse"></div>
@@ -332,36 +371,28 @@ export function ChatListSidebar({
           ))}
         </div>
       </motion.div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
     );
   }
 
   // Error state
   if (chatsError) {
     return (
-<<<<<<< HEAD
-      <div className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80">
-        <p>Error loading chats</p>
-        <p className="mt-2 text-sm">Please try again later</p>
-      </div>
-=======
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80"
       >
-        <div className="p-4 bg-red-50 rounded-lg">
+        <div className="p-4 rounded-lg bg-red-50">
           <p className="font-semibold">Error loading chats</p>
           <p className="mt-2 text-sm text-red-600">Please try again later</p>
-          <button 
+          <button
             onClick={() => refetchChats()}
-            className="mt-3 px-4 py-2 text-sm bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+            className="px-4 py-2 mt-3 text-sm text-white transition-colors bg-red-500 rounded-md hover:bg-red-600"
           >
             Retry
           </button>
         </div>
       </motion.div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
     );
   }
 
@@ -369,18 +400,10 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-<<<<<<< HEAD
-      className="flex flex-col bg-white border-r w-80"
-    >
-      {/* Header */}
-      <div className="flex-shrink-0 p-4 border-b">
-
-=======
-      className="flex flex-col bg-white border-r w-80 shadow-lg"
+      className="flex flex-col bg-white border-r shadow-lg w-80"
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-6 h-6 text-orange-500" />
@@ -389,7 +412,7 @@ export function ChatListSidebar({
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-2 rounded-full hover:bg-orange-100 transition-colors"
+                className="p-2 transition-colors rounded-full hover:bg-orange-100"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -406,7 +429,7 @@ export function ChatListSidebar({
                 <Input
                   type="text"
                   placeholder="Search users/vendors..."
-                  className="w-full py-2 pl-8 pr-2 text-sm bg-gray-50 rounded-md border-0 focus:ring-2 focus:ring-orange-500"
+                  className="w-full py-2 pl-8 pr-2 text-sm border-0 rounded-md bg-gray-50 focus:ring-2 focus:ring-orange-500"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   ref={searchInputRef}
@@ -419,42 +442,7 @@ export function ChatListSidebar({
                   <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-<<<<<<< HEAD
-                searchResults.map((contact: Contact) => (
-                  <DropdownMenuItem
-                    key={contact._id}
-                    onSelect={() => handleSelectContact(contact)}
-                  >
-                    <div className="flex items-center w-full gap-3">
-                      <div className="relative">
-                        <img
-                          src={
-                            contact.profileImage ||
-                            contact.avatar ||
-                            "/placeholder.svg"
-                          }
-                          alt={contact.name}
-                          className="w-8 h-8 rounded-full"
-                        />
-                        <div
-                          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
-                            contact.isVendor ? "bg-orange-500" : "bg-blue-500"
-                          }`}
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">
-                          {formatContactName(contact)}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {contact.storeName ? "Vendor" : "User"}
-                        </p>
-                      </div>
-                    </div>
-                  </DropdownMenuItem>
-                ))
-=======
-                <div className="max-h-60 overflow-y-auto">
+                <div className="overflow-y-auto max-h-60">
                   {searchResults.map((contact: Contact) => (
                     <ContactItem
                       key={contact._id}
@@ -463,7 +451,6 @@ export function ChatListSidebar({
                     />
                   ))}
                 </div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
               ) : searchQuery.trim() !== "" ? (
                 <DropdownMenuItem disabled className="text-gray-500">
                   No results found
@@ -481,7 +468,7 @@ export function ChatListSidebar({
           <input
             type="text"
             placeholder="Search chats..."
-            className="w-full py-2 pl-10 pr-4 text-sm bg-gray-50 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 border-0 transition-all duration-200"
+            className="w-full py-2 pl-10 pr-4 text-sm transition-all duration-200 border-0 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -489,14 +476,6 @@ export function ChatListSidebar({
       </div>
 
       {/* Chat List */}
-<<<<<<< HEAD
-      <div className="flex-1 overflow-y-auto">
-        <AnimatePresence>
-          {chatList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
-              <p>No chats yet</p>
-              <p className="mt-2 text-sm">
-=======
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (
@@ -505,10 +484,11 @@ export function ChatListSidebar({
               animate={{ opacity: 1, y: 0 }}
               className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500"
             >
-              <MessageCircle className="w-16 h-16 text-gray-300 mb-4" />
-              <p className="text-lg font-semibold text-gray-400">No chats yet</p>
+              <MessageCircle className="w-16 h-16 mb-4 text-gray-300" />
+              <p className="text-lg font-semibold text-gray-400">
+                No chats yet
+              </p>
               <p className="mt-2 text-sm text-gray-400">
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
                 Start a new chat by clicking the + button
               </p>
             </motion.div>
@@ -516,60 +496,10 @@ export function ChatListSidebar({
             filteredChats.map((chat: Chat) => (
               <ChatItem
                 key={chat._id}
-<<<<<<< HEAD
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                whileHover={{ backgroundColor: "rgba(0,0,0,0.05)" }}
-                onClick={() => setActiveChat(chat._id)}
-                className={`w-full p-4 flex items-start gap-3 border-b ${
-                  activeChat === chat._id ? "bg-orange-50" : ""
-                }`}
-              >
-                <div className="relative">
-                  {chat.isVendor === "vendors" ? (
-                    <img
-                      src={chat.avatar}
-                      alt={chat.name}
-                      className="w-12 h-12 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full flex justify-center items-center bg-orange-500 text-white text-[17px]">
-                      {`${chat.name.charAt(0).toUpperCase()}${
-                        chat.name.split(" ")[1]?.charAt(0).toUpperCase() || ""
-                      }`}
-                    </div>
-                  )}
-                  {chat.isOnline && (
-                    <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 text-left">
-                  <div className="flex items-start justify-between">
-                    <div className="truncate">
-                      <p className="font-semibold truncate">{chat.name}</p>
-                      <span className="text-xs text-orange-500">
-                        {chat?.isVendor === "vendors" ? "Vendor" : "User"}
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-500 whitespace-nowrap">
-                      {new Date(chat.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-gray-500 truncate">
-                    {chat.lastMessage}
-                  </p>
-                </div>
-              </motion.button>
-=======
                 chat={chat}
                 isActive={activeChat === chat._id}
                 onSelect={handleChatSelect}
               />
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
             ))
           )}
         </AnimatePresence>

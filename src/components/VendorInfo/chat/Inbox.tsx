@@ -1,5 +1,3 @@
-"use client";
-
 import type React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -761,11 +759,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-<<<<<<< HEAD
-            className="flex items-center flex-shrink-0 gap-3 p-4 bg-white border-b"
-=======
             className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
           >
             <div className="relative">
               {activeChatDetails.isVendor ? (
@@ -847,9 +841,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {activeChatDetails && activeChatDetails.pinnedMessages.length > 0 && (
-<<<<<<< HEAD
-          <div className="flex flex-col flex-shrink-0 p-2 bg-orange-100">
-=======
           <div className="flex flex-col flex-shrink-0 p-3 border-b border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100">
             <div className="flex items-center gap-2 mb-2">
               <Pin className="w-4 h-4 text-orange-600" />
@@ -857,7 +848,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                 Pinned Messages
               </span>
             </div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
             {activeChatDetails.pinnedMessages.map((pinnedMsg) => {
               const originalMessage = activeMessages.find(
                 (msg) => msg._id === pinnedMsg.messageId
@@ -903,11 +893,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {feedbackMessage && (
-<<<<<<< HEAD
-          <div className="flex-shrink-0 p-2 text-center text-green-800 bg-green-100">
-            {feedbackMessage}
-          </div>
-=======
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -919,7 +904,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
               <span className="font-medium">{feedbackMessage}</span>
             </div>
           </motion.div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
         )}
 
         {activeChatDetails && (
@@ -1022,25 +1006,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                                             : "object-cover w-full h-full"
                                         }
                                       />
-<<<<<<< HEAD
-                                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 group-hover:bg-opacity-20">
-                                        <Play className="w-8 h-8 text-white" />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="flex flex-col items-center justify-center w-full h-full p-2 text-center text-gray-700 bg-gray-200">
-                                      <Paperclip className="w-6 h-6 mb-1" />
-                                      <span className="w-full px-1 text-xs truncate">
-                                        {file?.name}
-                                      </span>
-                                    </div>
-                                  )}
-                                  {msg.files &&
-                                    msg.files.length > 4 &&
-                                    i === 3 && (
-                                      <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-white bg-black bg-opacity-70">
-                                        +{msg.files.length - 4}
-=======
                                     ) : file.type === "video" ? (
                                       <>
                                         <video
@@ -1061,7 +1026,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                                         <span className="w-full px-1 text-xs truncate">
                                           {file?.name}
                                         </span>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
                                       </div>
                                     )}
                                     {msg.files &&
@@ -1163,16 +1127,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         )}
 
         {activeChatDetails && replyingTo && (
-<<<<<<< HEAD
-          <div className="flex items-center justify-between flex-shrink-0 p-2 bg-gray-100">
-            <p className="text-sm text-gray-600">
-              Replying to:{" "}
-              {activeMessages
-                .find((m) => m._id === replyingTo)
-                ?.content.slice(0, 50)}
-              ...
-            </p>
-=======
           <div className="flex items-center justify-between flex-shrink-0 p-3 border-t border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100">
             <div className="flex items-center gap-2">
               <Reply className="w-4 h-4 text-orange-600" />
@@ -1186,7 +1140,6 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                 </span>
               </p>
             </div>
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
             <motion.button
               onClick={() => setReplyingTo(null)}
               className="p-1 text-orange-500 transition-colors rounded-full hover:text-orange-700 hover:bg-orange-200"
@@ -1202,11 +1155,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
           <motion.div
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-<<<<<<< HEAD
-            className="relative flex-shrink-0 p-4 bg-white border-t"
-=======
             className="relative flex-shrink-0 p-4 border-t shadow-lg bg-gradient-to-r from-gray-50 to-white"
->>>>>>> eda03fdf5c1d267392e06dfdf65121f07e098694
           >
             <div className="flex items-center gap-3">
               {/* Image upload input */}

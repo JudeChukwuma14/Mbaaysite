@@ -60,6 +60,7 @@ import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
 import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
+import ChatInterface from "@/components/VendorInfo/chat/Inbox";
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
@@ -127,7 +128,7 @@ const EditVendorProfile = lazy(
 const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
 );
-const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
+// const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
 const CommunitySection = lazy(
   () => import("../components/VendorInfo/Community&Res/CommunitySection")
@@ -1117,7 +1118,7 @@ const routesConfig: RouteObject[] = [
           },
 
           { path: "kyc-verification", element: withSuspense(KycVerification) },
-          { path: "inbox", element: withSuspense(Inbox) },
+          { path: "inbox", element: withSuspense(() => <ChatInterface token={null} />) },
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },
