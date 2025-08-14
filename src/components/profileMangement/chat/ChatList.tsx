@@ -37,7 +37,8 @@ interface ChatListProps {
   onSelectChat: (chatId: string) => void;
   onPinChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
-  onNewChat: (receiverId: string) => void;
+  // Updated to pass vendorDetails for immediate use in ChatHeader
+  onNewChat: (receiverId: string, vendorDetails: { storeName: string; avatar?: string }) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -89,9 +90,10 @@ const ChatList: React.FC<ChatListProps> = ({
   );
   console.log("DEBUG: Filtered chats:", JSON.stringify(filteredChats, null, 2));
 
-  const handleStartNewChat = (receiverId: string) => {
-    console.log("DEBUG: Starting new chat with vendor ID:", receiverId);
-    onNewChat(receiverId);
+  // Updated to pass vendorDetails (storeName, avatar) to onNewChat
+  const handleStartNewChat = (vendor: Vendor) => {
+    console.log("DEBUG: Starting new chat with vendor ID:", vendor._id, "storeName:", vendor.storeName);
+    onNewChat(vendor._id, { storeName: vendor.storeName, avatar: vendor.avatar });
     setVendorSearch("");
     setIsNewChatOpen(false);
   };
@@ -133,7 +135,7 @@ const ChatList: React.FC<ChatListProps> = ({
                         <div
                           key={vendor._id}
                           className="flex items-center p-2 space-x-2 cursor-pointer hover:bg-muted"
-                          onClick={() => handleStartNewChat(vendor._id)}
+                          onClick={() => handleStartNewChat(vendor)}
                         >
                           {vendor.avatar ? (
                             <img

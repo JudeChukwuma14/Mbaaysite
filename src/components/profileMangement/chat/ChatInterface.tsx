@@ -44,6 +44,7 @@ const ChatInterface: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
+  const [pendingChat, setPendingChat] = useState<Chat | null>(null);
   const [showChatList, setShowChatList] = useState(true);
   const [isLoadingChats, setIsLoadingChats] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
@@ -53,17 +54,14 @@ const ChatInterface: React.FC = () => {
 
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  console.log("DEBUG: userRedux:", JSON.stringify(user, null, 2));
-  console.log("DEBUG: vendorRedux:", JSON.stringify(vendor, null, 2));
-
   const currentUserId = user?._id || vendor?._id;
+
   useEffect(() => {
     if (!currentUserId) {
-      console.log(
-        "DEBUG: No user or vendor ID found, user must be authenticated"
-      );
+      console.log("DEBUG: No user or vendor ID found, user must be authenticated");
       setError("Please log in to use chat.");
       toast.error("Please log in to use chat.");
+      setPendingChat(null);
     }
   }, [currentUserId]);
 
@@ -84,62 +82,63 @@ const ChatInterface: React.FC = () => {
         console.log("DEBUG: Fetching chats...");
         const chatData = await getUserChats();
         console.log("DEBUG: chatData:", JSON.stringify(chatData, null, 2));
-        const formattedChats: Chat[] = (chatData.chats || []).map(
-          (chat: any) => {
-            const otherParticipant = chat.participants.find(
-              (p: any) => p.participantId !== currentUserId
-            );
+        const formattedChats: Chat[] = [];
+        for (const chat of chatData.chats || []) {
+          // Check if chat has messages
+          try {
+            const messageData = await getChatMessages(chat._id);
             console.log(
-              "DEBUG: Other participant for chat",
+              "DEBUG: Messages for chat",
               chat._id,
               ":",
-              JSON.stringify(otherParticipant, null, 2)
+              JSON.stringify(messageData, null, 2)
             );
-            return {
-              _id: chat._id,
-              name:
-                otherParticipant?.details?.storeName ||
-                otherParticipant?.details?.name ||
-                `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"
-                }`,
-              lastMessage: chat.lastMessage?.content || "",
-              time: new Date(
-                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-              ).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              unread: chat.unreadCount || 0,
-              avatar:
-                otherParticipant?.details?.avatar ||
-                otherParticipant?.details?.businessLogo ||
-                "",
-              online: otherParticipant?.details?.online || false,
-              pinned: chat.pinned || false,
-              isGroup: chat.isCustomerCareChat || false,
-            };
+            if (messageData.success && messageData.messages.length > 0) {
+              const otherParticipant = chat.participants.find(
+                (p: any) => p.participantId !== currentUserId
+              );
+              formattedChats.push({
+                _id: chat._id,
+                name:
+                  otherParticipant?.details?.storeName ||
+                  otherParticipant?.details?.name ||
+                  `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
+                lastMessage: chat.lastMessage?.content || messageData.messages[messageData.messages.length - 1].content || "",
+                time: new Date(
+                  chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+                ).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                unread: chat.unreadCount || 0,
+                avatar:
+                  otherParticipant?.details?.avatar ||
+                  otherParticipant?.details?.businessLogo ||
+                  "",
+                online: otherParticipant?.details?.online || false,
+                pinned: chat.pinned || false,
+                isGroup: chat.isCustomerCareChat || false,
+              });
+            }
+          } catch (msgError: any) {
+            console.warn(
+              "DEBUG: Error fetching messages for chat",
+              chat._id,
+              ":",
+              JSON.stringify(msgError, null, 2)
+            );
           }
-        );
-        console.log(
-          "DEBUG: Formatted chats:",
-          JSON.stringify(formattedChats, null, 2)
-        );
+        }
+        console.log("DEBUG: Formatted chats:", JSON.stringify(formattedChats, null, 2));
         setChats(formattedChats);
         if (!selectedChat && formattedChats.length > 0) {
-          console.log(
-            "DEBUG: Setting initial selectedChat:",
-            formattedChats[0]._id
-          );
+          console.log("DEBUG: Setting initial selectedChat:", formattedChats[0]._id);
           setSelectedChat(formattedChats[0]._id);
         }
       } catch (error: any) {
         const errorMsg =
-          error.response?.data?.message ||
-          "Failed to load chats. Please try again.";
-        console.error(
-          "DEBUG: Error fetching chats:",
-          JSON.stringify(error, null, 2)
-        );
+          error.response?.data?.message || "Failed to load chats. Please try again.";
+        console.error("DEBUG: Error fetching chats:", JSON.stringify(error, null, 2));
         setError(errorMsg);
         toast.error(errorMsg);
         setChats([]);
@@ -170,14 +169,6 @@ const ChatInterface: React.FC = () => {
           const formattedMessages: Message[] = (messageData.messages || []).map(
             (msg: any) => {
               const isSentByCurrentUser = msg.sender?._id === currentUserId;
-              console.log(
-                "DEBUG: Message sender._id:",
-                msg.sender?._id,
-                "currentUserId:",
-                currentUserId,
-                "isSentByCurrentUser:",
-                isSentByCurrentUser
-              );
               return {
                 _id: msg._id,
                 content: msg.content || "",
@@ -194,12 +185,8 @@ const ChatInterface: React.FC = () => {
           setMessages(formattedMessages);
         } catch (error: any) {
           const errorMsg =
-            error.response?.data?.message ||
-            "Failed to load messages. Please try again.";
-          console.error(
-            "DEBUG: Error fetching messages:",
-            JSON.stringify(error, null, 2)
-          );
+            error.response?.data?.message || "Failed to load messages. Please try again.";
+          console.error("DEBUG: Error fetching messages:", JSON.stringify(error, null, 2));
           setError(errorMsg);
           toast.error(errorMsg);
           setMessages([]);
@@ -220,26 +207,21 @@ const ChatInterface: React.FC = () => {
 
   useEffect(() => {
     if (isMobile && selectedChat) {
-      console.log(
-        "DEBUG: Mobile view, hiding chat list for selectedChat:",
-        selectedChat
-      );
+      console.log("DEBUG: Mobile view, hiding chat list for selectedChat:", selectedChat);
       setShowChatList(false);
     } else if (isMobile && !selectedChat) {
-      console.log(
-        "DEBUG: Mobile view, showing chat list as no chat is selected"
-      );
+      console.log("DEBUG: Mobile view, showing chat list as no chat is selected");
       setShowChatList(true);
     }
   }, [selectedChat, isMobile]);
 
   useEffect(() => {
-    if (selectedChat && !chats.find((chat) => chat._id === selectedChat)) {
+    if (selectedChat && !chats.find((chat) => chat._id === selectedChat) && !pendingChat?._id) {
       console.log("DEBUG: Invalid selectedChat, resetting to null");
       setSelectedChat(null);
       setShowChatList(true);
     }
-  }, [selectedChat, chats]);
+  }, [selectedChat, chats, pendingChat]);
 
   const handleSendMessage = async (
     content: string,
@@ -257,14 +239,12 @@ const ChatInterface: React.FC = () => {
       return;
     }
     try {
+      let formattedMessage: Message;
       if (type === "text" && content.trim()) {
         console.log("DEBUG: Sending text message:", content);
         const newMessage = await sendMessage(selectedChat, content);
-        console.log(
-          "DEBUG: Sent message:",
-          JSON.stringify(newMessage, null, 2)
-        );
-        const formattedMessage: Message = {
+        console.log("DEBUG: Sent message:", JSON.stringify(newMessage, null, 2));
+        formattedMessage = {
           _id: newMessage.message._id,
           content: content,
           time: new Date(newMessage.message.createdAt).toLocaleTimeString([], {
@@ -276,131 +256,102 @@ const ChatInterface: React.FC = () => {
           replyTo: newMessage.message.replyTo || undefined,
         };
         setMessages((prev) => [...prev, formattedMessage]);
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat._id === selectedChat
-              ? {
-                ...chat,
-                lastMessage: content,
-                time: formattedMessage.time,
-                unread: 0,
-              }
-              : chat
-          )
-        );
       } else if (files && files.length > 0) {
-        console.log(
-          "DEBUG: Sending media message with files:",
-          files.map((f) => f.name)
-        );
+        console.log("DEBUG: Sending media message with files:", files.map(f => f.name));
         const mediaMessage = await sendMediaMessage(selectedChat, files);
-        console.log(
-          "DEBUG: Sent media message:",
-          JSON.stringify(mediaMessage, null, 2)
-        );
-        const formattedMessage: Message = {
+        console.log("DEBUG: Sent media message:", JSON.stringify(mediaMessage, null, 2));
+        formattedMessage = {
           _id: mediaMessage.message._id,
           content: mediaMessage.message.content || files[0].name,
-          time: new Date(mediaMessage.message.createdAt).toLocaleTimeString(
-            [],
-            {
-              hour: "2-digit",
-              minute: "2-digit",
-            }
-          ),
+          time: new Date(mediaMessage.message.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
           sent: true,
           type:
             mediaMessage.message.type ||
             (files[0].type.startsWith("image/")
               ? "image"
               : files[0].type.startsWith("video/")
-                ? "video"
-                : "file"),
+              ? "video"
+              : "file"),
           replyTo: mediaMessage.message.replyTo || undefined,
         };
         setMessages((prev) => [...prev, formattedMessage]);
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat._id === selectedChat
-              ? {
+      } else {
+        return;
+      }
+
+      // If this is a pending chat, add it to chats
+      if (pendingChat && pendingChat._id === selectedChat) {
+        console.log("DEBUG: Adding pending chat to chats after first message:", pendingChat._id);
+        setChats((prev) => [pendingChat, ...prev]);
+        setPendingChat(null);
+      }
+
+      // Update lastMessage for the chat
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat._id === selectedChat
+            ? {
                 ...chat,
-                lastMessage:
-                  mediaMessage.message.content ||
-                  `Sent a ${formattedMessage.type}`,
+                lastMessage: formattedMessage.content,
                 time: formattedMessage.time,
                 unread: 0,
               }
-              : chat
-          )
-        );
-      }
+            : chat
+        )
+      );
+
       // Refresh chats to ensure consistency
       console.log("DEBUG: Refreshing chats after sending message");
       const chatData = await getUserChats();
-      const formattedChats: Chat[] = (chatData.chats || []).map((chat: any) => {
-        const otherParticipant = chat.participants.find(
-          (p: any) => p.participantId !== currentUserId
-        );
-        return {
-          _id: chat._id,
-          name:
-            otherParticipant?.details?.storeName ||
-            otherParticipant?.details?.name ||
-            `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
-          lastMessage: chat.lastMessage?.content || "",
-          time: new Date(
-            chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-          ).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          unread: chat.unreadCount || 0,
-          avatar:
-            otherParticipant?.details?.avatar ||
-            otherParticipant?.details?.businessLogo ||
-            "",
-          online: otherParticipant?.details?.online || false,
-          pinned: chat.pinned || false,
-          isGroup: chat.isCustomerCareChat || false,
-        };
-      });
-      setChats(formattedChats);
-      // Refresh messages to ensure consistency
-      console.log("DEBUG: Refreshing messages after sending");
-      const messageData = await getChatMessages(selectedChat);
-      const formattedMessages: Message[] = (messageData.messages || []).map(
-        (msg: any) => {
-          const isSentByCurrentUser = msg.sender?._id === currentUserId;
-          console.log(
-            "DEBUG: Message sender._id:",
-            msg.sender?._id,
-            "currentUserId:",
-            currentUserId,
-            "isSentByCurrentUser:",
-            isSentByCurrentUser
+      const formattedChats: Chat[] = [];
+      for (const chat of chatData.chats || []) {
+        try {
+          const messageData = await getChatMessages(chat._id);
+          if (messageData.success && messageData.messages.length > 0) {
+            const otherParticipant = chat.participants.find(
+              (p: any) => p.participantId !== currentUserId
+            );
+            formattedChats.push({
+              _id: chat._id,
+              name:
+                otherParticipant?.details?.storeName ||
+                otherParticipant?.details?.name ||
+                `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
+              lastMessage: chat.lastMessage?.content || messageData.messages[messageData.messages.length - 1].content || "",
+              time: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              unread: chat.unreadCount || 0,
+              avatar:
+                otherParticipant?.details?.avatar ||
+                otherParticipant?.details?.businessLogo ||
+                "",
+              online: otherParticipant?.details?.online || false,
+              pinned: chat.pinned || false,
+              isGroup: chat.isCustomerCareChat || false,
+            });
+          }
+        } catch (msgError: any) {
+          console.warn(
+            "DEBUG: Error fetching messages for chat",
+            chat._id,
+            ":",
+            JSON.stringify(msgError, null, 2)
           );
-          return {
-            _id: msg._id,
-            content: msg.content || "",
-            time: new Date(msg.createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            sent: isSentByCurrentUser,
-            type: msg.type || "text",
-            replyTo: msg.replyTo || undefined,
-          };
         }
-      );
-      setMessages(formattedMessages);
+      }
+      console.log("DEBUG: Setting refreshed chats:", JSON.stringify(formattedChats, null, 2));
+      setChats(formattedChats);
     } catch (error: any) {
       const errorMsg =
-        error.response?.data?.message ||
-        "Failed to send message. Please try again.";
-      console.error(
-        "DEBUG: Error sending message:",
-        JSON.stringify(error, null, 2)
-      );
+        error.response?.data?.message || "Failed to send message. Please try again.";
+      console.error("DEBUG: Error sending message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
     }
@@ -413,12 +364,8 @@ const ChatInterface: React.FC = () => {
       setMessages(messages.filter((msg) => msg._id !== messageId));
     } catch (error: any) {
       const errorMsg =
-        error.response?.data?.message ||
-        "Failed to delete message. Please try again.";
-      console.error(
-        "DEBUG: Error deleting message:",
-        JSON.stringify(error, null, 2)
-      );
+        error.response?.data?.message || "Failed to delete message. Please try again.";
+      console.error("DEBUG: Error deleting message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
     }
@@ -426,12 +373,7 @@ const ChatInterface: React.FC = () => {
 
   const handleEditMessage = async (messageId: string, newContent: string) => {
     try {
-      console.log(
-        "DEBUG: Editing message:",
-        messageId,
-        "with content:",
-        newContent
-      );
+      console.log("DEBUG: Editing message:", messageId, "with content:", newContent);
       await editMessage(messageId, newContent);
       setMessages(
         messages.map((msg) =>
@@ -440,12 +382,8 @@ const ChatInterface: React.FC = () => {
       );
     } catch (error: any) {
       const errorMsg =
-        error.response?.data?.message ||
-        "Failed to edit message. Please try again.";
-      console.error(
-        "DEBUG: Error editing message:",
-        JSON.stringify(error, null, 2)
-      );
+        error.response?.data?.message || "Failed to edit message. Please try again.";
+      console.error("DEBUG: Error editing message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
     }
@@ -460,7 +398,7 @@ const ChatInterface: React.FC = () => {
     );
   };
 
-  const handleNewChat = async (receiverId: string) => {
+  const handleNewChat = async (receiverId: string, vendorDetails: { storeName: string; avatar?: string }) => {
     if (!currentUserId) {
       console.log("DEBUG: No user or vendor ID, cannot start chat");
       toast.error("Please log in to start a chat.");
@@ -472,7 +410,7 @@ const ChatInterface: React.FC = () => {
       return;
     }
     try {
-      console.log("DEBUG: Starting chat with receiverId:", receiverId);
+      console.log("DEBUG: Starting chat with receiverId:", receiverId, "vendorDetails:", JSON.stringify(vendorDetails));
       const newChat = await startChat(receiverId);
       console.log("DEBUG: New chat data:", JSON.stringify(newChat, null, 2));
 
@@ -489,13 +427,10 @@ const ChatInterface: React.FC = () => {
         throw new Error("No other participant found in chat data");
       }
 
-      // Format new chat with fallback for missing details
+      // Create pending chat with vendorDetails
       const formattedChat: Chat = {
         _id: newChat.chat._id,
-        name:
-          otherParticipant?.details?.storeName ||
-          otherParticipant?.details?.name ||
-          `User ${otherParticipant.participantId?.slice(-4) || "Unknown"}`,
+        name: vendorDetails.storeName || `User ${otherParticipant.participantId?.slice(-4) || "Unknown"}`,
         lastMessage: newChat.chat.lastMessage?.content || "",
         time: new Date(
           newChat.chat.lastMessage?.createdAt ||
@@ -506,79 +441,23 @@ const ChatInterface: React.FC = () => {
           minute: "2-digit",
         }),
         unread: newChat.chat.unreadCount || 0,
-        avatar:
-          otherParticipant?.details?.avatar ||
-          otherParticipant?.details?.businessLogo ||
-          "",
-        online: otherParticipant?.details?.online || false,
+        avatar: vendorDetails.avatar || "",
+        online: false, // Default since no online status from vendorDetails
         pinned: newChat.chat.pinned || false,
         isGroup: newChat.chat.isCustomerCareChat || false,
       };
       console.log(
-        "DEBUG: Formatted new chat:",
+        "DEBUG: Formatted pending chat:",
         JSON.stringify(formattedChat, null, 2)
       );
 
-      // Update state to add new chat and select it
-      setChats((prev) => {
-        // Prevent duplicates
-        if (prev.some((chat) => chat._id === formattedChat._id)) {
-          console.log("DEBUG: Chat already exists in state, skipping add:", formattedChat._id);
-          return prev;
-        }
-        console.log("DEBUG: Adding new chat to state:", formattedChat._id);
-        return [formattedChat, ...prev];
-      });
+      // Set pending chat and select it
+      setPendingChat(formattedChat);
       console.log("DEBUG: Setting selectedChat to:", formattedChat._id);
       setSelectedChat(formattedChat._id);
       if (isMobile) {
         console.log("DEBUG: Mobile view, hiding chat list after starting new chat");
         setShowChatList(false);
-      }
-
-      // Optional: Refresh chats to get full participant details
-      try {
-        console.log("DEBUG: Refreshing chats after starting new chat");
-        const chatData = await getUserChats();
-        console.log("DEBUG: Refreshed chatData:", JSON.stringify(chatData, null, 2));
-        const formattedChats: Chat[] = (chatData.chats || []).map((chat: any) => {
-          const otherParticipant = chat.participants.find(
-            (p: any) => p.participantId !== currentUserId
-          );
-          return {
-            _id: chat._id,
-            name:
-              otherParticipant?.details?.storeName ||
-              otherParticipant?.details?.name ||
-              `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
-            lastMessage: chat.lastMessage?.content || "",
-            time: new Date(
-              chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-            ).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-            unread: chat.unreadCount || 0,
-            avatar:
-              otherParticipant?.details?.avatar ||
-              otherParticipant?.details?.businessLogo ||
-              "",
-            online: otherParticipant?.details?.online || false,
-            pinned: chat.pinned || false,
-            isGroup: chat.isCustomerCareChat || false,
-          };
-        });
-        console.log(
-          "DEBUG: Setting refreshed chats:",
-          JSON.stringify(formattedChats, null, 2)
-        );
-        setChats(formattedChats);
-      } catch (refreshError: any) {
-        console.warn(
-          "DEBUG: Error refreshing chats after new chat:",
-          JSON.stringify(refreshError, null, 2)
-        );
-        toast.warn("Chat created, but failed to refresh chat list.");
       }
     } catch (error: any) {
       const errorMsg =
@@ -600,25 +479,15 @@ const ChatInterface: React.FC = () => {
   };
 
   const handleBackToList = () => {
-    console.log(
-      "DEBUG: handleBackToList called, current selectedChat:",
-      selectedChat
-    );
+    console.log("DEBUG: handleBackToList called, current selectedChat:", selectedChat);
     setSelectedChat(null);
+    setPendingChat(null);
     setShowChatList(true);
-    console.log(
-      "DEBUG: After handleBackToList, selectedChat:",
-      null,
-      "showChatList:",
-      true
-    );
+    console.log("DEBUG: After handleBackToList, selectedChat:", null, "showChatList:", true);
   };
 
-  const selectedChatData = chats.find((chat) => chat._id === selectedChat);
-  console.log(
-    "DEBUG: selectedChatData:",
-    JSON.stringify(selectedChatData, null, 2)
-  );
+  const selectedChatData = chats.find((chat) => chat._id === selectedChat) || pendingChat;
+  console.log("DEBUG: selectedChatData:", JSON.stringify(selectedChatData, null, 2));
   console.log("DEBUG: chats before render:", JSON.stringify(chats, null, 2));
 
   const handleFormSubmit = (e: React.FormEvent) => {
@@ -632,12 +501,13 @@ const ChatInterface: React.FC = () => {
       className="flex h-[calc(100vh-7rem)] bg-background rounded border"
     >
       <div
-        className={`${isMobile
+        className={`${
+          isMobile
             ? showChatList
               ? "w-full"
               : "hidden"
             : "w-80 border-r border-chat-border"
-          } bg-card`}
+        } bg-card`}
       >
         {isLoadingChats ? (
           <div className="p-4">Loading chats...</div>
@@ -659,8 +529,9 @@ const ChatInterface: React.FC = () => {
         )}
       </div>
       <div
-        className={`${isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
-          } flex flex-col relative`}
+        className={`${
+          isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
+        } flex flex-col relative`}
       >
         {selectedChat && selectedChatData ? (
           <>
@@ -686,9 +557,7 @@ const ChatInterface: React.FC = () => {
                       key={message._id}
                       message={message}
                       onDelete={() => handleDeleteMessage(message._id)}
-                      onEdit={(content) =>
-                        handleEditMessage(message._id, content)
-                      }
+                      onEdit={(content) => handleEditMessage(message._id, content)}
                     />
                   ))
                 )}
