@@ -476,104 +476,114 @@ const ChatInterface: React.FC = () => {
       const newChat = await startChat(receiverId);
       console.log("DEBUG: New chat data:", JSON.stringify(newChat, null, 2));
 
-      const chatObj = newChat.chat;
-      const otherParticipant = chatObj.participants.find(
+      // Validate response structure
+      if (!newChat?.success || !newChat?.chat?._id) {
+        throw new Error("Invalid chat data received from server");
+      }
+
+      // Find other participant
+      const otherParticipant = newChat.chat.participants.find(
         (p: any) => p.participantId !== currentUserId
       );
+      if (!otherParticipant) {
+        throw new Error("No other participant found in chat data");
+      }
+
+      // Format new chat with fallback for missing details
       const formattedChat: Chat = {
-        _id: newChat.data._id,
+        _id: newChat.chat._id,
         name:
           otherParticipant?.details?.storeName ||
           otherParticipant?.details?.name ||
-          `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
-        lastMessage: newChat.data.lastMessage?.content || "",
+          `User ${otherParticipant.participantId?.slice(-4) || "Unknown"}`,
+        lastMessage: newChat.chat.lastMessage?.content || "",
         time: new Date(
-          newChat.data.lastMessage?.createdAt ||
-          newChat.data.createdAt ||
+          newChat.chat.lastMessage?.createdAt ||
+          newChat.chat.createdAt ||
           Date.now()
         ).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        unread: newChat.data.unreadCount || 0,
+        unread: newChat.chat.unreadCount || 0,
         avatar:
           otherParticipant?.details?.avatar ||
           otherParticipant?.details?.businessLogo ||
           "",
         online: otherParticipant?.details?.online || false,
-        pinned: newChat.data.pinned || false,
-        isGroup: newChat.data.isCustomerCareChat || false,
+        pinned: newChat.chat.pinned || false,
+        isGroup: newChat.chat.isCustomerCareChat || false,
       };
       console.log(
         "DEBUG: Formatted new chat:",
         JSON.stringify(formattedChat, null, 2)
       );
 
-      // Update chats and select new chat
-      setChats((prev) => [formattedChat, ...prev]);
+      // Update state to add new chat and select it
+      setChats((prev) => {
+        // Prevent duplicates
+        if (prev.some((chat) => chat._id === formattedChat._id)) {
+          console.log("DEBUG: Chat already exists in state, skipping add:", formattedChat._id);
+          return prev;
+        }
+        console.log("DEBUG: Adding new chat to state:", formattedChat._id);
+        return [formattedChat, ...prev];
+      });
+      console.log("DEBUG: Setting selectedChat to:", formattedChat._id);
       setSelectedChat(formattedChat._id);
       if (isMobile) {
-        console.log(
-          "DEBUG: Mobile view, hiding chat list after starting new chat"
-        );
+        console.log("DEBUG: Mobile view, hiding chat list after starting new chat");
         setShowChatList(false);
       }
 
-      // Optionally refresh chats to get full participant details
-      console.log("DEBUG: Refreshing chats after starting new chat");
+      // Optional: Refresh chats to get full participant details
       try {
+        console.log("DEBUG: Refreshing chats after starting new chat");
         const chatData = await getUserChats();
+        console.log("DEBUG: Refreshed chatData:", JSON.stringify(chatData, null, 2));
+        const formattedChats: Chat[] = (chatData.chats || []).map((chat: any) => {
+          const otherParticipant = chat.participants.find(
+            (p: any) => p.participantId !== currentUserId
+          );
+          return {
+            _id: chat._id,
+            name:
+              otherParticipant?.details?.storeName ||
+              otherParticipant?.details?.name ||
+              `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
+            lastMessage: chat.lastMessage?.content || "",
+            time: new Date(
+              chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+            ).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            unread: chat.unreadCount || 0,
+            avatar:
+              otherParticipant?.details?.avatar ||
+              otherParticipant?.details?.businessLogo ||
+              "",
+            online: otherParticipant?.details?.online || false,
+            pinned: chat.pinned || false,
+            isGroup: chat.isCustomerCareChat || false,
+          };
+        });
         console.log(
-          "DEBUG: Refreshed chatData:",
-          JSON.stringify(chatData, null, 2)
-        );
-        const formattedChats: Chat[] = (chatData.chats || []).map(
-          (chat: any) => {
-            const otherParticipant = chat.participants.find(
-              (p: any) => p.participantId !== currentUserId
-            );
-            return {
-              _id: chat._id,
-              name:
-                otherParticipant?.details?.storeName ||
-                otherParticipant?.details?.name ||
-                `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"
-                }`,
-              lastMessage: chat.lastMessage?.content || "",
-              time: new Date(
-                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-              ).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              }),
-              unread: chat.unreadCount || 0,
-              avatar:
-                otherParticipant?.details?.avatar ||
-                otherParticipant?.details?.businessLogo ||
-                "",
-              online: otherParticipant?.details?.online || false,
-              pinned: chat.pinned || false,
-              isGroup: chat.isCustomerCareChat || false,
-            };
-          }
+          "DEBUG: Setting refreshed chats:",
+          JSON.stringify(formattedChats, null, 2)
         );
         setChats(formattedChats);
       } catch (refreshError: any) {
-        console.error(
+        console.warn(
           "DEBUG: Error refreshing chats after new chat:",
           JSON.stringify(refreshError, null, 2)
         );
-        // Don't set error state to avoid overriding the successful chat creation
         toast.warn("Chat created, but failed to refresh chat list.");
       }
     } catch (error: any) {
       const errorMsg =
-        error.response?.data?.message ||
-        "Failed to start chat. Please try again.";
-      console.error(
-        "DEBUG: Error starting chat:",
-        JSON.stringify(error, null, 2)
-      );
+        error.response?.data?.message || error.message || "Failed to start chat. Please try again.";
+      console.error("DEBUG: Error starting chat:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
     }
