@@ -184,7 +184,7 @@ const ChatList: React.FC<ChatListProps> = ({
                 onClick={() => onSelectChat(chat._id)}
               >
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full">
+                  <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full ring-1 ring-orange-500">
                     {chat.avatar ? (
                       <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
                     ) : (

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import { useLocation } from "react-router-dom"; // Added for navigation state
 import { RootState } from "@/redux/store";
 import ChatList from "./ChatList";
 import { useIsMobile } from "@/hook/use-mobile";
@@ -51,10 +52,37 @@ const ChatInterface: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const location = useLocation(); // Added for navigation state
+  // const dispatch = useDispatch();
 
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
   const currentUserId = user?._id || vendor?._id;
+
+  // Handle navigation state from ProductDetails
+  useEffect(() => {
+    const { chatId, vendorDetails } = location.state || {};
+    if (chatId && vendorDetails) {
+      console.log("DEBUG: Received chatId from navigation:", chatId, "vendorDetails:", vendorDetails);
+      setSelectedChat(chatId);
+      setPendingChat({
+        _id: chatId,
+        name: vendorDetails.storeName || "Unknown",
+        lastMessage: "",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        unread: 0,
+        avatar: vendorDetails.avatar || "",
+        online: false,
+        pinned: false,
+        isGroup: false,
+      });
+      if (isMobile) {
+        setShowChatList(false);
+      }
+      // Clear navigation state to prevent re-triggering
+      window.history.replaceState({}, document.title, location.pathname);
+    }
+  }, [location, isMobile]);
 
   useEffect(() => {
     if (!currentUserId) {
@@ -84,15 +112,9 @@ const ChatInterface: React.FC = () => {
         console.log("DEBUG: chatData:", JSON.stringify(chatData, null, 2));
         const formattedChats: Chat[] = [];
         for (const chat of chatData.chats || []) {
-          // Check if chat has messages
           try {
             const messageData = await getChatMessages(chat._id);
-            console.log(
-              "DEBUG: Messages for chat",
-              chat._id,
-              ":",
-              JSON.stringify(messageData, null, 2)
-            );
+            console.log("DEBUG: Messages for chat", chat._id, ":", JSON.stringify(messageData, null, 2));
             if (messageData.success && messageData.messages.length > 0) {
               const otherParticipant = chat.participants.find(
                 (p: any) => p.participantId !== currentUserId
@@ -103,7 +125,10 @@ const ChatInterface: React.FC = () => {
                   otherParticipant?.details?.storeName ||
                   otherParticipant?.details?.name ||
                   `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
-                lastMessage: chat.lastMessage?.content || messageData.messages[messageData.messages.length - 1].content || "",
+                lastMessage:
+                  chat.lastMessage?.content ||
+                  messageData.messages[messageData.messages.length - 1].content ||
+                  "",
                 time: new Date(
                   chat.lastMessage?.createdAt || chat.createdAt || Date.now()
                 ).toLocaleTimeString([], {
@@ -121,23 +146,17 @@ const ChatInterface: React.FC = () => {
               });
             }
           } catch (msgError: any) {
-            console.warn(
-              "DEBUG: Error fetching messages for chat",
-              chat._id,
-              ":",
-              JSON.stringify(msgError, null, 2)
-            );
+            console.warn("DEBUG: Error fetching messages for chat", chat._id, ":", JSON.stringify(msgError, null, 2));
           }
         }
         console.log("DEBUG: Formatted chats:", JSON.stringify(formattedChats, null, 2));
         setChats(formattedChats);
-        if (!selectedChat && formattedChats.length > 0) {
+        if (!selectedChat && formattedChats.length > 0 && !location.state?.chatId) {
           console.log("DEBUG: Setting initial selectedChat:", formattedChats[0]._id);
           setSelectedChat(formattedChats[0]._id);
         }
       } catch (error: any) {
-        const errorMsg =
-          error.response?.data?.message || "Failed to load chats. Please try again.";
+        const errorMsg = error.response?.data?.message || "Failed to load chats. Please try again.";
         console.error("DEBUG: Error fetching chats:", JSON.stringify(error, null, 2));
         setError(errorMsg);
         toast.error(errorMsg);
@@ -150,7 +169,7 @@ const ChatInterface: React.FC = () => {
       console.log("DEBUG: Triggering fetchChats with user or vendor present");
       fetchChats();
     }
-  }, [currentUserId]);
+  }, [currentUserId, location.state]);
 
   useEffect(() => {
     if (selectedChat && currentUserId) {
@@ -160,32 +179,24 @@ const ChatInterface: React.FC = () => {
         try {
           console.log("DEBUG: Fetching messages for chat:", selectedChat);
           const messageData = await getChatMessages(selectedChat);
-          console.log(
-            "DEBUG: messageData for chat",
-            selectedChat,
-            ":",
-            JSON.stringify(messageData, null, 2)
-          );
-          const formattedMessages: Message[] = (messageData.messages || []).map(
-            (msg: any) => {
-              const isSentByCurrentUser = msg.sender?._id === currentUserId;
-              return {
-                _id: msg._id,
-                content: msg.content || "",
-                time: new Date(msg.createdAt).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                sent: isSentByCurrentUser,
-                type: msg.type || "text",
-                replyTo: msg.replyTo || undefined,
-              };
-            }
-          );
+          console.log("DEBUG: messageData for chat", selectedChat, ":", JSON.stringify(messageData, null, 2));
+          const formattedMessages: Message[] = (messageData.messages || []).map((msg: any) => {
+            const isSentByCurrentUser = msg.sender?._id === currentUserId;
+            return {
+              _id: msg._id,
+              content: msg.content || "",
+              time: new Date(msg.createdAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              sent: isSentByCurrentUser,
+              type: msg.type || "text",
+              replyTo: msg.replyTo || undefined,
+            };
+          });
           setMessages(formattedMessages);
         } catch (error: any) {
-          const errorMsg =
-            error.response?.data?.message || "Failed to load messages. Please try again.";
+          const errorMsg = error.response?.data?.message || "Failed to load messages. Please try again.";
           console.error("DEBUG: Error fetching messages:", JSON.stringify(error, null, 2));
           setError(errorMsg);
           toast.error(errorMsg);
@@ -257,7 +268,7 @@ const ChatInterface: React.FC = () => {
         };
         setMessages((prev) => [...prev, formattedMessage]);
       } else if (files && files.length > 0) {
-        console.log("DEBUG: Sending media message with files:", files.map(f => f.name));
+        console.log("DEBUG: Sending media message with files:", files.map((f) => f.name));
         const mediaMessage = await sendMediaMessage(selectedChat, files);
         console.log("DEBUG: Sent media message:", JSON.stringify(mediaMessage, null, 2));
         formattedMessage = {
@@ -320,7 +331,10 @@ const ChatInterface: React.FC = () => {
                 otherParticipant?.details?.storeName ||
                 otherParticipant?.details?.name ||
                 `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"}`,
-              lastMessage: chat.lastMessage?.content || messageData.messages[messageData.messages.length - 1].content || "",
+              lastMessage:
+                chat.lastMessage?.content ||
+                messageData.messages[messageData.messages.length - 1].content ||
+                "",
               time: new Date(
                 chat.lastMessage?.createdAt || chat.createdAt || Date.now()
               ).toLocaleTimeString([], {
@@ -338,19 +352,13 @@ const ChatInterface: React.FC = () => {
             });
           }
         } catch (msgError: any) {
-          console.warn(
-            "DEBUG: Error fetching messages for chat",
-            chat._id,
-            ":",
-            JSON.stringify(msgError, null, 2)
-          );
+          console.warn("DEBUG: Error fetching messages for chat", chat._id, ":", JSON.stringify(msgError, null, 2));
         }
       }
       console.log("DEBUG: Setting refreshed chats:", JSON.stringify(formattedChats, null, 2));
       setChats(formattedChats);
     } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.message || "Failed to send message. Please try again.";
+      const errorMsg = error.response?.data?.message || "Failed to send message. Please try again.";
       console.error("DEBUG: Error sending message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
@@ -363,8 +371,7 @@ const ChatInterface: React.FC = () => {
       await deleteMessage(messageId);
       setMessages(messages.filter((msg) => msg._id !== messageId));
     } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.message || "Failed to delete message. Please try again.";
+      const errorMsg = error.response?.data?.message || "Failed to delete message. Please try again.";
       console.error("DEBUG: Error deleting message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
@@ -375,14 +382,9 @@ const ChatInterface: React.FC = () => {
     try {
       console.log("DEBUG: Editing message:", messageId, "with content:", newContent);
       await editMessage(messageId, newContent);
-      setMessages(
-        messages.map((msg) =>
-          msg._id === messageId ? { ...msg, content: newContent } : msg
-        )
-      );
+      setMessages(messages.map((msg) => (msg._id === messageId ? { ...msg, content: newContent } : msg)));
     } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.message || "Failed to edit message. Please try again.";
+      const errorMsg = error.response?.data?.message || "Failed to edit message. Please try again.";
       console.error("DEBUG: Error editing message:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
@@ -391,11 +393,7 @@ const ChatInterface: React.FC = () => {
 
   const handlePinChat = (chatId: string) => {
     console.log("DEBUG: Pinning/unpinning chat:", chatId);
-    setChats(
-      chats.map((chat) =>
-        chat._id === chatId ? { ...chat, pinned: !chat.pinned } : chat
-      )
-    );
+    setChats(chats.map((chat) => (chat._id === chatId ? { ...chat, pinned: !chat.pinned } : chat)));
   };
 
   const handleNewChat = async (receiverId: string, vendorDetails: { storeName: string; avatar?: string }) => {
@@ -414,12 +412,10 @@ const ChatInterface: React.FC = () => {
       const newChat = await startChat(receiverId);
       console.log("DEBUG: New chat data:", JSON.stringify(newChat, null, 2));
 
-      // Validate response structure
       if (!newChat?.success || !newChat?.chat?._id) {
         throw new Error("Invalid chat data received from server");
       }
 
-      // Find other participant
       const otherParticipant = newChat.chat.participants.find(
         (p: any) => p.participantId !== currentUserId
       );
@@ -427,31 +423,24 @@ const ChatInterface: React.FC = () => {
         throw new Error("No other participant found in chat data");
       }
 
-      // Create pending chat with vendorDetails
       const formattedChat: Chat = {
         _id: newChat.chat._id,
         name: vendorDetails.storeName || `User ${otherParticipant.participantId?.slice(-4) || "Unknown"}`,
         lastMessage: newChat.chat.lastMessage?.content || "",
         time: new Date(
-          newChat.chat.lastMessage?.createdAt ||
-          newChat.chat.createdAt ||
-          Date.now()
+          newChat.chat.lastMessage?.createdAt || newChat.chat.createdAt || Date.now()
         ).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
         unread: newChat.chat.unreadCount || 0,
         avatar: vendorDetails.avatar || "",
-        online: false, // Default since no online status from vendorDetails
+        online: false,
         pinned: newChat.chat.pinned || false,
         isGroup: newChat.chat.isCustomerCareChat || false,
       };
-      console.log(
-        "DEBUG: Formatted pending chat:",
-        JSON.stringify(formattedChat, null, 2)
-      );
+      console.log("DEBUG: Formatted pending chat:", JSON.stringify(formattedChat, null, 2));
 
-      // Set pending chat and select it
       setPendingChat(formattedChat);
       console.log("DEBUG: Setting selectedChat to:", formattedChat._id);
       setSelectedChat(formattedChat._id);
@@ -460,8 +449,7 @@ const ChatInterface: React.FC = () => {
         setShowChatList(false);
       }
     } catch (error: any) {
-      const errorMsg =
-        error.response?.data?.message || error.message || "Failed to start chat. Please try again.";
+      const errorMsg = error.response?.data?.message || error.message || "Failed to start chat. Please try again.";
       console.error("DEBUG: Error starting chat:", JSON.stringify(error, null, 2));
       setError(errorMsg);
       toast.error(errorMsg);
@@ -502,11 +490,7 @@ const ChatInterface: React.FC = () => {
     >
       <div
         className={`${
-          isMobile
-            ? showChatList
-              ? "w-full"
-              : "hidden"
-            : "w-80 border-r border-chat-border"
+          isMobile ? (showChatList ? "w-full" : "hidden") : "w-80 border-r border-chat-border"
         } bg-card`}
       >
         {isLoadingChats ? (
@@ -529,9 +513,7 @@ const ChatInterface: React.FC = () => {
         )}
       </div>
       <div
-        className={`${
-          isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
-        } flex flex-col relative`}
+        className={`${isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"} flex flex-col relative`}
       >
         {selectedChat && selectedChatData ? (
           <>
@@ -548,9 +530,7 @@ const ChatInterface: React.FC = () => {
                 ) : error ? (
                   <div className="text-red-500">{error}</div>
                 ) : messages.length === 0 ? (
-                  <div className="text-center text-muted-foreground">
-                    No messages yet
-                  </div>
+                  <div className="text-center text-muted-foreground">No messages yet</div>
                 ) : (
                   messages.map((message) => (
                     <MessageBubble
