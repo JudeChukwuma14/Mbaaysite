@@ -5,14 +5,26 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
+import {
+  setChatId as setUserChatId,
+  setMessages as setUserMessages,
+  addMessage as addUserMessage,
+} from "@/redux/slices/userSlice";
+import {
+  setChatId as setVendorChatId,
+  setMessages as setVendorMessages,
+  addMessage as addVendorMessage,
+} from "@/redux/slices/vendorSlice";
+import io, { Socket } from "socket.io-client";
 
 interface Message {
   id: string;
   content: string;
   sender: "user" | "agent";
-  timestamp: Date;
+  timestamp: string;
+  isOptimistic?: boolean; // Flag for optimistic messages
 }
 
 interface ChatInterfaceProps {
@@ -20,21 +32,31 @@ interface ChatInterfaceProps {
   onClose: () => void;
 }
 
-const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/chat";
+const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/admin";
+const SOCKET_URL = "https://mbayy-be.onrender.com";
 
 export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [chatId, setChatId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
 
-  // Access user or vendor from Redux
+  // Access user, vendor, token, chatId, and messages from Redux
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  const token = useSelector((state: RootState) => state.user.token || state.vendor.token);
+  const token = useSelector(
+    (state: RootState) => state.user.token || state.vendor.token
+  );
   const senderId = user?._id || vendor?._id;
+  const isVendor = !!vendor;
+  const chatId = useSelector((state: RootState) =>
+    isVendor ? state.vendor.chatId : state.user.chatId
+  );
+  const messages = useSelector((state: RootState) =>
+    isVendor ? state.vendor.messages || [] : state.user.messages || []
+  );
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -43,11 +65,88 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   }, [messages]);
 
-  // Start customer care chat
+  // Initialize Socket.IO
   useEffect(() => {
     if (!isOpen || !senderId || !token) return;
 
-    const startChat = async () => {
+    socketRef.current = io(SOCKET_URL, {
+      auth: { token: `Bearer ${token}` },
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("Socket.IO connected");
+    });
+
+    socketRef.current.on("customerCareChatStarted", (chat) => {
+      console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
+      dispatch(isVendor ? setVendorChatId(chat._id) : setUserChatId(chat._id));
+      socketRef.current?.emit("joinChat", chat._id);
+    });
+
+    socketRef.current.on("customerCareMessage", (msg) => {
+      console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
+      const newMessage: Message = {
+        id: msg._id,
+        content: msg.content,
+        sender: msg.sender?._id === senderId ? "user" : "agent",
+        timestamp: new Date(msg.createdAt).toISOString(),
+      };
+
+      // Replace optimistic message if it exists
+      const optimisticMessage = messages.find(
+        (m) =>
+          m.isOptimistic && m.content === msg.content && m.sender === "user"
+      );
+      if (optimisticMessage) {
+        dispatch(
+          isVendor
+            ? setVendorMessages(
+                messages.map((m) =>
+                  m.id === optimisticMessage.id
+                    ? { ...newMessage, isOptimistic: false }
+                    : m
+                )
+              )
+            : setUserMessages(
+                messages.map((m) =>
+                  m.id === optimisticMessage.id
+                    ? { ...newMessage, isOptimistic: false }
+                    : m
+                )
+              )
+        );
+      } else {
+        dispatch(
+          isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
+        );
+      }
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket.IO error:", err.message);
+      setError("Failed to connect to real-time updates");
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [isOpen, senderId, token, dispatch, isVendor, messages]);
+
+  // Start chat or fetch existing messages
+  const startChat = async (retries = 3, delay = 1000) => {
+    if (!senderId || !token) {
+      setError("Please log in to start a chat");
+      return;
+    }
+
+    // If chatId exists, fetch messages
+    if (chatId) {
+      await fetchMessages();
+      socketRef.current?.emit("joinChat", chatId);
+      return;
+    }
+
+    for (let i = 0; i < retries; i++) {
       setIsLoading(true);
       setError(null);
       try {
@@ -55,79 +154,142 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         const response = await axios.post(
           `${API_CHAT_BASE_URL}/start-customer-care`,
           { userId: senderId },
-          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
-        );
-        console.log("Start chat response:", response.data);
-        setChatId(response.data.chatId);
-        setMessages([
           {
-            id: "1",
-            content: "Hello! Welcome to our customer support. How can I help you today?",
-            sender: "agent",
-            timestamp: new Date(),
-          },
-        ]);
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        console.log(
+          "Start chat response:",
+          JSON.stringify(response.data, null, 2)
+        );
+        const newChatId = response.data.chatId || response.data.chat?._id;
+        dispatch(
+          isVendor ? setVendorChatId(newChatId) : setUserChatId(newChatId)
+        );
+        socketRef.current?.emit("joinChat", newChatId);
+        await fetchMessages(newChatId);
+        return;
       } catch (err: any) {
         console.error("Start chat error:", err.response?.data || err.message);
-        setError(`Failed to start chat: ${err.response?.data?.message || err.message}`);
+        if (i === retries - 1) {
+          setError(
+            `Failed to start chat: ${
+              err.response?.data?.message || err.message
+            }`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
       } finally {
         setIsLoading(false);
       }
-    };
+    }
+  };
 
-    startChat();
-  }, [isOpen, senderId, token]);
+  // Fetch messages for a given chatId
+  const fetchMessages = async (targetChatId: string = chatId!) => {
+    if (!targetChatId || !token) return;
 
-  // Fetch messages
-  useEffect(() => {
-    if (!chatId || !token) return;
-
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(
-          `${API_CHAT_BASE_URL}/customer_care_chatmessages/${chatId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const fetchedMessages = response.data.messages.map((msg: any) => ({
+    try {
+      console.log(
+        "Fetching messages for chatId:",
+        targetChatId,
+        "with senderId:",
+        senderId
+      );
+      const response = await axios.get(
+        `${API_CHAT_BASE_URL}/customer_care_chatmessages/${targetChatId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log(
+        "Fetch messages response:",
+        JSON.stringify(response.data, null, 2)
+      );
+      const fetchedMessages = (response.data.messages || []).map(
+        (msg: any) => ({
           id: msg._id,
           content: msg.content,
-          sender: msg.senderId === senderId ? "user" : "agent",
-          timestamp: new Date(msg.createdAt),
-        }));
-        setMessages(fetchedMessages);
-      } catch (err: any) {
-        setError(`Failed to fetch messages: ${err.response?.data?.message || err.message}`);
-      }
-    };
+          sender: msg.sender?._id === senderId ? "user" : "agent",
+          timestamp: new Date(msg.createdAt).toISOString(),
+        })
+      );
+      dispatch(
+        isVendor
+          ? setVendorMessages(fetchedMessages)
+          : setUserMessages(fetchedMessages)
+      );
+    } catch (err: any) {
+      console.error("Fetch messages error:", err.response?.data || err.message);
+      setError(
+        `Failed to fetch messages: ${
+          err.response?.data?.message || err.message
+        }`
+      );
+    }
+  };
 
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 5000);
-    return () => clearInterval(interval);
-  }, [chatId, senderId, token]);
+  // Start chat when widget opens
+  useEffect(() => {
+    if (isOpen) {
+      startChat();
+    }
+  }, [isOpen, senderId, token]);
 
   // Send message
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !chatId || !senderId || !token) return;
+    if (!inputValue.trim() || !chatId || !senderId || !token) {
+      setError("Cannot send message: Missing input, chatId, or authentication");
+      return;
+    }
 
     const newMessage: Message = {
       id: Date.now().toString(),
       content: inputValue,
       sender: "user",
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
+      isOptimistic: true, // Mark as optimistic
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    dispatch(
+      isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
+    );
     setInputValue("");
 
     try {
-      await axios.post(
+      console.log("Sending message with:", {
+        chatId,
+        content: inputValue,
+        senderId,
+        token,
+      });
+      const response = await axios.post(
         `${API_CHAT_BASE_URL}/send-message`,
         { chatId, content: inputValue, senderId },
-        { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(
+        "Send message response:",
+        JSON.stringify(response.data, null, 2)
       );
     } catch (err: any) {
-      setError(`Failed to send message: ${err.response?.data?.message || err.message}`);
-      setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id));
+      console.error("Send message error:", err.response?.data || err.message);
+      setError(
+        `Failed to send message: ${err.response?.data?.message || err.message}`
+      );
+      dispatch(
+        isVendor
+          ? setVendorMessages(
+              messages.filter((msg) => msg.id !== newMessage.id)
+            )
+          : setUserMessages(messages.filter((msg) => msg.id !== newMessage.id))
+      );
     }
   };
 
@@ -145,7 +307,9 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       <Card className="fixed z-40 border-0 shadow-2xl bottom-20 right-6 w-80 h-96">
         <div className="p-4 text-center">
           <p className="text-red-500">Please log in to use the chat feature.</p>
-          <Button onClick={onClose} className="mt-4">Close</Button>
+          <Button onClick={onClose} className="mt-4">
+            Close
+          </Button>
         </div>
       </Card>
     );
@@ -164,9 +328,11 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 text-white bg-orange-500 rounded-t-lg">
         <div className="flex items-center space-x-2">
-          <Bot className="w-5 h-5" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full ring-2 ring-white">
+            <Bot className="w-5 h-5" />
+          </div>
           <div>
-            <h3 className="font-semibold">Customer Support</h3>
+            <h3 className="font-semibold">Mbaay Customer Support</h3>
             <p className="text-xs opacity-90">We're here to help</p>
           </div>
         </div>
@@ -182,10 +348,22 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-64 p-4 lg:h-80">
-        {isLoading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {isLoading && <p className="text-center">Loading...</p>}
+        {error && (
+          <div className="p-4 text-center">
+            <p className="text-red-500">{error}</p>
+            <Button onClick={() => startChat()} className="mt-2">
+              Retry
+            </Button>
+          </div>
+        )}
+        {!isLoading && !error && (!messages || messages.length === 0) && (
+          <p className="text-center text-gray-500">
+            Waiting for customer support...
+          </p>
+        )}
         <div className="space-y-4">
-          {messages.map((message) => (
+          {(messages || []).map((message) => (
             <div
               key={message.id}
               className={cn(
@@ -218,7 +396,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                           : "text-gray-500"
                       )}
                     >
-                      {message.timestamp.toLocaleTimeString([], {
+                      {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -232,19 +410,21 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t">
-        <div className="flex space-x-2">
+      <div className="px-3 pt-2 pb-5 border-t ">
+        <div className="flex items-center space-x-1">
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-1 w-full px-3 py-1 text-base transition-colors bg-transparent border rounded-md shadow-sm h-9 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            disabled={isLoading || !chatId}
           />
           <Button
             onClick={handleSendMessage}
             size="sm"
             className="text-white bg-orange-500 hover:bg-orange-600"
+            disabled={isLoading || !chatId}
           >
             <Send className="w-4 h-4" />
           </Button>

@@ -82,10 +82,18 @@ export const sendMediaMessage = async (
     files.map((f) => f.name)
   );
   const formData = new FormData();
-  files.forEach((file, index) => {
-    // Use a generic 'files' field to support all file types
-    formData.append(`files[${index}]`, file);
+  // Separate images and videos
+  const images = files.filter((file) => file.type.startsWith("image/"));
+  const videos = files.filter((file) => file.type.startsWith("video/"));
+  
+  // Append images to 'images' field (up to 5, per backend maxCount)
+  images.slice(0, 5).forEach((file) => {
+    formData.append("images", file);
   });
+  // Append video to 'video' field (only 1, per backend maxCount)
+  if (videos.length > 0) {
+    formData.append("video", videos[0]);
+  }
   if (replyTo) {
     formData.append("replyTo", replyTo);
   }
@@ -116,6 +124,7 @@ export const sendMediaMessage = async (
     );
   }
 };
+
 // Get all user chats
 export const getUserChats = async () => {
   const token = getAuthToken();

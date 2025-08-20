@@ -9,20 +9,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "react-toastify";
 
 interface MessageInputProps {
   onSendMessage: (
     content: string,
     type?: "text" | "image" | "video" | "file",
-    files?: File[]
+    files?: File[],
+    onUploadStart?: () => { tempId: string; previews: string[] }, // Return temp ID and previews
+    onUploadComplete?: (tempId: string) => void
   ) => void;
 }
 
 const MessageInput = ({ onSendMessage }: MessageInputProps) => {
   const [message, setMessage] = useState("");
-  const [isRecording, setIsRecording] = useState<boolean>(false)
+  const [isRecording, setIsRecording] = useState<boolean>(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
-  const [previews, setPreviews] = useState<string[]>([]); // Store preview URLs
+  const [previews, setPreviews] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -34,15 +37,22 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
       setMessage("");
     }
     if (attachedFiles.length > 0) {
-      console.log("DEBUG: Sending media message with files:", attachedFiles.map(f => f.name));
-      const type = attachedFiles[0].type.startsWith("image/")
-        ? "image"
-        : attachedFiles[0].type.startsWith("video/")
-        ? "video"
-        : "file";
-      onSendMessage("", type, attachedFiles);
-      // Clear files and previews
-      previews.forEach((url) => URL.revokeObjectURL(url)); // Clean up object URLs
+      const images = attachedFiles.filter((file) => file.type.startsWith("image/")).slice(0, 5);
+      const videos = attachedFiles.filter((file) => file.type.startsWith("video/")).slice(0, 1);
+      const filesToSend = [...images, ...videos];
+      if (filesToSend.length === 0) {
+        console.log("DEBUG: No valid files to send after filtering");
+        return;
+      }
+      console.log("DEBUG: Sending media message with files:", filesToSend.map(f => f.name));
+      const type = filesToSend[0].type.startsWith("image/") ? "image" : filesToSend[0].type.startsWith("video/") ? "video" : "file";
+      onSendMessage("", type, filesToSend, () => ({
+        tempId: `temp-${Date.now()}-${Math.random()}`,
+        previews,
+      }), (tempId) => {
+        console.log("DEBUG: Upload completed for tempId:", tempId);
+      });
+      previews.forEach((url) => URL.revokeObjectURL(url));
       setAttachedFiles([]);
       setPreviews([]);
     }
@@ -58,8 +68,7 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
 
   const handleFileSelect = (type: "file" | "image" | "video") => {
     console.log("DEBUG: Selecting file type:", type);
-    const inputRef =
-      type === "image" ? imageInputRef : type === "video" ? videoInputRef : fileInputRef;
+    const inputRef = type === "image" ? imageInputRef : type === "video" ? videoInputRef : fileInputRef;
     inputRef.current?.click();
   };
 
@@ -67,6 +76,20 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) {
       console.log("DEBUG: No files selected");
+      return;
+    }
+    const currentImages = attachedFiles.filter((f) => f.type.startsWith("image/"));
+    const currentVideos = attachedFiles.filter((f) => f.type.startsWith("video/"));
+    const newImages = files.filter((f) => f.type.startsWith("image/"));
+    const newVideos = files.filter((f) => f.type.startsWith("video/"));
+    if (currentImages.length + newImages.length > 5) {
+      console.log("DEBUG: Too many images selected, limiting to 5");
+      toast.error("You can only attach up to 5 images.");
+      return;
+    }
+    if (currentVideos.length + newVideos.length > 1) {
+      console.log("DEBUG: Too many videos selected, limiting to 1");
+      toast.error("You can only attach 1 video.");
       return;
     }
     console.log("DEBUG: Selected files:", files.map(f => f.name));
@@ -82,16 +105,9 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
     setAttachedFiles((prev) => prev.filter((_, i) => i !== index));
     setPreviews((prev) => {
       const newPreviews = prev.filter((_, i) => i !== index);
-      // Revoke the object URL for the removed file
       if (prev[index]) URL.revokeObjectURL(prev[index]);
       return newPreviews;
     });
-  };
-
-  const toggleRecording = () => {
-    console.log("DEBUG: Toggling recording state:", !isRecording);
-    setIsRecording(!isRecording);
-    // Voice recording not implemented
   };
 
   return (
@@ -201,7 +217,10 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
             className={`text-muted-foreground hover:text-chat-primary hover:bg-chat-muted ${
               isRecording ? "text-red-500 bg-red-50" : ""
             }`}
-            onClick={toggleRecording}
+            onClick={() => {
+              console.log("DEBUG: Toggling recording state:", !isRecording);
+              setIsRecording(!isRecording);
+            }}
           >
             <Mic className={`w-5 h-5 ${isRecording ? "animate-pulse" : ""}`} />
           </Button>

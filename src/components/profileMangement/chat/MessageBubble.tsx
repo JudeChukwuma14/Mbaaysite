@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Edit3, Trash2, Copy } from "lucide-react";
+import { MoreVertical, Edit3, Trash2, Copy, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -12,10 +12,13 @@ import {
 interface Message {
   _id: string;
   content: string;
+  images?: string[];
+  video?: string;
   time: string;
   sent: boolean;
   type: "text" | "image" | "video" | "file";
   replyTo?: string;
+  isUploading?: boolean;
 }
 
 interface MessageBubbleProps {
@@ -56,41 +59,73 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
     switch (message.type) {
       case "image":
         return (
-          <div className="max-w-xs">
-            <img
-              src={message.content}
-              alt="Shared image"
-              className="w-full h-auto rounded-lg"
-              onError={(e) => {
-                console.log("DEBUG: Image load error:", message.content);
-                const target = e.currentTarget as HTMLImageElement;
-                const sibling = target.nextElementSibling as HTMLElement;
-                target.style.display = "none";
-                if (sibling) sibling.style.display = "block";
-              }}
-            />
-            <div className="hidden p-3 text-sm rounded-lg bg-chat-muted">
-              📷 Image: {message.content}
-            </div>
+          <div className="max-w-xs space-y-2">
+            {message.images && message.images.length > 0 ? (
+              message.images.map((url, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={url}
+                    alt={`Shared image ${index + 1}`}
+                    className={`w-full h-auto rounded-lg ${
+                      message.isUploading ? "opacity-50" : ""
+                    }`}
+                    onError={(e) => {
+                      console.log("DEBUG: Image load error:", url);
+                      const target = e.currentTarget as HTMLImageElement;
+                      const sibling = target.nextElementSibling as HTMLElement;
+                      target.style.display = "none";
+                      if (sibling) sibling.style.display = "block";
+                    }}
+                  />
+                  {message.isUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+                    </div>
+                  )}
+                  <div className="hidden p-3 text-sm rounded-lg bg-chat-muted">
+                    📷 Image: {url}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-3 text-sm rounded-lg bg-chat-muted">
+                📷 No images available
+              </div>
+            )}
           </div>
         );
       case "video":
         return (
-          <div className="max-w-xs">
-            <video
-              src={message.content}
-              controls
-              className="w-full h-auto rounded-lg"
-              onError={(e) => {
-                console.log("DEBUG: Video load error:", message.content);
-                const target = e.currentTarget as HTMLVideoElement;
-                const sibling = target.nextElementSibling as HTMLElement;
-                target.style.display = "none";
-                if (sibling) sibling.style.display = "block";
-              }}
-            />
+          <div className="relative max-w-xs">
+            {message.video ? (
+              <>
+                <video
+                  src={message.video}
+                  controls
+                  className={`w-full h-auto rounded-lg ${
+                    message.isUploading ? "opacity-50" : ""
+                  }`}
+                  onError={(e) => {
+                    console.log("DEBUG: Video load error:", message.video);
+                    const target = e.currentTarget as HTMLVideoElement;
+                    const sibling = target.nextElementSibling as HTMLElement;
+                    target.style.display = "none";
+                    if (sibling) sibling.style.display = "block";
+                  }}
+                />
+                {message.isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="p-3 text-sm rounded-lg bg-chat-muted">
+                🎥 No video available
+              </div>
+            )}
             <div className="hidden p-3 text-sm rounded-lg bg-chat-muted">
-              🎥 Video: {message.content}
+              🎥 Video: {message.video || "None"}
             </div>
           </div>
         );
@@ -166,7 +201,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
             >
               {message.time}
             </span>
-            {message.sent && message.type === "text" && (
+            {message.sent && message.type === "text" && !message.isUploading && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
