@@ -67,13 +67,17 @@ const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [activeTab, setActiveTab] = useState<"description" | "reviews">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "reviews">(
+    "description"
+  );
   const [convertedPrice, setConvertedPrice] = useState(0);
   const [isPriceLoading, setIsPriceLoading] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
-  const currency = useSelector((state: RootState) => state.settings.currency || "NGN");
+  const currency = useSelector(
+    (state: RootState) => state.settings.currency || "NGN"
+  );
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const vendorState = useSelector((state: RootState) => state.vendor);
   const user = useSelector((state: RootState) => state.user.user);
@@ -81,7 +85,12 @@ const ProductDetails: React.FC = () => {
   // Debug user and session state
   useEffect(() => {
     console.log("DEBUG: User state:", JSON.stringify(user, null, 2));
-    console.log("DEBUG: Session ID:", sessionId, "isSessionLoading:", isSessionLoading);
+    console.log(
+      "DEBUG: Session ID:",
+      sessionId,
+      "isSessionLoading:",
+      isSessionLoading
+    );
   }, [user, sessionId, isSessionLoading]);
 
   // Initialize sessionId if missing
@@ -110,40 +119,67 @@ const ProductDetails: React.FC = () => {
       try {
         if (!id) throw new Error("Product ID is undefined");
         const data = await getProductsById(id);
-        console.log("DEBUG: Product data:", JSON.stringify(data.product, null, 2));
+        console.log(
+          "DEBUG: Product data:",
+          JSON.stringify(data.product, null, 2)
+        );
         if (!data.product || !data.product._id)
           throw new Error("Product not found");
         setProduct(data.product);
-        setSelectedMedia(data.product.images[0] || data.product.poster || "/placeholder.svg");
+        setSelectedMedia(
+          data.product.images[0] || data.product.poster || "/placeholder.svg"
+        );
 
         // Set vendor from poster or vendorId
         let vendorData: Vendor | null = null;
-        if (data.product.poster && data.product.poster._id && data.product.poster.storeName) {
-          console.log("DEBUG: Using poster as vendor data:", JSON.stringify(data.product.poster, null, 2));
+        if (
+          data.product.poster &&
+          data.product.poster._id &&
+          data.product.poster.storeName
+        ) {
+          console.log(
+            "DEBUG: Using poster as vendor data:",
+            JSON.stringify(data.product.poster, null, 2)
+          );
           vendorData = {
             _id: data.product.poster._id,
             storeName: data.product.poster.storeName,
             businessLogo: data.product.poster.businessLogo,
           };
         } else if (data.product.vendorId) {
-          console.log("DEBUG: Fetching vendor with vendorId:", data.product.vendorId);
+          console.log(
+            "DEBUG: Fetching vendor with vendorId:",
+            data.product.vendorId
+          );
           vendorData =
             vendorState?.vendor?._id === data.product.vendorId
               ? vendorState.vendor
               : await get_single_vendor(data.product.vendorId);
-          console.log("DEBUG: Vendor data from API:", JSON.stringify(vendorData, null, 2));
+          console.log(
+            "DEBUG: Vendor data from API:",
+            JSON.stringify(vendorData, null, 2)
+          );
           if (!vendorData || !vendorData._id) {
-            throw new Error("Vendor data not found for vendorId: " + data.product.vendorId);
+            throw new Error(
+              "Vendor data not found for vendorId: " + data.product.vendorId
+            );
           }
         } else {
-          console.warn("DEBUG: No vendorId or valid poster found in product data");
+          console.warn(
+            "DEBUG: No vendorId or valid poster found in product data"
+          );
           setError("Vendor information unavailable for this product.");
         }
         setVendor(vendorData);
-        console.log("DEBUG: Vendor state set:", JSON.stringify(vendorData, null, 2));
+        console.log(
+          "DEBUG: Vendor state set:",
+          JSON.stringify(vendorData, null, 2)
+        );
       } catch (err: any) {
         console.error("DEBUG: Fetch error:", err);
-        setError(err.message || "Failed to load product or vendor. Please try again.");
+        setError(
+          err.message || "Failed to load product or vendor. Please try again."
+        );
       } finally {
         setLoading(false);
       }
@@ -160,7 +196,12 @@ const ProductDetails: React.FC = () => {
       try {
         const price = await convertPrice(product.price, "NGN", currency);
         setConvertedPrice(price);
-        console.log("DEBUG: Price converted:", price, "for currency:", currency);
+        console.log(
+          "DEBUG: Price converted:",
+          price,
+          "for currency:",
+          currency
+        );
       } catch (error) {
         console.error("DEBUG: Failed to convert price:", error);
         setConvertedPrice(product.price); // Fallback to base price
@@ -187,17 +228,31 @@ const ProductDetails: React.FC = () => {
       return;
     }
     try {
-      console.log("DEBUG: Starting chat with vendor:", vendor._id, "for product:", product._id);
+      console.log(
+        "DEBUG: Starting chat with vendor:",
+        vendor._id,
+        "for product:",
+        product._id
+      );
       const newChat = await startChat(vendor._id);
-      console.log("DEBUG: startChat response:", JSON.stringify(newChat, null, 2));
+      console.log(
+        "DEBUG: startChat response:",
+        JSON.stringify(newChat, null, 2)
+      );
       if (!newChat?.success || !newChat?.chat?._id) {
         throw new Error("Failed to start chat");
       }
 
       // Send initial message about the product
       const initialMessage = `Hi, I'm interested in ${product.name}`;
-      const messageResponse = await sendMessage(newChat.chat._id, initialMessage);
-      console.log("DEBUG: sendMessage response:", JSON.stringify(messageResponse, null, 2));
+      const messageResponse = await sendMessage(
+        newChat.chat._id,
+        initialMessage
+      );
+      console.log(
+        "DEBUG: sendMessage response:",
+        JSON.stringify(messageResponse, null, 2)
+      );
       if (!messageResponse?.success) {
         throw new Error("Failed to send initial message");
       }
@@ -206,7 +261,10 @@ const ProductDetails: React.FC = () => {
       navigate("/dashboard/messages", {
         state: {
           chatId: newChat.chat._id,
-          vendorDetails: { storeName: vendor.storeName, avatar: vendor.businessLogo },
+          vendorDetails: {
+            storeName: vendor.storeName,
+            avatar: vendor.businessLogo,
+          },
         },
       });
       // toast.success(`Started chat with ${vendor.storeName} about ${product.name}`);
@@ -219,7 +277,8 @@ const ProductDetails: React.FC = () => {
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current || !isZoomed) return;
 
-    const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect();
+    const { left, top, width, height } =
+      imageContainerRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
 
@@ -280,7 +339,10 @@ const ProductDetails: React.FC = () => {
           name: product.name,
           price: product.price,
           quantity,
-          image: product.images[0] || product.poster?.businessLogo || "/placeholder.svg",
+          image:
+            product.images[0] ||
+            product.poster?.businessLogo ||
+            "/placeholder.svg",
         })
       );
       toast.success(`${product.name} added to cart!`);
@@ -299,7 +361,10 @@ const ProductDetails: React.FC = () => {
         name: product.name,
         price: product.price,
         quantity: 1,
-         image: product.images[0] || product.poster?.businessLogo || "/placeholder.svg",
+        image:
+          product.images[0] ||
+          product.poster?.businessLogo ||
+          "/placeholder.svg",
       })
     );
     toast.success(`${product.name} added to your wishlist!`);
@@ -467,7 +532,9 @@ const ProductDetails: React.FC = () => {
                 </Link>
               </div>
             ) : (
-              <div className="mb-4 text-sm text-gray-500">Vendor information unavailable</div>
+              <div className="mb-4 text-sm text-gray-500">
+                Vendor information unavailable
+              </div>
             )}
 
             <div className="mb-4">
@@ -480,7 +547,9 @@ const ProductDetails: React.FC = () => {
                     <Star
                       key={i}
                       className={`h-4 w-4 sm:h-5 sm:w-5 ${
-                        i < 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+                        i < 4
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                   ))}
@@ -533,7 +602,9 @@ const ProductDetails: React.FC = () => {
               <div className="flex items-center w-32">
                 <button
                   type="button"
-                  onClick={() => handleUpdateQuantity(product._id, quantity - 1)}
+                  onClick={() =>
+                    handleUpdateQuantity(product._id, quantity - 1)
+                  }
                   disabled={quantity <= 1 || isSessionLoading}
                   className={`rounded-l-md p-1.5 sm:p-2 border border-r-0 border-gray-300 ${
                     quantity <= 1 || isSessionLoading
@@ -552,7 +623,9 @@ const ProductDetails: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => handleUpdateQuantity(product._id, quantity + 1)}
+                  onClick={() =>
+                    handleUpdateQuantity(product._id, quantity + 1)
+                  }
                   disabled={quantity >= product.inventory || isSessionLoading}
                   className={`rounded-r-md p-1.5 sm:p-2 border border-l-0 border-gray-300 ${
                     quantity >= product.inventory || isSessionLoading

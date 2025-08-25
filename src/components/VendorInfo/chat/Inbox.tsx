@@ -142,7 +142,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isVendorTyping, setIsVendorTyping] = useState(false);
+  // const [ setIsVendorTyping] = useState(false);
 
   // Upload state
   const [isUploading, setIsUploading] = useState(false);
@@ -1265,9 +1265,9 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
                   onChange={(e) => {
                     setMessage(e.target.value);
                     if (e.target.value.trim() !== "") {
-                      setIsVendorTyping(true);
+                      // setIsVendorTyping(true);
                     } else {
-                      setIsVendorTyping(false);
+                      // setIsVendorTyping(false);
                     }
                   }}
                   placeholder={

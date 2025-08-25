@@ -9,6 +9,8 @@ import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 
 interface FormData {
   name: string;
@@ -50,6 +52,30 @@ const Signup: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+const handleGoogleSuccess = async (credentialResponse: any) => {
+  try {
+    const idToken = credentialResponse.credential;
+
+    const response = await axios.post(
+      "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
+      { token: idToken },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    localStorage.setItem("authToken", response.data.token);
+    localStorage.setItem("accountType", "user");
+    toast.success("Google sign in successful");
+    navigate("/"); // or wherever you want
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || "Google login failed");
+  }
+};
+
+const handleGoogleFailure = () => {
+  toast.error("Google sign in was cancelled or failed");
+};
+
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -209,9 +235,25 @@ const Signup: React.FC = () => {
               </div>
 
               {/* Sign up with Google */}
-              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
-                <i className="mr-2 fab fa-google"></i> Sign up with Google
-              </button>
+              {/* <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
+                <i className="mr-2 fab fa-google"></i> Sig n up with Google
+              </button> */}
+              <div className="flex items-center justify-center w-full">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleFailure}
+                  // text="signup_with"
+                  // theme="filled_black"
+                  // shape="rectangular"
+                  // width="100%"
+                  logo_alignment="center"
+                  size="large"
+                  containerProps={{
+                    className:
+                      "w-full font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600 rounded-md border-none",
+                  }}
+                />
+              </div>
 
               {/* Vendor/Seller Link */}
               <div className="mt-4 text-left">

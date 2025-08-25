@@ -149,7 +149,7 @@ const ProductDetailModal = lazy(
 const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 const Error = lazy(() => import("@/components/Error/Error"));
-const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
+// const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
@@ -767,7 +767,8 @@ const SuccessPayment = lazy(
 const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"));
 const PaymentCallback = lazy(
   () => import("@/components/Payment/PaymentCallback")
-);
+);import RestrictVendorRoute from './RestrictVendorRoute';
+
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -1091,7 +1092,7 @@ const routesConfig: RouteObject[] = [
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
-      { path: "/dashboard/messages", element: withSuspense(userIndex) },
+      { path: "/dashboard/messages",   element: <RestrictVendorRoute>{withSuspense(() => <ChatInterface token={null} />)}</RestrictVendorRoute>},
     ],
   },
   {
