@@ -274,13 +274,12 @@ const Signup: React.FC = () => {
                       },
                       token: data.token,
                     }));
-                    localStorage.setItem("authToken", data.token);
                     localStorage.setItem("accountType", "user");
                     toast.success(data.message || "Google Sign-In successful", {
                       position: "top-right",
                       autoClose: 3000,
                     });
-                    navigate(data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`);
+                    navigate("/");
                   } catch (err: any) {
                     toast.error(err.response?.data?.message || "Google Sign-In failed", {
                       position: "top-right",
