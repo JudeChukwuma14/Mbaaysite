@@ -9,8 +9,10 @@ import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin,  } from "@react-oauth/google";
 import axios from "axios";
+import { setUser } from "@/redux/slices/userSlice";
+import { useDispatch } from "react-redux";
 
 interface FormData {
   name: string;
@@ -22,6 +24,7 @@ interface FormData {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] =
     useState<boolean>(false);
@@ -33,51 +36,51 @@ const Signup: React.FC = () => {
     watch,
   } = useForm<FormData>();
 
-  const googleLogin = useGoogleLogin({
-    onSuccess: async (credentialResponse) => {
-      setIsLoading(true);
-      try {
-        console.log("Google Response:", credentialResponse);
-        const idToken = credentialResponse.access_token; // Adjust if backend requires ID token
-        const response = await axios.post(
-          "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
-          { token: idToken },
-          { headers: { "Content-Type": "application/json" } }
-        );
+  // const googleLogin = useGoogleLogin({
+  //   onSuccess: async (credentialResponse) => {
+  //     setIsLoading(true);
+  //     try {
+  //       console.log("Google Response:", credentialResponse);
+  //       const idToken = credentialResponse.access_token; // Adjust if backend requires ID token
+  //       const response = await axios.post(
+  //         "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
+  //         { token: idToken },
+  //         { headers: { "Content-Type": "application/json" } }
+  //       );
 
-        const { data } = response;
-        console.log(data)
+  //       const { data } = response;
+  //       console.log(data)
 
-        localStorage.setItem("authToken", data.token);
-        localStorage.setItem("data", data)
-        localStorage.setItem("accountType", "user");
-        toast.success(data.message || "Google Sign-In successful", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        navigate(
-          data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`
-        );
+  //       localStorage.setItem("authToken", data.token);
+  //       localStorage.setItem("data", data)
+  //       localStorage.setItem("accountType", "user");
+  //       toast.success(data.message || "Google Sign-In successful", {
+  //         position: "top-right",
+  //         autoClose: 3000,
+  //       });
+  //       navigate(
+  //         data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`
+  //       );
 
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || "Google Sign-In error", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-        console.error("Google Sign-In Error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    onError: () => {
-      toast.error("Google Sign-In failed", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    },
-    flow: "implicit",
-    scope: "openid profile email",
-  });
+  //     } catch (error: any) {
+  //       toast.error(error.response?.data?.message || "Google Sign-In error", {
+  //         position: "top-right",
+  //         autoClose: 3000,
+  //       });
+  //       console.error("Google Sign-In Error:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   },
+  //   onError: () => {
+  //     toast.error("Google Sign-In failed", {
+  //       position: "top-right",
+  //       autoClose: 3000,
+  //     });
+  //   },
+  //   flow: "implicit",
+  //   scope: "openid profile email",
+  // });
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
@@ -249,18 +252,61 @@ const Signup: React.FC = () => {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <button
-                onClick={() => googleLogin()}
-                className="flex items-center justify-center w-full p-3 font-semibold transition duration-300 border-2 rounded-md "
-                disabled={isLoading}
-              >
-                <img
-                  src="https://www.google.com/favicon.ico"
-                  alt="Google Logo"
-                  className="w-5 h-5 mr-2"
-                />
-                Sign up with Google
-              </button>
+          
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  try {
+                    setIsLoading(true);
+                    console.log("Google Response:", credentialResponse);
+                    const idToken = credentialResponse.credential; // ID token
+                    const response = await axios.post(
+                      "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
+                      { token: idToken },
+                      { headers: { "Content-Type": "application/json" } }
+                    );
+                    const { data } = response;
+                    dispatch(setUser({
+                      user: {
+                        _id: data.data._id,
+                        name: data.data.name,
+                        email: data.data.email,
+                        phoneNumber: "", // Backend does not provide phoneNumber
+                      },
+                      token: data.token,
+                    }));
+                    localStorage.setItem("authToken", data.token);
+                    localStorage.setItem("accountType", "user");
+                    toast.success(data.message || "Google Sign-In successful", {
+                      position: "top-right",
+                      autoClose: 3000,
+                    });
+                    navigate(data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`);
+                  } catch (err: any) {
+                    toast.error(err.response?.data?.message || "Google Sign-In failed", {
+                      position: "top-right",
+                      autoClose: 3000,
+                    });
+                    console.error("Google Sign-In Error:", err);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                onError={() => {
+                  toast.error("Google Sign-In failed", { position: "top-right", autoClose: 3000 });
+                }}
+                text="signup_with"
+                theme="outline"
+                shape="rectangular"
+                width="100%"
+                logo_alignment="center"
+                size="large"
+                containerProps={{
+                  className:
+                    "w-full font-semibold text-white bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50",
+                }}
+              />
+
+
 
               <div className="mt-4 text-left">
                 <Link
