@@ -9,8 +9,7 @@ import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { GoogleLogin } from "@react-oauth/google";
-import axios from "axios";
+import { useGoogleLogin } from "@react-oauth/google";
 
 interface FormData {
   name: string;
@@ -33,6 +32,58 @@ const Signup: React.FC = () => {
     watch,
   } = useForm<FormData>();
 
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (credentialResponse) => {
+      setIsLoading(true);
+      try {
+        const idToken = credentialResponse.access_token;
+        const response = await fetch(
+          "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token: idToken }),
+          }
+        );
+
+        const data = await response.json();
+        console.log(response)
+        if (response.ok) {
+          localStorage.setItem("authToken", data.token);
+          localStorage.setItem("accountType", "user");
+          toast.success(data.message, {
+            position: "top-right",
+            autoClose: 3000,
+          });
+          navigate(
+            data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`
+          );
+        } else {
+          toast.error(data.message || "Google authentication failed", {
+            position: "top-right",
+            autoClose: 4000,
+          });
+        }
+      } catch (error) {
+        toast.error("Error during Google sign-in", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        console.error("Google Sign-In Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google Sign-In failed. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    },
+  });
+
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
@@ -53,29 +104,6 @@ const Signup: React.FC = () => {
     }
   };
 
-const handleGoogleSuccess = async (credentialResponse: any) => {
-  try {
-    const idToken = credentialResponse.credential;
-
-    const response = await axios.post(
-      "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
-      { token: idToken },
-      { headers: { "Content-Type": "application/json" } }
-    );
-
-    localStorage.setItem("authToken", response.data.token);
-    localStorage.setItem("accountType", "user");
-    toast.success("Google sign in successful");
-    navigate("/"); // or wherever you want
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Google login failed");
-  }
-};
-
-const handleGoogleFailure = () => {
-  toast.error("Google sign in was cancelled or failed");
-};
-
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -83,14 +111,12 @@ const handleGoogleFailure = () => {
   return (
     <div className="w-full h-screen">
       <ToastContainer />
-      <div className="flex flex-col md:flex-row ">
+      <div className="flex flex-col md:flex-row">
         <Sliding />
-
         <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
-          {/* Logo for small screens */}
           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
@@ -104,7 +130,6 @@ const handleGoogleFailure = () => {
           </div>
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
-              {/* Header */}
               <h1 className="mb-2 text-2xl font-bold">Let's go!</h1>
               <h2 className="mb-2 text-xl font-semibold">
                 Join with our Platform
@@ -128,7 +153,6 @@ const handleGoogleFailure = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="mb-2">
                   <input
                     type="email"
@@ -163,7 +187,6 @@ const handleGoogleFailure = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="relative mb-2">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -189,7 +212,6 @@ const handleGoogleFailure = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="relative mb-2">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -213,7 +235,6 @@ const handleGoogleFailure = () => {
                     </p>
                   )}
                 </div>
-
                 <button
                   type="submit"
                   className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
@@ -227,35 +248,25 @@ const handleGoogleFailure = () => {
                 </button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center my-4">
                 <hr className="flex-grow border-gray-300" />
                 <span className="mx-2 text-gray-500">or sign up with</span>
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              {/* Sign up with Google */}
-              {/* <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
-                <i className="mr-2 fab fa-google"></i> Sig n up with Google
-              </button> */}
-              <div className="flex items-center justify-center w-full">
-                <GoogleLogin
-                  onSuccess={handleGoogleSuccess}
-                  onError={handleGoogleFailure}
-                  // text="signup_with"
-                  // theme="filled_black"
-                  // shape="rectangular"
-                  // width="100%"
-                  logo_alignment="center"
-                  size="large"
-                  containerProps={{
-                    className:
-                      "w-full font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600 rounded-md border-none",
-                  }}
+              <button
+                onClick={() => googleLogin()}
+                className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black rounded-md hover:bg-orange-600"
+                disabled={isLoading}
+              >
+                <img
+                  src="https://www.google.com/favicon.ico"
+                  alt="Google Logo"
+                  className="w-5 h-5 mr-2"
                 />
-              </div>
+                Sign up with Google
+              </button>
 
-              {/* Vendor/Seller Link */}
               <div className="mt-4 text-left">
                 <Link
                   to={"/signup-vendor"}
