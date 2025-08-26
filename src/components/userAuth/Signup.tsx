@@ -37,10 +37,7 @@ const Signup: React.FC = () => {
     onSuccess: async (credentialResponse) => {
       setIsLoading(true);
       try {
-        // Log credentialResponse to debug token type
-        console.log("Google Credential Response:", credentialResponse);
-
-        // useGoogleLogin with implicit flow returns an access_token; configure for ID token if needed
+        console.log("Google Response:", credentialResponse);
         const idToken = credentialResponse.access_token; // Adjust if backend requires ID token
         const response = await axios.post(
           "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
@@ -48,27 +45,24 @@ const Signup: React.FC = () => {
           { headers: { "Content-Type": "application/json" } }
         );
 
-        const data = response.data; // Use response.data with Axios
-        console.log("Backend Response:", data);
+        const { data } = response;
+        console.log(data)
 
-        if (response.status === 200 || response.status === 201) {
-          localStorage.setItem("authToken", data.token);
-          localStorage.setItem("accountType", "user");
-          toast.success(data.message || "Google Sign-In successful", {
-            position: "top-right",
-            autoClose: 3000,
-          });
-          navigate(data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`);
-        } else {
-          toast.error(data.message || "Google authentication failed", {
-            position: "top-right",
-            autoClose: 4000,
-          });
-        }
-      } catch (error: any) {
-        toast.error(error.response?.data?.message || "Error during Google sign-in", {
+        localStorage.setItem("authToken", data.token);
+        localStorage.setItem("data", data)
+        localStorage.setItem("accountType", "user");
+        toast.success(data.message || "Google Sign-In successful", {
           position: "top-right",
-          autoClose: 4000,
+          autoClose: 3000,
+        });
+        navigate(
+          data.data.isVerified ? "/" : `/verify-otp/${data.data._id}`
+        );
+
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || "Google Sign-In error", {
+          position: "top-right",
+          autoClose: 3000,
         });
         console.error("Google Sign-In Error:", error);
       } finally {
@@ -76,16 +70,14 @@ const Signup: React.FC = () => {
       }
     },
     onError: () => {
-      toast.error("Google Sign-In failed. Please try again.", {
+      toast.error("Google Sign-In failed", {
         position: "top-right",
-        autoClose: 4000,
+        autoClose: 3000,
       });
-      console.error("Google Sign-In Failed");
     },
-    flow: "implicit", // Use implicit flow for access token; set to "auth-code" for ID token if needed
-    scope: "openid profile email", // Ensure necessary scopes for ID token
+    flow: "implicit",
+    scope: "openid profile email",
   });
-
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
