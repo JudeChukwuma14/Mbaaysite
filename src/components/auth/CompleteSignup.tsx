@@ -58,7 +58,7 @@ const CompleteSignup: React.FC = () => {
             });
 
             const result = await response.json();
-
+            
             if (response.ok) {
                 localStorage.setItem("authToken", result.token);
                 localStorage.setItem("accountType", "vendor");

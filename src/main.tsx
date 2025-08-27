@@ -34,7 +34,16 @@ createRoot(document.getElementById("root")!).render(
           }
         >
           <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <ToastContainer position="bottom-right" autoClose={5000} />
+            <ToastContainer position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme="light" />
             <DarkModeProvider>
               <RouterProvider router={mainRouter} />
             </DarkModeProvider>
