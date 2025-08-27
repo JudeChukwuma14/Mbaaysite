@@ -15,6 +15,7 @@ import store, { RootState } from "@/redux/store";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import { getCart, updateCartQuantity } from "@/utils/cartApi";
 import { setCartItems } from "@/redux/slices/cartSlice";
+import { GoogleButton } from "../Reuseable/GoogleButton";
 
 interface FormData {
   emailOrPhone: string;
@@ -32,28 +33,6 @@ const Signin: React.FC = () => {
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>();
-
-  // const onSubmit: SubmitHandler<FormData> = async (data) => {
-  //   setIsLoading(true);
-  //   try {
-  //     const response = await LoginUser(data);
-  //     if (response.user && response.token) {
-  //       dispatch(setUser({ user: response.user, token: response.token }));
-  //     localStorage.setItem("accountType", "user");
-  //       toast.success(response.message || "Login successful");
-  //       navigate("/");
-  //     } else {
-  //       throw new Error("Invalid response format from server");
-  //     }
-  //   } catch (err) {
-  //     toast.error((err as Error)?.message || String(err), {
-  //       position: "top-right",
-  //       autoClose: 4000,
-  //     });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
     const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
@@ -216,9 +195,7 @@ const Signin: React.FC = () => {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
-                <i className="mr-2 fab fa-google"></i> Sign in with Google
-              </button>
+             <GoogleButton/>
 
               <div className="mt-4 text-left">
                 <Link
