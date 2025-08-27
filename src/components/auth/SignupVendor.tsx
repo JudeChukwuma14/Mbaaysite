@@ -20,8 +20,9 @@ import {
   Store,
   Tag,
 } from "lucide-react";
+import { VendorGoogleButton } from "../Reuseable/VendorGoogleButton";
 // import { useGoogleLogin } from "@react-oauth/google";
-import VendorGoogleButton from "../Reuseable/VendorGoogleButton";
+
 
 interface FormData {
   storeName: string;
@@ -404,9 +405,9 @@ const Registration: React.FC = () => {
                   </div>
 
                   {/* Google Sign Up */}
-                <VendorGoogleButton/>
                 </form>
               </div>
+                <VendorGoogleButton/>
 
               {/* Login Link */}
               <p className="mt-4 text-center text-gray-600">
