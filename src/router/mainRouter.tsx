@@ -768,6 +768,7 @@ const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"));
 const PaymentCallback = lazy(
   () => import("@/components/Payment/PaymentCallback")
 );import RestrictVendorRoute from './RestrictVendorRoute';
+import CompleteSignup from "@/components/auth/CompleteSignup";
 
 
 const withSuspense = (Component: React.ComponentType) => (
@@ -1165,6 +1166,7 @@ const routesConfig: RouteObject[] = [
 
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
+  { path: "complete-signup", element: withSuspense(CompleteSignup) },
 
   // Payment
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },

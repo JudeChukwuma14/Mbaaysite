@@ -24,7 +24,7 @@ const VendorGoogleButton: React.FC = () => {
           localStorage.setItem("authToken", data.token);
           localStorage.setItem("accountType", "vendor");
           toast.success("Vendor logged in");
-          navigate("/vendor-dashboard");
+          navigate("/app");
         } else if (data.tempToken) {
           localStorage.setItem("tempToken", data.tempToken);
           toast.info("Complete your vendor profile");
