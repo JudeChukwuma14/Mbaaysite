@@ -21,8 +21,6 @@ import {
   Tag,
 } from "lucide-react";
 import { VendorGoogleButton } from "../Reuseable/VendorGoogleButton";
-// import { useGoogleLogin } from "@react-oauth/google";
-
 
 interface FormData {
   storeName: string;
@@ -55,10 +53,10 @@ const craftCategories = [
 
 const Registration: React.FC = () => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const {
     register,
     handleSubmit,
@@ -71,9 +69,7 @@ const Registration: React.FC = () => {
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
-      const formData = {
-        ...data,
-      };
+      const formData = { ...data };
       const response = await createVendor(formData);
       toast.success(response.message, {
         position: "top-right",
@@ -91,47 +87,6 @@ const Registration: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  // Google Login
-  // const googleLogin = useGoogleLogin({
-  //   onSuccess: async (tokenResponse:any) => {
-  //     try {
-  //       const idToken = tokenResponse.credential || tokenResponse.access_token;
-
-  //       const response = await fetch(
-  //         "https://mbayy-be.onrender.com/api/v1/vendor/google-verify",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify({ token: idToken }),
-  //         }
-  //       );
-
-  //       const data = await response.json();
-
-  //       if (response.ok) {
-  //         if (data.token) {
-  //           localStorage.setItem("authToken", data.token);
-  //           localStorage.setItem("accountType", "vendor");
-  //           toast.success("Login successful");
-  //           navigate("/vendor-dashboard");
-  //         } else if (data.tempToken) {
-  //           localStorage.setItem("tempToken", data.tempToken);
-  //           toast.info("Complete your vendor profile");
-  //           navigate("/complete-signup", { state: data.user });
-  //         }
-  //       } else {
-  //         toast.error(data.message || "Google verification failed");
-  //       }
-  //     } catch (error) {
-  //       toast.error("Error verifying Google login");
-  //       console.error(error);
-  //     }
-  //   },
-  //   onError: () => {
-  //     toast.error("Google login failed");
-  //   },
-  // });
 
   const bg = {
     backgroundImage: `url(${background})`,
@@ -169,245 +124,242 @@ const Registration: React.FC = () => {
                 </p>
               </div>
 
-              <div className="">
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {/* Store Name */}
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="storeName"
-                        className="flex items-center gap-2 text-sm font-medium text-gray-700"
-                      >
-                        <Store className="w-4 h-4" />
-                        Store Name
-                      </label>
-                      <input
-                        id="storeName"
-                        type="text"
-                        placeholder="Enter your store name"
-                        {...register("storeName", {
-                          required: "Store name is required",
-                        })}
-                        className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                      />
-                      {errors.storeName && (
-                        <p className="text-sm text-red-500">
-                          {errors.storeName.message}
-                        </p>
-                      )}
-                    </div>
+              {/* Registration Form */}
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/* Store Name */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="storeName"
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700"
+                    >
+                      <Store className="w-4 h-4" />
+                      Store Name
+                    </label>
+                    <input
+                      id="storeName"
+                      type="text"
+                      placeholder="Enter your store name"
+                      {...register("storeName", {
+                        required: "Store name is required",
+                      })}
+                      className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                    {errors.storeName && (
+                      <p className="text-sm text-red-500">
+                        {errors.storeName.message}
+                      </p>
+                    )}
+                  </div>
 
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="email"
-                        className="flex items-center gap-2 text-sm font-medium text-gray-700"
-                      >
-                        <Mail className="w-4 h-4" />
-                        Email Address
-                      </label>
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="email"
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Email Address
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                          message: "Invalid email address",
+                        },
+                      })}
+                      className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    />
+                    {errors.email && (
+                      <p className="text-sm text-red-500">
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Phone className="w-4 h-4" />
+                      Phone Number
+                    </label>
+                    <Controller
+                      name="storePhone"
+                      control={control}
+                      rules={{ required: "Phone number is required" }}
+                      render={({ field }) => (
+                        <PhoneInput
+                          country="ng"
+                          value={field.value}
+                          onChange={(phone) => field.onChange(phone)}
+                          inputProps={{
+                            name: "storePhone",
+                            required: true,
+                          }}
+                          containerClass="w-full"
+                          inputClass="!w-full !h-11 !pl-14 !border !border-gray-300 !rounded-md !shadow-sm !bg-white !text-sm focus:!outline-none focus:!ring-2 focus:!ring-orange-500 focus:!border-orange-500"
+                          buttonClass="!h-11 !border-r !border-gray-300 !bg-white !rounded-l-md"
+                          dropdownClass="!z-50"
+                        />
+                      )}
+                    />
+                    {errors.storePhone && (
+                      <p className="text-sm text-red-500">
+                        {errors.storePhone.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Craft Categories */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                      <Tag className="w-4 h-4" />
+                      Craft Category
+                    </label>
+                    <Controller
+                      name="craftCategories"
+                      control={control}
+                      rules={{ required: "Please select a category" }}
+                      render={({ field }) => (
+                        <select
+                          {...field}
+                          className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        >
+                          <option value="">Select your craft category</option>
+                          {craftCategories.map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    />
+                    {errors.craftCategories && (
+                      <p className="text-sm text-red-500">
+                        {errors.craftCategories.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="password"
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700"
+                    >
+                      <Lock className="w-4 h-4" />
+                      Password
+                    </label>
+                    <div className="relative">
                       <input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        {...register("email", {
-                          required: "Email is required",
-                          pattern: {
-                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: "Invalid email address",
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Create a password"
+                        {...register("password", {
+                          required: "Password is required",
+                          minLength: {
+                            value: 6,
+                            message: "Password must be at least 6 characters",
                           },
                         })}
-                        className="w-full px-3 py-2 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                        className="w-full px-3 py-2 pr-10 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                       />
-                      {errors.email && (
-                        <p className="text-sm text-red-500">
-                          {errors.email.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Phone Number */}
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <Phone className="w-4 h-4" />
-                        Phone Number
-                      </label>
-                      <Controller
-                        name="storePhone"
-                        control={control}
-                        rules={{ required: "Phone number is required" }}
-                        render={({ field }) => (
-                          <PhoneInput
-                            country="ng"
-                            value={field.value}
-                            onChange={(phone) => field.onChange(phone)}
-                            inputProps={{
-                              name: "storePhone",
-                              required: true,
-                            }}
-                            containerClass="w-full"
-                            inputClass="!w-full !h-11 !pl-14 !border !border-gray-300 !rounded-md !shadow-sm !bg-white !text-sm focus:!outline-none focus:!ring-2 focus:!ring-orange-500 focus:!border-orange-500"
-                            buttonClass="!h-11 !border-r !border-gray-300 !bg-white !rounded-l-md"
-                            dropdownClass="!z-50"
-                          />
-                        )}
-                      />
-                      {errors.storePhone && (
-                        <p className="text-sm text-red-500">
-                          {errors.storePhone.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Craft Categories */}
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <Tag className="w-4 h-4" />
-                        Craft Category
-                      </label>
-                      <Controller
-                        name="craftCategories"
-                        control={control}
-                        rules={{ required: "Please select a category" }}
-                        render={({ field }) => (
-                          <select
-                            {...field}
-                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                          >
-                            <option value="">Select your craft category</option>
-                            {craftCategories.map((category) => (
-                              <option key={category} value={category}>
-                                {category}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      />
-                      {errors.craftCategories && (
-                        <p className="text-sm text-red-500">
-                          {errors.craftCategories.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password */}
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="password"
-                        className="flex items-center gap-2 text-sm font-medium text-gray-700"
+                      <button
+                        type="button"
+                        className="absolute top-0 right-0 flex items-center px-3 text-gray-500 h-11 hover:text-gray-700"
+                        onClick={() => setShowPassword(!showPassword)}
                       >
-                        <Lock className="w-4 h-4" />
-                        Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="password"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="Create a password"
-                          {...register("password", {
-                            required: "Password is required",
-                            minLength: {
-                              value: 6,
-                              message: "Password must be at least 6 characters",
-                            },
-                          })}
-                          className="w-full px-3 py-2 pr-10 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                        <button
-                          type="button"
-                          className="absolute top-0 right-0 flex items-center px-3 text-gray-500 h-11 hover:text-gray-700"
-                          onClick={() => setShowPassword(!showPassword)}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                      {errors.password && (
-                        <p className="text-sm text-red-500">
-                          {errors.password.message}
-                        </p>
-                      )}
+                        {showPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
-
-                    {/* Confirm Password */}
-                    <div className="space-y-2">
-                      <label
-                        htmlFor="confirmPassword"
-                        className="flex items-center gap-2 text-sm font-medium text-gray-700"
-                      >
-                        <Lock className="w-4 h-4" />
-                        Confirm Password
-                      </label>
-                      <div className="relative">
-                        <input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? "text" : "password"}
-                          placeholder="Confirm your password"
-                          {...register("confirmPassword", {
-                            required: "Please confirm your password",
-                            validate: (value) =>
-                              value === watch("password") ||
-                              "Passwords do not match",
-                          })}
-                          className="w-full px-3 py-2 pr-10 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                        />
-                        <button
-                          type="button"
-                          className="absolute top-0 right-0 flex items-center px-3 text-gray-500 h-11 hover:text-gray-700"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
-                        </button>
-                      </div>
-                      {errors.confirmPassword && (
-                        <p className="text-sm text-red-500">
-                          {errors.confirmPassword.message}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full h-12 px-4 py-2 text-base font-semibold text-white transition-colors duration-200 bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Creating Account...
-                      </div>
-                    ) : (
-                      "Create Account"
+                    {errors.password && (
+                      <p className="text-sm text-red-500">
+                        {errors.password.message}
+                      </p>
                     )}
-                  </button>
-
-                  {/* Divider */}
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="px-2 text-gray-500 bg-white">
-                        Or continue with
-                      </span>
-                    </div>
                   </div>
 
-                  {/* Google Sign Up */}
-                </form>
+                  {/* Confirm Password */}
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700"
+                    >
+                      <Lock className="w-4 h-4" />
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        {...register("confirmPassword", {
+                          required: "Please confirm your password",
+                          validate: (value) =>
+                            value === watch("password") ||
+                            "Passwords do not match",
+                        })}
+                        className="w-full px-3 py-2 pr-10 placeholder-gray-400 border border-gray-300 rounded-md shadow-sm h-11 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      />
+                      <button
+                        type="button"
+                        className="absolute top-0 right-0 flex items-center px-3 text-gray-500 h-11 hover:text-gray-700"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-red-500">
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="w-full h-12 px-4 py-2 text-base font-semibold text-white transition-colors duration-200 bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating Account...
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
+                </button>
+              </form>
+
+              {/* Google Button goes OUTSIDE the form */}
+              <div className="relative my-4 ">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="px-2 text-gray-500 bg-white">
+                    Or continue with
+                  </span>
+                </div>
               </div>
-                <VendorGoogleButton/>
+              <VendorGoogleButton />
 
               {/* Login Link */}
               <p className="mt-4 text-center text-gray-600">
