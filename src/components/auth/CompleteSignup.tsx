@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
+import axios from "axios";
 
 interface FormData {
   storeName: string;
@@ -36,10 +37,11 @@ const craftCategories = [
 
 const CompleteSignup: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const user = (location.state as any) || {};
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  // pull user info from localStorage instead of location.state
+  const user = JSON.parse(localStorage.getItem("googleUser") || "{}");
 
   const {
     register,
@@ -71,31 +73,27 @@ const CompleteSignup: React.FC = () => {
         return;
       }
 
-      const response = await fetch(
+      const { data: result } = await axios.post(
         "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tempToken,
-            storeName: data.storeName,
-            craftCategories: selectedCategories,
-            storePhone: data.storePhone,
-          }),
+          storeName: data.storeName,
+          craftCategories: selectedCategories,
+          storePhone: data.storePhone,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${tempToken}`,
+          },
         }
       );
 
-      const result = await response.json();
+      localStorage.setItem("authToken", result.token);
+      localStorage.setItem("accountType", "vendor");
+      localStorage.removeItem("tempToken");
+      localStorage.removeItem("googleUser");
 
-      if (response.ok) {
-        localStorage.setItem("authToken", result.token);
-        localStorage.setItem("accountType", "vendor");
-        localStorage.removeItem("tempToken");
-        toast.success("Vendor created successfully");
-        navigate("/welcomepage");
-      } else {
-        toast.error(result.message || "Signup failed");
-      }
+      toast.success("Vendor created successfully");
+      navigate("/welcomepage");
     } catch (err) {
       toast.error("Error completing signup");
       console.error(err);
@@ -115,9 +113,7 @@ const CompleteSignup: React.FC = () => {
               className="w-12 h-12 mb-2 rounded-full"
             />
           )}
-          <h2 className="text-lg font-semibold">
-            Complete Your Vendor Profile
-          </h2>
+          <h2 className="text-lg font-semibold">Complete Your Vendor Profile</h2>
           <span className="text-sm">
             Join CraftConnect and showcase your artisan creations
           </span>

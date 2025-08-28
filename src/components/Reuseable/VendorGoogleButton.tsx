@@ -56,25 +56,25 @@ export const VendorGoogleButton = () => {
 
                 const { data } = response;
 
-                if (response.status === 200) {
-                  if (data.token) {
-                    // Existing vendor - log them in
-                    localStorage.setItem("authToken", data.token);
-                    localStorage.setItem("accountType", "vendor");
-                    localStorage.setItem(
-                      "vendorData",
-                      JSON.stringify(data.vendor)
-                    );
-                    toast.success(data.message || "Vendor login successful");
-                    navigate("/app");
-                  } else if (data.tempToken) {
-                    // New vendor - redirect to complete profile
-                    localStorage.setItem("tempToken", data.tempToken);
-                    toast.info(data.message || "Complete your vendor profile");
-                    navigate("/complete-signup", { state: data.user });
-                  }
-                } else {
-                  toast.error(data.message || "Google verification failed");
+                if (data.token) {
+                  // Existing vendor - log them in
+                  localStorage.setItem("authToken", data.token);
+                  localStorage.setItem("accountType", "vendor");
+                  localStorage.setItem(
+                    "vendorData",
+                    JSON.stringify(data.vendor)
+                  );
+                  toast.success(data.message || "Vendor login successful");
+                  navigate("/app");
+                } else if (data.tempToken) {
+                  // New vendor - redirect to complete profile
+                  localStorage.setItem("tempToken", data.tempToken);
+                  localStorage.setItem(
+                    "googleUser",
+                    JSON.stringify(data.vendor || data.user || {})
+                  );
+                  toast.info(data.message || "Complete your vendor profile");
+                  navigate("/complete-signup", { state: data.user });
                 }
               } catch (err: any) {
                 toast.error(
