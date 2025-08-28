@@ -12,6 +12,8 @@ import {
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { setVendor } from "@/redux/slices/vendorSlice";
 
 interface FormData {
   storeName: string;
@@ -37,6 +39,7 @@ const craftCategories = [
 
 const CompleteSignup: React.FC = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
@@ -77,25 +80,25 @@ const CompleteSignup: React.FC = () => {
         "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
         {
           storeName: data.storeName,
-          craftCategories: selectedCategories,
           storePhone: data.storePhone,
+          craftCategories: selectedCategories,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${tempToken}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${tempToken}` } }
       );
 
+      // Persist auth info
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("accountType", "vendor");
       localStorage.removeItem("tempToken");
       localStorage.removeItem("googleUser");
 
+      // Update Redux state
+      dispatch(setVendor({ vendor: result.vendor, token: result.token }));
+
       toast.success("Vendor created successfully");
       navigate("/welcomepage");
-    } catch (err) {
-      toast.error("Error completing signup");
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Error completing signup");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -113,7 +116,9 @@ const CompleteSignup: React.FC = () => {
               className="w-12 h-12 mb-2 rounded-full"
             />
           )}
-          <h2 className="text-lg font-semibold">Complete Your Vendor Profile</h2>
+          <h2 className="text-lg font-semibold">
+            Complete Your Vendor Profile
+          </h2>
           <span className="text-sm">
             Join CraftConnect and showcase your artisan creations
           </span>

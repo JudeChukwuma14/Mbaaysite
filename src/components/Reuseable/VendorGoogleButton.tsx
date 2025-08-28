@@ -1,6 +1,8 @@
+import { setVendor } from "@/redux/slices/vendorSlice";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useState, useRef, useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -8,6 +10,7 @@ export const VendorGoogleButton = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showGoogleButton, setShowGoogleButton] = useState<boolean>(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch()
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const handleGoogleLogin = (e: React.MouseEvent) => {
@@ -58,6 +61,7 @@ export const VendorGoogleButton = () => {
 
                 if (data.token) {
                   // Existing vendor - log them in
+                  dispatch(setVendor({ vendor: data.vendor, token: data.token }));
                   localStorage.setItem("authToken", data.token);
                   localStorage.setItem("accountType", "vendor");
                   localStorage.setItem(
