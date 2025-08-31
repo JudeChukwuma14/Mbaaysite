@@ -20,6 +20,16 @@ import {
 import io, { Socket } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
+// Notification sound
+const notificationSound = new Audio("/sounds/notification.mp3");
+
+interface Notification {
+  _id: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
 interface Message {
   id: string;
   content: string;
@@ -35,6 +45,8 @@ interface ChatInterfaceProps {
 }
 
 const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/admin";
+const API_NOTIFICATION_BASE_URL =
+  "https://mbayy-be.onrender.com/api/v1/notifications";
 const SOCKET_URL = "https://mbayy-be.onrender.com";
 const AUTO_RESPONSE_MESSAGE =
   "Welcome to Mbaay Support! We're here to assist you. An agent will respond shortly.";
@@ -42,12 +54,12 @@ const AUTO_RESPONSE_MESSAGE =
 export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
-  const hasAutoResponse = useRef<boolean>(false); // Track if auto-response was added
+  const hasAutoResponse = useRef<boolean>(false);
   const navigate = useNavigate();
 
-  // Access user, vendor, token, chatId, and messages from Redux
   const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
@@ -62,6 +74,69 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const messages = useSelector((state: RootState) =>
     isVendor ? state.vendor.messages || [] : state.user.messages || []
   );
+
+  // Request notification permission
+  useEffect(() => {
+    if (isOpen && "Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Notification permission granted");
+        }
+      });
+    }
+  }, [isOpen]);
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    if (!senderId || !token) return;
+    try {
+      const response = await axios.get(
+        `${API_NOTIFICATION_BASE_URL}/allnotifications/${senderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setNotifications(response.data.notifications || []);
+    } catch (err: any) {
+      console.error(
+        "Fetch notifications error:",
+        err.response?.data || err.message
+      );
+      setError("Failed to fetch notifications");
+    }
+  };
+
+  // Fetch notifications when chat opens
+  useEffect(() => {
+    if (isOpen && senderId && token) {
+      fetchNotifications();
+    }
+  }, [isOpen, senderId, token]);
+
+  // Play notification sound and show browser notification
+  const triggerNotification = (message: Message) => {
+    notificationSound.play().catch((err) => {
+      console.error("Failed to play notification sound:", err);
+      // Fallback: Visual indicator
+      document.querySelector(".bg-orange-500")?.classList.add("animate-pulse");
+      setTimeout(() => {
+        document
+          .querySelector(".bg-orange-500")
+          ?.classList.remove("animate-pulse");
+      }, 1000);
+    });
+
+    if (
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      message.sender !== "user"
+    ) {
+      new Notification("Mbaay Support", {
+        body: message.content,
+        icon: "/favicon.ico",
+      });
+    }
+  };
 
   // Redirect to /selectpath if not authenticated
   useEffect(() => {
@@ -80,7 +155,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   }, [messages]);
 
-  // Initialize Socket.IO with reconnection handling
+  // Initialize Socket.IO
   useEffect(() => {
     if (!isOpen || !senderId || !token) return;
 
@@ -101,7 +176,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     socketRef.current.on("customerCareChatStarted", (chat) => {
       console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
       dispatch(isVendor ? setVendorChatId(chat._id) : setUserChatId(chat._id));
-      localStorage.setItem(`chatId-${senderId}`, chat._id); // Persist chatId
+      localStorage.setItem(`chatId-${senderId}`, chat._id);
       socketRef.current?.emit("joinChat", chat._id);
       fetchMessages(chat._id);
     });
@@ -122,7 +197,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         isOptimistic: false,
       };
 
-      // Deduplicate messages
       const existingMessage = messages.find(
         (m) =>
           m.id === msg._id ||
@@ -182,6 +256,10 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         dispatch(
           isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
         );
+        if (!isSentByCurrentUser) {
+          triggerNotification(newMessage);
+          fetchNotifications();
+        }
       }
     });
 
@@ -204,19 +282,18 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     };
   }, [isOpen, senderId, token, dispatch, isVendor, chatId, messages]);
 
-  // Reset auto-response flag when chatId changes
+  // Reset auto-response flag
   useEffect(() => {
     hasAutoResponse.current = false;
   }, [chatId]);
 
-  // Start chat or fetch existing messages
+  // Start chat
   const startChat = async (retries = 3, delay = 1000) => {
     if (!senderId || !token) {
       console.log("DEBUG: No senderId or token in startChat, skipping");
       return;
     }
 
-    // Check for persisted chatId
     const storedChatId = localStorage.getItem(`chatId-${senderId}`);
     if (storedChatId && !chatId) {
       dispatch(
@@ -273,7 +350,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   };
 
-  // Fetch messages for a given chatId
+  // Fetch messages
   const fetchMessages = async (targetChatId: string = chatId!) => {
     if (!targetChatId || !token) return;
 
@@ -328,14 +405,13 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   }, [isOpen, senderId, token]);
 
-  // Send message with auto-response on first user message
+  // Send message
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !chatId || !senderId || !token) {
       setError("Cannot send message: Missing input, chatId, or authentication");
       return;
     }
 
-    // Check if this is the first user message
     if (
       !hasAutoResponse.current &&
       !messages.some(
@@ -426,6 +502,36 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           <X className="w-4 h-4" />
         </Button>
       </div>
+
+      {/* Notifications Display */}
+      {notifications.length > 0 && (
+        <div className="p-2 bg-gray-50 border-b">
+          <p className="text-sm font-semibold text-gray-700">
+            Notifications ({notifications.filter((n) => !n.read).length} unread)
+          </p>
+          <ul className="mt-1 max-h-20 overflow-y-auto">
+            {notifications.map((notification) => (
+              <li
+                key={notification._id}
+                className={cn(
+                  "text-xs p-1",
+                  notification.read
+                    ? "text-gray-500"
+                    : "text-gray-800 font-medium"
+                )}
+              >
+                {notification.message}{" "}
+                <span className="text-gray-400">
+                  {new Date(notification.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-64 p-4 lg:h-80">

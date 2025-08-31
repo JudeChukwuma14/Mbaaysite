@@ -271,7 +271,7 @@ export default function OrderList() {
                         ) : confirmedOrders.includes(order.id) ? (
                           "Confirmed"
                         ) : (
-                          "Confirm Payment"
+                          "Confirm Order"
                         )}
                       </Button>
                     </div>
