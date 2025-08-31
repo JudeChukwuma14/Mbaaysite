@@ -18,13 +18,15 @@ import {
   addMessage as addVendorMessage,
 } from "@/redux/slices/vendorSlice";
 import io, { Socket } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "agent";
+  sender: "user" | "agent" | "bot";
   timestamp: string;
-  isOptimistic?: boolean; // Flag for optimistic messages
+  isOptimistic?: boolean;
+  tempId?: string;
 }
 
 interface ChatInterfaceProps {
@@ -34,13 +36,16 @@ interface ChatInterfaceProps {
 
 const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/admin";
 const SOCKET_URL = "https://mbayy-be.onrender.com";
+const AUTO_RESPONSE_MESSAGE =
+  "Welcome to Mbaay Support! We're here to assist you. An agent will respond shortly.";
 
 export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
+  const hasAutoResponse = useRef<boolean>(false); // Track if auto-response was added
+  const navigate = useNavigate();
 
   // Access user, vendor, token, chatId, and messages from Redux
   const dispatch = useDispatch();
@@ -58,6 +63,16 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     isVendor ? state.vendor.messages || [] : state.user.messages || []
   );
 
+  // Redirect to /selectpath if not authenticated
+  useEffect(() => {
+    if (isOpen && (!senderId || !token)) {
+      console.log("DEBUG: No senderId or token, redirecting to /selectpath");
+      localStorage.setItem("redirectToChat", "true");
+      navigate("/selectpath");
+      onClose();
+    }
+  }, [isOpen, senderId, token, navigate, onClose]);
+
   // Scroll to bottom when messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -65,57 +80,105 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   }, [messages]);
 
-  // Initialize Socket.IO
+  // Initialize Socket.IO with reconnection handling
   useEffect(() => {
     if (!isOpen || !senderId || !token) return;
 
     socketRef.current = io(SOCKET_URL, {
       auth: { token: `Bearer ${token}` },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket.IO connected");
+      console.log("Socket.IO connected, socketId:", socketRef.current?.id);
+      if (chatId) {
+        socketRef.current?.emit("joinChat", chatId);
+      }
     });
 
     socketRef.current.on("customerCareChatStarted", (chat) => {
       console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
       dispatch(isVendor ? setVendorChatId(chat._id) : setUserChatId(chat._id));
+      localStorage.setItem(`chatId-${senderId}`, chat._id); // Persist chatId
       socketRef.current?.emit("joinChat", chat._id);
+      fetchMessages(chat._id);
     });
 
     socketRef.current.on("customerCareMessage", (msg) => {
       console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
+      const isSentByCurrentUser = msg.sender?._id === senderId;
       const newMessage: Message = {
         id: msg._id,
         content: msg.content,
-        sender: msg.sender?._id === senderId ? "user" : "agent",
+        sender: isSentByCurrentUser
+          ? "user"
+          : msg.sender === "bot"
+          ? "bot"
+          : "agent",
         timestamp: new Date(msg.createdAt).toISOString(),
+        tempId: msg.tempId,
+        isOptimistic: false,
       };
 
-      // Replace optimistic message if it exists
-      const optimisticMessage = messages.find(
+      // Deduplicate messages
+      const existingMessage = messages.find(
         (m) =>
-          m.isOptimistic && m.content === msg.content && m.sender === "user"
+          m.id === msg._id ||
+          (msg.tempId && m.tempId === msg.tempId) ||
+          (isSentByCurrentUser &&
+            m.sender === "user" &&
+            m.content === msg.content &&
+            Math.abs(
+              new Date(m.timestamp).getTime() -
+                new Date(msg.createdAt).getTime()
+            ) < 2000)
       );
-      if (optimisticMessage) {
+      if (existingMessage) {
+        console.log(
+          "DEBUG: Replacing message, id:",
+          msg._id,
+          "tempId:",
+          msg.tempId,
+          "existing:",
+          JSON.stringify(existingMessage, null, 2)
+        );
         dispatch(
           isVendor
             ? setVendorMessages(
                 messages.map((m) =>
-                  m.id === optimisticMessage.id
-                    ? { ...newMessage, isOptimistic: false }
+                  m.id === existingMessage.id ||
+                  (msg.tempId && m.tempId === msg.tempId) ||
+                  (isSentByCurrentUser &&
+                    m.sender === "user" &&
+                    m.content === msg.content &&
+                    Math.abs(
+                      new Date(m.timestamp).getTime() -
+                        new Date(msg.createdAt).getTime()
+                    ) < 2000)
+                    ? { ...newMessage }
                     : m
                 )
               )
             : setUserMessages(
                 messages.map((m) =>
-                  m.id === optimisticMessage.id
-                    ? { ...newMessage, isOptimistic: false }
+                  m.id === existingMessage.id ||
+                  (msg.tempId && m.tempId === msg.tempId) ||
+                  (isSentByCurrentUser &&
+                    m.sender === "user" &&
+                    m.content === msg.content &&
+                    Math.abs(
+                      new Date(m.timestamp).getTime() -
+                        new Date(msg.createdAt).getTime()
+                    ) < 2000)
+                    ? { ...newMessage }
                     : m
                 )
               )
         );
       } else {
+        console.log("DEBUG: Adding new message, id:", msg._id);
         dispatch(
           isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
         );
@@ -124,22 +187,46 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
     socketRef.current.on("connect_error", (err) => {
       console.error("Socket.IO error:", err.message);
-      setError("Failed to connect to real-time updates");
+      setError("Failed to connect to real-time updates. Please try again.");
+    });
+
+    socketRef.current.on("reconnect", () => {
+      console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
+      if (chatId) {
+        socketRef.current?.emit("joinChat", chatId);
+        fetchMessages(chatId);
+      }
     });
 
     return () => {
+      socketRef.current?.emit("leaveChat", chatId);
       socketRef.current?.disconnect();
     };
-  }, [isOpen, senderId, token, dispatch, isVendor, messages]);
+  }, [isOpen, senderId, token, dispatch, isVendor, chatId, messages]);
+
+  // Reset auto-response flag when chatId changes
+  useEffect(() => {
+    hasAutoResponse.current = false;
+  }, [chatId]);
 
   // Start chat or fetch existing messages
   const startChat = async (retries = 3, delay = 1000) => {
     if (!senderId || !token) {
-      setError("Please log in to start a chat");
+      console.log("DEBUG: No senderId or token in startChat, skipping");
       return;
     }
 
-    // If chatId exists, fetch messages
+    // Check for persisted chatId
+    const storedChatId = localStorage.getItem(`chatId-${senderId}`);
+    if (storedChatId && !chatId) {
+      dispatch(
+        isVendor ? setVendorChatId(storedChatId) : setUserChatId(storedChatId)
+      );
+      await fetchMessages(storedChatId);
+      socketRef.current?.emit("joinChat", storedChatId);
+      return;
+    }
+
     if (chatId) {
       await fetchMessages();
       socketRef.current?.emit("joinChat", chatId);
@@ -147,7 +234,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
 
     for (let i = 0; i < retries; i++) {
-      setIsLoading(true);
       setError(null);
       try {
         console.log("Starting chat with:", { senderId, token });
@@ -169,6 +255,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         dispatch(
           isVendor ? setVendorChatId(newChatId) : setUserChatId(newChatId)
         );
+        localStorage.setItem(`chatId-${senderId}`, newChatId);
         socketRef.current?.emit("joinChat", newChatId);
         await fetchMessages(newChatId);
         return;
@@ -182,8 +269,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           );
         }
         await new Promise((resolve) => setTimeout(resolve, delay));
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -211,8 +296,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         (msg: any) => ({
           id: msg._id,
           content: msg.content,
-          sender: msg.sender?._id === senderId ? "user" : "agent",
+          sender:
+            msg.sender?._id === senderId
+              ? "user"
+              : msg.sender === "bot"
+              ? "bot"
+              : "agent",
           timestamp: new Date(msg.createdAt).toISOString(),
+          tempId: msg.tempId,
         })
       );
       dispatch(
@@ -232,37 +323,45 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
   // Start chat when widget opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && senderId && token) {
       startChat();
     }
   }, [isOpen, senderId, token]);
 
-  // Send message
+  // Send message with auto-response on first user message
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !chatId || !senderId || !token) {
       setError("Cannot send message: Missing input, chatId, or authentication");
       return;
     }
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
-      timestamp: new Date().toISOString(),
-      isOptimistic: true, // Mark as optimistic
-    };
-
-    dispatch(
-      isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
-    );
-    setInputValue("");
+    // Check if this is the first user message
+    if (
+      !hasAutoResponse.current &&
+      !messages.some(
+        (m) =>
+          m.sender === "user" ||
+          (m.content === AUTO_RESPONSE_MESSAGE && m.sender === "bot")
+      )
+    ) {
+      const autoResponse: Message = {
+        id: `auto-${Date.now()}`,
+        content: AUTO_RESPONSE_MESSAGE,
+        sender: "bot",
+        timestamp: new Date().toISOString(),
+      };
+      dispatch(
+        isVendor ? addVendorMessage(autoResponse) : addUserMessage(autoResponse)
+      );
+      hasAutoResponse.current = true;
+    }
 
     try {
       console.log("Sending message with:", {
         chatId,
         content: inputValue,
         senderId,
-        token,
+        socketId: socketRef.current?.id,
       });
       const response = await axios.post(
         `${API_CHAT_BASE_URL}/send-message`,
@@ -271,6 +370,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            "x-socket-id": socketRef.current?.id,
           },
         }
       );
@@ -278,17 +378,11 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         "Send message response:",
         JSON.stringify(response.data, null, 2)
       );
+      setInputValue("");
     } catch (err: any) {
       console.error("Send message error:", err.response?.data || err.message);
       setError(
         `Failed to send message: ${err.response?.data?.message || err.message}`
-      );
-      dispatch(
-        isVendor
-          ? setVendorMessages(
-              messages.filter((msg) => msg.id !== newMessage.id)
-            )
-          : setUserMessages(messages.filter((msg) => msg.id !== newMessage.id))
       );
     }
   };
@@ -301,19 +395,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   };
 
   if (!isOpen) return null;
-
-  if (!senderId || !token) {
-    return (
-      <Card className="fixed z-40 border-0 shadow-2xl bottom-20 right-6 w-80 h-96">
-        <div className="p-4 text-center">
-          <p className="text-red-500">Please log in to use the chat feature.</p>
-          <Button onClick={onClose} className="mt-4">
-            Close
-          </Button>
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <Card
@@ -348,7 +429,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-64 p-4 lg:h-80">
-        {isLoading && <p className="text-center">Loading...</p>}
         {error && (
           <div className="p-4 text-center">
             <p className="text-red-500">{error}</p>
@@ -357,13 +437,16 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             </Button>
           </div>
         )}
-        {!isLoading && !error && (!messages || messages.length === 0) && (
-          <p className="text-center text-gray-500">
-            Waiting for customer support...
-          </p>
+        {!error && (!messages || messages.length === 0) && (
+          <div className="text-center text-gray-600 p-4">
+            <p className="font-semibold">Start a Conversation</p>
+            <p className="text-sm mt-1">
+              Type your message below to connect with our support team.
+            </p>
+          </div>
         )}
         <div className="space-y-4">
-          {(messages || []).map((message) => (
+          {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
@@ -376,11 +459,12 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                   "max-w-[80%] rounded-lg p-3 text-sm",
                   message.sender === "user"
                     ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-800"
+                    : "bg-gray-100 text-gray-800",
+                  message.isOptimistic ? "opacity-70" : ""
                 )}
               >
                 <div className="flex items-start space-x-2">
-                  {message.sender === "agent" && (
+                  {(message.sender === "agent" || message.sender === "bot") && (
                     <Bot className="h-4 w-4 mt-0.5 flex-shrink-0 text-orange-500" />
                   )}
                   {message.sender === "user" && (
@@ -410,7 +494,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       </ScrollArea>
 
       {/* Input */}
-      <div className="px-3 pt-2 pb-5 border-t ">
+      <div className="px-3 pt-2 pb-5 border-t">
         <div className="flex items-center space-x-1">
           <input
             value={inputValue}
@@ -418,13 +502,13 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-1 w-full px-3 py-1 text-base transition-colors bg-transparent border rounded-md shadow-sm h-9 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-            disabled={isLoading || !chatId}
+            disabled={!chatId}
           />
           <Button
             onClick={handleSendMessage}
             size="sm"
-            className="text-white bg-orange-500 hover:bg-orange-600"
-            disabled={isLoading || !chatId}
+            className="text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50"
+            disabled={!inputValue.trim() || !chatId}
           >
             <Send className="w-4 h-4" />
           </Button>

@@ -8,13 +8,15 @@ interface User {
   phoneNumber: string;
 }
 
-interface Message {
+export interface Message {
   id: string;
   content: string;
-  sender: "user" | "agent";
+  sender: "user" | "agent" | "bot"; // Add "bot"
   timestamp: string;
   isOptimistic?: boolean;
+  tempId?: string;
 }
+
 
 interface UserState {
   user: User | null;

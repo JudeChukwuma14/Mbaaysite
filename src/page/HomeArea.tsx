@@ -102,7 +102,6 @@ const HomeArea: React.FC = () => {
         setProducts(productsData); // Store original data
         setBestSellingProducts(bestSelling);
         setNewArrivals(newArrivals);
-        console.log(productsData);
       } catch (err) {
         console.error("Error fetching products:", err);
         setError("Failed to fetch products. Please try again.");
@@ -248,9 +247,8 @@ const HomeArea: React.FC = () => {
               ? profile.avatar
               : createInitialAvatar(profile.storeName || "V");
             return (
-              <Link to={`/veiws-profile/${profile._id}`}>
+              <Link to={`/veiws-profile/${profile._id}`}   key={profile._id} >
                 <VendorCard
-                  key={profile._id}
                   name={profile.storeName}
                   craft={profile.craftCategories[0]}
                   avatar={avatarUrl}

@@ -34,12 +34,13 @@ interface Vendor {
   __v: number;
 }
 
-interface Message {
+export interface Message {
   id: string;
   content: string;
-  sender: "user" | "agent";
+  sender: "user" | "agent" | "bot"; // Add "bot"
   timestamp: string;
   isOptimistic?: boolean;
+  tempId?: string;
 }
 
 interface VendorState {
@@ -60,7 +61,10 @@ const vendorSlice = createSlice({
   name: "vendor",
   initialState,
   reducers: {
-    setVendor: (state, action: PayloadAction<{ vendor: Vendor; token: string }>) => {
+    setVendor: (
+      state,
+      action: PayloadAction<{ vendor: Vendor; token: string }>
+    ) => {
       state.vendor = action.payload.vendor;
       state.token = action.payload.token;
       state.messages = state.messages || [];
@@ -84,5 +88,6 @@ const vendorSlice = createSlice({
   },
 });
 
-export const { setVendor, setChatId, setMessages, addMessage, logoutVendor } = vendorSlice.actions;
+export const { setVendor, setChatId, setMessages, addMessage, logoutVendor } =
+  vendorSlice.actions;
 export default vendorSlice.reducer;

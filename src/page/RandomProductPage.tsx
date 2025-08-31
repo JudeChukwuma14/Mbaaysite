@@ -23,7 +23,7 @@ const RandomProductPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12); // Reduced for better performance and UX
+  const [itemsPerPage] = useState(30); // Reduced for better performance and UX
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
 
@@ -220,7 +220,7 @@ const RandomProductPage = () => {
 
         {/* Products grid */}
         {currentProducts.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-2 mb-8 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5">
             {currentProducts.map((product) => (
               <NewArrival
                 key={product._id}
