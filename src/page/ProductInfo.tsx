@@ -20,7 +20,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import Spinner from "@/components/Common/Spinner";
-import { convertPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 import { addToCart, updateCartQuantity } from "@/utils/cartApi";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import { get_single_vendor } from "@/utils/vendorApi";
@@ -565,7 +565,7 @@ const ProductDetails: React.FC = () => {
                 <p className="text-2xl font-bold text-gray-900 sm:text-3xl">
                   {isPriceLoading
                     ? "Loading..."
-                    : `${currencySymbol}${convertedPrice.toFixed(2)}`}
+                    : `${currencySymbol} ${formatPrice(convertedPrice)}`}
                 </p>
                 {isInStock ? (
                   <span className="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
