@@ -44,7 +44,7 @@ interface Message {
   isUploading?: boolean;
 }
 
-const ChatInterface: React.FC = () => {
+const ChatInterfaceChat: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [chats, setChats] = useState<Chat[]>([]);
@@ -768,4 +768,4 @@ const ChatInterface: React.FC = () => {
   );
 };
 
-export default ChatInterface;
+export default ChatInterfaceChat;

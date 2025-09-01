@@ -508,7 +508,7 @@ const ProductDetails: React.FC = () => {
             {vendor ? (
               <div className="mb-4">
                 <Link
-                  to={`/vendor/${vendor._id}`}
+                  to={`/veiws-profile/${vendor._id}`}   key={vendor._id} 
                   className="flex items-center gap-2 group"
                   aria-label={`View ${vendor.storeName}'s profile`}
                 >

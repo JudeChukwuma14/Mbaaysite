@@ -71,7 +71,9 @@ const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
   () => import("@/components/profileMangement/EditProfile")
 );
-const OrderList = lazy(() => import("@/components/profileMangement/payment/Orderlist"));
+const OrderList = lazy(
+  () => import("@/components/profileMangement/payment/Orderlist")
+);
 const Canclellation = lazy(
   () => import("@/components/profileMangement/payment/CancellationForm")
 );
@@ -79,7 +81,9 @@ const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
   () => import("@/components/profileMangement/payment/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/profileMangement/payment/CheckOut"));
+const CheckOut = lazy(
+  () => import("@/components/profileMangement/payment/CheckOut")
+);
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -150,6 +154,7 @@ const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
 // const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
 const Error = lazy(() => import("@/components/Error/Error"));
 // const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
+import ChatInterfaceChat from "@/components/profileMangement/chat/ChatInterfaceChat";
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
@@ -767,10 +772,10 @@ const SuccessPayment = lazy(
 const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"));
 const PaymentCallback = lazy(
   () => import("@/components/Payment/PaymentCallback")
-);import RestrictVendorRoute from './RestrictVendorRoute';
+);
+import RestrictVendorRoute from "./RestrictVendorRoute";
 import CompleteSignup from "@/components/auth/CompleteSignup";
 import VendorSignupForm from "@/components/auth/VendorSignupForm";
-
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -1094,7 +1099,16 @@ const routesConfig: RouteObject[] = [
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
-      { path: "/dashboard/messages",   element: <RestrictVendorRoute>{withSuspense(() => <ChatInterface token={null} />)}</RestrictVendorRoute>},
+      {
+        path: "/dashboard/messages",
+        element: (
+          <RestrictVendorRoute>
+            {withSuspense(() => (
+              <ChatInterfaceChat />
+            ))}
+          </RestrictVendorRoute>
+        ),
+      },
     ],
   },
   {
@@ -1121,7 +1135,10 @@ const routesConfig: RouteObject[] = [
           },
 
           { path: "kyc-verification", element: withSuspense(KycVerification) },
-          { path: "inbox", element: withSuspense(() => <ChatInterface token={null} />) },
+          {
+            path: "inbox",
+            element: withSuspense(() => <ChatInterface token={null} />),
+          },
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },
