@@ -3,7 +3,6 @@ import {
   getVendorOrders,
   getOrderDetails,
   getOneOrder, // Add this import
-  getOrderStats,
   cancelOrder,
   exportOrders,
   type GetVendorOrdersParams,
@@ -57,21 +56,21 @@ export const useOneOrder = (orderId: any) => {
   });
 };
 
-// Hook for order statistics
-export const useOrderStats = (token: string) => {
-  return useQuery({
-    queryKey: ["orderStats"],
-    queryFn: () => getOrderStats(token),
-    enabled: !!token,
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: (failureCount, error) => {
-      if (error.message.includes("401") || error.message.includes("403")) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-  });
-};
+// // Hook for order statistics
+// export const useOrderStats = (token: string) => {
+//   return useQuery({
+//     queryKey: ["orderStats"],
+//     queryFn: () => getOrderStats(token),
+//     enabled: !!token,
+//     staleTime: 10 * 60 * 1000, // 10 minutes
+//     retry: (failureCount, error) => {
+//       if (error.message.includes("401") || error.message.includes("403")) {
+//         return false;
+//       }
+//       return failureCount < 3;
+//     },
+//   });
+// };
 
 // Hook for cancelling orders
 export const useCancelOrder = () => {

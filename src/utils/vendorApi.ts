@@ -75,3 +75,51 @@ export const getAlllVendor = async () => {
     console.log(error);
   }
 };
+
+export const getVendorStat = async (token: string | null) => {
+  try {
+    const response = await api.get("/vendorstats", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const vendorKycUpload = async (token: string | null, data: any) => {
+  try {
+    const response = await api.post("/upload_kyc", data, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const NotBaseUrl = "https://mbayy-be.onrender.com/api/v1/notifications";
+export const getVendorNotification = async (id: string | null) => {
+  try {
+    const response = await axios.get(`${NotBaseUrl}/allnotifications/${id}`);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const markVendorNotificationAsRead = async (id: string | null) => {
+  try {
+    const response = await axios.patch(
+      `${NotBaseUrl}/notifications/read-all/${id}`
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};

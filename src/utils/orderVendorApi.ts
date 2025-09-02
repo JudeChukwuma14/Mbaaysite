@@ -181,30 +181,30 @@ export const getOneOrder = async (orderId: string) => {
 // };
 
 // Get order statistics
-export interface OrderStats {
-  totalOrders: number;
-  pendingOrders: number;
-  deliveredOrders: number;
-  cancelledOrders: number;
-  onDeliveryOrders: number;
-  totalRevenue: number;
-  monthlyRevenue: number;
-}
+// export interface OrderStats {
+//   totalOrders: number;
+//   pendingOrders: number;
+//   deliveredOrders: number;
+//   cancelledOrders: number;
+//   onDeliveryOrders: number;
+//   totalRevenue: number;
+//   monthlyRevenue: number;
+// }
 
-export const getOrderStats = async (token: string): Promise<OrderStats> => {
-  try {
-    const response = await orderApi.get("/order/vendor_stats", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+// export const getOrderStats = async (token: string): Promise<OrderStats> => {
+//   try {
+//     const response = await orderApi.get("/order/vendor_stats", {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     });
 
-    return response.data.data;
-  } catch (error) {
-    console.error("Error fetching order stats:", error);
-    throw error;
-  }
-};
+//     return response.data.data;
+//   } catch (error) {
+//     console.error("Error fetching order stats:", error);
+//     throw error;
+//   }
+// };
 
 // Cancel order
 export const cancelOrder = async (

@@ -21,10 +21,10 @@ import {
 } from "chart.js";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { get_single_vendor } from "@/utils/vendorApi";
+import { get_single_vendor, getVendorStat } from "@/utils/vendorApi";
 import { useQuery } from "@tanstack/react-query";
 import { NavLink } from "react-router-dom";
-import { useOrderStats, useVendorOrders } from "@/hook/useOrders";
+import { useVendorOrders } from "@/hook/useOrders";
 
 ChartJS.register(
   LineElement,
@@ -39,7 +39,7 @@ const Dashboard = () => {
   const [balanceVisible, setBalanceVisible] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage] = useState(5);
-  const [selectedMonths, setSelectedMonths] = useState(1);
+  // const [selectedMonths, setSelectedMonths] = useState(1);
 
   const user = useSelector((state: RootState) => state.vendor);
 
@@ -47,6 +47,14 @@ const Dashboard = () => {
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
+
+  const { data: venstat, isLoading: statLoading } = useQuery({
+    queryKey: ["stats"],
+    queryFn: () => getVendorStat(user.token),
+  });
+
+  console.log("Vendor Stat:", venstat);
+  console.log("Vendor Data:", vendors);
 
   // Fetch real orders data
   const {
@@ -62,15 +70,14 @@ const Dashboard = () => {
   });
 
   // Fetch order statistics
-  const { data: orderStats, isLoading: statsLoading } = useOrderStats(
-    user.token || ""
-  );
+  // const { data: orderStats, isLoading: statsLoading } = useOrderStats(
+  //   user.token || ""
+  // );
 
   const accountType = vendors?.storeType || "Loading...";
 
   // Use real data from API or fallback to loading/default values
   // const totalOrders = orderStats?.totalOrders || 0;
-  const productsSold = orderStats?.deliveredOrders || 0;
   const orders = ordersData?.data?.orders || [];
   const totalPages = ordersData?.data?.pagination?.totalPages || 1;
 
@@ -119,21 +126,35 @@ const Dashboard = () => {
     }
   };
 
+  // Build month labels (full names)
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  // Find current month index
+  const currentMonthIndex = new Date().getMonth(); // 0-11
+
+  // Create a 12-item array of zeros except the current month
+  const revenuePerMonth = Array(12).fill(0);
+  revenuePerMonth[currentMonthIndex] = venstat?.stats?.totalRevenue ?? 0;
+
   const chartData = {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-    ], // Placeholder months
+    labels: months,
     datasets: [
       {
-        label: "Revenue",
-        data: [5000, 10000, 7500, 12000, 8000, 15000, 5000, 20000], // Replace with real data
+        label: "Revenue (₦)",
+        data: revenuePerMonth,
         borderColor: "rgba(255, 99, 132, 1)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
         borderWidth: 2,
@@ -157,32 +178,34 @@ const Dashboard = () => {
   };
 
   return (
-    <main className="p-5 flex-1 overflow-auto">
+    <main className="flex-1 p-5 overflow-auto">
       {/* Cards Section */}
       <div className="grid grid-cols-4 gap-4 mb-5">
         {[
           {
             title: "Money Earned",
             value: balanceVisible
-              ? formatCurrency(orderStats?.totalRevenue || 0)
+              ? formatCurrency(venstat?.stats?.totalRevenue ?? 0)
               : "****",
             icon: balanceVisible ? EyeOff : Eye,
             onClick: toggleBalanceVisibility,
-            loading: statsLoading,
+            loading: statLoading,
           },
           {
             title: "Total Orders",
-            value: statsLoading
+            value: ordersLoading
               ? "Loading..."
               : ordersData?.data?.orders?.length?.toString() || "0",
             icon: ShoppingCart,
-            loading: statsLoading,
+            loading: ordersLoading,
           },
           {
             title: "Products Sold",
-            value: statsLoading ? "Loading..." : productsSold.toString(),
+            value: statLoading
+              ? "Loading..."
+              : venstat?.stats?.totalProductsSold ?? 0,
             icon: Package,
-            loading: statsLoading,
+            loading: statLoading,
           },
           {
             title: "Account Type",
@@ -193,14 +216,14 @@ const Dashboard = () => {
         ].map((card, index) => (
           <motion.div
             key={index}
-            className="bg-white rounded-lg p-5 shadow flex items-center justify-between"
+            className="flex items-center justify-between p-5 bg-white rounded-lg shadow"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
             <div>
               <h3 className="text-sm text-gray-500">{card.title}</h3>
               {card.loading ? (
-                <div className="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
               ) : (
                 <p className="text-2xl font-bold text-gray-800">{card.value}</p>
               )}
@@ -217,13 +240,13 @@ const Dashboard = () => {
       {/* Chart and Notifications */}
       <div className="w-full gap-4">
         <motion.div
-          className="col-span-2 bg-white rounded-lg p-5 shadow"
+          className="col-span-2 p-5 bg-white rounded-lg shadow"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="font-bold mb-4">Revenue Report</h2>
-          <div className="flex justify-end mb-3">
+          <h2 className="mb-4 font-bold">Revenue Report</h2>
+          {/* <div className="flex justify-end mb-3">
             {[1, 3, 6].map((month) => (
               <button
                 key={month}
@@ -237,20 +260,20 @@ const Dashboard = () => {
                 {month} Month{month > 1 && "s"}
               </button>
             ))}
-          </div>
+          </div> */}
           <div className="h-64">
             <Line data={chartData} options={chartOptions} />
           </div>
         </motion.div>
 
         {/* <motion.div
-          className="bg-white rounded-lg p-5 shadow"
+          className="p-5 bg-white rounded-lg shadow"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <h2 className="font-bold mb-4">Recent Notifications</h2>
-          <ul className="text-sm space-y-2">
+          <h2 className="mb-4 font-bold">Recent Notifications</h2>
+          <ul className="space-y-2 text-sm">
             {[
               "Your account is logged in",
               "Payment successfully processed",
@@ -266,7 +289,7 @@ const Dashboard = () => {
 
       {/* Orders Table */}
       <motion.div
-        className="bg-white rounded-lg p-5 shadow mt-5"
+        className="p-5 mt-5 bg-white rounded-lg shadow"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -275,7 +298,7 @@ const Dashboard = () => {
           <h2 className="font-bold">Recent Orders</h2>
           <NavLink
             to="/app/orders"
-            className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-orange-600 transition-colors rounded-lg hover:text-orange-700 hover:bg-orange-50"
           >
             View All Orders
             <ExternalLink className="w-4 h-4" />
@@ -286,7 +309,7 @@ const Dashboard = () => {
         {ordersLoading && (
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
               <span className="text-gray-600">Loading orders...</span>
             </div>
           </div>
@@ -295,7 +318,7 @@ const Dashboard = () => {
         {/* Error State */}
         {ordersError && (
           <div className="flex flex-col items-center justify-center py-8">
-            <div className="text-red-500 mb-2">Failed to load orders</div>
+            <div className="mb-2 text-red-500">Failed to load orders</div>
             <button
               onClick={() => refetchOrders()}
               className="px-4 py-2 text-sm text-white bg-orange-500 rounded-lg hover:bg-orange-600"
@@ -310,7 +333,7 @@ const Dashboard = () => {
           <>
             {orders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <ShoppingCart className="w-12 h-12 text-gray-400 mb-2" />
+                <ShoppingCart className="w-12 h-12 mb-2 text-gray-400" />
                 <p className="text-gray-500">No orders found</p>
                 <p className="text-sm text-gray-400">
                   Orders will appear here when customers place them
@@ -371,7 +394,7 @@ const Dashboard = () => {
                                     order.items[0].image || "/placeholder.svg"
                                   }
                                   alt={order.items[0].name}
-                                  className="w-8 h-8 rounded object-cover"
+                                  className="object-cover w-8 h-8 rounded"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src =
                                       "/placeholder.svg?height=32&width=32";
@@ -395,7 +418,7 @@ const Dashboard = () => {
                           <td className="py-3">
                             <NavLink
                               to={`/app/order-details/${order._id}`}
-                              className="text-blue-500 hover:text-blue-700 text-sm hover:underline"
+                              className="text-sm text-blue-500 hover:text-blue-700 hover:underline"
                             >
                               View Details
                             </NavLink>
@@ -407,7 +430,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex justify-between items-center mt-4">
+                <div className="flex items-center justify-between mt-4">
                   <button
                     onClick={handlePrev}
                     disabled={currentPage === 1}

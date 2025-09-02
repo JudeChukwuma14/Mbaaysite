@@ -41,7 +41,6 @@
 //   },
 // });
 
-
 // export const { setVendor, logoutVendor } = vendorSlice.actions;
 // export default vendorSlice.reducer;
 // src/redux/slices/vendorSlice.ts
@@ -77,6 +76,7 @@ interface Vendor {
   products: string[];
   returnPolicy?: string;
   verificationStatus: string;
+  kycStatus: "Pending" | "Approved" | "Rejected"; // Example statuses
   __v: number;
 }
 

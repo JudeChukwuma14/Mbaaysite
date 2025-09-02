@@ -1,5 +1,5 @@
 import { useState, useRef, type ChangeEvent, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, number } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
@@ -103,6 +103,14 @@ const NewProduct = () => {
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [vendorCountry, setVendorCountry] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [listingType, setListingType] = useState<"sales" | "auction">("sales");
+  const [auctionDetails, setAuctionDetails] = useState({
+    startingPrice: "",
+    reservePrice: "",
+    auctionType: "",
+    auctionDuration: "",
+    Inventory: number,
+  });
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
 
@@ -589,7 +597,7 @@ const NewProduct = () => {
       transition={{ duration: 0.5 }}
     >
       <ToastContainer />
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow mb-6">
+      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">New Product</h1>
 
@@ -598,7 +606,7 @@ const NewProduct = () => {
             <div className="relative">
               <button
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+                className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 <span>Categories ({vendors.craftCategories?.length})</span>
                 <motion.div
@@ -612,14 +620,14 @@ const NewProduct = () => {
               <AnimatePresence>
                 {showCategoryDropdown && (
                   <motion.div
-                    className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-10"
+                    className="absolute left-0 z-10 w-64 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg top-full"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                   >
                     <div className="p-2">
-                      <div className="text-xs text-gray-500 mb-2 px-2">
+                      <div className="px-2 mb-2 text-xs text-gray-500">
                         Your Categories:
                       </div>
                       {vendors.craftCategories.map(
@@ -642,7 +650,7 @@ const NewProduct = () => {
                           >
                             <span>{category}</span>
                             {activeCategory === category && (
-                              <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">
+                              <span className="px-2 py-1 text-xs text-blue-600 bg-blue-100 rounded-full">
                                 Active
                               </span>
                             )}
@@ -655,6 +663,43 @@ const NewProduct = () => {
               </AnimatePresence>
             </div>
           )}
+
+          {/*  =====  Listing Type Toggle  =====  */}
+          {/*  =====  Listing Type Toggle (styled like Categories)  =====  */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                /* open/close by toggling a local state */
+                const sel = document.getElementById(
+                  "listingTypeHidden"
+                ) as HTMLSelectElement;
+                sel.focus();
+                sel.click();
+              }}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+            >
+              <span>{listingType === "sales" ? "Sales" : "Auction"}</span>
+              <motion.div
+                animate={{ rotate: listingType ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDown className="w-4 h-4" />
+              </motion.div>
+            </button>
+
+            {/* hidden native select (lets us keep the category-style chevron) */}
+            <select
+              id="listingTypeHidden"
+              value={listingType}
+              onChange={(e) =>
+                setListingType(e.target.value as "sales" | "auction")
+              }
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            >
+              <option value="sales">Sales</option>
+              <option value="auction">Auction</option>
+            </select>
+          </div>
         </div>
 
         {selectedCategories?.length > 0 && !isUpgraded && (
@@ -679,11 +724,11 @@ const NewProduct = () => {
       )}
 
       <div className="space-y-6">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4 border-b pb-2">
+        <div className="p-4 bg-white rounded-lg shadow">
+          <h2 className="pb-2 mb-4 text-lg font-semibold border-b">
             Basic Information
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <DescriptionSection
               productName={productName}
               value={value}
@@ -702,11 +747,11 @@ const NewProduct = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4 border-b pb-2">
+        <div className="p-4 bg-white rounded-lg shadow">
+          <h2 className="pb-2 mb-4 text-lg font-semibold border-b">
             Categories and Media
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {isUpgraded ? (
               <CategorySelector
                 selectedCategories={selectedCategories}
@@ -720,14 +765,14 @@ const NewProduct = () => {
               />
             ) : (
               <motion.div
-                className="bg-white p-4 rounded-lg border space-y-4"
+                className="p-4 space-y-4 bg-white border rounded-lg"
                 initial={{ x: -50, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.6 }}
               >
                 <h2 className="text-lg font-semibold">Subcategory</h2>
                 <motion.select
-                  className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+                  className="w-full p-2 border border-orange-500 rounded outline-orange-500"
                   value={subCategory}
                   onChange={(e) => setSubCategory(e.target.value)}
                   required
@@ -754,72 +799,154 @@ const NewProduct = () => {
             />
           </div>
         </div>
+      </div>
+      <div className="p-4 bg-white rounded-lg shadow">
+        <h2 className="pb-2 mb-4 text-lg font-semibold border-b">
+          {listingType === "sales"
+            ? "Inventory and Pricing"
+            : "Auction Settings"}
+        </h2>
 
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4 border-b pb-2">
-            Inventory and Pricing
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-4">
+        {listingType === "sales" ? (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="space-y-4 md:col-span-2">
               <h3 className="font-medium">Inventory</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block mb-1 text-sm text-gray-600">
                     Quantity
                   </label>
                   <input
                     type="number"
                     placeholder="Quantity"
-                    className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+                    className="w-full p-2 border border-orange-500 rounded outline-orange-500"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     min="0"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-600 mb-1">
+                  <label className="block mb-1 text-sm text-gray-600">
                     SKU (Optional)
                   </label>
                   <input
                     type="text"
                     placeholder="SKU"
-                    className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+                    className="w-full p-2 border border-orange-500 rounded outline-orange-500"
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
                   />
                 </div>
               </div>
             </div>
+
             <div className="space-y-4">
               <h3 className="font-medium">Pricing</h3>
               <div>
-                <label className="block text-sm text-gray-600 mb-1">
+                <label className="block mb-1 text-sm text-gray-600">
                   Product Price
                 </label>
                 <CurrencyInput
                   value={price}
                   onChange={setPrice}
-                  country={"Nigeria"}
+                  country="Nigeria"
                 />
               </div>
             </div>
+
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Shipping fee
-                </label>
-                <CurrencyInput
-                  value={shippingprice}
-                  onChange={setShippingPrice}
-                  country={"Nigeria"}
-                />
-              </div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Shipping fee
+              </label>
+              <CurrencyInput
+                value={shippingprice}
+                onChange={setShippingPrice}
+                country="Nigeria"
+              />
             </div>
           </div>
-        </div>
+        ) : (
+          /* =====  AUCTION  ===== */
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Starting Price *
+              </label>
+              <CurrencyInput
+                value={auctionDetails.startingPrice}
+                onChange={(v) =>
+                  setAuctionDetails({ ...auctionDetails, startingPrice: v })
+                }
+                country="Nigeria"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Reserve Price (Optional)
+              </label>
+              <CurrencyInput
+                value={auctionDetails.reservePrice}
+                onChange={(v) =>
+                  setAuctionDetails({ ...auctionDetails, reservePrice: v })
+                }
+                country="Nigeria"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Inventory
+              </label>
+              <input
+                type="number"
+                placeholder="Inventory"
+                className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+                onChange={(v: any) =>
+                  setAuctionDetails({ ...auctionDetails, Inventory: v })
+                }
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Auction Duration *
+              </label>
+              <select
+                className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+                value={auctionDetails.auctionDuration}
+                onChange={(e) =>
+                  setAuctionDetails({
+                    ...auctionDetails,
+                    auctionDuration: e.target.value,
+                  })
+                }
+              >
+                <option value="" disabled>
+                  Select duration
+                </option>
+                <option value="1">1 day</option>
+                <option value="3">3 days</option>
+                <option value="5">5 days</option>
+                <option value="7">7 days</option>
+                <option value="10">10 days</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Auction StartTime
+              </label>
+
+              <input
+                type="datetime-local"
+                className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow flex justify-end space-x-4">
+      <div className="flex justify-end p-4 space-x-4 bg-white rounded-lg shadow">
         <button
           className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg"
           onClick={handleDiscard}
@@ -828,14 +955,14 @@ const NewProduct = () => {
           Discard
         </button>
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+          className="flex items-center justify-center px-4 py-2 text-white bg-red-500 rounded-lg"
           onClick={handleSaveDraft}
           disabled={isLoading}
         >
           {isLoading ? (
             <>
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                className="w-4 h-4 mr-2 -ml-1 text-white animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -861,14 +988,14 @@ const NewProduct = () => {
           )}
         </button>
         <button
-          className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center justify-center"
+          className="flex items-center justify-center px-4 py-2 text-white bg-green-500 rounded-lg"
           onClick={handleAddProduct}
           disabled={isLoading}
         >
           {isLoading ? (
             <>
               <svg
-                className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                className="w-4 h-4 mr-2 -ml-1 text-white animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -907,9 +1034,9 @@ const NewProduct = () => {
 
       <AnimatePresence>
         {showDiscardConfirm && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <motion.div
-              className="bg-white rounded-lg max-w-md w-full overflow-hidden"
+              className="w-full max-w-md overflow-hidden bg-white rounded-lg"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -927,13 +1054,13 @@ const NewProduct = () => {
                 </div>
                 <div className="flex justify-end space-x-3">
                   <button
-                    className="px-4 py-2 bg-gray-200 rounded-lg text-gray-700"
+                    className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg"
                     onClick={() => setShowDiscardConfirm(false)}
                   >
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                    className="px-4 py-2 text-white bg-red-500 rounded-lg"
                     onClick={() => {
                       setShowDiscardConfirm(false);
                       discardChanges();

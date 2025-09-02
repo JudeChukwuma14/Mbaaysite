@@ -39,6 +39,7 @@ export const useCreateOrGetChat = () => {
 
 export const useSendMessage = () => {
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       chatId,
@@ -51,96 +52,54 @@ export const useSendMessage = () => {
       token: string | null;
       replyTo?: string;
     }) => sendMessage(chatId, { content, replyTo }, token),
+
     onMutate: async (variables) => {
-      // Optimistic update
       await queryClient.cancelQueries({
         queryKey: ["messages", variables.chatId],
       });
 
-      const previousMessages = queryClient.getQueryData([
-        "messages",
-        variables.chatId,
-      ]);
+      const prev = queryClient.getQueryData(["messages", variables.chatId]);
 
-      // Fix: Handle the API response structure properly
+      const optimisticMessage = {
+        _id: `opt-${Date.now()}`,
+        content: variables.content,
+        replyTo: variables.replyTo,
+        sender: {
+          _id: "current-user",
+          name: "You",
+          isVendor: false,
+        },
+        createdAt: new Date().toISOString(),
+        isOptimistic: true,
+        files: [],
+        deletedFor: "none",
+        isEdited: false,
+      };
+
       queryClient.setQueryData(["messages", variables.chatId], (old: any) => {
-        // If old is an object with messages array (like {success: true, messages: [...]})
-        if (old && old.messages && Array.isArray(old.messages)) {
-          return {
-            ...old,
-            messages: [
-              ...old.messages,
-              {
-                _id: `optimistic-${Date.now()}`,
-                content: variables.content,
-                sender: { _id: "current-user", name: "You", isVendor: false },
-                createdAt: new Date().toISOString(),
-                isVendor: false,
-                replyTo: variables.replyTo,
-                isOptimistic: true,
-                files: [],
-                deletedFor: "none",
-              },
-            ],
-          };
+        // server returns { success:true, messages:[...] }
+        if (old?.messages && Array.isArray(old.messages)) {
+          return { ...old, messages: [...old.messages, optimisticMessage] };
         }
-        // If old is directly an array
-        else if (Array.isArray(old)) {
-          return [
-            ...old,
-            {
-              _id: `optimistic-${Date.now()}`,
-              content: variables.content,
-              sender: { _id: "current-user", name: "You", isVendor: false },
-              createdAt: new Date().toISOString(),
-              isVendor: false,
-              replyTo: variables.replyTo,
-              isOptimistic: true,
-              files: [],
-              deletedFor: "none",
-            },
-          ];
-        }
-        // If old is null/undefined, create new structure
-        else {
-          return {
-            success: true,
-            messages: [
-              {
-                _id: `optimistic-${Date.now()}`,
-                content: variables.content,
-                sender: { _id: "current-user", name: "You", isVendor: false },
-                createdAt: new Date().toISOString(),
-                isVendor: false,
-                replyTo: variables.replyTo,
-                isOptimistic: true,
-                files: [],
-                deletedFor: "none",
-              },
-            ],
-          };
-        }
+        // fallback (should never happen)
+        return { success: true, messages: [optimisticMessage] };
       });
 
-      return { previousMessages };
+      return { previousMessages: prev };
     },
-    onError: (err, variables, context) => {
-      console.log("Send message error:", err);
+
+    onError: (_err, variables, context) => {
       queryClient.setQueryData(
         ["messages", variables.chatId],
-        context?.previousMessages
+        context?.previousMessages // ← was previousMessage
       );
     },
-    onSettled: (data, error, variables) => {
-      // Fix: onSettled receives (data, error, variables) not just variables
-      console.log("onSettled called with:", { data, error, variables });
-
-      if (variables && variables.chatId) {
-        queryClient.invalidateQueries({
-          queryKey: ["messages", variables.chatId],
-        });
-        queryClient.invalidateQueries({ queryKey: ["chats"] });
-      }
+    onSettled: (_data, _error, variables) => {
+      // Soft re-fetch so the server id replaces the optimistic one
+      queryClient.invalidateQueries({
+        queryKey: ["messages", variables.chatId],
+      });
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
 };
@@ -225,21 +184,18 @@ export const useEditMessage = () => {
         );
       }
     },
-    onSettled: (data, error, variables, context) => {
-      console.log("onSettled for editMessage called with:", {
-        data,
-        error,
-        variables,
-        context,
-      });
-
+    onSuccess: async (data, variables, context) => {
       const targetChatId = context?.chatId;
       if (targetChatId) {
-        queryClient.invalidateQueries({
+        await queryClient.refetchQueries({
           queryKey: ["messages", targetChatId],
+          type: "active",
         });
       } else {
-        queryClient.invalidateQueries({ queryKey: ["messages"] });
+        await queryClient.refetchQueries({
+          queryKey: ["messages"],
+          type: "active",
+        });
       }
     },
   });
@@ -282,109 +238,77 @@ export const useSendMediaMessage = () => {
       const formData = prepareMediaFormData(files, content, replyTo);
       return sendMediaMessage(chatId, formData, token);
     },
+
     onMutate: async (variables) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({
         queryKey: ["messages", variables.chatId],
       });
 
-      const previousMessages = queryClient.getQueryData([
-        "messages",
-        variables.chatId,
-      ]);
+      const prev = queryClient.getQueryData(["messages", variables.chatId]);
 
-      // Create optimistic files array
-      interface OptimisticFile {
-        type: "image" | "video";
-        url: string;
-        name: string;
-        size: number;
-      }
-      const optimisticFiles: OptimisticFile[] = [];
-      if (variables.files.images) {
-        variables.files.images.forEach((image) => {
-          optimisticFiles.push({
-            type: "image" as const,
-            url: URL.createObjectURL(image),
-            name: image.name,
-            size: image.size,
-          });
-        });
-      }
-      if (variables.files.video) {
+      const optimisticFiles = [];
+      variables.files.images?.forEach((f) =>
+        optimisticFiles.push({
+          type: "image" as const,
+          url: URL.createObjectURL(f),
+          name: f.name,
+          size: f.size,
+        })
+      );
+      if (variables.files.video)
         optimisticFiles.push({
           type: "video" as const,
           url: URL.createObjectURL(variables.files.video),
           name: variables.files.video.name,
           size: variables.files.video.size,
         });
-      }
 
-      // Add optimistic media message
+      const optimisticMsg = {
+        _id: `opt-media-${Date.now()}`,
+        content: variables.content || "",
+        sender: { _id: "current-user", name: "You", isVendor: false },
+        createdAt: new Date().toISOString(),
+        isVendor: false,
+        replyTo: variables.replyTo,
+        isOptimistic: true,
+        files: optimisticFiles,
+        deletedFor: "none",
+      };
+
       queryClient.setQueryData(["messages", variables.chatId], (old: any) => {
-        if (old && old.messages && Array.isArray(old.messages)) {
-          return {
-            ...old,
-            messages: [
-              ...old.messages,
-              {
-                _id: `optimistic-media-${Date.now()}`,
-                content: variables.content || "",
-                sender: { _id: "current-user", name: "You", isVendor: false },
-                createdAt: new Date().toISOString(),
-                isVendor: false,
-                replyTo: variables.replyTo,
-                isOptimistic: true,
-                files: optimisticFiles,
-                deletedFor: "none",
-              },
-            ],
-          };
-        } else if (Array.isArray(old)) {
-          return [
-            ...old,
-            {
-              _id: `optimistic-media-${Date.now()}`,
-              content: variables.content || "",
-              sender: { _id: "current-user", name: "You", isVendor: false },
-              createdAt: new Date().toISOString(),
-              isVendor: false,
-              replyTo: variables.replyTo,
-              isOptimistic: true,
-              files: optimisticFiles,
-              deletedFor: "none",
-            },
-          ];
-        }
-        return old;
+        if (old?.messages)
+          return { ...old, messages: [...old.messages, optimisticMsg] };
+        return { success: true, messages: [optimisticMsg] };
       });
 
-      return { previousMessages, chatId: variables.chatId };
+      return { previousMessages: prev, chatId: variables.chatId };
     },
-    onError: (err, _unused, context) => {
-      console.error("Send media message error:", err);
 
-      if (context?.chatId && context?.previousMessages) {
+    onError: (_err, _vars, context) => {
+      if (context?.chatId && context?.previousMessages)
         queryClient.setQueryData(
           ["messages", context.chatId],
           context.previousMessages
         );
-      }
     },
-    onSuccess: (_unused, variables) => {
-      // Clean up object URLs to prevent memory leaks
-      if (variables.files.images) {
-        variables.files.images.forEach((image) => {
-          URL.revokeObjectURL(URL.createObjectURL(image));
-        });
-      }
-      if (variables.files.video) {
-        URL.revokeObjectURL(URL.createObjectURL(variables.files.video));
-      }
 
-      // Invalidate queries to get fresh data
-      queryClient.invalidateQueries({
-        queryKey: ["messages", variables.chatId],
+    onSuccess: (serverMsg, vars) => {
+      // clean up blob URLs
+      vars.files.images?.forEach((f) =>
+        URL.revokeObjectURL(URL.createObjectURL(f))
+      );
+      if (vars.files.video)
+        URL.revokeObjectURL(URL.createObjectURL(vars.files.video));
+
+      // swap optimistic entry for real one
+      queryClient.setQueryData(["messages", vars.chatId], (old: any) => {
+        if (!old?.messages) return old;
+        return {
+          ...old,
+          messages: old.messages.map((m: any) =>
+            m._id.startsWith("opt-media-") ? serverMsg : m
+          ),
+        };
       });
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },

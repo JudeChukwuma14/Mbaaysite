@@ -15,7 +15,7 @@ import {
   useSearchContacts,
 } from "@/hook/userVendorQueries";
 import { useSelector } from "react-redux";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { getUserChats } from "@/utils/vendorChatApi";
 
 interface Message {
@@ -307,8 +307,6 @@ export function ChatListSidebar({
   );
 
   // Transform API response to match Chat interface with useMemo for performance
-  const queryClient = useQueryClient();
-
   const chatList = useMemo(() => {
     return (
       my_chats?.map((chat: ApiChat) => {
@@ -317,16 +315,6 @@ export function ChatListSidebar({
           user.vendor._id
         );
 
-        // read cached messages for this chat (no hook inside loop)
-        const cached = queryClient.getQueryData(["messages", chat._id]) as any;
-        const chatMessages = cached?.messages ?? [];
-
-        const lastMsg =
-          chatMessages.length > 0
-            ? chatMessages[chatMessages.length - 1]
-            : chat.lastMessage;
-        console.log(cached);
-
         return {
           _id: chat._id,
           name: participant?.details?.name || participant?.details?.storeName,
@@ -334,16 +322,16 @@ export function ChatListSidebar({
             participant?.profileImage ||
             participant?.details?.avatar ||
             "/placeholder.svg",
-          lastMessage: lastMsg?.content || lastMsg?.name || "Media",
-          timestamp: lastMsg?.createdAt || chat.updatedAt,
+          lastMessage: chat.lastMessage?.content || "No messages yet",
+          timestamp: chat.updatedAt || new Date().toISOString(),
           isVendor: participant?.model || false,
           isOnline: participant?.isOnline || false,
-          messages: chatMessages,
+          messages: chat.messages || [],
         };
       }) || []
     );
-  }, [my_chats, getOtherParticipant, user.vendor._id, queryClient]);
-  console.log("chatList", chatList);
+  }, [my_chats, getOtherParticipant, user.vendor._id]);
+
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;

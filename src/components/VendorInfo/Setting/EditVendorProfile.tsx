@@ -17,12 +17,12 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
+import { Link } from "react-router-dom";
 
 interface VendorProfile {
   companyName: string;
   email: string;
   phone: string;
-  bio: string;
   accountName: string;
   accountNumber: string;
   bankName: string;
@@ -186,8 +186,8 @@ export const bankCodes = [
 ];
 
 // Local storage keys
-const PROFILE_IMAGE_KEY = "vendor_profile_image";
-const BANNER_IMAGE_KEY = "vendor_banner_image";
+const PROFILE_IMAGE_KEY = "vendorAvatar";
+const BANNER_IMAGE_KEY = "businessLogo";
 const LOGO_IMAGE_KEY = "vendor_logo_image";
 
 // Maximum file sizes in bytes
@@ -262,6 +262,7 @@ export default function EditVendorProfile() {
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.vendor);
+  console.log(user);
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
@@ -272,6 +273,9 @@ export default function EditVendorProfile() {
       return get_single_vendor(user.token);
     },
   });
+  // console.log("Vendoor", vendors?.avatar);
+  localStorage.setItem("vendorAvatar", vendors?.avatar || "");
+  localStorage.setItem("businessLogo", vendors?.businessLogo || "");
 
   // Mutations for image uploads and recipient code
   const uploadAvatarMutation = useUploadAvatar();
@@ -282,7 +286,6 @@ export default function EditVendorProfile() {
     companyName: "",
     email: "",
     phone: "",
-    bio: "",
     accountName: "",
     accountNumber: "",
     bankName: "",
@@ -292,8 +295,8 @@ export default function EditVendorProfile() {
   useEffect(() => {
     if (typeof window !== "undefined" && !imagesLoaded) {
       try {
-        const storedProfileImage = localStorage.getItem(PROFILE_IMAGE_KEY);
-        const storedBannerImage = localStorage.getItem(BANNER_IMAGE_KEY);
+        const storedProfileImage = localStorage.getItem("vendorAvatar");
+        const storedBannerImage = localStorage.getItem("businessLogo");
 
         if (storedProfileImage) {
           setProfileImage(storedProfileImage);
@@ -301,6 +304,7 @@ export default function EditVendorProfile() {
         if (storedBannerImage) {
           setBannerImage(storedBannerImage);
         }
+        console.log(profileImage, bannerImage);
 
         setImagesLoaded(true);
       } catch (error) {
@@ -984,7 +988,7 @@ export default function EditVendorProfile() {
           <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
-              Be Mbaay Verified
+              Be Mbaay {user.vendor?.kycStatus}
               <MdVerified size={20} className="text-blue-500" />
             </div>
           </div>
@@ -1069,11 +1073,15 @@ export default function EditVendorProfile() {
                 <div className="flex flex-col">
                   <div className="flex items-center gap-4 text-sm">
                     <div>
-                      <div className="font-semibold">12</div>
+                      <div className="font-semibold">
+                        {user.vendor?.followers.length}
+                      </div>
                       <div className="text-gray-500">Followers</div>
                     </div>
                     <div>
-                      <div className="font-semibold">17</div>
+                      <div className="font-semibold">
+                        {user.vendor?.following.length}
+                      </div>
                       <div className="text-gray-500">Following</div>
                     </div>
                   </div>
@@ -1106,9 +1114,11 @@ export default function EditVendorProfile() {
             <div className="p-6 bg-white rounded-lg shadow-sm">
               <h3 className="mb-2 text-sm text-gray-500">Business Rating</h3>
               <div className="text-2xl font-bold">3.5</div>
-              <button className="text-sm text-purple-600 hover:underline">
-                View Reviews
-              </button>
+              <Link to={"/app/reviews"}>
+                <button className="text-sm text-purple-600 hover:underline">
+                  View Reviews
+                </button>
+              </Link>
             </div>
           </motion.div>
 
@@ -1313,7 +1323,7 @@ export default function EditVendorProfile() {
                       {craftCategories.map((category: any, index: any) => (
                         <div
                           key={index}
-                          className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center justify-between"
+                          className="flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-gray-100"
                         >
                           <span>{category}</span>
                           {index === 0 && (
@@ -1389,7 +1399,7 @@ export default function EditVendorProfile() {
                       <img
                         src={currentBankLogo || "/placeholder.svg"}
                         alt={profile.bankName}
-                        className="w-6 h-6 object-contain"
+                        className="object-contain w-6 h-6"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src =
                             "/images/banks/default-bank.png";
@@ -1573,7 +1583,7 @@ export default function EditVendorProfile() {
                       </div>
                       <div className="flex justify-end gap-2 mt-6">
                         <button
-                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="px-4 py-2 text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
                           onClick={closePopup}
                         >
                           Cancel
@@ -1691,13 +1701,13 @@ export default function EditVendorProfile() {
                       {/* Account verification results */}
                       {foundAccountName && foundBankName && (
                         <motion.div
-                          className="p-4 rounded-lg bg-green-50 border border-green-200"
+                          className="p-4 border border-green-200 rounded-lg bg-green-50"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3 }}
                         >
                           <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="flex items-center justify-center flex-shrink-0 w-8 h-8 bg-green-100 rounded-full">
                               <motion.div
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
@@ -1711,20 +1721,20 @@ export default function EditVendorProfile() {
                               </motion.div>
                             </div>
                             <div className="flex-1">
-                              <h4 className="text-sm font-semibold text-green-800 mb-2">
+                              <h4 className="mb-2 text-sm font-semibold text-green-800">
                                 Account Verified Successfully
                               </h4>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs text-green-600 font-medium">
+                                  <span className="text-xs font-medium text-green-600">
                                     Account Name:
                                   </span>
-                                  <span className="text-sm text-green-800 font-semibold">
+                                  <span className="text-sm font-semibold text-green-800">
                                     {foundAccountName}
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs text-green-600 font-medium">
+                                  <span className="text-xs font-medium text-green-600">
                                     Bank:
                                   </span>
                                   <div className="flex items-center gap-2">
@@ -1737,19 +1747,19 @@ export default function EditVendorProfile() {
                                           "/placeholder.svg"
                                         }
                                         alt={foundBankName}
-                                        className="w-4 h-4 object-contain"
+                                        className="object-contain w-4 h-4"
                                       />
                                     )}
-                                    <span className="text-sm text-green-800 font-semibold">
+                                    <span className="text-sm font-semibold text-green-800">
                                       {foundBankName}
                                     </span>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-xs text-green-600 font-medium">
+                                  <span className="text-xs font-medium text-green-600">
                                     Account Number:
                                   </span>
-                                  <span className="text-sm text-green-800 font-mono">
+                                  <span className="font-mono text-sm text-green-800">
                                     {accountNumber}
                                   </span>
                                 </div>
@@ -1764,14 +1774,14 @@ export default function EditVendorProfile() {
                         !foundAccountName &&
                         !isSearchingAccount && (
                           <motion.div
-                            className="p-3 rounded-lg bg-red-50 border border-red-200"
+                            className="p-3 border border-red-200 rounded-lg bg-red-50"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3 }}
                           >
                             <div className="flex items-center gap-2">
-                              <div className="w-5 h-5 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-red-600 text-xs">✗</span>
+                              <div className="flex items-center justify-center flex-shrink-0 w-5 h-5 bg-red-100 rounded-full">
+                                <span className="text-xs text-red-600">✗</span>
                               </div>
                               <p className="text-sm text-red-700">
                                 Account verification failed. Please check the
@@ -1783,7 +1793,7 @@ export default function EditVendorProfile() {
 
                       <div className="flex justify-end gap-2 mt-6">
                         <button
-                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          className="px-4 py-2 text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
                           onClick={closePopup}
                         >
                           Cancel

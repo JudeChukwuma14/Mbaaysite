@@ -1,10 +1,14 @@
 import React, { useState } from "react";
-import { Sun, Moon, Bell, Search, X } from "lucide-react";
+import { Sun, Moon, Bell, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { useSelector } from "react-redux";
-import { useQuery } from "@tanstack/react-query";
-import { get_single_vendor } from "@/utils/vendorApi";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  get_single_vendor,
+  getVendorNotification,
+  markVendorNotificationAsRead,
+} from "@/utils/vendorApi";
 
 const VendorHeader: React.FC = () => {
   const { darkMode, toggleDarkMode } = useDarkMode();
@@ -35,56 +39,72 @@ const VendorHeader: React.FC = () => {
     queryFn: () => get_single_vendor(user.token),
   });
 
-  const notifications = [
-    {
-      id: 1,
-      message: "Giovanni Kamper commented on your post",
-      detail: "This Looks great!! Let's get started on it.",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-      avatar: "/path-to-avatar1.png",
-    },
-    {
-      id: 2,
-      message: "Kessler Vester started following you",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-      avatar: "/path-to-avatar2.png",
-    },
-    {
-      id: 3,
-      message: "OKonkwo Hilary added your product on wishlist",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-    },
-    {
-      id: 3,
-      message: "OKonkwo Hilary added your product on wishlist",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-    },
-    {
-      id: 3,
-      message: "OKonkwo Hilary added your product on wishlist",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-    },
-    {
-      id: 3,
-      message: "OKonkwo Hilary added your product on wishlist",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-    },
-    {
-      id: 1,
-      message: "Giovanni Kamper commented on your post",
-      detail: "This Looks great!! Let's get started on it.",
-      date: "Sep 20, 2024",
-      time: "2:20pm",
-      avatar: "/path-to-avatar1.png",
-    },
-  ];
+  // const notifications = [
+  //   {
+  //     id: 1,
+  //     message: "Giovanni Kamper commented on your post",
+  //     detail: "This Looks great!! Let's get started on it.",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //     avatar: "/path-to-avatar1.png",
+  //   },
+  //   {
+  //     id: 2,
+  //     message: "Kessler Vester started following you",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //     avatar: "/path-to-avatar2.png",
+  //   },
+  //   {
+  //     id: 3,
+  //     message: "OKonkwo Hilary added your product on wishlist",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //   },
+  //   {
+  //     id: 3,
+  //     message: "OKonkwo Hilary added your product on wishlist",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //   },
+  //   {
+  //     id: 3,
+  //     message: "OKonkwo Hilary added your product on wishlist",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //   },
+  //   {
+  //     id: 3,
+  //     message: "OKonkwo Hilary added your product on wishlist",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //   },
+  //   {
+  //     id: 1,
+  //     message: "Giovanni Kamper commented on your post",
+  //     detail: "This Looks great!! Let's get started on it.",
+  //     date: "Sep 20, 2024",
+  //     time: "2:20pm",
+  //     avatar: "/path-to-avatar1.png",
+  //   },
+  // ];
 
+  const { data: notificationsData } = useQuery({
+    queryKey: ["vendorNotification", user.vendor._id],
+    queryFn: () => getVendorNotification(user.vendor._id),
+  });
+  const notifications = notificationsData?.data.notifications;
+  // console.log("Notifications:", notifications);
+
+  // Mark All Read
+  const markNotificationAsRead = useMutation({
+    mutationFn: () => markVendorNotificationAsRead(user.vendor._id),
+    onSuccess: (data) => console.log("Mark Success:", data),
+    onError: (err: any) =>
+      console.error(err?.response?.data?.message || "Mark failed"),
+  });
+
+  const handleMarkAllNot = () => markNotificationAsRead.mutate();
   return (
     <header
       className={`p-4 flex justify-between items-center shadow-md transition-colors ${
@@ -100,20 +120,6 @@ const VendorHeader: React.FC = () => {
         </span>
       </h1>
       <div className="flex items-center gap-4">
-        {/* Search Box */}
-        <div className="relative">
-          <input
-            type="text"
-            placeholder="Search..."
-            className={`p-2 pr-10 rounded border outline-orange-500 ${
-              darkMode
-                ? "bg-gray-800 border-gray-700 text-white"
-                : "bg-white border-orange-500 text-gray-900"
-            }`}
-          />
-          <Search className="absolute text-orange-500 right-2 top-2" />
-        </div>
-
         {/* Light/Dark Mode Button */}
         <button onClick={toggleDarkMode} aria-label="Toggle Dark Mode">
           {darkMode ? (
@@ -130,9 +136,9 @@ const VendorHeader: React.FC = () => {
             aria-label="Notifications"
           >
             <Bell className="text-gray-500" />
-            {notifications.length > 0 && (
+            {notifications?.length > 0 && (
               <span className="absolute flex items-center justify-center w-5 h-5 text-xs text-white bg-red-500 rounded-full -top-1 -right-1">
-                {notifications.length}
+                {notifications?.length}
               </span>
             )}
           </button>
@@ -159,7 +165,7 @@ const VendorHeader: React.FC = () => {
                   </button>
                 </div>
                 <div className="overflow-y-auto max-h-64">
-                  {notifications.map((notification) => (
+                  {notifications?.map((notification: any) => (
                     <div
                       key={notification.id}
                       className={`flex items-start gap-3 p-4 border-b ${
@@ -202,9 +208,11 @@ const VendorHeader: React.FC = () => {
                   ))}
                 </div>
                 <div className="flex items-center justify-between p-4">
-                  <button className="text-orange-500">Mark as read</button>
-                  <button className="px-4 py-2 text-white bg-orange-500 rounded">
-                    View All Notifications
+                  <button
+                    className="w-full px-4 py-2 text-white bg-orange-500 rounded"
+                    onClick={handleMarkAllNot}
+                  >
+                    Mark All Read
                   </button>
                 </div>
               </motion.div>

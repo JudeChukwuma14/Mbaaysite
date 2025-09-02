@@ -37,13 +37,13 @@ interface Order {
   };
   totalPrice: number;
   status: "Processing" | "Delivered" | "Cancelled" | "Pending";
-  items: Array<{
+  product: {
     _id: string;
     name: string;
     quantity: number;
     price: number;
     image: string;
-  }>;
+  };
   payStatus: "Successful" | "Pending" | "Failed";
   createdAt: string;
   updatedAt: string;
@@ -96,6 +96,8 @@ const AllOrdersPage: React.FC = () => {
       return matchesTab && matchesSearch && matchesPayment;
     });
   }, [orders, currentTab, searchQuery, paymentFilter]);
+
+  console.log("Filtered Orders:", filteredOrders);
 
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -281,9 +283,7 @@ const AllOrdersPage: React.FC = () => {
                     <td className="px-4 py-3">
                       {order.buyerInfo.first_name} {order.buyerInfo.last_name}
                     </td>
-                    <td className="px-4 py-3">
-                      {(order.items ?? []).map((item) => item.name).join(", ")}
-                    </td>
+                    <td className="px-4 py-3">{order.product.name}</td>
 
                     <td className="px-4 py-3 font-semibold">
                       {formatAmount(order.totalPrice)}
