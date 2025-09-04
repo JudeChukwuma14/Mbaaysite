@@ -7,10 +7,6 @@ const API_VENDOR_BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
 const getAuthToken = () => {
   const state = store.getState();
   const token = state.vendor.token || state.user.token || null;
-  console.log(
-    "DEBUG: Retrieved auth token:",
-    token ? "Token present" : "No token"
-  );
   return token;
 };
 
@@ -18,8 +14,6 @@ const getAuthToken = () => {
 export const startChat = async (receiverId: string) => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Starting chat with receiverId:", receiverId);
   const response = await axios.post(
     `${API_CHAT_BASE_URL}/create_or_get_chat`,
     { receiverId },
@@ -30,10 +24,7 @@ export const startChat = async (receiverId: string) => {
       },
     }
   );
-  console.log(
-    "DEBUG: startChat response:",
-    JSON.stringify(response.data, null, 2)
-  );
+
   return response.data;
 };
 
@@ -45,8 +36,6 @@ export const sendMessage = async (
 ) => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Sending message to chat:", chatId, "content:", content);
   const response = await axios.post(
     `${API_CHAT_BASE_URL}/chat/${chatId}/message`,
     { chatId, content, replyTo },
@@ -56,10 +45,6 @@ export const sendMessage = async (
         Authorization: `Bearer ${token}`,
       },
     }
-  );
-  console.log(
-    "DEBUG: sendMessage response:",
-    JSON.stringify(response.data, null, 2)
   );
   return response.data;
 };
@@ -75,17 +60,11 @@ export const sendMediaMessage = async (
     throw new Error("No auth token found");
   }
 
-  console.log(
-    "DEBUG: Sending media message to chat:",
-    chatId,
-    "files:",
-    files.map((f) => f.name)
-  );
   const formData = new FormData();
   // Separate images and videos
   const images = files.filter((file) => file.type.startsWith("image/"));
   const videos = files.filter((file) => file.type.startsWith("video/"));
-  
+
   // Append images to 'images' field (up to 5, per backend maxCount)
   images.slice(0, 5).forEach((file) => {
     formData.append("images", file);
@@ -97,7 +76,6 @@ export const sendMediaMessage = async (
   if (replyTo) {
     formData.append("replyTo", replyTo);
   }
-
   try {
     const response = await axios.post(
       `${API_CHAT_BASE_URL}/chat/${chatId}/send_media_message`,
@@ -108,10 +86,6 @@ export const sendMediaMessage = async (
           "Content-Type": "multipart/form-data",
         },
       }
-    );
-    console.log(
-      "DEBUG: sendMediaMessage response:",
-      JSON.stringify(response.data, null, 2)
     );
     return response.data;
   } catch (error: any) {
@@ -129,17 +103,12 @@ export const sendMediaMessage = async (
 export const getUserChats = async () => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Fetching user chats...");
   const response = await axios.get(`${API_CHAT_BASE_URL}/chats`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  console.log(
-    "DEBUG: getUserChats response:",
-    JSON.stringify(response.data, null, 2)
-  );
+
   return response.data;
 };
 
@@ -148,7 +117,6 @@ export const getChatMessages = async (chatId: string) => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
 
-  console.log("DEBUG: Fetching messages for chat:", chatId);
   const response = await axios.get(
     `${API_CHAT_BASE_URL}/chat/${chatId}/messages`,
     {
@@ -157,10 +125,7 @@ export const getChatMessages = async (chatId: string) => {
       },
     }
   );
-  console.log(
-    "DEBUG: getChatMessages response:",
-    JSON.stringify(response.data, null, 2)
-  );
+
   return response.data;
 };
 
@@ -168,8 +133,6 @@ export const getChatMessages = async (chatId: string) => {
 export const editMessage = async (messageId: string, content: string) => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Editing message:", messageId, "with content:", content);
   const response = await axios.patch(
     `${API_CHAT_BASE_URL}/edit/${messageId}`,
     { content },
@@ -180,10 +143,7 @@ export const editMessage = async (messageId: string, content: string) => {
       },
     }
   );
-  console.log(
-    "DEBUG: editMessage response:",
-    JSON.stringify(response.data, null, 2)
-  );
+
   return response.data;
 };
 
@@ -191,8 +151,6 @@ export const editMessage = async (messageId: string, content: string) => {
 export const deleteMessage = async (messageId: string) => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Deleting message:", messageId);
   const response = await axios.delete(
     `${API_CHAT_BASE_URL}/delete/${messageId}`,
     {
@@ -201,10 +159,6 @@ export const deleteMessage = async (messageId: string) => {
       },
     }
   );
-  console.log(
-    "DEBUG: deleteMessage response:",
-    JSON.stringify(response.data, null, 2)
-  );
   return response.data;
 };
 
@@ -212,16 +166,10 @@ export const deleteMessage = async (messageId: string) => {
 export const getAllVendor = async () => {
   const token = getAuthToken();
   if (!token) throw new Error("No auth token found");
-
-  console.log("DEBUG: Fetching all vendors...");
   const response = await axios.get(`${API_VENDOR_BASE_URL}/get_all_vendors`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  console.log(
-    "DEBUG: getAllVendor response:",
-    JSON.stringify(response.data, null, 2)
-  );
   return response.data;
 };

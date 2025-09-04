@@ -188,15 +188,15 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
         <div
           className={`relative p-3 rounded-2xl ${
             message.sent
-              ? "bg-message-sent text-message-sent-foreground"
-              : "bg-message-received text-message-received-foreground"
+              ? "bg-message-sent text-message-sent-foreground shadow-md"
+              : "bg-message-received text-message-received-foreground shadow-md"
           } ${message.sent ? "rounded-br-md" : "rounded-bl-md"}`}
         >
           {renderMediaContent()}
           <div className="flex items-end justify-between mt-1 space-x-2">
             <span
               className={`text-xs ${
-                message.sent ? "text-white/70" : "text-muted-foreground"
+                message.sent ? "text-black" : "text-muted-foreground"
               }`}
             >
               {message.time}

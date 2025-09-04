@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-// Import components
 import Slider from "@/components/Slider";
 import NewCard from "@/components/Cards/NewCard";
 import VendorCard from "@/components/VendorCard";
@@ -9,19 +8,19 @@ import AuctionCard from "@/components/AuctionPage/AuctionCard";
 import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import NewArrival from "@/components/Cards/NewArrival";
-import Spinner from "@/components/Common/Spinner";
-import {
-  Auction,
-  flashSale,
-} from "@/components/mockdata/data";
+import { Auction, flashSale } from "@/components/mockdata/data";
 import { getAllProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
 import sev3 from "../assets/image/Services-2.png";
 import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
-import CategoriesSection from "@/components/Reuseable/CategoriesSection";
+const CategoriesSection = lazy(
+  () => import("@/components/Reuseable/CategoriesSection")
+);
+
 import BestSellingCard from "@/components/Cards/BestSellingCard";
+import CategoriesSectionSkeleton from "@/components/skeletons/CategoriesSectionSkeleton";
 
 interface Product {
   _id: string;
@@ -40,6 +39,15 @@ interface VendorProfile {
   id: string;
   craftCategories: string[];
 }
+
+// Skeleton components
+const ProductSkeleton = () => (
+  <div className="w-full h-48 bg-gray-200 rounded-lg animate-pulse" />
+);
+
+const VendorSkeleton = () => (
+  <div className="h-40 bg-gray-200 rounded-lg animate-pulse" />
+);
 
 const HomeArea: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -71,13 +79,11 @@ const HomeArea: React.FC = () => {
           ? result
           : result.products || [];
 
-        // Mock saleCount for testing
         const productsWithSales = productsData.map((product: Product) => ({
           ...product,
-          saleCount: Math.floor(Math.random() * 100), // Random sales count (0-99)
+          saleCount: Math.floor(Math.random() * 100),
         }));
 
-        // Filter for best-selling products (top 5 by mock saleCount)
         const bestSelling = productsWithSales
           .sort(
             (
@@ -87,7 +93,6 @@ const HomeArea: React.FC = () => {
           )
           .slice(0, 5);
 
-        // Filter for new arrivals (last 30 days)
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const newArrivals = productsData
@@ -98,8 +103,9 @@ const HomeArea: React.FC = () => {
             (a: Product, b: Product) =>
               new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
           )
-          .slice(0, 15); // Match your current limit
-        setProducts(productsData); // Store original data
+          .slice(0, 15);
+
+        setProducts(productsData);
         setBestSellingProducts(bestSelling);
         setNewArrivals(newArrivals);
       } catch (err) {
@@ -125,7 +131,6 @@ const HomeArea: React.FC = () => {
     getVendor();
   }, []);
 
-  if (loading) return <Spinner />;
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -149,7 +154,11 @@ const HomeArea: React.FC = () => {
       <section className="mb-12">
         <Slider />
       </section>
-      <CategoriesSection />
+      {/* Categories */}
+      <Suspense fallback={<CategoriesSectionSkeleton />}>
+        <CategoriesSection />
+      </Suspense>
+      {/* Our Products */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -168,27 +177,31 @@ const HomeArea: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {products
-            .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
-                new Date(a.createdAt).getTime()
-            )
-            .slice(0, 15)
-            .map((product) => (
-              <NewArrival
-                key={product._id}
-                product={{
-                  ...product,
-                  id: product._id,
-                  poster: product.images[0] || "",
-                }}
-              />
-            ))}
+          {loading
+            ? Array.from({ length: 10 }).map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))
+            : products
+                .sort(
+                  (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime()
+                )
+                .slice(0, 15)
+                .map((product) => (
+                  <NewArrival
+                    key={product._id}
+                    product={{
+                      ...product,
+                      id: product._id,
+                      poster: product.images[0] || "",
+                    }}
+                  />
+                ))}
         </div>
       </section>
 
-      {/* Best Selling Products */}
+      {/* Best Selling */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -200,7 +213,9 @@ const HomeArea: React.FC = () => {
           </h2>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {bestSellingProducts.length > 0 ? (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => <ProductSkeleton key={i} />)
+          ) : bestSellingProducts.length > 0 ? (
             bestSellingProducts.map((product) => (
               <BestSellingCard
                 key={product._id}
@@ -224,7 +239,7 @@ const HomeArea: React.FC = () => {
         </div>
       </section>
 
-      {/* Latest Vendors */}
+      {/* Vendors */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -242,28 +257,32 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {getVender.slice(0, 5).map((profile) => {
-            const avatarUrl = profile.avatar
-              ? profile.avatar
-              : createInitialAvatar(profile.storeName || "V");
-            return (
-              <Link to={`/veiws-profile/${profile._id}`}   key={profile._id} >
-                <VendorCard
-                  name={profile.storeName}
-                  craft={profile.craftCategories[0]}
-                  avatar={avatarUrl}
-                  backgroundImage={
-                    profile?.businessLogo ||
-                    "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
-                  }
-                />
-              </Link>
-            );
-          })}
+          {loading
+            ? Array.from({ length: 5 }).map((_, i) => (
+                <VendorSkeleton key={i} />
+              ))
+            : getVender.slice(0, 5).map((profile) => {
+                const avatarUrl = profile.avatar
+                  ? profile.avatar
+                  : createInitialAvatar(profile.storeName || "V");
+                return (
+                  <Link to={`/veiws-profile/${profile._id}`} key={profile._id}>
+                    <VendorCard
+                      name={profile.storeName}
+                      craft={profile.craftCategories[0]}
+                      avatar={avatarUrl}
+                      backgroundImage={
+                        profile?.businessLogo ||
+                        "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
+                      }
+                    />
+                  </Link>
+                );
+              })}
         </div>
       </section>
-      {/* New Arrivals Section */}
 
+      {/* New Arrivals */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
@@ -281,7 +300,11 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-          {newArrivals.length > 0 ? (
+          {loading ? (
+            Array.from({ length: 10 }).map((_, i) => (
+              <ProductSkeleton key={i} />
+            ))
+          ) : newArrivals.length > 0 ? (
             newArrivals.slice(0, 10).map((product) => (
               <NewArrival
                 key={product._id}
@@ -305,7 +328,8 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
       </section>
-      {/* Second Promotional Banner */}
+
+      {/* Second Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">
           <NewCard />

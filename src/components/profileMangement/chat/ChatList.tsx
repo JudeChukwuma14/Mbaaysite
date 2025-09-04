@@ -38,7 +38,10 @@ interface ChatListProps {
   onPinChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
   // Updated to pass vendorDetails for immediate use in ChatHeader
-  onNewChat: (receiverId: string, vendorDetails: { storeName: string; avatar?: string }) => void;
+  onNewChat: (
+    receiverId: string,
+    vendorDetails: { storeName: string; avatar?: string }
+  ) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -61,13 +64,15 @@ const ChatList: React.FC<ChatListProps> = ({
       setIsLoadingVendors(true);
       setVendorError(null);
       try {
-        console.log("DEBUG: Fetching vendors...");
         const response = await getAllVendor();
-        console.log("DEBUG: Vendors response:", JSON.stringify(response.vendors, null, 2));
         setVendors(response.vendors || []);
       } catch (error: any) {
-        const errorMsg = error.response?.data?.message || "Failed to load vendors.";
-        console.error("DEBUG: Error fetching vendors:", JSON.stringify(error, null, 2));
+        const errorMsg =
+          error.response?.data?.message || "Failed to load vendors.";
+        console.error(
+          "DEBUG: Error fetching vendors:",
+          JSON.stringify(error, null, 2)
+        );
         setVendorError(errorMsg);
         toast.error(errorMsg);
       } finally {
@@ -75,7 +80,6 @@ const ChatList: React.FC<ChatListProps> = ({
       }
     };
     if (isNewChatOpen) {
-      console.log("DEBUG: New chat dialog opened, triggering fetchVendors");
       fetchVendors();
     }
   }, [isNewChatOpen]);
@@ -83,17 +87,17 @@ const ChatList: React.FC<ChatListProps> = ({
   const filteredVendors = vendors.filter((vendor) =>
     vendor.storeName.toLowerCase().includes(vendorSearch.toLowerCase())
   );
-  console.log("DEBUG: Filtered vendors:", JSON.stringify(filteredVendors, null, 2));
 
   const filteredChats = (chats || []).filter((chat) =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  console.log("DEBUG: Filtered chats:", JSON.stringify(filteredChats, null, 2));
 
   // Updated to pass vendorDetails (storeName, avatar) to onNewChat
   const handleStartNewChat = (vendor: Vendor) => {
-    console.log("DEBUG: Starting new chat with vendor ID:", vendor._id, "storeName:", vendor.storeName);
-    onNewChat(vendor._id, { storeName: vendor.storeName, avatar: vendor.avatar });
+    onNewChat(vendor._id, {
+      storeName: vendor.storeName,
+      avatar: vendor.avatar,
+    });
     setVendorSearch("");
     setIsNewChatOpen(false);
   };
@@ -105,9 +109,7 @@ const ChatList: React.FC<ChatListProps> = ({
           <h2 className="text-xl font-bold text-foreground">Messages</h2>
           <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
             <DialogTrigger asChild>
-              <Button
-                className="bg-orange-500 hover:bg-orange-600 text-white rounded-[50%] h-10 w-10 p-0"
-              >
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-[50%] h-10 w-10 p-0">
                 <Plus className="w-5 h-5" />
               </Button>
             </DialogTrigger>
@@ -129,7 +131,9 @@ const ChatList: React.FC<ChatListProps> = ({
                 ) : (
                   <div className="overflow-y-auto max-h-40">
                     {filteredVendors.length === 0 && vendorSearch ? (
-                      <div className="text-muted-foreground">No vendors found</div>
+                      <div className="text-muted-foreground">
+                        No vendors found
+                      </div>
                     ) : (
                       filteredVendors.map((vendor) => (
                         <div
@@ -178,15 +182,21 @@ const ChatList: React.FC<ChatListProps> = ({
             filteredChats.map((chat) => (
               <div
                 key={chat._id}
-                className={`p-3 rounded-lg cursor-pointer ${
-                  selectedChat === chat._id ? "bg-orange-500 text-white" : "hover:bg-orange-600"
+                className={`p-3 rounded-lg cursor-pointer chat-item ${
+                  selectedChat === chat._id
+                    ? "bg-orange-500 text-white"
+                    : "hover:bg-orange-600"
                 }`}
                 onClick={() => onSelectChat(chat._id)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full ring-1 ring-orange-500">
                     {chat.avatar ? (
-                      <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
+                      <img
+                        src={chat.avatar}
+                        alt={chat.name}
+                        className="w-full h-full rounded-full"
+                      />
                     ) : (
                       <span className="font-semibold">{chat.name[0]}</span>
                     )}
@@ -194,9 +204,13 @@ const ChatList: React.FC<ChatListProps> = ({
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h3 className="font-semibold">{chat.name}</h3>
-                      <span className="text-xs text-muted-foreground">{chat.time}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {chat.time}
+                      </span>
                     </div>
-                    <p className="text-sm truncate text-muted-foreground">{chat.lastMessage}</p>
+                    <p className="text-sm truncate text-muted-foreground max-w-[180px]">
+                      {chat.lastMessage}
+                    </p>
                   </div>
                   {chat.unread > 0 && (
                     <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">

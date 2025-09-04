@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Paperclip, Image, Video, Mic, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,18 +10,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import io, { Socket } from "socket.io-client";
 
 interface MessageInputProps {
   onSendMessage: (
     content: string,
     type?: "text" | "image" | "video" | "file",
     files?: File[],
-    onUploadStart?: () => { tempId: string; previews: string[] }, // Return temp ID and previews
+    onUploadStart?: () => { tempId: string; previews: string[] },
     onUploadComplete?: (tempId: string) => void
   ) => void;
+  selectedChat: string | null; // NEW: Pass selectedChat
 }
 
-const MessageInput = ({ onSendMessage }: MessageInputProps) => {
+const MessageInput = ({ onSendMessage, selectedChat }: MessageInputProps) => {
   const [message, setMessage] = useState("");
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -29,12 +33,35 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  const user = useSelector((state: RootState) => state.user.user);
+  const vendor = useSelector((state: RootState) => state.vendor.vendor);
+  const token = useSelector(
+    (state: RootState) => state.user.token || state.vendor.token
+  );
+  const currentUserId = user?._id || vendor?._id;
+
+  // NEW: Socket.IO setup for typing
+  useEffect(() => {
+    if (!currentUserId || !token || !selectedChat) return;
+
+    socketRef.current = io("https://mbayy-be.onrender.com", {
+      auth: { token: `Bearer ${token}` },
+    });
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [currentUserId, token, selectedChat]);
 
   const handleSend = () => {
     if (message.trim()) {
       console.log("DEBUG: Sending text message from MessageInput:", message);
       onSendMessage(message.trim(), "text");
       setMessage("");
+      socketRef.current?.emit("stopTyping", { chatId: selectedChat, sender: currentUserId });
     }
     if (attachedFiles.length > 0) {
       const images = attachedFiles.filter((file) => file.type.startsWith("image/")).slice(0, 5);
@@ -44,7 +71,7 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
         console.log("DEBUG: No valid files to send after filtering");
         return;
       }
-      console.log("DEBUG: Sending media message with files:", filesToSend.map(f => f.name));
+      console.log("DEBUG: Sending media message with files:", filesToSend.map((f) => f.name));
       const type = filesToSend[0].type.startsWith("image/") ? "image" : filesToSend[0].type.startsWith("video/") ? "video" : "file";
       onSendMessage("", type, filesToSend, () => ({
         tempId: `temp-${Date.now()}-${Math.random()}`,
@@ -63,6 +90,18 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
       console.log("DEBUG: Enter key pressed, triggering send");
       e.preventDefault();
       handleSend();
+    }
+  };
+
+  // NEW: Handle typing events
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessage(e.target.value);
+    if (selectedChat && currentUserId) {
+      socketRef.current?.emit("typing", { chatId: selectedChat, sender: currentUserId });
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = setTimeout(() => {
+        socketRef.current?.emit("stopTyping", { chatId: selectedChat, sender: currentUserId });
+      }, 2000); // Stop typing after 2 seconds of inactivity
     }
   };
 
@@ -92,7 +131,7 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
       toast.error("You can only attach 1 video.");
       return;
     }
-    console.log("DEBUG: Selected files:", files.map(f => f.name));
+    console.log("DEBUG: Selected files:", files.map((f) => f.name));
     const newPreviews = files
       .filter((file) => file.type.startsWith("image/") || file.type.startsWith("video/"))
       .map((file) => URL.createObjectURL(file));
@@ -205,7 +244,7 @@ const MessageInput = ({ onSendMessage }: MessageInputProps) => {
           <div className="relative flex-1">
             <Input
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               placeholder="Type a message..."
               className="rounded-full bg-chat-muted border-chat-border focus-visible:ring-chat-primary"
