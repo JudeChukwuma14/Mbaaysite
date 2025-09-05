@@ -6,7 +6,6 @@ import ChatList from "./ChatList";
 import { useIsMobile } from "@/hook/use-mobile";
 import ChatHeader from "./ChatHeader";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import MessageBubble from "./MessageBubble";
 import MessageInput from "./MessageInput";
 import { Send } from "lucide-react";
 import {
@@ -22,6 +21,9 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { cn } from "@/lib/utils";
 import io, { Socket } from "socket.io-client";
+import MessageListWithDates from "./MessageListWithDates";
+import ChatListSkeleton from "./ChatListSkeleton";
+import MessageSkeleton from "./MessageSkeleton";
 
 // Notification sound
 const notificationSound = new Audio("/sounds/notification.mp3");
@@ -38,7 +40,7 @@ interface Chat {
   name: string;
   lastMessage: string;
   time: string;
-  timestamp?: Date; // Add this optional field
+  timestamp?: Date;
   unread: number;
   avatar?: string;
   online: boolean;
@@ -52,6 +54,7 @@ interface Message {
   images?: string[];
   video?: string;
   time: string;
+  timestamp: Date;
   sent: boolean;
   type: "text" | "image" | "video" | "file";
   replyTo?: string;
@@ -62,6 +65,9 @@ interface Message {
 const API_NOTIFICATION_BASE_URL =
   "https://mbayy-be.onrender.com/api/v1/notifications";
 const SOCKET_URL = "https://mbayy-be.onrender.com";
+
+// Date utility function
+// (removed unused formatMessageDate)
 
 const ChatInterfaceChat: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
@@ -147,7 +153,7 @@ const ChatInterfaceChat: React.FC = () => {
     }
   };
 
-  // Handle new message from socket (with your deduplication logic)
+  // Handle new message from socket
   const handleNewMessage = (msg: any) => {
     console.log("📩 New real-time message:", JSON.stringify(msg, null, 2));
     const isSentByCurrentUser = msg.sender?._id === currentUserId;
@@ -165,6 +171,7 @@ const ChatInterfaceChat: React.FC = () => {
         hour: "2-digit",
         minute: "2-digit",
       }),
+      timestamp: new Date(msg.createdAt),
       sent: isSentByCurrentUser,
       type:
         msg.type ||
@@ -174,15 +181,15 @@ const ChatInterfaceChat: React.FC = () => {
       isOptimistic: false,
     };
 
-    // Check for existing message (same ID, same content from same user within short time)
+    // Check for existing message
     const existingMessage = messages.find(
       (m) =>
-        m._id === msg._id || // Same ID
-        (m.isOptimistic && // Optimistic message with same content
+        m._id === msg._id ||
+        (m.isOptimistic &&
           m.content === newMessage.content &&
           m.type === newMessage.type &&
           m.sent === isSentByCurrentUser) ||
-        (isSentByCurrentUser && // Same content from same user within 2 seconds
+        (isSentByCurrentUser &&
           m.sent === true &&
           m.content === newMessage.content &&
           Math.abs(
@@ -195,9 +202,9 @@ const ChatInterfaceChat: React.FC = () => {
       setMessages((prev) =>
         prev.map((m) =>
           m._id === existingMessage._id ||
-            (m.isOptimistic &&
-              m.content === newMessage.content &&
-              m.type === newMessage.type)
+          (m.isOptimistic &&
+            m.content === newMessage.content &&
+            m.type === newMessage.type)
             ? newMessage
             : m
         )
@@ -232,12 +239,12 @@ const ChatInterfaceChat: React.FC = () => {
       const updatedChats = prev.map((chat) =>
         chat._id === msg.chatId
           ? {
-            ...chat,
-            lastMessage: lastMessageText,
-            time: newMessage.time,
-            timestamp: new Date(msg.createdAt),
-            unread: isSentByCurrentUser ? chat.unread : chat.unread + 1,
-          }
+              ...chat,
+              lastMessage: lastMessageText,
+              time: newMessage.time,
+              timestamp: new Date(msg.createdAt),
+              unread: isSentByCurrentUser ? chat.unread : chat.unread + 1,
+            }
           : chat
       );
 
@@ -253,6 +260,7 @@ const ChatInterfaceChat: React.FC = () => {
       });
     });
   };
+
   // Socket.IO setup
   useEffect(() => {
     if (!currentUserId || !token) {
@@ -312,6 +320,7 @@ const ChatInterfaceChat: React.FC = () => {
           hour: "2-digit",
           minute: "2-digit",
         }),
+        timestamp: new Date(chat.createdAt || Date.now()),
         unread: chat.unreadCount || 0,
         avatar:
           otherParticipant?.details?.avatar ||
@@ -399,6 +408,7 @@ const ChatInterfaceChat: React.FC = () => {
           hour: "2-digit",
           minute: "2-digit",
         }),
+        timestamp: new Date(),
         unread: 0,
         avatar: vendorDetails.avatar || "",
         online: false,
@@ -431,37 +441,50 @@ const ChatInterfaceChat: React.FC = () => {
   }, [messages]);
 
   // Fetch chats
+  // Fetch chats
   useEffect(() => {
     const fetchChats = async () => {
       if (!currentUserId) {
+        console.log("DEBUG: No currentUserId, skipping fetchChats");
         return;
       }
       setIsLoadingChats(true);
       setError(null);
       try {
+        console.log("DEBUG: Fetching chats for user:", currentUserId);
         const chatData = await getUserChats();
+        console.log("DEBUG: Raw chat data from API:", chatData);
 
         const formattedChats: Chat[] = [];
         for (const chat of chatData.chats || []) {
           try {
+            console.log("DEBUG: Processing chat:", chat._id);
             const messageData = await getChatMessages(chat._id);
+            console.log("DEBUG: Messages for chat", chat._id, ":", messageData);
+
             if (messageData.success && messageData.messages.length > 0) {
               const otherParticipant = chat.participants.find(
                 (p: any) => p.participantId !== currentUserId
               );
+              console.log("DEBUG: Other participant:", otherParticipant);
 
               // Get the last message content with proper media formatting
-              let lastMessageContent = chat.lastMessage?.content ||
+              let lastMessageContent =
+                chat.lastMessage?.content ||
                 messageData.messages[messageData.messages.length - 1].content ||
                 "";
 
               // Check if the last message is a media message and format accordingly
-              const lastMessage = messageData.messages[messageData.messages.length - 1];
+              const lastMessage =
+                messageData.messages[messageData.messages.length - 1];
               if (lastMessage.images && lastMessage.images.length > 0) {
                 lastMessageContent = "📷 Image";
               } else if (lastMessage.video) {
                 lastMessageContent = "🎥 Video";
-              } else if (lastMessage.type === "file" || (lastMessage.content && lastMessage.content.includes("[file]"))) {
+              } else if (
+                lastMessage.type === "file" ||
+                (lastMessage.content && lastMessage.content.includes("[file]"))
+              ) {
                 lastMessageContent = "📎 File";
               }
 
@@ -470,7 +493,8 @@ const ChatInterfaceChat: React.FC = () => {
                 name:
                   otherParticipant?.details?.storeName ||
                   otherParticipant?.details?.name ||
-                  `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"
+                  `User ${
+                    otherParticipant?.participantId?.slice(-4) || "Unknown"
                   }`,
                 lastMessage: lastMessageContent,
                 time: new Date(
@@ -479,7 +503,9 @@ const ChatInterfaceChat: React.FC = () => {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
-                timestamp: new Date(chat.lastMessage?.createdAt || chat.createdAt || Date.now()),
+                timestamp: new Date(
+                  chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+                ),
                 unread: chat.unreadCount || 0,
                 avatar:
                   otherParticipant?.details?.avatar ||
@@ -489,6 +515,12 @@ const ChatInterfaceChat: React.FC = () => {
                 pinned: chat.pinned || false,
                 isGroup: chat.isCustomerCareChat || false,
               });
+            } else {
+              console.log(
+                "DEBUG: Skipping chat",
+                chat._id,
+                "- no messages or not successful"
+              );
             }
           } catch (msgError: any) {
             console.warn(
@@ -500,14 +532,22 @@ const ChatInterfaceChat: React.FC = () => {
           }
         }
 
+        console.log("DEBUG: Formatted chats:", formattedChats);
+
         // Sort chats by timestamp (newest first), fallback to time string if no timestamp
         const sortedChats = formattedChats.sort((a, b) => {
-          const timeA = a.timestamp ? a.timestamp.getTime() : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp ? b.timestamp.getTime() : new Date(`1970-01-01T${b.time}`).getTime();
+          const timeA = a.timestamp
+            ? a.timestamp.getTime()
+            : new Date(`1970-01-01T${a.time}`).getTime();
+          const timeB = b.timestamp
+            ? b.timestamp.getTime()
+            : new Date(`1970-01-01T${b.time}`).getTime();
           return timeB - timeA; // Newest first
         });
 
+        console.log("DEBUG: Sorted chats:", sortedChats);
         setChats(sortedChats);
+
         if (
           !selectedChat &&
           sortedChats.length > 0 &&
@@ -530,8 +570,12 @@ const ChatInterfaceChat: React.FC = () => {
         setIsLoadingChats(false);
       }
     };
+
     if (currentUserId) {
+      console.log("DEBUG: Starting fetchChats for user:", currentUserId);
       fetchChats();
+    } else {
+      console.log("DEBUG: No currentUserId available");
     }
   }, [currentUserId, location.state]);
   // Fetch initial messages
@@ -552,6 +596,7 @@ const ChatInterfaceChat: React.FC = () => {
                 hour: "2-digit",
                 minute: "2-digit",
               }),
+              timestamp: new Date(msg.createdAt),
               sent: msg.sender?._id === currentUserId,
               type:
                 msg.type ||
@@ -636,6 +681,7 @@ const ChatInterfaceChat: React.FC = () => {
           images: undefined,
           video: undefined,
           time: currentTime,
+          timestamp: new Date(),
           sent: true,
           type: "text",
           isUploading: false,
@@ -648,11 +694,11 @@ const ChatInterfaceChat: React.FC = () => {
           const updatedChats = prev.map((chat) =>
             chat._id === selectedChat
               ? {
-                ...chat,
-                lastMessage: content,
-                time: currentTime,
-                timestamp: new Date(),
-              }
+                  ...chat,
+                  lastMessage: content,
+                  time: currentTime,
+                  timestamp: new Date(),
+                }
               : chat
           );
 
@@ -689,6 +735,7 @@ const ChatInterfaceChat: React.FC = () => {
           images: type === "image" ? previews : undefined,
           video: type === "video" ? previews[0] : undefined,
           time: currentTime,
+          timestamp: new Date(),
           sent: true,
           type,
           isUploading: true,
@@ -709,11 +756,11 @@ const ChatInterfaceChat: React.FC = () => {
           const updatedChats = prev.map((chat) =>
             chat._id === selectedChat
               ? {
-                ...chat,
-                lastMessage: mediaDisplayText,
-                time: currentTime,
-                timestamp: new Date(),
-              }
+                  ...chat,
+                  lastMessage: mediaDisplayText,
+                  time: currentTime,
+                  timestamp: new Date(),
+                }
               : chat
           );
 
@@ -775,11 +822,11 @@ const ChatInterfaceChat: React.FC = () => {
           const updatedChats = prev.map((chat) =>
             chat._id === selectedChat
               ? {
-                ...chat,
-                lastMessage: chat.lastMessage, // Keep original message
-                time: chat.time, // Keep original time
-                timestamp: chat.timestamp, // Keep original timestamp
-              }
+                  ...chat,
+                  lastMessage: chat.lastMessage, // Keep original message
+                  time: chat.time, // Keep original time
+                  timestamp: chat.timestamp, // Keep original timestamp
+                }
               : chat
           );
           return updatedChats;
@@ -787,6 +834,7 @@ const ChatInterfaceChat: React.FC = () => {
       }
     }
   };
+
   // Delete message
   const handleDeleteMessage = async (messageId: string) => {
     try {
@@ -880,20 +928,41 @@ const ChatInterfaceChat: React.FC = () => {
         lastMessage: newChat.chat.lastMessage?.content || "",
         time: new Date(
           newChat.chat.lastMessage?.createdAt ||
-          newChat.chat.createdAt ||
-          Date.now()
+            newChat.chat.createdAt ||
+            Date.now()
         ).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
+        timestamp: new Date(
+          newChat.chat.lastMessage?.createdAt ||
+            newChat.chat.createdAt ||
+            Date.now()
+        ),
         unread: newChat.chat.unreadCount || 0,
         avatar: vendorDetails.avatar || "",
         online: false,
         pinned: newChat.chat.pinned || false,
         isGroup: newChat.chat.isCustomerCareChat || false,
       };
+
       setPendingChat(formattedChat);
       setSelectedChat(formattedChat._id);
+
+      // Add the new chat to the chats list and sort
+      setChats((prev) => {
+        const updatedChats = [formattedChat, ...prev];
+        return updatedChats.sort((a, b) => {
+          const timeA = a.timestamp
+            ? a.timestamp.getTime()
+            : new Date(`1970-01-01T${a.time}`).getTime();
+          const timeB = b.timestamp
+            ? b.timestamp.getTime()
+            : new Date(`1970-01-01T${b.time}`).getTime();
+          return timeB - timeA;
+        });
+      });
+
       if (isMobile) {
         setShowChatList(false);
       }
@@ -981,15 +1050,16 @@ const ChatInterfaceChat: React.FC = () => {
       )}
 
       <div
-        className={`${isMobile
+        className={`${
+          isMobile
             ? showChatList
               ? "w-full"
               : "hidden"
             : "w-80 border-r border-chat-border"
-          } bg-card`}
+        } bg-card`}
       >
         {isLoadingChats ? (
-          <div className="p-4">Loading chats...</div>
+          <ChatListSkeleton />
         ) : error ? (
           <div className="p-4 text-red-500">{error}</div>
         ) : (
@@ -1007,8 +1077,9 @@ const ChatInterfaceChat: React.FC = () => {
         )}
       </div>
       <div
-        className={`${isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
-          } flex flex-col relative`}
+        className={`${
+          isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
+        } flex flex-col relative`}
       >
         {selectedChat && selectedChatData ? (
           <>
@@ -1025,9 +1096,9 @@ const ChatInterfaceChat: React.FC = () => {
               )}
             </div>
             <ScrollArea className="flex-1 pt-16 pb-20 overflow-y-auto">
-              <div className="p-4 space-y-4">
+              <div className="p-4">
                 {isLoadingMessages ? (
-                  <div>Loading messages...</div>
+                  <MessageSkeleton />
                 ) : error ? (
                   <div className="text-red-500">{error}</div>
                 ) : messages.length === 0 ? (
@@ -1035,16 +1106,11 @@ const ChatInterfaceChat: React.FC = () => {
                     No messages yet
                   </div>
                 ) : (
-                  messages.map((message) => (
-                    <MessageBubble
-                      key={message._id}
-                      message={message}
-                      onDelete={() => handleDeleteMessage(message._id)}
-                      onEdit={(content) =>
-                        handleEditMessage(message._id, content)
-                      }
-                    />
-                  ))
+                  <MessageListWithDates
+                    messages={messages}
+                    onDeleteMessage={handleDeleteMessage}
+                    onEditMessage={handleEditMessage}
+                  />
                 )}
                 <div ref={messagesEndRef} />
               </div>

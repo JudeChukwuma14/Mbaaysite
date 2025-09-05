@@ -45,13 +45,15 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({
-  chats = [],
+ chats = [],
   selectedChat,
   onSelectChat,
   // onPinChat,
   // onDeleteChat,
   onNewChat,
 }) => {
+   console.log("DEBUG: ChatList rendering with", chats.length, "chats");
+  console.log("DEBUG: ChatList chats:", chats);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>([]);
