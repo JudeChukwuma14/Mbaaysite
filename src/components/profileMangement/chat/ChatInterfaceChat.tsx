@@ -148,7 +148,6 @@ const ChatInterfaceChat: React.FC = () => {
   };
 
   // Handle new message from socket (with your deduplication logic)
-  // Handle new message from socket (with your deduplication logic)
   const handleNewMessage = (msg: any) => {
     console.log("📩 New real-time message:", JSON.stringify(msg, null, 2));
     const isSentByCurrentUser = msg.sender?._id === currentUserId;
@@ -196,9 +195,9 @@ const ChatInterfaceChat: React.FC = () => {
       setMessages((prev) =>
         prev.map((m) =>
           m._id === existingMessage._id ||
-          (m.isOptimistic &&
-            m.content === newMessage.content &&
-            m.type === newMessage.type)
+            (m.isOptimistic &&
+              m.content === newMessage.content &&
+              m.type === newMessage.type)
             ? newMessage
             : m
         )
@@ -215,15 +214,30 @@ const ChatInterfaceChat: React.FC = () => {
 
     // Update the chat list with the new last message and sort by timestamp
     setChats((prev) => {
+      // Determine the display text for the last message
+      let lastMessageText = msg.content || "";
+
+      // Check for media types and set appropriate display text
+      if (msg.images && msg.images.length > 0) {
+        lastMessageText = "📷 Image";
+      } else if (msg.video) {
+        lastMessageText = "🎥 Video";
+      } else if (
+        msg.type === "file" ||
+        (msg.content && msg.content.includes("[file]"))
+      ) {
+        lastMessageText = "📎 File";
+      }
+
       const updatedChats = prev.map((chat) =>
         chat._id === msg.chatId
           ? {
-              ...chat,
-              lastMessage: newMessage.content,
-              time: newMessage.time,
-              timestamp: new Date(msg.createdAt), // Use the actual message timestamp
-              unread: isSentByCurrentUser ? chat.unread : chat.unread + 1,
-            }
+            ...chat,
+            lastMessage: lastMessageText,
+            time: newMessage.time,
+            timestamp: new Date(msg.createdAt),
+            unread: isSentByCurrentUser ? chat.unread : chat.unread + 1,
+          }
           : chat
       );
 
@@ -416,6 +430,7 @@ const ChatInterfaceChat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Fetch chats
   useEffect(() => {
     const fetchChats = async () => {
       if (!currentUserId) {
@@ -434,28 +449,37 @@ const ChatInterfaceChat: React.FC = () => {
               const otherParticipant = chat.participants.find(
                 (p: any) => p.participantId !== currentUserId
               );
+
+              // Get the last message content with proper media formatting
+              let lastMessageContent = chat.lastMessage?.content ||
+                messageData.messages[messageData.messages.length - 1].content ||
+                "";
+
+              // Check if the last message is a media message and format accordingly
+              const lastMessage = messageData.messages[messageData.messages.length - 1];
+              if (lastMessage.images && lastMessage.images.length > 0) {
+                lastMessageContent = "📷 Image";
+              } else if (lastMessage.video) {
+                lastMessageContent = "🎥 Video";
+              } else if (lastMessage.type === "file" || (lastMessage.content && lastMessage.content.includes("[file]"))) {
+                lastMessageContent = "📎 File";
+              }
+
               formattedChats.push({
                 _id: chat._id,
                 name:
                   otherParticipant?.details?.storeName ||
                   otherParticipant?.details?.name ||
-                  `User ${
-                    otherParticipant?.participantId?.slice(-4) || "Unknown"
+                  `User ${otherParticipant?.participantId?.slice(-4) || "Unknown"
                   }`,
-                lastMessage:
-                  chat.lastMessage?.content ||
-                  messageData.messages[messageData.messages.length - 1]
-                    .content ||
-                  "",
+                lastMessage: lastMessageContent,
                 time: new Date(
                   chat.lastMessage?.createdAt || chat.createdAt || Date.now()
                 ).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
                 }),
-                timestamp: new Date(
-                  chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-                ), // Add timestamp
+                timestamp: new Date(chat.lastMessage?.createdAt || chat.createdAt || Date.now()),
                 unread: chat.unreadCount || 0,
                 avatar:
                   otherParticipant?.details?.avatar ||
@@ -478,12 +502,8 @@ const ChatInterfaceChat: React.FC = () => {
 
         // Sort chats by timestamp (newest first), fallback to time string if no timestamp
         const sortedChats = formattedChats.sort((a, b) => {
-          const timeA = a.timestamp
-            ? a.timestamp.getTime()
-            : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp
-            ? b.timestamp.getTime()
-            : new Date(`1970-01-01T${b.time}`).getTime();
+          const timeA = a.timestamp ? a.timestamp.getTime() : new Date(`1970-01-01T${a.time}`).getTime();
+          const timeB = b.timestamp ? b.timestamp.getTime() : new Date(`1970-01-01T${b.time}`).getTime();
           return timeB - timeA; // Newest first
         });
 
@@ -585,156 +605,188 @@ const ChatInterfaceChat: React.FC = () => {
   }, [selectedChat, chats, pendingChat]);
 
   // Send message with optimistic update
- // Send message with optimistic update
-const handleSendMessage = async (
-  content: string,
-  type: "text" | "image" | "video" | "file" = "text",
-  files?: File[],
-  onUploadStart?: () => { tempId: string; previews: string[] },
-  onUploadComplete?: (tempId: string) => void
-) => {
-  let tempId: string | undefined;
-  if (!selectedChat) {
-    toast.error("No chat selected.");
-    return;
-  }
-  if (!currentUserId) {
-    toast.error("Please log in to send messages.");
-    return;
-  }
-  try {
-    let formattedMessage: Message;
-    if (type === "text" && content.trim()) {
-      tempId = `temp-${Date.now()}-${Math.random()}`;
-      const currentTime = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      
-      formattedMessage = {
-        _id: tempId,
-        content,
-        images: undefined,
-        video: undefined,
-        time: currentTime,
-        sent: true,
-        type: "text",
-        isUploading: false,
-        isOptimistic: true,
-      };
-      setMessages((prev) => [...prev, formattedMessage]);
+  const handleSendMessage = async (
+    content: string,
+    type: "text" | "image" | "video" | "file" = "text",
+    files?: File[],
+    onUploadStart?: () => { tempId: string; previews: string[] },
+    onUploadComplete?: (tempId: string) => void
+  ) => {
+    let tempId: string | undefined;
+    if (!selectedChat) {
+      toast.error("No chat selected.");
+      return;
+    }
+    if (!currentUserId) {
+      toast.error("Please log in to send messages.");
+      return;
+    }
+    try {
+      let formattedMessage: Message;
+      if (type === "text" && content.trim()) {
+        tempId = `temp-${Date.now()}-${Math.random()}`;
+        const currentTime = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-      // Immediately update the chat list with new timestamp and sort
-      setChats(prev => {
-        const updatedChats = prev.map(chat => 
-          chat._id === selectedChat
-            ? {
+        formattedMessage = {
+          _id: tempId,
+          content,
+          images: undefined,
+          video: undefined,
+          time: currentTime,
+          sent: true,
+          type: "text",
+          isUploading: false,
+          isOptimistic: true,
+        };
+        setMessages((prev) => [...prev, formattedMessage]);
+
+        // Immediately update the chat list with new timestamp and sort
+        setChats((prev) => {
+          const updatedChats = prev.map((chat) =>
+            chat._id === selectedChat
+              ? {
                 ...chat,
                 lastMessage: content,
                 time: currentTime,
-                timestamp: new Date(), // Update to current time
+                timestamp: new Date(),
               }
-            : chat
-        );
-        
-        // Sort by timestamp (newest first), fallback to time string if no timestamp
-        return updatedChats.sort((a, b) => {
-          const timeA = a.timestamp ? a.timestamp.getTime() : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp ? b.timestamp.getTime() : new Date(`1970-01-01T${b.time}`).getTime();
-          return timeB - timeA; // Newest first
+              : chat
+          );
+
+          // Sort by timestamp (newest first), fallback to time string if no timestamp
+          return updatedChats.sort((a, b) => {
+            const timeA = a.timestamp
+              ? a.timestamp.getTime()
+              : new Date(`1970-01-01T${a.time}`).getTime();
+            const timeB = b.timestamp
+              ? b.timestamp.getTime()
+              : new Date(`1970-01-01T${b.time}`).getTime();
+            return timeB - timeA; // Newest first
+          });
         });
-      });
 
-      // Send the message - the socket will handle the response
-      await sendMessage(selectedChat, content);
+        // Send the message - the socket will handle the response
+        await sendMessage(selectedChat, content);
+      } else if (
+        files &&
+        files.length > 0 &&
+        onUploadStart &&
+        onUploadComplete
+      ) {
+        const { tempId: tempMessageId, previews } = onUploadStart();
+        tempId = tempMessageId;
+        const currentTime = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-    } else if (
-      files &&
-      files.length > 0 &&
-      onUploadStart &&
-      onUploadComplete
-    ) {
-      const { tempId: tempMessageId, previews } = onUploadStart();
-      tempId = tempMessageId;
-      const currentTime = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      
-      formattedMessage = {
-        _id: tempId,
-        content: previews[0] || files[0].name,
-        images: type === "image" ? previews : undefined,
-        video: type === "video" ? previews[0] : undefined,
-        time: currentTime,
-        sent: true,
-        type,
-        isUploading: true,
-        isOptimistic: true,
-      };
-      setMessages((prev) => [...prev, formattedMessage]);
+        formattedMessage = {
+          _id: tempId,
+          content: previews[0] || files[0].name,
+          images: type === "image" ? previews : undefined,
+          video: type === "video" ? previews[0] : undefined,
+          time: currentTime,
+          sent: true,
+          type,
+          isUploading: true,
+          isOptimistic: true,
+        };
+        setMessages((prev) => [...prev, formattedMessage]);
 
-      // Immediately update the chat list for media messages too
-      setChats(prev => {
-        const updatedChats = prev.map(chat => 
-          chat._id === selectedChat
-            ? {
+        // Determine the display text for media messages
+        let mediaDisplayText = "📎 File";
+        if (type === "image") {
+          mediaDisplayText = "📷 Image";
+        } else if (type === "video") {
+          mediaDisplayText = "🎥 Video";
+        }
+
+        // Immediately update the chat list for media messages
+        setChats((prev) => {
+          const updatedChats = prev.map((chat) =>
+            chat._id === selectedChat
+              ? {
                 ...chat,
-                lastMessage: type === "image" ? "📷 Photo" : type === "video" ? "🎥 Video" : "📎 File",
+                lastMessage: mediaDisplayText,
                 time: currentTime,
                 timestamp: new Date(),
               }
-            : chat
-        );
-        
-        // Sort by timestamp (newest first)
-        return updatedChats.sort((a, b) => {
-          const timeA = a.timestamp ? a.timestamp.getTime() : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp ? b.timestamp.getTime() : new Date(`1970-01-01T${b.time}`).getTime();
-          return timeB - timeA;
+              : chat
+          );
+
+          // Sort by timestamp (newest first)
+          return updatedChats.sort((a, b) => {
+            const timeA = a.timestamp
+              ? a.timestamp.getTime()
+              : new Date(`1970-01-01T${a.time}`).getTime();
+            const timeB = b.timestamp
+              ? b.timestamp.getTime()
+              : new Date(`1970-01-01T${b.time}`).getTime();
+            return timeB - timeA;
+          });
         });
-      });
 
-      // Send the media - the socket will handle the response
-      await sendMediaMessage(selectedChat, files);
+        // Send the media - the socket will handle the response
+        await sendMediaMessage(selectedChat, files);
 
-      onUploadComplete(tempId);
-    } else {
-      return;
-    }
+        onUploadComplete(tempId);
+      } else {
+        return;
+      }
 
-    if (pendingChat && pendingChat._id === selectedChat) {
-      setChats((prev) => {
-        const updatedChats = [pendingChat, ...prev];
-        // Sort the updated chats
-        return updatedChats.sort((a, b) => {
-          const timeA = a.timestamp ? a.timestamp.getTime() : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp ? b.timestamp.getTime() : new Date(`1970-01-01T${b.time}`).getTime();
-          return timeB - timeA;
+      if (pendingChat && pendingChat._id === selectedChat) {
+        setChats((prev) => {
+          const updatedChats = [pendingChat, ...prev];
+          // Sort the updated chats
+          return updatedChats.sort((a, b) => {
+            const timeA = a.timestamp
+              ? a.timestamp.getTime()
+              : new Date(`1970-01-01T${a.time}`).getTime();
+            const timeB = b.timestamp
+              ? b.timestamp.getTime()
+              : new Date(`1970-01-01T${b.time}`).getTime();
+            return timeB - timeA;
+          });
         });
-      });
-      setPendingChat(null);
-      socketRef.current?.emit("chatStarted", {
-        ...pendingChat,
-        chatId: selectedChat,
-      });
-    }
-  } catch (error: any) {
-    const errorMsg =
-      error.response?.data?.message ||
-      "Failed to send message. Please try again.";
-    console.error(
-      "DEBUG: Error sending message:",
-      JSON.stringify(error, null, 2)
-    );
-    setError(errorMsg);
-    toast.error(errorMsg);
-    if (tempId) {
-      setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
-    }
-  }
-};
+        setPendingChat(null);
+        socketRef.current?.emit("chatStarted", {
+          ...pendingChat,
+          chatId: selectedChat,
+        });
+      }
+    } catch (error: any) {
+      const errorMsg =
+        error.response?.data?.message ||
+        "Failed to send message. Please try again.";
+      console.error(
+        "DEBUG: Error sending message:",
+        JSON.stringify(error, null, 2)
+      );
+      setError(errorMsg);
+      toast.error(errorMsg);
+      if (tempId) {
+        setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
 
+        // Also revert the chat list update if message sending failed
+        setChats((prev) => {
+          const updatedChats = prev.map((chat) =>
+            chat._id === selectedChat
+              ? {
+                ...chat,
+                lastMessage: chat.lastMessage, // Keep original message
+                time: chat.time, // Keep original time
+                timestamp: chat.timestamp, // Keep original timestamp
+              }
+              : chat
+          );
+          return updatedChats;
+        });
+      }
+    }
+  };
   // Delete message
   const handleDeleteMessage = async (messageId: string) => {
     try {
@@ -828,8 +880,8 @@ const handleSendMessage = async (
         lastMessage: newChat.chat.lastMessage?.content || "",
         time: new Date(
           newChat.chat.lastMessage?.createdAt ||
-            newChat.chat.createdAt ||
-            Date.now()
+          newChat.chat.createdAt ||
+          Date.now()
         ).toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -929,13 +981,12 @@ const handleSendMessage = async (
       )}
 
       <div
-        className={`${
-          isMobile
+        className={`${isMobile
             ? showChatList
               ? "w-full"
               : "hidden"
             : "w-80 border-r border-chat-border"
-        } bg-card`}
+          } bg-card`}
       >
         {isLoadingChats ? (
           <div className="p-4">Loading chats...</div>
@@ -956,9 +1007,8 @@ const handleSendMessage = async (
         )}
       </div>
       <div
-        className={`${
-          isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
-        } flex flex-col relative`}
+        className={`${isMobile ? (showChatList ? "hidden" : "w-full") : "flex-1"
+          } flex flex-col relative`}
       >
         {selectedChat && selectedChatData ? (
           <>

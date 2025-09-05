@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MoreVertical, Edit3, Trash2, Copy, Loader2 } from "lucide-react";
+import { MoreVertical, Edit3, Trash2, Copy, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface Message {
   _id: string;
@@ -30,6 +31,8 @@ interface MessageBubbleProps {
 const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(message.content);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   console.log(
     "DEBUG: Rendering MessageBubble with message:",
@@ -55,45 +58,127 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
     navigator.clipboard.writeText(message.content);
   };
 
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index);
+    setLightboxOpen(true);
+  };
+
+  const navigateImage = (direction: "prev" | "next") => {
+    if (!message.images) return;
+    
+    if (direction === "next") {
+      setCurrentImageIndex((prev) => (prev + 1) % message.images!.length);
+    } else {
+      setCurrentImageIndex((prev) => (prev - 1 + message.images!.length) % message.images!.length);
+    }
+  };
+
   const renderMediaContent = () => {
     switch (message.type) {
       case "image":
         return (
           <div className="max-w-xs space-y-2">
             {message.images && message.images.length > 0 ? (
-              message.images.map((url, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={url}
-                    alt={`Shared image ${index + 1}`}
-                    className={`w-full h-auto rounded-lg ${
-                      message.isUploading ? "opacity-50" : ""
+              <div className={`grid gap-2 ${message.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                {message.images.slice(0, 4).map((url, index) => (
+                  <div 
+                    key={index} 
+                    className={`relative cursor-pointer group ${
+                      message.images!.length > 4 && index === 3 ? 'overflow-hidden' : ''
                     }`}
-                    onError={(e) => {
-                      console.log("DEBUG: Image load error:", url);
-                      const target = e.currentTarget as HTMLImageElement;
-                      const sibling = target.nextElementSibling as HTMLElement;
-                      target.style.display = "none";
-                      if (sibling) sibling.style.display = "block";
-                    }}
-                  />
-                  {message.isUploading && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+                    onClick={() => openLightbox(index)}
+                  >
+                    <img
+                      src={url}
+                      alt={`Shared image ${index + 1}`}
+                      className={`w-full h-32 object-cover rounded-lg transition-transform duration-200 group-hover:scale-105 ${
+                        message.isUploading ? "opacity-50" : ""
+                      }`}
+                      onError={(e) => {
+                        console.log("DEBUG: Image load error:", url);
+                        const target = e.currentTarget as HTMLImageElement;
+                        const sibling = target.nextElementSibling as HTMLElement;
+                        target.style.display = "none";
+                        if (sibling) sibling.style.display = "block";
+                      }}
+                    />
+                    
+                    {/* Overlay for more images indicator */}
+                    {message.images && message.images.length > 4 && index === 3 && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
+                        <span className="text-white font-semibold">+{message.images.length - 3}</span>
+                      </div>
+                    )}
+                    
+                    {message.isUploading && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                        <Loader2 className="w-6 h-6 text-white animate-spin" />
+                      </div>
+                    )}
+                    
+                    <div className="hidden p-2 text-xs rounded bg-chat-muted">
+                      📷 Image: {url}
                     </div>
-                  )}
-                  <div className="hidden p-3 text-sm rounded-lg bg-chat-muted">
-                    📷 Image: {url}
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             ) : (
               <div className="p-3 text-sm rounded-lg bg-chat-muted">
                 📷 No images available
               </div>
             )}
+            
+            {/* Lightbox Modal */}
+            <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+              <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black border-0">
+                <div className="relative flex items-center justify-center h-[80vh]">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-4 right-4 z-10 text-white hover:bg-white/20"
+                    onClick={() => setLightboxOpen(false)}
+                  >
+                    <X className="w-6 h-6" />
+                  </Button>
+                  
+                  {message.images && message.images.length > 1 && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute left-4 z-10 text-white hover:bg-white/20"
+                        onClick={() => navigateImage("prev")}
+                      >
+                        <ChevronLeft className="w-8 h-8" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-4 z-10 text-white hover:bg-white/20"
+                        onClick={() => navigateImage("next")}
+                      >
+                        <ChevronRight className="w-8 h-8" />
+                      </Button>
+                    </>
+                  )}
+                  
+                  <img
+                    src={message.images?.[currentImageIndex]}
+                    alt={`Image ${currentImageIndex + 1}`}
+                    className="max-w-full max-h-full object-contain"
+                  />
+                  
+                  {message.images && message.images.length > 1 && (
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50 px-3 py-1 rounded-full">
+                      {currentImageIndex + 1} / {message.images.length}
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         );
+        
       case "video":
         return (
           <div className="relative max-w-xs">
@@ -102,7 +187,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                 <video
                   src={message.video}
                   controls
-                  className={`w-full h-auto rounded-lg ${
+                  className={`w-full h-48 object-cover rounded-lg ${
                     message.isUploading ? "opacity-50" : ""
                   }`}
                   onError={(e) => {
@@ -114,8 +199,8 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                   }}
                 />
                 {message.isUploading && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-orange-600 animate-spin" />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
                   </div>
                 )}
               </>
@@ -124,11 +209,9 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                 🎥 No video available
               </div>
             )}
-            <div className="hidden p-3 text-sm rounded-lg bg-chat-muted">
-              🎥 Video: {message.video || "None"}
-            </div>
           </div>
         );
+        
       case "file":
         return (
           <div className="max-w-xs p-3 rounded-lg bg-chat-muted">
@@ -145,6 +228,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
             </div>
           </div>
         );
+        
       default:
         return isEditing ? (
           <div className="space-y-2">
@@ -177,14 +261,14 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
             </div>
           </div>
         ) : (
-          <p className="break-words">{message.content}</p>
+          <p className="break-words whitespace-pre-wrap">{message.content}</p>
         );
     }
   };
 
   return (
-    <div className={`flex ${message.sent ? "justify-end" : "justify-start"} group`}>
-      <div className={`max-w-[70%] ${message.sent ? "order-2" : "order-1"}`}>
+    <div className={`flex ${message.sent ? "justify-end" : "justify-start"} group mb-4`}>
+      <div className={`max-w-[80%] ${message.sent ? "order-2" : "order-1"}`}>
         <div
           className={`relative p-3 rounded-2xl ${
             message.sent
@@ -193,10 +277,10 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
           } ${message.sent ? "rounded-br-md" : "rounded-bl-md"}`}
         >
           {renderMediaContent()}
-          <div className="flex items-end justify-between mt-1 space-x-2">
+          <div className="flex items-end justify-between mt-2 space-x-2">
             <span
               className={`text-xs ${
-                message.sent ? "text-black" : "text-muted-foreground"
+                message.sent ? "text-message-sent-foreground/70" : "text-message-received-foreground/70"
               }`}
             >
               {message.time}
