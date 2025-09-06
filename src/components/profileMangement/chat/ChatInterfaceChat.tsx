@@ -274,13 +274,40 @@ const ChatInterfaceChat: React.FC = () => {
       (data: { chatId: string; _id: string }) => {
         setMessages((prev) => prev.filter((m) => m._id !== data._id));
 
+        // Get remaining messages after deletion
         const remainingMessages = messages.filter((m) => m._id !== data._id);
+
         if (remainingMessages.length === 0 && data.chatId === selectedChat) {
+          // Remove chat if no messages left
           setChats((prev) => prev.filter((chat) => chat._id !== data.chatId));
           if (selectedChat === data.chatId) {
             setSelectedChat(null);
             setShowChatList(true);
           }
+        } else if (data.chatId === selectedChat) {
+          // Update chat with new last message
+          const newLastMessage =
+            remainingMessages[remainingMessages.length - 1];
+          const lastMessageContent = newLastMessage.images?.length
+            ? "📷 Image"
+            : newLastMessage.video
+            ? "🎥 Video"
+            : newLastMessage.type === "file"
+            ? "📎 File"
+            : newLastMessage.content;
+
+          setChats((prev) =>
+            prev.map((chat) =>
+              chat._id === data.chatId
+                ? {
+                    ...chat,
+                    lastMessage: lastMessageContent,
+                    time: newLastMessage.time,
+                    timestamp: newLastMessage.timestamp,
+                  }
+                : chat
+            )
+          );
         }
       }
     );
@@ -597,6 +624,35 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [selectedChat, chats, pendingChat]);
 
+  // Add this useEffect in your ChatInterfaceChat component, right after the other useEffects
+useEffect(() => {
+  if (selectedChat && messages.length > 0) {
+    const lastMessage = messages[messages.length - 1];
+    const lastMessageContent = lastMessage.images?.length 
+      ? "📷 Image" 
+      : lastMessage.video 
+      ? "🎥 Video" 
+      : lastMessage.type === "file" 
+      ? "📎 File" 
+      : lastMessage.content;
+
+    // Update the chat with the latest message info
+    setChats((prev) =>
+      prev.map((chat) =>
+        chat._id === selectedChat
+          ? {
+              ...chat,
+              lastMessage: lastMessageContent,
+              time: lastMessage.time,
+              timestamp: lastMessage.timestamp,
+              hasMessages: true,
+            }
+          : chat
+      )
+    );
+  }
+}, [messages, selectedChat]);
+
   const handleSendMessage = async (
     content: string,
     type: "text" | "image" | "video" | "file" = "text",
@@ -783,6 +839,26 @@ const ChatInterfaceChat: React.FC = () => {
     }
   };
 
+  // const handleDeleteMessage = async (messageId: string) => {
+  //   try {
+  //     await deleteMessage(messageId);
+  //     const updatedMessages = messages.filter((msg) => msg._id !== messageId);
+  //     setMessages(updatedMessages);
+
+  //     if (updatedMessages.length === 0) {
+  //       setChats((prev) => prev.filter((chat) => chat._id !== selectedChat));
+  //       setSelectedChat(null);
+  //       setShowChatList(true);
+  //     }
+  //   } catch (error: any) {
+  //     const errorMsg =
+  //       error.response?.data?.message ||
+  //       "Failed to delete message. Please try again.";
+  //     setError(errorMsg);
+  //     toast.error(errorMsg);
+  //   }
+  // };
+
   const handleDeleteMessage = async (messageId: string) => {
     try {
       await deleteMessage(messageId);
@@ -790,9 +866,33 @@ const ChatInterfaceChat: React.FC = () => {
       setMessages(updatedMessages);
 
       if (updatedMessages.length === 0) {
+        // If no messages left, remove the chat
         setChats((prev) => prev.filter((chat) => chat._id !== selectedChat));
         setSelectedChat(null);
         setShowChatList(true);
+      } else {
+        // Update the chat with the new last message and timestamp
+        const newLastMessage = updatedMessages[updatedMessages.length - 1];
+        const lastMessageContent = newLastMessage.images?.length
+          ? "📷 Image"
+          : newLastMessage.video
+          ? "🎥 Video"
+          : newLastMessage.type === "file"
+          ? "📎 File"
+          : newLastMessage.content;
+
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat._id === selectedChat
+              ? {
+                  ...chat,
+                  lastMessage: lastMessageContent,
+                  time: newLastMessage.time,
+                  timestamp: newLastMessage.timestamp,
+                }
+              : chat
+          )
+        );
       }
     } catch (error: any) {
       const errorMsg =
@@ -802,7 +902,6 @@ const ChatInterfaceChat: React.FC = () => {
       toast.error(errorMsg);
     }
   };
-
   const handleEditMessage = async (messageId: string, newContent: string) => {
     try {
       await editMessage(messageId, newContent);
