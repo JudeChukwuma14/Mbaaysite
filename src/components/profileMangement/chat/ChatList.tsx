@@ -37,7 +37,6 @@ interface ChatListProps {
   onSelectChat: (chatId: string) => void;
   onPinChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
-  // Updated to pass vendorDetails for immediate use in ChatHeader
   onNewChat: (
     receiverId: string,
     vendorDetails: { storeName: string; avatar?: string }
@@ -45,14 +44,12 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({
- chats = [],
+  chats = [],
   selectedChat,
   onSelectChat,
-  // onPinChat,
-  // onDeleteChat,
   onNewChat,
 }) => {
-   console.log("DEBUG: ChatList rendering with", chats.length, "chats");
+  console.log("DEBUG: ChatList rendering with", chats.length, "chats");
   console.log("DEBUG: ChatList chats:", chats);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
@@ -90,11 +87,15 @@ const ChatList: React.FC<ChatListProps> = ({
     vendor.storeName.toLowerCase().includes(vendorSearch.toLowerCase())
   );
 
-  const filteredChats = (chats || []).filter((chat) =>
-    chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Add duplicate filtering to prevent the key error
+  const filteredChats = (chats || [])
+    .filter((chat) =>
+      chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .filter((chat, index, self) => 
+      index === self.findIndex((c) => c._id === chat._id)
+    );
 
-  // Updated to pass vendorDetails (storeName, avatar) to onNewChat
   const handleStartNewChat = (vendor: Vendor) => {
     onNewChat(vendor._id, {
       storeName: vendor.storeName,

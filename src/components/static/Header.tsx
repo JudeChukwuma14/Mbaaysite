@@ -41,7 +41,6 @@ const Header: React.FC = () => {
 
   const user = useSelector((state: RootState) => state.user?.user || null);
   const vendor = useSelector((state: RootState) => state.vendor || null);
-  console.log("....Vendor:----", vendor);
   const settings = useSelector((state: RootState) => state.settings);
 
   const countries = Country.getAllCountries();
@@ -136,7 +135,6 @@ const Header: React.FC = () => {
   }, [word]);
 
   useEffect(() => {
-    console.log("Current language:", i18next.language);
     console.log("Translation for 'welcome':", t("welcome"));
   }, [t]);
 

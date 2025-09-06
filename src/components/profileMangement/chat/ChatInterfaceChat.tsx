@@ -440,8 +440,8 @@ const ChatInterfaceChat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Fetch chats
-  // Fetch chats
+ 
+    // Fetch chats
   useEffect(() => {
     const fetchChats = async () => {
       if (!currentUserId) {
@@ -455,10 +455,18 @@ const ChatInterfaceChat: React.FC = () => {
         const chatData = await getUserChats();
         console.log("DEBUG: Raw chat data from API:", chatData);
 
-        const formattedChats: Chat[] = [];
+        const uniqueChats = new Map(); // Use Map to ensure uniqueness by _id
+        
         for (const chat of chatData.chats || []) {
           try {
             console.log("DEBUG: Processing chat:", chat._id);
+            
+            // Skip if we already processed this chat
+            if (uniqueChats.has(chat._id)) {
+              console.log("DEBUG: Skipping duplicate chat:", chat._id);
+              continue;
+            }
+            
             const messageData = await getChatMessages(chat._id);
             console.log("DEBUG: Messages for chat", chat._id, ":", messageData);
 
@@ -488,7 +496,7 @@ const ChatInterfaceChat: React.FC = () => {
                 lastMessageContent = "📎 File";
               }
 
-              formattedChats.push({
+              const formattedChat: Chat = {
                 _id: chat._id,
                 name:
                   otherParticipant?.details?.storeName ||
@@ -514,7 +522,10 @@ const ChatInterfaceChat: React.FC = () => {
                 online: otherParticipant?.details?.online || false,
                 pinned: chat.pinned || false,
                 isGroup: chat.isCustomerCareChat || false,
-              });
+              };
+
+              // Add to map to ensure uniqueness
+              uniqueChats.set(chat._id, formattedChat);
             } else {
               console.log(
                 "DEBUG: Skipping chat",
@@ -532,7 +543,9 @@ const ChatInterfaceChat: React.FC = () => {
           }
         }
 
-        console.log("DEBUG: Formatted chats:", formattedChats);
+        // Convert map values to array
+        const formattedChats = Array.from(uniqueChats.values());
+        console.log("DEBUG: Formatted chats (unique):", formattedChats);
 
         // Sort chats by timestamp (newest first), fallback to time string if no timestamp
         const sortedChats = formattedChats.sort((a, b) => {
@@ -578,6 +591,7 @@ const ChatInterfaceChat: React.FC = () => {
       console.log("DEBUG: No currentUserId available");
     }
   }, [currentUserId, location.state]);
+
   // Fetch initial messages
   useEffect(() => {
     if (selectedChat && currentUserId) {
