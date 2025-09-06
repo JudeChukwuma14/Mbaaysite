@@ -41,6 +41,7 @@ interface ChatListProps {
     receiverId: string,
     vendorDetails: { storeName: string; avatar?: string }
   ) => void;
+  pendingChats?: string[]; // Add this prop
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -48,9 +49,8 @@ const ChatList: React.FC<ChatListProps> = ({
   selectedChat,
   onSelectChat,
   onNewChat,
+  pendingChats = [],
 }) => {
-  console.log("DEBUG: ChatList rendering with", chats.length, "chats");
-  console.log("DEBUG: ChatList chats:", chats);
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -88,12 +88,16 @@ const ChatList: React.FC<ChatListProps> = ({
   );
 
   // Add duplicate filtering to prevent the key error
-  const filteredChats = (chats || [])
+  const activeChats = chats.filter(
+    (chat) => chat.lastMessage || !pendingChats.includes(chat._id)
+  );
+
+  const filteredChats = activeChats
     .filter((chat) =>
       chat.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    .filter((chat, index, self) => 
-      index === self.findIndex((c) => c._id === chat._id)
+    .filter(
+      (chat, index, self) => index === self.findIndex((c) => c._id === chat._id)
     );
 
   const handleStartNewChat = (vendor: Vendor) => {

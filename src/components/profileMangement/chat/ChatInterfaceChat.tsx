@@ -25,7 +25,6 @@ import MessageListWithDates from "./MessageListWithDates";
 import ChatListSkeleton from "./ChatListSkeleton";
 import MessageSkeleton from "./MessageSkeleton";
 
-// Notification sound
 const notificationSound = new Audio("/sounds/notification.mp3");
 
 interface Notification {
@@ -46,6 +45,7 @@ interface Chat {
   online: boolean;
   pinned: boolean;
   isGroup?: boolean;
+  hasMessages?: boolean;
 }
 
 interface Message {
@@ -65,9 +65,6 @@ interface Message {
 const API_NOTIFICATION_BASE_URL =
   "https://mbayy-be.onrender.com/api/v1/notifications";
 const SOCKET_URL = "https://mbayy-be.onrender.com";
-
-// Date utility function
-// (removed unused formatMessageDate)
 
 const ChatInterfaceChat: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
@@ -93,16 +90,12 @@ const ChatInterfaceChat: React.FC = () => {
   );
   const currentUserId = user?._id || vendor?._id;
 
-  // Request notification permission
   useEffect(() => {
     if ("Notification" in window) {
-      Notification.requestPermission().then((permission) => {
-        console.log(`✅ Notification permission ${permission}`);
-      });
+      Notification.requestPermission();
     }
   }, []);
 
-  // Fetch notifications
   const fetchNotifications = async () => {
     if (!currentUserId || !token) return;
     try {
@@ -114,29 +107,22 @@ const ChatInterfaceChat: React.FC = () => {
       );
       setNotifications(response.data.notifications || []);
     } catch (err: any) {
-      console.error(
-        "❌ Fetch notifications error:",
-        err.response?.data || err.message
-      );
       setError("Failed to fetch notifications");
       toast.error("Failed to fetch notifications");
     }
   };
 
-  // Fetch notifications on mount/user change
   useEffect(() => {
     if (currentUserId && token) {
       fetchNotifications();
     }
   }, [currentUserId, token]);
 
-  // Trigger notification
   const triggerNotification = (
     messageContent: string,
     senderName: string = "Unknown"
   ) => {
-    notificationSound.play().catch((err) => {
-      console.error("❌ Failed to play notification sound:", err);
+    notificationSound.play().catch(() => {
       document.querySelector(".sticky.top-0")?.classList.add("animate-pulse");
       setTimeout(() => {
         document
@@ -153,9 +139,7 @@ const ChatInterfaceChat: React.FC = () => {
     }
   };
 
-  // Handle new message from socket
   const handleNewMessage = (msg: any) => {
-    console.log("📩 New real-time message:", JSON.stringify(msg, null, 2));
     const isSentByCurrentUser = msg.sender?._id === currentUserId;
     const senderName =
       msg.sender?.storeName ||
@@ -181,7 +165,6 @@ const ChatInterfaceChat: React.FC = () => {
       isOptimistic: false,
     };
 
-    // Check for existing message
     const existingMessage = messages.find(
       (m) =>
         m._id === msg._id ||
@@ -198,7 +181,6 @@ const ChatInterfaceChat: React.FC = () => {
     );
 
     if (existingMessage) {
-      console.log("🔄 Replacing existing message:", existingMessage._id);
       setMessages((prev) =>
         prev.map((m) =>
           m._id === existingMessage._id ||
@@ -210,7 +192,6 @@ const ChatInterfaceChat: React.FC = () => {
         )
       );
     } else {
-      console.log("✅ Adding new message:", msg._id);
       setMessages((prev) => [...prev, newMessage]);
     }
 
@@ -219,12 +200,8 @@ const ChatInterfaceChat: React.FC = () => {
       fetchNotifications();
     }
 
-    // Update the chat list with the new last message and sort by timestamp
     setChats((prev) => {
-      // Determine the display text for the last message
       let lastMessageText = msg.content || "";
-
-      // Check for media types and set appropriate display text
       if (msg.images && msg.images.length > 0) {
         lastMessageText = "📷 Image";
       } else if (msg.video) {
@@ -244,11 +221,11 @@ const ChatInterfaceChat: React.FC = () => {
               time: newMessage.time,
               timestamp: new Date(msg.createdAt),
               unread: isSentByCurrentUser ? chat.unread : chat.unread + 1,
+              hasMessages: true,
             }
           : chat
       );
 
-      // Sort chats by timestamp (newest first), fallback to time string if no timestamp
       return updatedChats.sort((a, b) => {
         const timeA = a.timestamp
           ? a.timestamp.getTime()
@@ -256,12 +233,11 @@ const ChatInterfaceChat: React.FC = () => {
         const timeB = b.timestamp
           ? b.timestamp.getTime()
           : new Date(`1970-01-01T${b.time}`).getTime();
-        return timeB - timeA; // Newest first
+        return timeB - timeA;
       });
     });
   };
 
-  // Socket.IO setup
   useEffect(() => {
     if (!currentUserId || !token) {
       return;
@@ -275,18 +251,15 @@ const ChatInterfaceChat: React.FC = () => {
     });
 
     socketRef.current.on("connect", () => {
-      console.log("🔌 Socket.IO connected, socketId:", socketRef.current?.id);
       setIsSocketConnected(true);
       if (selectedChat) {
         socketRef.current?.emit("joinChat", selectedChat);
-        console.log("✅ Emitted joinChat for:", selectedChat);
       }
     });
 
     socketRef.current.on("newMessage", handleNewMessage);
 
     socketRef.current.on("messageEdited", (msg: any) => {
-      console.log("✏️ Message edited:", JSON.stringify(msg, null, 2));
       setMessages((prev) =>
         prev.map((m) =>
           m._id === msg._id
@@ -299,13 +272,20 @@ const ChatInterfaceChat: React.FC = () => {
     socketRef.current.on(
       "messageDeleted",
       (data: { chatId: string; _id: string }) => {
-        console.log("🗑️ Message deleted:", JSON.stringify(data, null, 2));
         setMessages((prev) => prev.filter((m) => m._id !== data._id));
+
+        const remainingMessages = messages.filter((m) => m._id !== data._id);
+        if (remainingMessages.length === 0 && data.chatId === selectedChat) {
+          setChats((prev) => prev.filter((chat) => chat._id !== data.chatId));
+          if (selectedChat === data.chatId) {
+            setSelectedChat(null);
+            setShowChatList(true);
+          }
+        }
       }
     );
 
     socketRef.current.on("chatStarted", (chat: any) => {
-      console.log("🆕 New chat started:", JSON.stringify(chat, null, 2));
       const otherParticipant = chat.participants?.find(
         (p: any) => p.participantId !== currentUserId
       );
@@ -329,6 +309,7 @@ const ChatInterfaceChat: React.FC = () => {
         online: otherParticipant?.details?.online || false,
         pinned: chat.pinned || false,
         isGroup: chat.isCustomerCareChat || false,
+        hasMessages: !!chat.lastMessage,
       };
       setChats((prev) => {
         if (prev.some((c) => c._id === chat._id)) {
@@ -341,7 +322,6 @@ const ChatInterfaceChat: React.FC = () => {
     socketRef.current.on(
       "typing",
       ({ sender, chatId }: { sender: string; chatId: string }) => {
-        console.log(`💬 ${sender} is typing in chat ${chatId}`);
         if (chatId === selectedChat && sender !== currentUserId) {
           setTypingUsers((prev) => [...new Set([...prev, sender])]);
         }
@@ -351,22 +331,19 @@ const ChatInterfaceChat: React.FC = () => {
     socketRef.current.on(
       "stopTyping",
       ({ sender, chatId }: { sender: string; chatId: string }) => {
-        console.log(`🛑 ${sender} stopped typing in chat ${chatId}`);
         if (chatId === selectedChat) {
           setTypingUsers((prev) => prev.filter((user) => user !== sender));
         }
       }
     );
 
-    socketRef.current.on("connect_error", (err) => {
-      console.error("❌ Socket.IO connection error:", err.message);
+    socketRef.current.on("connect_error", () => {
       setIsSocketConnected(false);
       setError("Failed to connect to real-time updates. Please try again.");
       toast.error("Failed to connect to real-time updates");
     });
 
     socketRef.current.on("reconnect", () => {
-      console.log("🔄 Socket.IO reconnected");
       setIsSocketConnected(true);
       if (selectedChat) {
         socketRef.current?.emit("joinChat", selectedChat);
@@ -374,7 +351,6 @@ const ChatInterfaceChat: React.FC = () => {
     });
 
     socketRef.current.on("disconnect", () => {
-      console.log("❌ Socket.IO disconnected");
       setIsSocketConnected(false);
     });
 
@@ -383,19 +359,15 @@ const ChatInterfaceChat: React.FC = () => {
         socketRef.current?.emit("leaveChat", selectedChat);
       }
       socketRef.current?.disconnect();
-      console.log("🧹 Socket.IO disconnected and cleaned up");
     };
   }, [currentUserId, token, selectedChat, messages]);
 
-  // Join chat room on selection
   useEffect(() => {
     if (selectedChat && socketRef.current) {
       socketRef.current?.emit("joinChat", selectedChat);
-      console.log("✅ Emitted joinChat for:", selectedChat);
     }
   }, [selectedChat]);
 
-  // Location state handling
   useEffect(() => {
     const { chatId, vendorDetails } = location.state || {};
     if (chatId && vendorDetails) {
@@ -414,6 +386,7 @@ const ChatInterfaceChat: React.FC = () => {
         online: false,
         pinned: false,
         isGroup: false,
+        hasMessages: false,
       });
       if (isMobile) {
         setShowChatList(false);
@@ -422,7 +395,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [location, isMobile]);
 
-  // Auth check
   useEffect(() => {
     if (!currentUserId) {
       setError("Please log in to use chat.");
@@ -431,7 +403,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [currentUserId]);
 
-  // Scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -440,114 +411,82 @@ const ChatInterfaceChat: React.FC = () => {
     scrollToBottom();
   }, [messages]);
 
- 
-    // Fetch chats
+  useEffect(() => {
+    if (selectedChat && pendingChat && pendingChat._id !== selectedChat) {
+      setPendingChat(null);
+    }
+  }, [selectedChat, pendingChat]);
+
   useEffect(() => {
     const fetchChats = async () => {
-      if (!currentUserId) {
-        console.log("DEBUG: No currentUserId, skipping fetchChats");
-        return;
-      }
+      if (!currentUserId) return;
       setIsLoadingChats(true);
       setError(null);
       try {
-        console.log("DEBUG: Fetching chats for user:", currentUserId);
         const chatData = await getUserChats();
-        console.log("DEBUG: Raw chat data from API:", chatData);
+        const uniqueChats = new Map();
 
-        const uniqueChats = new Map(); // Use Map to ensure uniqueness by _id
-        
         for (const chat of chatData.chats || []) {
-          try {
-            console.log("DEBUG: Processing chat:", chat._id);
-            
-            // Skip if we already processed this chat
-            if (uniqueChats.has(chat._id)) {
-              console.log("DEBUG: Skipping duplicate chat:", chat._id);
-              continue;
-            }
-            
-            const messageData = await getChatMessages(chat._id);
-            console.log("DEBUG: Messages for chat", chat._id, ":", messageData);
+          if (uniqueChats.has(chat._id)) continue;
 
-            if (messageData.success && messageData.messages.length > 0) {
-              const otherParticipant = chat.participants.find(
-                (p: any) => p.participantId !== currentUserId
-              );
-              console.log("DEBUG: Other participant:", otherParticipant);
-
-              // Get the last message content with proper media formatting
-              let lastMessageContent =
-                chat.lastMessage?.content ||
-                messageData.messages[messageData.messages.length - 1].content ||
-                "";
-
-              // Check if the last message is a media message and format accordingly
-              const lastMessage =
-                messageData.messages[messageData.messages.length - 1];
-              if (lastMessage.images && lastMessage.images.length > 0) {
-                lastMessageContent = "📷 Image";
-              } else if (lastMessage.video) {
-                lastMessageContent = "🎥 Video";
-              } else if (
-                lastMessage.type === "file" ||
-                (lastMessage.content && lastMessage.content.includes("[file]"))
-              ) {
-                lastMessageContent = "📎 File";
-              }
-
-              const formattedChat: Chat = {
-                _id: chat._id,
-                name:
-                  otherParticipant?.details?.storeName ||
-                  otherParticipant?.details?.name ||
-                  `User ${
-                    otherParticipant?.participantId?.slice(-4) || "Unknown"
-                  }`,
-                lastMessage: lastMessageContent,
-                time: new Date(
-                  chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-                ).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
-                timestamp: new Date(
-                  chat.lastMessage?.createdAt || chat.createdAt || Date.now()
-                ),
-                unread: chat.unreadCount || 0,
-                avatar:
-                  otherParticipant?.details?.avatar ||
-                  otherParticipant?.details?.businessLogo ||
-                  "",
-                online: otherParticipant?.details?.online || false,
-                pinned: chat.pinned || false,
-                isGroup: chat.isCustomerCareChat || false,
-              };
-
-              // Add to map to ensure uniqueness
-              uniqueChats.set(chat._id, formattedChat);
-            } else {
-              console.log(
-                "DEBUG: Skipping chat",
-                chat._id,
-                "- no messages or not successful"
-              );
-            }
-          } catch (msgError: any) {
-            console.warn(
-              "DEBUG: Error fetching messages for chat",
-              chat._id,
-              ":",
-              JSON.stringify(msgError, null, 2)
+          const messageData = await getChatMessages(chat._id);
+          if (messageData.success && messageData.messages.length > 0) {
+            const otherParticipant = chat.participants.find(
+              (p: any) => p.participantId !== currentUserId
             );
+
+            let lastMessageContent =
+              chat.lastMessage?.content ||
+              messageData.messages[messageData.messages.length - 1].content ||
+              "";
+
+            const lastMessage =
+              messageData.messages[messageData.messages.length - 1];
+            if (lastMessage.images && lastMessage.images.length > 0) {
+              lastMessageContent = "📷 Image";
+            } else if (lastMessage.video) {
+              lastMessageContent = "🎥 Video";
+            } else if (
+              lastMessage.type === "file" ||
+              (lastMessage.content && lastMessage.content.includes("[file]"))
+            ) {
+              lastMessageContent = "📎 File";
+            }
+
+            const formattedChat: Chat = {
+              _id: chat._id,
+              name:
+                otherParticipant?.details?.storeName ||
+                otherParticipant?.details?.name ||
+                `User ${
+                  otherParticipant?.participantId?.slice(-4) || "Unknown"
+                }`,
+              lastMessage: lastMessageContent,
+              time: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+              timestamp: new Date(
+                chat.lastMessage?.createdAt || chat.createdAt || Date.now()
+              ),
+              unread: chat.unreadCount || 0,
+              avatar:
+                otherParticipant?.details?.avatar ||
+                otherParticipant?.details?.businessLogo ||
+                "",
+              online: otherParticipant?.details?.online || false,
+              pinned: chat.pinned || false,
+              isGroup: chat.isCustomerCareChat || false,
+              hasMessages: true,
+            };
+
+            uniqueChats.set(chat._id, formattedChat);
           }
         }
 
-        // Convert map values to array
         const formattedChats = Array.from(uniqueChats.values());
-        console.log("DEBUG: Formatted chats (unique):", formattedChats);
-
-        // Sort chats by timestamp (newest first), fallback to time string if no timestamp
         const sortedChats = formattedChats.sort((a, b) => {
           const timeA = a.timestamp
             ? a.timestamp.getTime()
@@ -555,10 +494,9 @@ const ChatInterfaceChat: React.FC = () => {
           const timeB = b.timestamp
             ? b.timestamp.getTime()
             : new Date(`1970-01-01T${b.time}`).getTime();
-          return timeB - timeA; // Newest first
+          return timeB - timeA;
         });
 
-        console.log("DEBUG: Sorted chats:", sortedChats);
         setChats(sortedChats);
 
         if (
@@ -572,10 +510,6 @@ const ChatInterfaceChat: React.FC = () => {
         const errorMsg =
           error.response?.data?.message ||
           "Failed to load chats. Please try again.";
-        console.error(
-          "DEBUG: Error fetching chats:",
-          JSON.stringify(error, null, 2)
-        );
         setError(errorMsg);
         toast.error(errorMsg);
         setChats([]);
@@ -585,14 +519,10 @@ const ChatInterfaceChat: React.FC = () => {
     };
 
     if (currentUserId) {
-      console.log("DEBUG: Starting fetchChats for user:", currentUserId);
       fetchChats();
-    } else {
-      console.log("DEBUG: No currentUserId available");
     }
   }, [currentUserId, location.state]);
 
-  // Fetch initial messages
   useEffect(() => {
     if (selectedChat && currentUserId) {
       const fetchMessages = async () => {
@@ -600,6 +530,16 @@ const ChatInterfaceChat: React.FC = () => {
         setError(null);
         try {
           const messageData = await getChatMessages(selectedChat);
+
+          if (messageData.messages.length === 0 && !pendingChat?._id) {
+            setChats((prev) =>
+              prev.filter((chat) => chat._id !== selectedChat)
+            );
+            setSelectedChat(null);
+            setShowChatList(true);
+            return;
+          }
+
           const formattedMessages: Message[] = (messageData.messages || []).map(
             (msg: any) => ({
               _id: msg._id,
@@ -625,10 +565,6 @@ const ChatInterfaceChat: React.FC = () => {
           const errorMsg =
             error.response?.data?.message ||
             "Failed to load messages. Please try again.";
-          console.error(
-            "DEBUG: Error fetching messages:",
-            JSON.stringify(error, null, 2)
-          );
           setError(errorMsg);
           toast.error(errorMsg);
           setMessages([]);
@@ -642,7 +578,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [selectedChat, currentUserId]);
 
-  // Mobile view handling
   useEffect(() => {
     if (isMobile && selectedChat) {
       setShowChatList(false);
@@ -651,7 +586,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [selectedChat, isMobile]);
 
-  // Invalid chat handling
   useEffect(() => {
     if (
       selectedChat &&
@@ -663,7 +597,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   }, [selectedChat, chats, pendingChat]);
 
-  // Send message with optimistic update
   const handleSendMessage = async (
     content: string,
     type: "text" | "image" | "video" | "file" = "text",
@@ -680,8 +613,11 @@ const ChatInterfaceChat: React.FC = () => {
       toast.error("Please log in to send messages.");
       return;
     }
+
     try {
       let formattedMessage: Message;
+      const isPendingChat = pendingChat && pendingChat._id === selectedChat;
+
       if (type === "text" && content.trim()) {
         tempId = `temp-${Date.now()}-${Math.random()}`;
         const currentTime = new Date().toLocaleTimeString([], {
@@ -703,32 +639,54 @@ const ChatInterfaceChat: React.FC = () => {
         };
         setMessages((prev) => [...prev, formattedMessage]);
 
-        // Immediately update the chat list with new timestamp and sort
-        setChats((prev) => {
-          const updatedChats = prev.map((chat) =>
-            chat._id === selectedChat
-              ? {
-                  ...chat,
-                  lastMessage: content,
-                  time: currentTime,
-                  timestamp: new Date(),
-                }
-              : chat
-          );
+        if (isPendingChat && pendingChat) {
+          const newChat = {
+            ...pendingChat,
+            lastMessage: content,
+            time: currentTime,
+            timestamp: new Date(),
+            hasMessages: true,
+          };
 
-          // Sort by timestamp (newest first), fallback to time string if no timestamp
-          return updatedChats.sort((a, b) => {
-            const timeA = a.timestamp
-              ? a.timestamp.getTime()
-              : new Date(`1970-01-01T${a.time}`).getTime();
-            const timeB = b.timestamp
-              ? b.timestamp.getTime()
-              : new Date(`1970-01-01T${b.time}`).getTime();
-            return timeB - timeA; // Newest first
+          setChats((prev) => {
+            const updatedChats = [newChat, ...prev];
+            return updatedChats.sort((a, b) => {
+              const timeA =
+                a.timestamp?.getTime() ||
+                new Date(`1970-01-01T${a.time}`).getTime();
+              const timeB =
+                b.timestamp?.getTime() ||
+                new Date(`1970-01-01T${b.time}`).getTime();
+              return timeB - timeA;
+            });
           });
-        });
 
-        // Send the message - the socket will handle the response
+          setPendingChat(null);
+        } else {
+          setChats((prev) => {
+            const updatedChats = prev.map((chat) =>
+              chat._id === selectedChat
+                ? {
+                    ...chat,
+                    lastMessage: content,
+                    time: currentTime,
+                    timestamp: new Date(),
+                    hasMessages: true,
+                  }
+                : chat
+            );
+            return updatedChats.sort((a, b) => {
+              const timeA =
+                a.timestamp?.getTime() ||
+                new Date(`1970-01-01T${a.time}`).getTime();
+              const timeB =
+                b.timestamp?.getTime() ||
+                new Date(`1970-01-01T${b.time}`).getTime();
+              return timeB - timeA;
+            });
+          });
+        }
+
         await sendMessage(selectedChat, content);
       } else if (
         files &&
@@ -757,121 +715,94 @@ const ChatInterfaceChat: React.FC = () => {
         };
         setMessages((prev) => [...prev, formattedMessage]);
 
-        // Determine the display text for media messages
         let mediaDisplayText = "📎 File";
-        if (type === "image") {
-          mediaDisplayText = "📷 Image";
-        } else if (type === "video") {
-          mediaDisplayText = "🎥 Video";
+        if (type === "image") mediaDisplayText = "📷 Image";
+        else if (type === "video") mediaDisplayText = "🎥 Video";
+
+        if (isPendingChat && pendingChat) {
+          const newChat = {
+            ...pendingChat,
+            lastMessage: mediaDisplayText,
+            time: currentTime,
+            timestamp: new Date(),
+            hasMessages: true,
+          };
+
+          setChats((prev) => {
+            const updatedChats = [newChat, ...prev];
+            return updatedChats.sort((a, b) => {
+              const timeA =
+                a.timestamp?.getTime() ||
+                new Date(`1970-01-01T${a.time}`).getTime();
+              const timeB =
+                b.timestamp?.getTime() ||
+                new Date(`1970-01-01T${b.time}`).getTime();
+              return timeB - timeA;
+            });
+          });
+
+          setPendingChat(null);
+        } else {
+          setChats((prev) => {
+            const updatedChats = prev.map((chat) =>
+              chat._id === selectedChat
+                ? {
+                    ...chat,
+                    lastMessage: mediaDisplayText,
+                    time: currentTime,
+                    timestamp: new Date(),
+                    hasMessages: true,
+                  }
+                : chat
+            );
+            return updatedChats.sort((a, b) => {
+              const timeA =
+                a.timestamp?.getTime() ||
+                new Date(`1970-01-01T${a.time}`).getTime();
+              const timeB =
+                b.timestamp?.getTime() ||
+                new Date(`1970-01-01T${b.time}`).getTime();
+              return timeB - timeA;
+            });
+          });
         }
 
-        // Immediately update the chat list for media messages
-        setChats((prev) => {
-          const updatedChats = prev.map((chat) =>
-            chat._id === selectedChat
-              ? {
-                  ...chat,
-                  lastMessage: mediaDisplayText,
-                  time: currentTime,
-                  timestamp: new Date(),
-                }
-              : chat
-          );
-
-          // Sort by timestamp (newest first)
-          return updatedChats.sort((a, b) => {
-            const timeA = a.timestamp
-              ? a.timestamp.getTime()
-              : new Date(`1970-01-01T${a.time}`).getTime();
-            const timeB = b.timestamp
-              ? b.timestamp.getTime()
-              : new Date(`1970-01-01T${b.time}`).getTime();
-            return timeB - timeA;
-          });
-        });
-
-        // Send the media - the socket will handle the response
         await sendMediaMessage(selectedChat, files);
-
         onUploadComplete(tempId);
-      } else {
-        return;
-      }
-
-      if (pendingChat && pendingChat._id === selectedChat) {
-        setChats((prev) => {
-          const updatedChats = [pendingChat, ...prev];
-          // Sort the updated chats
-          return updatedChats.sort((a, b) => {
-            const timeA = a.timestamp
-              ? a.timestamp.getTime()
-              : new Date(`1970-01-01T${a.time}`).getTime();
-            const timeB = b.timestamp
-              ? b.timestamp.getTime()
-              : new Date(`1970-01-01T${b.time}`).getTime();
-            return timeB - timeA;
-          });
-        });
-        setPendingChat(null);
-        socketRef.current?.emit("chatStarted", {
-          ...pendingChat,
-          chatId: selectedChat,
-        });
       }
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.message ||
         "Failed to send message. Please try again.";
-      console.error(
-        "DEBUG: Error sending message:",
-        JSON.stringify(error, null, 2)
-      );
       setError(errorMsg);
       toast.error(errorMsg);
+
       if (tempId) {
         setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
-
-        // Also revert the chat list update if message sending failed
-        setChats((prev) => {
-          const updatedChats = prev.map((chat) =>
-            chat._id === selectedChat
-              ? {
-                  ...chat,
-                  lastMessage: chat.lastMessage, // Keep original message
-                  time: chat.time, // Keep original time
-                  timestamp: chat.timestamp, // Keep original timestamp
-                }
-              : chat
-          );
-          return updatedChats;
-        });
       }
     }
   };
 
-  // Delete message
   const handleDeleteMessage = async (messageId: string) => {
     try {
       await deleteMessage(messageId);
-      setMessages(messages.filter((msg) => msg._id !== messageId));
-      socketRef.current?.emit("messageDeleted", {
-        _id: messageId,
-        chatId: selectedChat,
-      });
+      const updatedMessages = messages.filter((msg) => msg._id !== messageId);
+      setMessages(updatedMessages);
+
+      if (updatedMessages.length === 0) {
+        setChats((prev) => prev.filter((chat) => chat._id !== selectedChat));
+        setSelectedChat(null);
+        setShowChatList(true);
+      }
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.message ||
         "Failed to delete message. Please try again.";
-      console.error(
-        "DEBUG: Error deleting message:",
-        JSON.stringify(error, null, 2)
-      );
       setError(errorMsg);
       toast.error(errorMsg);
     }
   };
 
-  // Edit message
   const handleEditMessage = async (messageId: string, newContent: string) => {
     try {
       await editMessage(messageId, newContent);
@@ -880,25 +811,15 @@ const ChatInterfaceChat: React.FC = () => {
           msg._id === messageId ? { ...msg, content: newContent } : msg
         )
       );
-      socketRef.current?.emit("messageEdited", {
-        _id: messageId,
-        content: newContent,
-        chatId: selectedChat,
-      });
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.message ||
         "Failed to edit message. Please try again.";
-      console.error(
-        "DEBUG: Error editing message:",
-        JSON.stringify(error, null, 2)
-      );
       setError(errorMsg);
       toast.error(errorMsg);
     }
   };
 
-  // Pin chat
   const handlePinChat = (chatId: string) => {
     setChats(
       chats.map((chat) =>
@@ -907,7 +828,6 @@ const ChatInterfaceChat: React.FC = () => {
     );
   };
 
-  // New chat
   const handleNewChat = async (
     receiverId: string,
     vendorDetails: { storeName: string; avatar?: string }
@@ -920,6 +840,7 @@ const ChatInterfaceChat: React.FC = () => {
       toast.error("Cannot start a chat with yourself.");
       return;
     }
+
     try {
       const newChat = await startChat(receiverId);
 
@@ -927,75 +848,38 @@ const ChatInterfaceChat: React.FC = () => {
         throw new Error("Invalid chat data received from server");
       }
 
-      const otherParticipant = newChat.chat.participants.find(
-        (p: any) => p.participantId !== currentUserId
-      );
-      if (!otherParticipant) {
-        throw new Error("No other participant found in chat data");
-      }
-
-      const formattedChat: Chat = {
+      setPendingChat({
         _id: newChat.chat._id,
-        name:
-          vendorDetails.storeName ||
-          `User ${otherParticipant.participantId?.slice(-4) || "Unknown"}`,
-        lastMessage: newChat.chat.lastMessage?.content || "",
-        time: new Date(
-          newChat.chat.lastMessage?.createdAt ||
-            newChat.chat.createdAt ||
-            Date.now()
-        ).toLocaleTimeString([], {
+        name: vendorDetails.storeName || "Unknown Vendor",
+        lastMessage: "",
+        time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        timestamp: new Date(
-          newChat.chat.lastMessage?.createdAt ||
-            newChat.chat.createdAt ||
-            Date.now()
-        ),
-        unread: newChat.chat.unreadCount || 0,
+        timestamp: new Date(),
+        unread: 0,
         avatar: vendorDetails.avatar || "",
         online: false,
-        pinned: newChat.chat.pinned || false,
-        isGroup: newChat.chat.isCustomerCareChat || false,
-      };
-
-      setPendingChat(formattedChat);
-      setSelectedChat(formattedChat._id);
-
-      // Add the new chat to the chats list and sort
-      setChats((prev) => {
-        const updatedChats = [formattedChat, ...prev];
-        return updatedChats.sort((a, b) => {
-          const timeA = a.timestamp
-            ? a.timestamp.getTime()
-            : new Date(`1970-01-01T${a.time}`).getTime();
-          const timeB = b.timestamp
-            ? b.timestamp.getTime()
-            : new Date(`1970-01-01T${b.time}`).getTime();
-          return timeB - timeA;
-        });
+        pinned: false,
+        isGroup: false,
+        hasMessages: false,
       });
+
+      setSelectedChat(newChat.chat._id);
 
       if (isMobile) {
         setShowChatList(false);
       }
-      socketRef.current?.emit("chatStarted", formattedChat);
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.message ||
         error.message ||
         "Failed to start chat. Please try again.";
-      console.error(
-        "DEBUG: Error starting chat:",
-        JSON.stringify(error, null, 2)
-      );
       setError(errorMsg);
       toast.error(errorMsg);
     }
   };
 
-  // Delete chat
   const handleDeleteChat = (chatId: string) => {
     setChats(chats.filter((chat) => chat._id !== chatId));
     if (selectedChat === chatId) {
@@ -1004,7 +888,6 @@ const ChatInterfaceChat: React.FC = () => {
     }
   };
 
-  // Back to list
   const handleBackToList = () => {
     setSelectedChat(null);
     setPendingChat(null);
@@ -1022,7 +905,6 @@ const ChatInterfaceChat: React.FC = () => {
       onSubmit={handleFormSubmit}
       className="flex h-[calc(100vh-7rem)] bg-gray-50 rounded border "
     >
-      {/* Notifications Display */}
       {notifications.length > 0 && (
         <div className="w-full p-2 bg-gray-50 border-b">
           <div className="flex justify-between items-center">
@@ -1087,6 +969,7 @@ const ChatInterfaceChat: React.FC = () => {
             onPinChat={handlePinChat}
             onDeleteChat={handleDeleteChat}
             onNewChat={handleNewChat}
+            pendingChats={pendingChat ? [pendingChat._id] : []}
           />
         )}
       </div>
