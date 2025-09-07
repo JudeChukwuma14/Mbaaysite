@@ -43,7 +43,7 @@ const CompleteSignup: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
-  // pull user info from localStorage instead of location.state
+  // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem("googleUser") || "{}");
 
   const {
@@ -76,19 +76,27 @@ const CompleteSignup: React.FC = () => {
         return;
       }
 
-      const { data: result } = await axios.post(
+      const response = await axios.post(
         "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
         {
           storeName: data.storeName,
           storePhone: data.storePhone,
           craftCategories: selectedCategories,
         },
-        { headers: { Authorization: `Bearer ${tempToken}` } }
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${tempToken}` 
+          } 
+        }
       );
+
+      const result = response.data;
 
       // Persist auth info
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("accountType", "vendor");
+      localStorage.setItem("vendorData", JSON.stringify(result.vendor));
       localStorage.removeItem("tempToken");
       localStorage.removeItem("googleUser");
 
@@ -96,9 +104,18 @@ const CompleteSignup: React.FC = () => {
       dispatch(setVendor({ vendor: result.vendor, token: result.token }));
 
       toast.success("Vendor created successfully");
-      navigate("/welcomepage");
+      navigate("/welcomepage"); // Redirect to welcome page for pending approval
     } catch (err: any) {
-      toast.error(err.response?.data?.message || "Error completing signup");
+      const errorMessage = err.response?.data?.message || "Error completing signup";
+      toast.error(errorMessage);
+      
+      // Handle specific error cases
+      if (err.response?.status === 400 && errorMessage.includes("already exists")) {
+        navigate("/signup-vendor");
+      } else if (err.response?.status === 400 && errorMessage.includes("No admin found")) {
+        toast.error("System error. Please try again later.");
+      }
+      
       console.error(err);
     } finally {
       setIsLoading(false);

@@ -16,14 +16,11 @@ export const VendorGoogleButton = () => {
   const handleGoogleLogin = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
-    // Show the Google button temporarily
     setShowGoogleButton(true);
   };
 
   useEffect(() => {
     if (showGoogleButton) {
-      // Click the Google button after a short delay to ensure it's rendered
       const timer = setTimeout(() => {
         const googleButton = document.querySelector(
           'div[role="button"][aria-labelledby="button-label"]'
@@ -31,7 +28,6 @@ export const VendorGoogleButton = () => {
         if (googleButton) {
           (googleButton as HTMLElement).click();
         }
-        // Hide the Google button after attempting to click
         setShowGoogleButton(false);
       }, 100);
 
@@ -41,7 +37,6 @@ export const VendorGoogleButton = () => {
 
   return (
     <div className="w-full">
-      {/* Google Login button - conditionally rendered */}
       {showGoogleButton && (
         <div ref={googleButtonRef} className="fixed top-0 left-0 opacity-0">
           <GoogleLogin
@@ -50,7 +45,6 @@ export const VendorGoogleButton = () => {
                 setIsLoading(true);
                 const idToken = credentialResponse.credential;
 
-                // Use the VENDOR endpoint
                 const response = await axios.post(
                   "https://mbayy-be.onrender.com/api/v1/vendor/google-verify",
                   { token: idToken },
@@ -75,19 +69,33 @@ export const VendorGoogleButton = () => {
                   localStorage.setItem("tempToken", data.tempToken);
                   localStorage.setItem(
                     "googleUser",
-                    JSON.stringify(data.vendor || data.user || {})
+                    JSON.stringify(data.user || {})
                   );
                   toast.info(data.message || "Complete your vendor profile");
-                  navigate("/complete-signup", { state: data.user });
+                  navigate("/complete-signup");
                 }
               } catch (err: any) {
-                toast.error(
-                  err.response?.data?.message || "Error verifying Google login",
-                  {
-                    position: "top-right",
-                    autoClose: 3000,
-                  }
-                );
+                // Handle the case where email is already registered with password
+                if (err.response?.status === 409 || 
+                    err.response?.data?.message?.includes("already exists") ||
+                    err.response?.data?.message?.includes("already registered")) {
+                  toast.error(
+                    "This email is already registered with a password. Please sign in with email and password instead.",
+                    {
+                      position: "top-right",
+                      autoClose: 5000,
+                    }
+                  );
+                  navigate("/login-vendor");
+                } else {
+                  toast.error(
+                    err.response?.data?.message || "Error verifying Google login",
+                    {
+                      position: "top-right",
+                      autoClose: 3000,
+                    }
+                  );
+                }
                 console.error("Google verification error:", err);
               } finally {
                 setIsLoading(false);
@@ -107,7 +115,6 @@ export const VendorGoogleButton = () => {
         </div>
       )}
 
-      {/* Your custom button */}
       <button
         onClick={handleGoogleLogin}
         disabled={isLoading}

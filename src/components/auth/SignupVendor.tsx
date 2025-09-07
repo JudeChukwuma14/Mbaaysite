@@ -20,7 +20,7 @@ import {
   Store,
   Tag,
 } from "lucide-react";
-import { VendorGoogleButton } from "../Reuseable/VendorGoogleButton";
+import { VendorGoogleButton } from "./VendorGoogleButton";
 
 interface FormData {
   storeName: string;
