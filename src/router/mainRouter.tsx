@@ -775,7 +775,7 @@ const PaymentCallback = lazy(
 );
 import RestrictVendorRoute from "./RestrictVendorRoute";
 import CompleteSignup from "@/components/auth/CompleteSignup";
-
+import PendingApproval from "@/components/auth/PendingApproval";
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -1185,6 +1185,7 @@ const routesConfig: RouteObject[] = [
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
   { path: "complete-signup", element: withSuspense(CompleteSignup) },
+  { path: "pending-approval", element: withSuspense(PendingApproval) },
 
   // Payment
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },

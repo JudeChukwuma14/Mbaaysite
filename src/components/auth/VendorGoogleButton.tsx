@@ -62,8 +62,15 @@ export const VendorGoogleButton = () => {
                     "vendorData",
                     JSON.stringify(data.vendor)
                   );
-                  toast.success(data.message || "Vendor login successful");
-                  navigate("/app");
+                  
+                  // Check if vendor is approved before navigating to dashboard
+                  if (data.vendor.verificationStatus === "Approved") {
+                    toast.success(data.message || "Vendor login successful");
+                    navigate("/app");
+                  } else {
+                    toast.info("Your account is pending admin approval");
+                    navigate("/pending-approval");
+                  }
                 } else if (data.tempToken) {
                   // New vendor - redirect to complete profile
                   localStorage.setItem("tempToken", data.tempToken);

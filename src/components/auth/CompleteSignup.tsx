@@ -76,7 +76,7 @@ const CompleteSignup: React.FC = () => {
       const response = await axios.post(
         "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
         {
-          tempToken: tempToken, // Send tempToken in the request body
+          tempToken: tempToken,
           storeName: data.storeName,
           storePhone: data.storePhone,
           craftCategories: [selectedCategory],
@@ -90,21 +90,6 @@ const CompleteSignup: React.FC = () => {
 
       const result = response.data;
 
-      // Check if vendor is pending approval
-      if (result.vendor.verificationStatus === "Pending") {
-        toast.success(
-          "Vendor account created successfully! Waiting for admin approval."
-        );
-        // You might want to navigate to a specific "pending approval" page
-        navigate("/pending-approval");
-      } else if (result.vendor.verificationStatus === "Approved") {
-        toast.success("Vendor account created and approved!");
-        navigate("/app");
-      } else {
-        toast.success("Vendor account created successfully!");
-        navigate("/welcomepage");
-      }
-
       // Persist auth info
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("accountType", "vendor");
@@ -114,6 +99,15 @@ const CompleteSignup: React.FC = () => {
 
       // Update Redux state
       dispatch(setVendor({ vendor: result.vendor, token: result.token }));
+
+      // SIMPLIFIED: Check if vendor is approved
+      if (result.vendor.verificationStatus === "Approved") {
+        toast.success("Vendor account created and approved!");
+        navigate("/app");
+      } else {
+        toast.success("Vendor account created successfully! Waiting for admin approval.");
+        navigate("/pending-approval");
+      }
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Error completing signup";
@@ -273,7 +267,8 @@ const CompleteSignup: React.FC = () => {
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               "Complete Signup"
-            )}
+            )
+            }
           </button>
         </form>
       </div>
