@@ -4,13 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { Loader2, ChevronDown, Store, Phone, Tag } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
+import { Loader2, Store, Phone, Tag } from "lucide-react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setVendor } from "@/redux/slices/vendorSlice";
@@ -18,7 +12,7 @@ import { setVendor } from "@/redux/slices/vendorSlice";
 interface FormData {
   storeName: string;
   storePhone: string;
-  craftCategories: string[];
+  craftCategory: string; // Changed from craftCategories to craftCategory
 }
 
 const craftCategories = [
@@ -41,7 +35,7 @@ const CompleteSignup: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Changed to single category
 
   // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem("googleUser") || "{}");
@@ -53,17 +47,9 @@ const CompleteSignup: React.FC = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-  const toggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
-    );
-  };
-
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    if (selectedCategories.length === 0) {
-      toast.error("Select at least one craft category");
+    if (!selectedCategory) {
+      toast.error("Select a craft category");
       return;
     }
 
@@ -81,7 +67,7 @@ const CompleteSignup: React.FC = () => {
         {
           storeName: data.storeName,
           storePhone: data.storePhone,
-          craftCategories: selectedCategories,
+          craftCategories: [selectedCategory], // Send as array with single item
         },
         { 
           headers: { 
@@ -104,7 +90,7 @@ const CompleteSignup: React.FC = () => {
       dispatch(setVendor({ vendor: result.vendor, token: result.token }));
 
       toast.success("Vendor created successfully");
-      navigate("/welcomepage"); // Redirect to welcome page for pending approval
+      navigate("/welcomepage");
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || "Error completing signup";
       toast.error(errorMessage);
@@ -114,6 +100,9 @@ const CompleteSignup: React.FC = () => {
         navigate("/signup-vendor");
       } else if (err.response?.status === 400 && errorMessage.includes("No admin found")) {
         toast.error("System error. Please try again later.");
+      } else if (err.response?.status === 401 && errorMessage.includes("jwt")) {
+        toast.error("Session expired. Please sign in again.");
+        navigate("/signup-vendor");
       }
       
       console.error(err);
@@ -190,66 +179,43 @@ const CompleteSignup: React.FC = () => {
           <div>
             <label className="flex items-center gap-2 mb-2 text-xs font-medium">
               <Tag className="w-4 h-4 text-craft-primary" />
-              Craft Categories
-              <span className="text-xs font-normal text-muted-foreground">
-                (Select all that apply)
-              </span>
+              Craft Category
             </label>
             <Controller
-              name="craftCategories"
+              name="craftCategory"
               control={control}
-              rules={{
-                validate: () =>
-                  selectedCategories.length > 0 ||
-                  "Select at least one category",
-              }}
-              render={() => (
+              rules={{ required: "Select a category" }}
+              render={({ field }) => (
                 <>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex items-center justify-between w-full h-10 px-3 text-sm text-gray-700 border border-gray-300 rounded-md hover:border-blue-500 focus:border-blue-500 focus:outline-none"
-                      >
-                        <span>
-                          {selectedCategories.length === 0
-                            ? "Select craft categories..."
-                            : `${selectedCategories.length} categories selected`}
-                        </span>
-                        <ChevronDown className="w-4 h-4 text-gray-500" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-64 overflow-y-auto bg-white border border-gray-300 rounded-md shadow max-h-56">
-                      {craftCategories.map((category) => (
-                        <DropdownMenuCheckboxItem
-                          key={category}
-                          checked={selectedCategories.includes(category)}
-                          onCheckedChange={() => toggleCategory(category)}
-                          className="text-sm text-gray-700 cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
-                        >
-                          {category}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                  {selectedCategories.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {selectedCategories.map((category) => (
-                        <span
-                          key={category}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                        >
-                          {category}
-                        </span>
-                      ))}
+                  <select
+                    {...field}
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setSelectedCategory(e.target.value);
+                    }}
+                    className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                  >
+                    <option value="">Select your craft category</option>
+                    {craftCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedCategory && (
+                    <div className="mt-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {selectedCategory}
+                      </span>
                     </div>
                   )}
                 </>
               )}
             />
-            {errors.craftCategories && (
+            {errors.craftCategory && (
               <p className="mt-1 text-xs text-red-500">
-                {errors.craftCategories.message}
+                {errors.craftCategory.message}
               </p>
             )}
           </div>
