@@ -31,7 +31,7 @@ interface Product {
   poster: {
     _id: string;
     storeName: string;
-    businessLogo?: string;
+    avatar?: string;
   } | null; // Updated to reflect poster structure
   description: string;
   price: number;
@@ -52,7 +52,7 @@ interface Product {
 interface Vendor {
   _id: string;
   storeName: string;
-  businessLogo?: string;
+  avatar?: string;
 }
 
 const ProductDetails: React.FC = () => {
@@ -144,7 +144,7 @@ const ProductDetails: React.FC = () => {
           vendorData = {
             _id: data.product.poster._id,
             storeName: data.product.poster.storeName,
-            businessLogo: data.product.poster.businessLogo,
+            avatar: data.product.poster.avatar,
           };
         } else if (data.product.vendorId) {
           console.log(
@@ -263,7 +263,7 @@ const ProductDetails: React.FC = () => {
           chatId: newChat.chat._id,
           vendorDetails: {
             storeName: vendor.storeName,
-            avatar: vendor.businessLogo,
+            avatar: vendor.avatar,
           },
         },
       });
@@ -341,7 +341,7 @@ const ProductDetails: React.FC = () => {
           quantity,
           image:
             product.images[0] ||
-            product.poster?.businessLogo ||
+            product.poster?.avatar ||
             "/placeholder.svg",
         })
       );
@@ -363,7 +363,7 @@ const ProductDetails: React.FC = () => {
         quantity: 1,
         image:
           product.images[0] ||
-          product.poster?.businessLogo ||
+          product.poster?.avatar ||
           "/placeholder.svg",
       })
     );
@@ -512,9 +512,9 @@ const ProductDetails: React.FC = () => {
                   className="flex items-center gap-2 group"
                   aria-label={`View ${vendor.storeName}'s profile`}
                 >
-                  {vendor.businessLogo ? (
+                  {vendor.avatar ? (
                     <img
-                      src={vendor.businessLogo}
+                      src={vendor.avatar}
                       alt={`${vendor.storeName} logo`}
                       className="object-cover w-8 h-8 transition-transform border border-gray-300 rounded-full group-hover:scale-110"
                       onError={(e) => {
