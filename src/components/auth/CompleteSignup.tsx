@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -12,7 +12,7 @@ import { setVendor } from "@/redux/slices/vendorSlice";
 interface FormData {
   storeName: string;
   storePhone: string;
-  craftCategory: string; // Changed from craftCategories to craftCategory
+  craftCategory: string;
 }
 
 const craftCategories = [
@@ -35,10 +35,22 @@ const CompleteSignup: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string>(""); // Changed to single category
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [tempToken, setTempToken] = useState<string | null>(null);
 
   // Get user info from localStorage
   const user = JSON.parse(localStorage.getItem("googleUser") || "{}");
+
+  useEffect(() => {
+    // Check if tempToken exists on component mount
+    const token = localStorage.getItem("tempToken");
+    if (!token) {
+      toast.error("Session expired. Please sign in with Google again.");
+      navigate("/signup-vendor");
+      return;
+    }
+    setTempToken(token);
+  }, [navigate]);
 
   const {
     register,
@@ -53,27 +65,26 @@ const CompleteSignup: React.FC = () => {
       return;
     }
 
+    if (!tempToken) {
+      toast.error("Session expired. Please sign in with Google again.");
+      navigate("/signup-vendor");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const tempToken = localStorage.getItem("tempToken");
-      if (!tempToken) {
-        toast.error("Session expired. Please sign in with Google again.");
-        navigate("/signup-vendor");
-        return;
-      }
-
       const response = await axios.post(
         "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
         {
+          tempToken: tempToken, // Send tempToken in the request body
           storeName: data.storeName,
           storePhone: data.storePhone,
-          craftCategories: [selectedCategory], // Send as array with single item
+          craftCategories: [selectedCategory],
         },
-        { 
-          headers: { 
+        {
+          headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${tempToken}` 
-          } 
+          },
         }
       );
 
@@ -92,24 +103,45 @@ const CompleteSignup: React.FC = () => {
       toast.success("Vendor created successfully");
       navigate("/welcomepage");
     } catch (err: any) {
-      const errorMessage = err.response?.data?.message || "Error completing signup";
-      toast.error(errorMessage);
-      
-      // Handle specific error cases
-      if (err.response?.status === 400 && errorMessage.includes("already exists")) {
-        navigate("/signup-vendor");
-      } else if (err.response?.status === 400 && errorMessage.includes("No admin found")) {
-        toast.error("System error. Please try again later.");
-      } else if (err.response?.status === 401 && errorMessage.includes("jwt")) {
+      const errorMessage =
+        err.response?.data?.message || "Error completing signup";
+
+      if (err.response?.status === 401 || errorMessage.includes("jwt")) {
         toast.error("Session expired. Please sign in again.");
+        localStorage.removeItem("tempToken");
+        localStorage.removeItem("googleUser");
         navigate("/signup-vendor");
+      } else if (
+        err.response?.status === 400 &&
+        errorMessage.includes("already exists")
+      ) {
+        toast.error("Vendor already exists. Please sign in instead.");
+        navigate("/login-vendor");
+      } else if (
+        err.response?.status === 400 &&
+        errorMessage.includes("No admin found")
+      ) {
+        toast.error("System error. Please try again later.");
+      } else {
+        toast.error(errorMessage);
       }
-      
-      console.error(err);
+
+      console.error("Signup error:", err);
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!tempToken) {
+    return (
+      <div className="flex items-center justify-center min-h-screen px-4 bg-gray-50">
+        <div className="w-full max-w-md p-6 bg-white rounded-lg shadow text-center">
+          <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin text-orange-500" />
+          <p>Checking your session...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 bg-gray-50">
