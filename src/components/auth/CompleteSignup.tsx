@@ -90,6 +90,21 @@ const CompleteSignup: React.FC = () => {
 
       const result = response.data;
 
+      // Check if vendor is pending approval
+      if (result.vendor.verificationStatus === "Pending") {
+        toast.success(
+          "Vendor account created successfully! Waiting for admin approval."
+        );
+        // You might want to navigate to a specific "pending approval" page
+        navigate("/pending-approval");
+      } else if (result.vendor.verificationStatus === "Approved") {
+        toast.success("Vendor account created and approved!");
+        navigate("/app");
+      } else {
+        toast.success("Vendor account created successfully!");
+        navigate("/welcomepage");
+      }
+
       // Persist auth info
       localStorage.setItem("authToken", result.token);
       localStorage.setItem("accountType", "vendor");
@@ -99,9 +114,6 @@ const CompleteSignup: React.FC = () => {
 
       // Update Redux state
       dispatch(setVendor({ vendor: result.vendor, token: result.token }));
-
-      toast.success("Vendor created successfully");
-      navigate("/welcomepage");
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Error completing signup";
