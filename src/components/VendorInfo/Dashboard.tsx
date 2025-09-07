@@ -42,6 +42,7 @@ const Dashboard = () => {
   const [selectedMonths, setSelectedMonths] = useState(1);
 
   const user = useSelector((state: RootState) => state.vendor);
+  console.log(user)
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
