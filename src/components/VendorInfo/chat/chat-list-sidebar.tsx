@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback, memo } from "react";
+import { useState, useRef, useMemo, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, MessageCircle, Users, Clock } from "lucide-react";
 import {
@@ -17,7 +17,8 @@ import {
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserChats } from "@/utils/vendorChatApi";
-
+import { useSocket } from "./Inbox"; // or wherever you keep it
+// Constants
 interface Message {
   _id: string;
   content: string;
@@ -71,6 +72,7 @@ interface ChatListSidebarProps {
   setActiveChat: (chatId: string) => void;
   token: any;
   onNewChatCreated: (newChat: Chat) => void;
+  typingMap: Record<string, boolean>;
 }
 
 // Utility functions
@@ -108,6 +110,31 @@ const ChatSkeleton = memo(() => (
     </div>
   </div>
 ));
+/* ----------  TYPING HOOK  ---------- */
+const useTypingMap = () => {
+  const [typingMap, setTypingMap] = useState<Record<string, boolean>>({});
+  const socket = useSocket(useSelector((s: any) => s.vendor.token));
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const onTyping = ({ chatId }: { chatId: string }) =>
+      setTypingMap((m) => ({ ...m, [chatId]: true }));
+    const onStopTyping = ({ chatId }: { chatId: string }) =>
+      setTypingMap((m) => ({ ...m, [chatId]: false }));
+
+    socket.on("typing", onTyping);
+    socket.on("stopTyping", onStopTyping);
+
+    return () => {
+      socket.off("typing", onTyping);
+      socket.off("stopTyping", onStopTyping);
+    };
+  }, [socket]);
+
+  // ✅ RETURN THE TYPING MAP INSTEAD OF A FUNCTION
+  return typingMap;
+};
 
 // Memoized contact item component
 const ContactItem = memo(
@@ -156,13 +183,16 @@ const ChatItem = memo(
     chat,
     isActive,
     onSelect,
+    typingMap, // ← rename prop to match parent
   }: {
     chat: Chat;
     isActive: boolean;
     onSelect: (chatId: string) => void;
+    typingMap: Record<string, boolean>; // ← correct type
   }) => {
     const isVendor = chat.isVendor === "vendors";
     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
+    const lastLine = chat.lastMessage || "Media";
 
     return (
       <motion.button
@@ -178,6 +208,7 @@ const ChatItem = memo(
             : "hover:bg-gray-50"
         }`}
       >
+        {/* avatar / online dot */}
         <div className="relative">
           {hasAvatar ? (
             <img
@@ -201,6 +232,8 @@ const ChatItem = memo(
             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
           )}
         </div>
+
+        {/* text column */}
         <div className="flex-1 min-w-0 text-left">
           <div className="flex items-start justify-between">
             <div className="truncate">
@@ -222,19 +255,116 @@ const ChatItem = memo(
               {formatTime(chat.timestamp)}
             </div>
           </div>
+
           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
-            {chat.lastMessage}
+            {lastLine}
           </p>
+
+          {/* typing indicator */}
+          {typingMap[chat._id] && (
+            <span className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+              <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+              typing…
+            </span>
+          )}
         </div>
       </motion.button>
     );
   }
 );
+// const ChatItem = memo(
+//   ({
+//     chat,
+//     isActive,
+//     onSelect,
+//     Typing,
+//   }: {
+//     chat: Chat;
+//     isActive: boolean;
+//     onSelect: (chatId: string) => void;
+//     Typing: Record<string, boolean>;
+//   }) => {
+//     const isVendor = chat.isVendor === "vendors";
+//     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
+//     const lastLine = chat.lastMessage || "Media";
+//     return (
+//       <motion.button
+//         initial={{ opacity: 0, y: 20 }}
+//         animate={{ opacity: 1, y: 0 }}
+//         exit={{ opacity: 0, y: -20 }}
+//         whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
+//         whileTap={{ scale: 0.98 }}
+//         onClick={() => onSelect(chat._id)}
+//         className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
+//           isActive
+//             ? "bg-orange-50 border-l-4 border-l-orange-500"
+//             : "hover:bg-gray-50"
+//         }`}
+//       >
+//         <div className="relative">
+//           {hasAvatar ? (
+//             <img
+//               src={chat.avatar}
+//               alt={chat.name}
+//               className="object-cover w-12 h-12 rounded-full"
+//               loading="lazy"
+//             />
+//           ) : (
+//             <div
+//               className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+//                 isVendor
+//                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
+//                   : "bg-gradient-to-br from-blue-500 to-blue-600"
+//               }`}
+//             >
+//               {getInitials(chat.name)}
+//             </div>
+//           )}
+//           {chat.isOnline && (
+//             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
+//           )}
+//         </div>
+//         <div className="flex-1 min-w-0 text-left">
+//           <div className="flex items-start justify-between">
+//             <div className="truncate">
+//               <p className="font-semibold text-gray-900 truncate">
+//                 {chat.name}
+//               </p>
+//               <span
+//                 className={`text-xs px-2 py-1 rounded-full ${
+//                   isVendor
+//                     ? "bg-orange-100 text-orange-700"
+//                     : "bg-blue-100 text-blue-700"
+//                 }`}
+//               >
+//                 {isVendor ? "Vendor" : "User"}
+//               </span>
+//             </div>
+//             <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
+//               <Clock className="w-3 h-3" />
+//               {formatTime(chat.timestamp)}
+//             </div>
+//           </div>
+//           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
+//             {lastLine}
+//           </p>
+//           {Typing[chat._id] && (
+//             <span className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+//               <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+//               typing…
+//             </span>
+//           )}
+//         </div>
+//       </motion.button>
+//     );
+//   }
+// );
 
 export function ChatListSidebar({
   activeChat,
   setActiveChat,
   onNewChatCreated,
+  typingMap,
 }: ChatListSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -325,7 +455,6 @@ export function ChatListSidebar({
           chatMessages.length > 0
             ? chatMessages[chatMessages.length - 1]
             : chat.lastMessage;
-        console.log(cached);
 
         return {
           _id: chat._id,
@@ -343,7 +472,26 @@ export function ChatListSidebar({
       }) || []
     );
   }, [my_chats, getOtherParticipant, user.vendor._id, queryClient]);
+
+  // const typingMap = useMemo(() => {
+  //   const map: Record<string, boolean> = {};
+  //   chats.forEach((chat:any) => {
+  //     const other = chat.participants?.find(
+  //       (p) => p.participantId !== user.vendor._id
+  //     );
+  //     if (other) map[chat._id] = isTyping(other.participantId);
+  //   });
+  //   return map;
+  // }, [chatList, isTyping, user.vendor._id]);
   console.log("chatList", chatList);
+  const socket = useSocket(user.token);
+  useEffect(() => {
+    if (!socket) return;
+    chatList.forEach((c: any) => socket.emit("joinChat", c._id));
+    return () => {
+      chatList.forEach((c: any) => socket.emit("leaveChat", c._id));
+    };
+  }, [socket, chatList]);
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
@@ -354,6 +502,17 @@ export function ChatListSidebar({
         chat.lastMessage.toLowerCase().includes(query)
     );
   }, [chatList, searchQuery]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const ids = chatList.map((c: any) => c._id).filter(Boolean);
+    ids.forEach((id: any) => socket.emit("joinChat", id));
+
+    return () => {
+      ids.forEach((id: any) => socket.emit("leaveChat", id));
+    };
+  }, [socket, chatList]);
 
   const handleChatSelect = useCallback(
     (chatId: string) => {
@@ -511,6 +670,7 @@ export function ChatListSidebar({
                 chat={chat}
                 isActive={activeChat === chat._id}
                 onSelect={handleChatSelect}
+                typingMap={typingMap}
               />
             ))
           )}

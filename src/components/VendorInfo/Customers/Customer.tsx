@@ -150,9 +150,9 @@ const CustomersPage: React.FC = () => {
                         />
                       ) : (
                         <div className="flex items-center justify-center w-full h-full bg-gray-200">
-                          <span className="text-gray-700 font-semibold">
+                          <span className="font-semibold text-gray-700">
                             {(
-                              c.customer?.email.trim().charAt(0) || "?"
+                              c.customer?.email?.trim().charAt(0) || "?"
                             ).toUpperCase()}
                           </span>
                         </div>

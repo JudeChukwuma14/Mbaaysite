@@ -1,7 +1,7 @@
 // src/api/sidebar-queries.ts
 import { getAllUsers } from "@/utils/allUsersApi";
 import { getAlllVendor } from "@/utils/vendorApi";
-import { create_or_get_chat } from "@/utils/vendorChatApi";
+import { create_or_get_chat, getUserChats } from "@/utils/vendorChatApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useVendors = () => {
@@ -67,4 +67,14 @@ export const useSearchContacts = (searchQuery: string) => {
     data: [...filteredVendors, ...filteredUsers],
     isLoading: vendorsLoading || usersLoading,
   };
+};
+
+export const useUserChats = (token: string | null) => {
+  return useQuery({
+    queryKey: ["user-chats", token], // include token so cache clears on logout
+    queryFn: () => getUserChats(token),
+    enabled: !!token,
+    staleTime: 1000 * 60 * 2, // 2 min – tune to taste
+    retry: 1,
+  });
 };

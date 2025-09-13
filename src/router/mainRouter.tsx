@@ -60,6 +60,7 @@ import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
 import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
+import { SocketProvider } from "@/components/Context/SocketCtx";
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
@@ -126,6 +127,13 @@ const EditVendorProfile = lazy(
 );
 const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
+);
+const MyOrders = lazy(() => import("../components/VendorInfo/Orders/MyOrders"));
+const OrderCancellation = lazy(
+  () => import("../components/VendorInfo/Orders/OrderCancellation")
+);
+const ReturnProducts = lazy(
+  () => import("../components/VendorInfo/Products/ReturnProducts")
 );
 const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
@@ -1098,7 +1106,13 @@ const routesConfig: RouteObject[] = [
     element: <ProtectedVendor />,
     children: [
       {
-        element: <VendorLayout />,
+        element: (
+          <SocketProvider>
+            {" "}
+            {/*  <--  once, covers whole vendor area  */}
+            <VendorLayout />
+          </SocketProvider>
+        ),
         children: [
           { index: true, element: withSuspense(Dashboard) },
           { path: "orders", element: withSuspense(AllOrder) },
@@ -1117,6 +1131,12 @@ const routesConfig: RouteObject[] = [
           },
 
           { path: "kyc-verification", element: withSuspense(KycVerification) },
+          { path: "myorders", element: withSuspense(MyOrders) },
+          { path: "return-product", element: withSuspense(ReturnProducts) },
+          {
+            path: "cancellation",
+            element: withSuspense(OrderCancellation),
+          },
           { path: "inbox", element: withSuspense(Inbox) },
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },

@@ -13,7 +13,7 @@ import axios from "axios";
 import { vendorKycUpload } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -188,13 +188,12 @@ const KYCVerification: React.FC = () => {
                   Verification Complete!
                 </h2>
                 <p className="mb-6 text-muted-foreground">
-                  Your identity has been successfully verified. You now have
-                  full access to all features.
+                  Your identity has been successfully verified.
                 </p>
               </motion.div>
 
               <div className="p-4 mt-6 border border-green-200 rounded-lg bg-green-50 dark:bg-green-950/20 dark:border-green-800">
-                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                <div className="flex items-center justify-center gap-2 text-green-700 dark:text-green-400">
                   <CheckCircle className="w-4 h-4" />
                   <span className="text-sm font-medium">
                     Account verified and ready to use

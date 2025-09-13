@@ -136,13 +136,13 @@ const AllOrdersPage: React.FC = () => {
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "Processing":
-        return "bg-yellow-400 text-white";
+        return "text-yellow-400";
       case "Delivered":
         return "text-green-500";
       case "Cancelled":
         return "text-red-500";
       case "Pending":
-        return "bg-blue-500 text-white";
+        return "text-blue-500";
       default:
         return "text-gray-500";
     }

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { MdOutlineReviews } from "react-icons/md";
+import { MdVerifiedUser } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
@@ -22,6 +23,7 @@ import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { IoIosPricetag } from "react-icons/io";
 import { clearSessionId } from "@/redux/slices/sessionSlice";
+import { RiProfileLine } from "react-icons/ri";
 
 interface DashboardSidebarProps {
   darkMode: boolean;
@@ -81,10 +83,14 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
         </div>
         <nav>
           <NavItem title="Dashboard" to="/app" Icon={Home} />
-          <NavItem title="Orders" to="orders" Icon={ShoppingCart} />
+          <NavItem
+            title="Orders"
+            subItems={["Orders", "MyOrders", "Cancellation"]}
+            Icon={ShoppingCart}
+          />
           <NavItem
             title="Products"
-            subItems={["All Products", "New Product"]}
+            subItems={["All Products", "New Product", "Return Product"]}
             Icon={Box}
           />
           <NavItem title="Customers" to="customers" Icon={Users} />
@@ -95,10 +101,11 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
             Icon={DollarSign}
           />
           <NavItem
-            title="Settings"
-            subItems={["Edit Vendor Profile", "KYC Verification"]}
-            Icon={Settings}
+            title="Profile"
+            to="edit-vendor-profile"
+            Icon={RiProfileLine}
           />
+          <NavItem title="Kyc" to="kyc-verification" Icon={MdVerifiedUser} />
           <NavItem title="Reviews" to="reviews" Icon={MdOutlineReviews} />
           <NavItem title="Upgrade plan" to="pricing" Icon={IoIosPricetag} />
           <NavItem

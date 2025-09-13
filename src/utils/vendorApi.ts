@@ -107,6 +107,21 @@ const NotBaseUrl = "https://mbayy-be.onrender.com/api/v1/notifications";
 export const getVendorNotification = async (id: string | null) => {
   try {
     const response = await axios.get(`${NotBaseUrl}/allnotifications/${id}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const markOneAsRead = async (
+  id: string | null,
+  notificationsId: string | null
+) => {
+  try {
+    const response = await axios.patch(
+      `${NotBaseUrl}/notifications/${notificationsId}/${id}`
+    );
     return response.data;
   } catch (error) {
     console.log(error);

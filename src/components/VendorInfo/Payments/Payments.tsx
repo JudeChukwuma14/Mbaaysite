@@ -36,7 +36,7 @@ const PaymentsPage = () => {
     const raw: PaymentRecord[] = data?.payments ?? [];
     return raw.map((p) => ({
       id: p.paymentId,
-      customerName: p.customer?.email.split("@")[0], // quick placeholder
+      customerName: p.customer?.email?.split("@")[0], // quick placeholder
       email: p.customer?.email,
       date: new Date(p.date).toLocaleDateString(),
       amount: p.amount,
@@ -216,7 +216,7 @@ const PaymentsPage = () => {
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-12">
+                <td colSpan={6} className="py-12 text-center">
                   <div className="flex flex-col items-center text-gray-500">
                     <CreditCard size={40} className="mb-2" />
                     <p className="text-sm font-medium">

@@ -1,5 +1,5 @@
-import { useState, useRef, type ChangeEvent, useEffect } from "react";
-import { motion, AnimatePresence, number } from "framer-motion";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
@@ -104,13 +104,20 @@ const NewProduct = () => {
   const [vendorCountry, setVendorCountry] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [listingType, setListingType] = useState<"sales" | "auction">("sales");
-  const [auctionDetails, setAuctionDetails] = useState({
+  const [auctionDetails, setAuctionDetails] = useState<{
+    startingPrice: string;
+    reservePrice: string;
+    auctionDuration: string;
+    Inventory: number;
+    auctionstartTime: string;
+  }>({
     startingPrice: "",
     reservePrice: "",
-    auctionType: "",
     auctionDuration: "",
-    Inventory: number,
+    Inventory: 0,
+    auctionstartTime: "",
   });
+  console.log(auctionDetails);
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
 
@@ -397,6 +404,7 @@ const NewProduct = () => {
         uploadedVideoInfo: videoBase64,
         imagePreviewsWithBase64, // Save the base64 versions
         selectedCategories,
+
         // Don't try to save File objects directly
       };
 
@@ -485,30 +493,65 @@ const NewProduct = () => {
       if (!activeCategory) throw new Error("Please select a category");
       if (!subCategory || subCategory === "")
         throw new Error("Please select a subcategory");
-      if (!quantity || isNaN(Number(quantity)))
-        throw new Error("Please enter a valid quantity");
-      if (Number(quantity) < 0) throw new Error("Quantity cannot be negative");
-      const numericPrice = Number(price.replace(/[^0-9.-]+/g, ""));
-      const numericPrices = Number(shippingprice.replace(/[^0-9.-]+/g, ""));
+
+      /* ----------  inventory / quantity validation  ---------- */
+      const inventoryRaw =
+        listingType === "auction" ? auctionDetails.Inventory : Number(quantity);
+      if (!inventoryRaw || isNaN(inventoryRaw))
+        throw new Error("Please enter a valid inventory / quantity");
+      if (inventoryRaw < 0) throw new Error("Inventory cannot be negative");
+
+      /* ----------  price validation  ---------- */
+      const toNumber = (v: string) => Number(v.replace(/[^0-9.]/g, "")) || 0;
+      const numericPrice =
+        listingType === "sales"
+          ? toNumber(price)
+          : toNumber(auctionDetails.startingPrice);
       if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
-      if (isNaN(numericPrice))
-        throw new Error("Please enter a valid shippingfee");
-      if (productImages?.length === 0)
+
+      if (productImages.length === 0)
         throw new Error("Please upload at least one product image");
 
+      /* ----------  build FormData  ---------- */
       const formData = new FormData();
+
+      /* --- core fields (always sent) --- */
       formData.append("name", productName);
       formData.append("description", value);
       formData.append("category", activeCategory);
       formData.append("sub_category", subCategory);
       formData.append("sub_category2", subSubCategory);
-      formData.append("inventory", quantity);
-      formData.append("price", numericPrice.toString());
-      formData.append("shippingfee", numericPrices.toString());
+      formData.append("inventory", inventoryRaw.toString());
+      formData.append("sku", sku);
 
-      productImages.forEach((image) => {
-        formData.append("images", image);
-      });
+      /* --- product type flag --- */
+      formData.append("productType", listingType); // "sales" | "auction"
+
+      /* --- pricing / auction fields --- */
+      if (listingType === "sales") {
+        const shipFee = toNumber(shippingprice);
+        if (isNaN(shipFee))
+          throw new Error("Please enter a valid shipping fee");
+
+        formData.append("price", numericPrice.toString());
+        formData.append("shippingfee", shipFee.toString());
+      } else {
+        /* auction only */
+        formData.append("startingPrice", numericPrice.toString());
+        formData.append(
+          "reservePrice",
+          toNumber(auctionDetails.reservePrice).toString()
+        );
+        formData.append("auctionDuration", auctionDetails.auctionDuration);
+        formData.append(
+          "auctionStartDate",
+          new Date(auctionDetails.auctionstartTime).toISOString()
+        );
+        formData.append("shippingfee", "0"); // auctions don’t charge shipping
+      }
+
+      /* --- media --- */
+      productImages.forEach((image) => formData.append("images", image));
 
       if (uploadedVideoInfo?.file) {
         formData.append("upload_type", "upload");
@@ -516,10 +559,6 @@ const NewProduct = () => {
       } else if (youtubeEmbedUrl) {
         formData.append("upload_type", "link");
         formData.append("product_video", youtubeEmbedUrl);
-      }
-
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
       }
 
       await uploadVendorProduct(user.token, formData);
@@ -535,10 +574,7 @@ const NewProduct = () => {
         error instanceof Error
           ? error.message
           : "Failed to add product. Please try again.",
-        {
-          position: "top-right",
-          autoClose: 4000,
-        }
+        { position: "top-right", autoClose: 4000 }
       );
     } finally {
       setIsLoading(false);
@@ -901,8 +937,11 @@ const NewProduct = () => {
                 type="number"
                 placeholder="Inventory"
                 className="w-full p-2 border border-orange-500 rounded outline-orange-500"
-                onChange={(v: any) =>
-                  setAuctionDetails({ ...auctionDetails, Inventory: v })
+                onChange={(e) =>
+                  setAuctionDetails({
+                    ...auctionDetails,
+                    Inventory: Number(e.target.value),
+                  })
                 }
               />
             </div>
@@ -938,7 +977,13 @@ const NewProduct = () => {
               </label>
 
               <input
-                type="datetime-local"
+                type="date"
+                onChange={(e) =>
+                  setAuctionDetails({
+                    ...auctionDetails,
+                    auctionstartTime: e.target.value,
+                  })
+                }
                 className="w-full p-2 border border-orange-500 rounded outline-orange-500"
               />
             </div>
