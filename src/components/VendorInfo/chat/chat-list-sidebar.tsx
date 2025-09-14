@@ -111,30 +111,30 @@ const ChatSkeleton = memo(() => (
   </div>
 ));
 /* ----------  TYPING HOOK  ---------- */
-const useTypingMap = () => {
-  const [typingMap, setTypingMap] = useState<Record<string, boolean>>({});
-  const socket = useSocket(useSelector((s: any) => s.vendor.token));
+// const useTypingMap = () => {
+//   const [typingMap, setTypingMap] = useState<Record<string, boolean>>({});
+//   const socket = useSocket(useSelector((s: any) => s.vendor.token));
 
-  useEffect(() => {
-    if (!socket) return;
+//   useEffect(() => {
+//     if (!socket) return;
 
-    const onTyping = ({ chatId }: { chatId: string }) =>
-      setTypingMap((m) => ({ ...m, [chatId]: true }));
-    const onStopTyping = ({ chatId }: { chatId: string }) =>
-      setTypingMap((m) => ({ ...m, [chatId]: false }));
+//     const onTyping = ({ chatId }: { chatId: string }) =>
+//       setTypingMap((m) => ({ ...m, [chatId]: true }));
+//     const onStopTyping = ({ chatId }: { chatId: string }) =>
+//       setTypingMap((m) => ({ ...m, [chatId]: false }));
 
-    socket.on("typing", onTyping);
-    socket.on("stopTyping", onStopTyping);
+//     socket.on("typing", onTyping);
+//     socket.on("stopTyping", onStopTyping);
 
-    return () => {
-      socket.off("typing", onTyping);
-      socket.off("stopTyping", onStopTyping);
-    };
-  }, [socket]);
+//     return () => {
+//       socket.off("typing", onTyping);
+//       socket.off("stopTyping", onStopTyping);
+//     };
+//   }, [socket]);
 
-  // ✅ RETURN THE TYPING MAP INSTEAD OF A FUNCTION
-  return typingMap;
-};
+//   // ✅ RETURN THE TYPING MAP INSTEAD OF A FUNCTION
+//   return typingMap;
+// };
 
 // Memoized contact item component
 const ContactItem = memo(
