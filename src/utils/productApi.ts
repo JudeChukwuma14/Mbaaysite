@@ -8,6 +8,14 @@ export const api = axios.create({
   },
 });
 
+const AUCTION_BASE_URL = "https://mbayy-be.onrender.com/api/v1/products";
+export const auction = axios.create({
+  baseURL: AUCTION_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 export const getAllProduct = async () => {
   try {
     const response = await api.get("/all");
@@ -35,5 +43,49 @@ export const getProductsById = async (productId: string) => {
     return response.data;
   } catch (error) {
     console.log(error);
+  }
+};
+
+export const getAuctionProduct = async () => {
+  try {
+    const response = await auction.get("/view_all_auction_products");
+    console.log("API Response:", response.data); // Log the response for debugging
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching auction products:", error);
+    throw error; // Throw the error to be handled by the caller
+  }
+};
+
+
+// Fetch single auction product by ID
+export const getAuctionById = async (productId: string) => {
+  try {
+    const response = await auction.get(`/view_an_auction_product/${productId}`);
+    console.log("API Response (Auction Details):", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching auction product ${productId}:`, error);
+    throw error;
+  }
+};
+
+// Place a bid on a product
+export const placeBid = async (productId: string, bidAmount: number, token: string) => {
+  try {
+    const response = await auction.patch(
+      `/place_bid/${productId}`,
+      { bidAmount },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("API Response (Place Bid):", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error placing bid on ${productId}:`, error);
+    throw error;
   }
 };

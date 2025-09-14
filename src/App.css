@@ -1,42 +1,135 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+/* Auction House Design System - Luxury & Elegance
+All colors MUST be HSL for consistency and theming.
+*/
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    /* Auction house navy blue */
+    --primary: 215 85% 15%;
+    --primary-foreground: 0 0% 98%;
+
+    /* Warm gold accents */
+    --secondary: 45 85% 55%;
+    --secondary-foreground: 215 85% 15%;
+
+    --muted: 215 15% 96%;
+    --muted-foreground: 215 15% 45%;
+
+    --accent: 45 45% 92%;
+    --accent-foreground: 215 85% 15%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 15% 88%;
+    --input: 215 15% 92%;
+    --ring: 215 85% 15%;
+
+    /* Auction-specific colors */
+    --auction-live: 140 65% 45%;
+    --auction-ended: 0 65% 55%;
+    --auction-premium: 45 85% 55%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 85% 15%), hsl(215 75% 25%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 85% 55%), hsl(45 75% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 85% 15%), hsl(45 85% 55%));
+    
+    /* Shadows */
+    --shadow-auction: 0 4px 20px -4px hsl(215 85% 15% / 0.15);
+    --shadow-card: 0 2px 12px -2px hsl(215 25% 15% / 0.08);
+    --shadow-premium: 0 8px 32px -8px hsl(45 85% 55% / 0.25);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
-  to {
-    transform: rotate(360deg);
+
+  .dark {
+    --background: 215 25% 8%;
+    --foreground: 0 0% 95%;
+
+    --card: 215 25% 10%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 215 25% 10%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 45 85% 55%;
+    --primary-foreground: 215 25% 8%;
+
+    --secondary: 215 15% 20%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 215 15% 15%;
+    --muted-foreground: 215 15% 65%;
+
+    --accent: 215 15% 18%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 215 15% 20%;
+    --input: 215 15% 18%;
+    --ring: 45 85% 55%;
+
+    /* Dark mode auction colors */
+    --auction-live: 140 65% 45%;
+    --auction-ended: 0 65% 55%;
+    --auction-premium: 45 85% 55%;
+    
+    --gradient-primary: linear-gradient(135deg, hsl(215 25% 10%), hsl(215 25% 18%));
+    --gradient-gold: linear-gradient(135deg, hsl(45 85% 55%), hsl(45 75% 65%));
+    --gradient-hero: linear-gradient(135deg, hsl(215 25% 8%), hsl(45 85% 55%));
+    
+    --shadow-auction: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.2);
+    --shadow-premium: 0 8px 32px -8px hsl(45 85% 55% / 0.3);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@layer base {
+  * {
+    @apply border-border;
   }
-}
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+  body {
+    @apply bg-background text-foreground;
+  }
 }

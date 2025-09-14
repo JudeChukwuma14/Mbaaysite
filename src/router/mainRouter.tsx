@@ -151,7 +151,9 @@ const ProductDetailModal = lazy(
   () => import("@/components/VendorInfo/Products/ProductDetailModal")
 );
 const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
-// const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
+const AuctionDetail = lazy(
+  () => import("@/components/AuctionPage/AuctionDetail")
+);
 const Error = lazy(() => import("@/components/Error/Error"));
 // const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
 import ChatInterfaceChat from "@/components/profileMangement/chat/ChatInterfaceChat";
@@ -777,6 +779,7 @@ import RestrictVendorRoute from "./RestrictVendorRoute";
 import CompleteSignup from "@/components/auth/CompleteSignup";
 import PendingApproval from "@/components/auth/PendingApproval";
 
+const AuctionList = lazy(() => import("@/components/AuctionPage/AuctionList"));
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -804,6 +807,8 @@ const routesConfig: RouteObject[] = [
         errorElement: <ErrorPage />,
       },
       { path: "/auctionview", element: withSuspense(AuctionView) },
+      { path: "/auction/:id", element: withSuspense(AuctionDetail) },
+      { path: "/auctionlist", element: withSuspense(AuctionList) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
       { path: "/more-vendor", element: withSuspense(AllVendor) },
       {
@@ -1114,6 +1119,7 @@ const routesConfig: RouteObject[] = [
   {
     path: "/app",
     element: <ProtectedVendor />,
+    errorElement: <ErrorPage />,
     children: [
       {
         element: <VendorLayout />,

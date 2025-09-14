@@ -29,6 +29,7 @@ interface Product {
   price: number;
   images: string[];
   createdAt: string;
+  productType: string;
 }
 
 interface VendorProfile {
@@ -75,11 +76,17 @@ const HomeArea: React.FC = () => {
       setLoading(true);
       try {
         const result = await getAllProduct();
+        console.log(result);
         const productsData = Array.isArray(result)
           ? result
           : result.products || [];
 
-        const productsWithSales = productsData.map((product: Product) => ({
+        // Filter products to include only those with productType: "sales"
+        const salesProducts = productsData.filter(
+          (product: Product) => product.productType === "sales"
+        );
+
+        const productsWithSales = salesProducts.map((product: Product) => ({
           ...product,
           saleCount: Math.floor(Math.random() * 100),
         }));
@@ -95,7 +102,7 @@ const HomeArea: React.FC = () => {
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const newArrivals = productsData
+        const newArrivals = salesProducts
           .filter(
             (product: Product) => new Date(product.createdAt) >= thirtyDaysAgo
           )
@@ -105,7 +112,7 @@ const HomeArea: React.FC = () => {
           )
           .slice(0, 15);
 
-        setProducts(productsData);
+        setProducts(salesProducts);
         setBestSellingProducts(bestSelling);
         setNewArrivals(newArrivals);
       } catch (err) {

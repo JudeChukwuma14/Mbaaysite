@@ -12,6 +12,7 @@ import i18next from "./utils/i18n";
 import ErrorBoundary from "./components/Error/ErrorBoundary";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
+import "./App.css";
 
 // Replace with your Google Client ID from Google Cloud Console
 const GOOGLE_CLIENT_ID = "625711431090-8p1bbgs1hra8rg4mgjq6vrqr73gchds4.apps.googleusercontent.com";
