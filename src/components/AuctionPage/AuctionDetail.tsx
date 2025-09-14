@@ -84,8 +84,6 @@ const AuctionDetail = () => {
   const authToken = user || vendor || "";
   const currencySymbol = getCurrencySymbol(currency);
 
-  console.log("User Token:", user);
-  console.log("Vendor Token:", vendor);
 
   // Ensure sessionId is initialized
   useEffect(() => {

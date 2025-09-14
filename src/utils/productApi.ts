@@ -49,7 +49,6 @@ export const getProductsById = async (productId: string) => {
 export const getAuctionProduct = async () => {
   try {
     const response = await auction.get("/view_all_auction_products");
-    console.log("API Response:", response.data); // Log the response for debugging
     return response.data;
   } catch (error) {
     console.error("Error fetching auction products:", error);
@@ -62,7 +61,6 @@ export const getAuctionProduct = async () => {
 export const getAuctionById = async (productId: string) => {
   try {
     const response = await auction.get(`/view_an_auction_product/${productId}`);
-    console.log("API Response (Auction Details):", response.data);
     return response.data;
   } catch (error) {
     console.error(`Error fetching auction product ${productId}:`, error);
@@ -82,7 +80,6 @@ export const placeBid = async (productId: string, bidAmount: number, token: stri
         },
       }
     );
-    console.log("API Response (Place Bid):", response.data);
     return response.data;
   } catch (error) {
     console.error(`Error placing bid on ${productId}:`, error);
