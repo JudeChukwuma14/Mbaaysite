@@ -184,7 +184,7 @@ export const useEditMessage = () => {
         );
       }
     },
-    onSuccess: async (data, variables, context) => {
+    onSuccess: async (_unused, _, context) => {
       const targetChatId = context?.chatId;
       if (targetChatId) {
         await queryClient.refetchQueries({

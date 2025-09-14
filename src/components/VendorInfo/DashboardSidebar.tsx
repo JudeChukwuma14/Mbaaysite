@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   Users,
   DollarSign,
-  Settings,
   MessageSquare,
   LogOutIcon,
   ChevronDown,

@@ -5,7 +5,6 @@ import { Outlet } from "react-router-dom";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { RiMessage2Line } from "react-icons/ri";
 import { ChatWidget } from "./VendorCustomerCare/CustomerCareWidget";
 // Import dark mode context
 

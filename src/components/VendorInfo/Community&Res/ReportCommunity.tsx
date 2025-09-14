@@ -8,7 +8,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 // import { report_community } from "@/utils/communityApi";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 
 interface ReportModelProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export default function ReportModel({
   const [image, setImage] = useState<File | null>(null);
   //   const [imagePreview, setImagePreview] = useState<string | null>(null);
   //   const fileInputRef = useRef<HTMLInputElement>(null);
-  const user = useSelector((state: any) => state.vendor);
+  // const user = useSelector((state: any) => state.vendor);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
