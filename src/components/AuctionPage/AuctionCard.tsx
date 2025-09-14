@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
+import { addItem } from "@/redux/slices/cartSlice";
+import { addWishlistItem } from "@/redux/slices/wishlistSlice";
+import { initializeSession } from "@/redux/slices/sessionSlice";
 import { Heart, ShoppingCart, Gavel, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import { addToCart } from "@/utils/cartApi";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 
 interface AuctionCardProps {
   id: string;
@@ -32,8 +40,37 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   isWatched = false,
   isPremium = false,
 }) => {
+  const dispatch = useDispatch();
+  const { currency } = useSelector((state: RootState) => state.settings);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const [timeLeft, setTimeLeft] = useState(getTimeLeft(endTime));
   const [watched, setWatched] = useState(isWatched);
+  const [isLoading, setIsLoading] = useState(false);
+  const [convertedPrice, setConvertedPrice] = useState(currentBid);
+
+  // Ensure sessionId is initialized
+  useEffect(() => {
+    if (!sessionId) {
+      dispatch(initializeSession());
+    }
+  }, [dispatch, sessionId]);
+
+  // Convert price when currency or currentBid changes
+  useEffect(() => {
+    const convert = async () => {
+      setIsLoading(true);
+      try {
+        const price = await convertPrice(currentBid, "NGN", currency);
+        setConvertedPrice(price);
+      } catch (error) {
+        console.error("Failed to convert price:", error);
+        setConvertedPrice(currentBid); // Fallback to base price
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    convert();
+  }, [currentBid, currency]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -61,8 +98,66 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
     timeLeft.minutes === 0 &&
     timeLeft.seconds === 0;
 
+  // Truncate category name if longer than 15 characters
+  const truncatedCategory =
+    category.length > 15 ? `${category.slice(0, 12)}...` : category;
+
+  const handleAddToCartClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!sessionId) {
+      toast.error("Session not initialized. Please try again.");
+      return;
+    }
+
+    try {
+      await addToCart(sessionId, id, 1);
+      dispatch(
+        addItem({
+          id,
+          name: title,
+          price: currentBid, // Store base price (NGN) in cart
+          quantity: 1,
+          image: image || "/placeholder.svg",
+        })
+      );
+      toast.success(`${title} added to cart!`);
+    } catch (error) {
+      toast.error((error as Error)?.message || "Failed to add item to cart", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
+  };
+
+  const handleAddWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    setWatched(!watched);
+    if (!watched) {
+      dispatch(
+        addWishlistItem({
+          id,
+          name: title,
+          price: currentBid, // Store base price (NGN) in wishlist
+          quantity: 1,
+          image: image || "/placeholder.svg",
+        })
+      );
+      toast.success(`${title} added to your wishlist!`);
+    }
+  };
+
+  const currencySymbol = getCurrencySymbol(currency);
+
   return (
-    <div className={`group relative overflow-hidden rounded-xl border bg-card shadow-card-auction transition-all duration-300 hover:shadow-auction hover:scale-[1.02] ${isPremium ? 'ring-2 ring-auction-premium shadow-premium' : ''}`}>
+    <div
+      className={`group relative overflow-hidden rounded-xl border bg-card shadow-card-auction transition-all duration-300 hover:shadow-auction hover:scale-[1.02] ${
+        isPremium ? "ring-2 ring-auction-premium shadow-premium" : ""
+      }`}
+    >
       {/* Premium Badge */}
       {isPremium && (
         <div className="absolute top-0 left-0 z-10 bg-gradient-gold px-3 py-1 text-xs font-semibold text-primary rounded-br-xl">
@@ -81,10 +176,10 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
         {/* Status Badge */}
         <Badge
           variant={isEnded ? "destructive" : "default"}
-          className={`absolute top-3 ${isPremium ? 'left-20' : 'left-3'} ${
-            isEnded 
-              ? 'bg-auction-ended border-auction-ended text-white' 
-              : 'bg-auction-live border-auction-live text-white'
+          className={`absolute top-3 ${isPremium ? "left-20" : "left-3"} ${
+            isEnded
+              ? "bg-auction-ended border-auction-ended text-white"
+              : "bg-auction-live border-auction-live text-white"
           }`}
         >
           <Gavel className="mr-1 h-3 w-3" />
@@ -97,10 +192,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
             size="sm"
             variant="secondary"
             className="h-9 w-9 rounded-full p-0 bg-white/95 hover:bg-white backdrop-blur-sm shadow-md hover:shadow-lg"
-            onClick={(e) => {
-              e.preventDefault();
-              setWatched(!watched);
-            }}
+            onClick={handleAddWishlist}
           >
             <Heart
               className={`h-4 w-4 transition-colors ${
@@ -112,6 +204,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
             size="sm"
             variant="secondary"
             className="h-9 w-9 rounded-full p-0 bg-white/95 hover:bg-white backdrop-blur-sm shadow-md hover:shadow-lg"
+            onClick={handleAddToCartClick}
           >
             <ShoppingCart className="h-4 w-4 text-muted-foreground hover:text-primary" />
           </Button>
@@ -161,15 +254,19 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Current Bid</p>
-            <p className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              ${currentBid.toLocaleString()}
-            </p>
+            {isLoading ? (
+              <span className="text-2xl font-bold">Loading...</span>
+            ) : (
+              <p className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
+                {currencySymbol} {formatPrice(convertedPrice)}
+              </p>
+            )}
           </div>
           <Badge
             variant="secondary"
-            className="bg-accent text-accent-foreground font-medium "
+            className="bg-accent text-accent-foreground font-medium"
           >
-            {category}
+            {truncatedCategory}
           </Badge>
         </div>
 
@@ -198,9 +295,9 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
           <Link to={`/auction/${id}`}>
             <Button
               className={`${
-                isPremium 
-                  ? 'bg-gradient-gold hover:opacity-90 text-primary font-semibold shadow-md' 
-                  : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                isPremium
+                  ? "bg-gradient-gold hover:opacity-90 text-primary font-semibold shadow-md"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
               } transition-all duration-200`}
               disabled={isEnded}
             >

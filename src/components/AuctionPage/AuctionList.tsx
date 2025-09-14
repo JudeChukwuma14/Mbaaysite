@@ -58,7 +58,8 @@ const AuctionList = () => {
       try {
         const data = await getAuctionProduct();
         // Extract the 'data' array from the response, fallback to empty array
-        const auctionData = data?.data && Array.isArray(data.data) ? data.data : [];
+        const auctionData =
+          data?.data && Array.isArray(data.data) ? data.data : [];
         console.log("Fetched Auctions:", auctionData); // Debug log
         setAuctions(auctionData);
         setCategories(getCategories(auctionData));
@@ -122,7 +123,7 @@ const AuctionList = () => {
     <div className="min-h-screen">
       <div className="relative bg-gradient-hero text-white py-16">
         <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative container mx-auto px-4">
+        <div className="relative container mx-auto md:px-8 px-4">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               Premium Auction House
@@ -144,7 +145,7 @@ const AuctionList = () => {
       </div>
 
       <div className="border-b bg-card shadow-sm sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-6">
+        <div className="container mx-auto md:px-8 px-4 py-6">
           <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -226,7 +227,7 @@ const AuctionList = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto md:px-8 px-4 py-8">
         {loading ? (
           <div
             className={`grid gap-6 ${
