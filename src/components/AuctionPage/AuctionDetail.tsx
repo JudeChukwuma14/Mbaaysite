@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { initializeSession } from "@/redux/slices/sessionSlice";
 import {
   ArrowLeft,
   Heart,
@@ -24,11 +25,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AuctionDetailSkeleton from "./AuctionDetailSkeleton";
 import { getAuctionById, placeBid } from "@/utils/productApi";
 import { toast } from "react-toastify";
-
-interface RootState {
-  user: { user: { token: string } | null };
-  vendor: { token: string } | null;
-}
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import { RootState } from '@/redux/store';
 
 interface Auction {
   _id: string;
@@ -42,7 +40,7 @@ interface Auction {
   auctionEndDate: string;
   auctionStatus: string;
   highestBid: { amount: number };
-  poster: { _id: string; storeName: string; email: string };
+  poster: { _id: string; storeName: string; email: string; image?: string };
   verified: boolean;
   bids: { bidder: string; amount: number; createdAt: string; _id: string }[];
   createdAt: string;
@@ -56,15 +54,10 @@ interface Auction {
   uploadedBy: string | null;
 }
 
-// interface Bid {
-//   bidder: string;
-//   amount: number;
-//   time: string;
-// }
-
 const AuctionDetail = () => {
-  const { id } = useParams<{ id: string }>(); // Changed from productId to id to match route
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [auction, setAuction] = useState<Auction | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,14 +71,30 @@ const AuctionDetail = () => {
   });
   const [isWatching, setIsWatching] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const [isPriceLoading, setIsPriceLoading] = useState(false);
+  const [convertedCurrentBid, setConvertedCurrentBid] = useState(0);
+  const [convertedStartingPrice, setConvertedStartingPrice] = useState(0);
+  const [convertedNextBid, setConvertedNextBid] = useState(0);
 
-  // Get auth token from Redux
-  const user = useSelector((state: RootState) => state.user.user?.token);
+  // Get auth token and currency from Redux
+  const user = useSelector((state: RootState) => state.user.token);
   const vendor = useSelector((state: RootState) => state.vendor?.token);
+  const { currency } = useSelector((state: RootState) => state.settings);
+  const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const authToken = user || vendor || "";
+  const currencySymbol = getCurrencySymbol(currency);
+
   console.log("User Token:", user);
   console.log("Vendor Token:", vendor);
-  //   console.log("Auth Token:", authToken);
+
+  // Ensure sessionId is initialized
+  useEffect(() => {
+    if (!sessionId) {
+      dispatch(initializeSession());
+    }
+  }, [dispatch, sessionId]);
+
+  // Fetch auction data
   useEffect(() => {
     if (!id) {
       setError("Invalid auction ID. Please check the URL.");
@@ -117,6 +126,44 @@ const AuctionDetail = () => {
     fetchAuctionData();
   }, [id]);
 
+  // Convert prices when auction or currency changes
+  useEffect(() => {
+    if (auction) {
+      const convertPrices = async () => {
+        setIsPriceLoading(true);
+        try {
+          const currentBid = await convertPrice(
+            auction.highestBid.amount || auction.startingPrice,
+            "NGN",
+            currency
+          );
+          const startingPrice = await convertPrice(
+            auction.startingPrice,
+            "NGN",
+            currency
+          );
+          const nextBid = await convertPrice(
+            (auction.highestBid.amount || auction.startingPrice) + 250,
+            "NGN",
+            currency
+          );
+          setConvertedCurrentBid(currentBid);
+          setConvertedStartingPrice(startingPrice);
+          setConvertedNextBid(nextBid);
+        } catch (error) {
+          console.error("Failed to convert prices:", error);
+          setConvertedCurrentBid(auction.highestBid.amount || auction.startingPrice);
+          setConvertedStartingPrice(auction.startingPrice);
+          setConvertedNextBid((auction.highestBid.amount || auction.startingPrice) + 250);
+        } finally {
+          setIsPriceLoading(false);
+        }
+      };
+      convertPrices();
+    }
+  }, [auction, currency]);
+
+  // Update countdown timer
   useEffect(() => {
     if (auction) {
       const timer = setInterval(() => {
@@ -145,31 +192,27 @@ const AuctionDetail = () => {
     timeLeft.minutes === 0 &&
     timeLeft.seconds === 0;
 
-  const nextBid = auction
-    ? (auction.highestBid.amount || auction.startingPrice) + 250
-    : 0;
-
   const handlePlaceBid = async () => {
     if (!authToken) {
       navigate("/selectpath", { state: { from: `/auction/${id}` } });
       return;
     }
-    if (!bidAmount || parseFloat(bidAmount) < nextBid) {
-      alert(`Bid must be at least $${nextBid.toLocaleString()}`);
+    if (!bidAmount || parseFloat(bidAmount) < convertedNextBid) {
+      toast.error(`Bid must be at least ${currencySymbol} ${formatPrice(convertedNextBid)}`);
       return;
     }
     try {
-      await placeBid(id!, parseFloat(bidAmount), authToken);
-      toast.success(`Bid placed: $${bidAmount}`);
+      // Convert bid back to NGN for API
+      const bidInNGN = await convertPrice(parseFloat(bidAmount), currency, "NGN");
+      await placeBid(id!, bidInNGN, authToken);
+      toast.success(`Bid placed: ${currencySymbol} ${formatPrice(parseFloat(bidAmount))}`);
       setBidAmount("");
-      // Refresh auction data after placing a bid
+      // Refresh auction data
       const auctionData = await getAuctionById(id!);
       setAuction(auctionData?.data);
     } catch (err: any) {
       console.error("Error placing bid:", err);
-      alert(
-        err.response?.data?.message || "Failed to place bid. Please try again."
-      );
+      toast.error(err.response?.data?.message || "Failed to place bid. Please try again.");
     }
   };
 
@@ -178,7 +221,7 @@ const AuctionDetail = () => {
     if (auction && bidderId === auction.poster._id) {
       return auction.poster.storeName;
     }
-    return "Unknown Bidder"; // Fallback for other bidders
+    return "Unknown Bidder";
   };
 
   if (loading) return <AuctionDetailSkeleton />;
@@ -189,6 +232,9 @@ const AuctionDetail = () => {
         <Button onClick={() => window.location.reload()} className="mt-4">
           Retry
         </Button>
+        <Link to="/">
+          <Button className="mt-4 ml-4">Back to Auctions</Button>
+        </Link>
       </div>
     );
   }
@@ -303,8 +349,8 @@ const AuctionDetail = () => {
                   variant={isEnded ? "destructive" : "default"}
                   className={`${
                     isEnded
-                      ? " border-auction-ended text-slate-500"
-                      : " border-auction-live "
+                      ? "border-auction-ended text-slate-500"
+                      : "border-auction-live"
                   }`}
                 >
                   <Gavel className="mr-1 h-3 w-3" />
@@ -323,20 +369,17 @@ const AuctionDetail = () => {
                 {auction.name}
               </h1>
 
-              <p className="text-muted-foreground mb-4">
-                {auction.description}
-              </p>
+              <p className="text-muted-foreground mb-4">{auction.description}</p>
 
               {/* Stats */}
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  {auction.bids.length} views{" "}
-                  {/* Placeholder; replace if API provides views */}
+                  {auction.bids.length} views
                 </div>
                 <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />0 watching{" "}
-                  {/* Placeholder; replace if API provides watchers */}
+                  <Users className="h-4 w-4" />
+                  0 watching
                 </div>
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-4 w-4" />
@@ -353,20 +396,27 @@ const AuctionDetail = () => {
                     <p className="text-sm text-muted-foreground mb-1">
                       Current Bid
                     </p>
-                    <p className="text-4xl font-bold bg-gradient-primary bg-clip-text ">
-                      $
-                      {(
-                        auction.highestBid.amount || auction.startingPrice
-                      ).toLocaleString()}
-                    </p>
+                    {isPriceLoading ? (
+                      <span className="text-4xl font-bold">Loading...</span>
+                    ) : (
+                      <p className="text-4xl font-bold bg-gradient-primary bg-clip-text">
+                        {currencySymbol} {formatPrice(convertedCurrentBid)}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted-foreground mb-1">
                       Starting Bid
                     </p>
-                    <p className="text-lg font-semibold text-foreground">
-                      ${auction.startingPrice.toLocaleString()}
-                    </p>
+                    {isPriceLoading ? (
+                      <span className="text-lg font-semibold text-foreground">
+                        Loading...
+                      </span>
+                    ) : (
+                      <p className="text-lg font-semibold text-foreground">
+                        {currencySymbol} {formatPrice(convertedStartingPrice)}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -425,14 +475,18 @@ const AuctionDetail = () => {
                     <div className="flex items-center gap-3">
                       <Input
                         type="number"
-                        placeholder={`Minimum bid: $${nextBid.toLocaleString()}`}
+                        placeholder={`Minimum bid: ${currencySymbol} ${formatPrice(
+                          convertedNextBid
+                        )}`}
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
                         className="flex-1"
                       />
                       <Button
                         onClick={handlePlaceBid}
-                        disabled={!bidAmount || parseFloat(bidAmount) < nextBid}
+                        disabled={
+                          !bidAmount || parseFloat(bidAmount) < convertedNextBid
+                        }
                         className="bg-gradient-gold hover:opacity-90 text-primary font-semibold px-8"
                       >
                         Place Bid
@@ -442,25 +496,27 @@ const AuctionDetail = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setBidAmount(nextBid.toString())}
+                        onClick={() => setBidAmount(convertedNextBid.toString())}
                       >
-                        ${nextBid.toLocaleString()}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setBidAmount((nextBid + 500).toString())}
-                      >
-                        ${(nextBid + 500).toLocaleString()}
+                        {currencySymbol} {formatPrice(convertedNextBid)}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() =>
-                          setBidAmount((nextBid + 1000).toString())
+                          setBidAmount((convertedNextBid + 500).toString())
                         }
                       >
-                        ${(nextBid + 1000).toLocaleString()}
+                        {currencySymbol} {formatPrice(convertedNextBid + 500)}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setBidAmount((convertedNextBid + 1000).toString())
+                        }
+                      >
+                        {currencySymbol} {formatPrice(convertedNextBid + 1000)}
                       </Button>
                     </div>
                   </div>
@@ -482,9 +538,9 @@ const AuctionDetail = () => {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 ring-2 ring-border ">
+                    <Avatar className="h-12 w-12 ring-2 ring-border">
                       <AvatarImage
-                        src={auction.poster.storeName}
+                        src={auction.poster.image || "/placeholder.svg"}
                         alt={auction.poster.storeName}
                       />
                       <AvatarFallback className="font-bold text-xl">
@@ -501,8 +557,7 @@ const AuctionDetail = () => {
                         )}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        ★ 4.9 • 0 sales{" "}
-                        {/* Placeholder; replace if API provides seller data */}
+                        ★ 4.9 • 0 sales
                       </div>
                     </div>
                   </div>
@@ -639,9 +694,7 @@ const AuctionDetail = () => {
                                 Created At:
                               </span>
                               <span className="font-medium">
-                                {new Date(
-                                  auction.createdAt
-                                ).toLocaleDateString()}
+                                {new Date(auction.createdAt).toLocaleDateString()}
                               </span>
                             </div>
                           </div>
@@ -666,7 +719,7 @@ const AuctionDetail = () => {
                       ) : (
                         auction.bids.map((bid, index) => (
                           <div
-                            key={index}
+                            key={bid._id}
                             className="flex items-center justify-between p-3 rounded-lg bg-muted"
                           >
                             <div className="flex items-center gap-3">
@@ -683,10 +736,14 @@ const AuctionDetail = () => {
                             </div>
                             <div className="text-right">
                               <div className="font-semibold">
-                                ${bid.amount.toLocaleString()}
+                                {currencySymbol} {formatPrice(bid.amount)}
                               </div>
                               <div className="text-xs text-muted-foreground">
-                                {new Date(bid.createdAt).toLocaleString()}
+                                {new Date(bid.createdAt).toLocaleString("en-NG", {
+                                  timeZone: "Africa/Lagos",
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                })}
                               </div>
                             </div>
                           </div>
