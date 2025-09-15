@@ -60,7 +60,7 @@ import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
 import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
-import ChatInterface from "@/components/VendorInfo/chat/Inbox";
+// import ChatInterface from "@/components/VendorInfo/chat/Inbox";
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
