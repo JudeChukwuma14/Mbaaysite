@@ -704,8 +704,7 @@ export default function EditVendorProfile() {
       return;
     }
 
-    // Use Paystack key directly
-    const paystackKey = import.meta.env.VITE_PAYSTACK_KEY; // Replace with your actual key
+    const paystackKey = import.meta.env.VITE_PAYSTACK_KEY;
 
     setIsSearchingAccount(true);
     setFoundAccountName("");
