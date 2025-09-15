@@ -138,10 +138,6 @@ interface PinDurationDialogState {
   messageId: string | null;
 }
 
-interface ChatInterfaceProps {
-  token: string | null;
-}
-
 // Custom hooks
 export const useSocket = (token?: string) => {
   const socket = useRef<Socket | null>(null);
@@ -1037,7 +1033,7 @@ const PinDurationDialog = React.memo(
 );
 
 // Main Component
-export default function ChatInterface({ token }: ChatInterfaceProps) {
+export default function ChatInterface() {
   const user = useSelector((state: any) => state.vendor);
   const { feedbackMessage, showFeedback } = useFeedback();
   const { activeChat, setActiveChat, chats, setChats } = useChatData(user);
@@ -1337,7 +1333,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
     ) => {
       const files = e.target.files;
       if (!files || !activeChat) return;
-      const authToken = user.token || token;
+      const authToken = user.token;
       if (!authToken) return;
       try {
         const payload = {
@@ -1352,7 +1348,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         setReplyingTo(null);
       } catch {}
     },
-    [activeChat, user.token, token, message, replyingTo]
+    [activeChat, user.token, message, replyingTo]
   );
 
   const handleSaveEdit = useCallback(async () => {
@@ -1458,11 +1454,11 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
   );
 
   const handleStartNewChat = useCallback(
-    async (user: UserOrVendor) => {
+    async (data: UserOrVendor) => {
       try {
         const result = await createOrGetChatMutation.mutateAsync({
-          receiverId: user._id,
-          token,
+          receiverId: data._id,
+          token: user.token,
         });
         setActiveChat(result._id);
       } catch (error) {
@@ -1470,7 +1466,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         console.error("Error creating new chat:", error);
       }
     },
-    [token, showFeedback]
+    [user.token, showFeedback]
   );
 
   // Video player handlers
@@ -1575,7 +1571,7 @@ export default function ChatInterface({ token }: ChatInterfaceProps) {
         chats={chats}
         activeChat={activeChat}
         setActiveChat={setActiveChat}
-        token={token}
+        token={user.token}
         onNewChatCreated={handleStartNewChat}
         typingMap={typingMap}
       />

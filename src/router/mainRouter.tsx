@@ -60,7 +60,6 @@ import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
 import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
-import { SocketProvider } from "@/components/Context/SocketCtx";
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
@@ -1106,13 +1105,7 @@ const routesConfig: RouteObject[] = [
     element: <ProtectedVendor />,
     children: [
       {
-        element: (
-          <SocketProvider>
-            {" "}
-            {/*  <--  once, covers whole vendor area  */}
-            <VendorLayout />
-          </SocketProvider>
-        ),
+        element: <VendorLayout />,
         children: [
           { index: true, element: withSuspense(Dashboard) },
           { path: "orders", element: withSuspense(AllOrder) },
