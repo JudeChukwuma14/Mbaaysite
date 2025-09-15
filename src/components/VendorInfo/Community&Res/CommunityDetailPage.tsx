@@ -16,12 +16,14 @@ import { IoIosLogOut } from "react-icons/io";
 import { VscReport } from "react-icons/vsc";
 // import { ImBin } from "react-icons/im";
 import LeaveConfirmationModal from "./LeaveCommunityConfirmationModal";
+import ReportModel from "./ReportCommunity";
 
 export default function ProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [isReportModelOpen, setIsReportModelOpen] = useState(false);
 
   const handleEditSave = (
     name: string,
@@ -155,7 +157,7 @@ export default function ProfilePage() {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                onClick={() => setIsModalOpen(true)}
+                onClick={() => setIsReportModelOpen(true)}
                 className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2  text-sm"
               >
                 <VscReport size={20} />
@@ -253,9 +255,19 @@ export default function ProfilePage() {
             </motion.div>
           ))}
         </div>
+
+        {/* Create Post Modal */}
         <CreatePostcommModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
+        />
+        <ReportModel
+          isOpen={isReportModelOpen}
+          onClose={() => setIsReportModelOpen(false)}
+          onSend={(name: string, description: string, image: any) => {
+            // Implement your report send logic here
+            console.log("Report sent:", { name, description, image });
+          }}
         />
 
         <EditCommunityModal

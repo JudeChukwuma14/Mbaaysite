@@ -132,7 +132,16 @@ const EditVendorProfile = lazy(
 const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
 );
-// const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
+
+const MyOrders = lazy(() => import("../components/VendorInfo/Orders/MyOrders"));
+const OrderCancellation = lazy(
+  () => import("../components/VendorInfo/Orders/OrderCancellation")
+);
+const ReturnProducts = lazy(
+  () => import("../components/VendorInfo/Products/ReturnProducts")
+);
+const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
+
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
 const CommunitySection = lazy(
   () => import("../components/VendorInfo/Community&Res/CommunitySection")
@@ -1141,10 +1150,15 @@ const routesConfig: RouteObject[] = [
           },
 
           { path: "kyc-verification", element: withSuspense(KycVerification) },
+
+          { path: "myorders", element: withSuspense(MyOrders) },
+          { path: "return-product", element: withSuspense(ReturnProducts) },
           {
-            path: "inbox",
-            element: withSuspense(() => <ChatInterface token={null} />),
+            path: "cancellation",
+            element: withSuspense(OrderCancellation),
           },
+          { path: "inbox", element: withSuspense(Inbox) },
+
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },

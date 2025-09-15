@@ -37,13 +37,13 @@ interface Order {
   };
   totalPrice: number;
   status: "Processing" | "Delivered" | "Cancelled" | "Pending";
-  items: Array<{
+  product: {
     _id: string;
     name: string;
     quantity: number;
     price: number;
     image: string;
-  }>;
+  };
   payStatus: "Successful" | "Pending" | "Failed";
   createdAt: string;
   updatedAt: string;
@@ -97,6 +97,8 @@ const AllOrdersPage: React.FC = () => {
     });
   }, [orders, currentTab, searchQuery, paymentFilter]);
 
+  console.log("Filtered Orders:", filteredOrders);
+
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
@@ -134,13 +136,13 @@ const AllOrdersPage: React.FC = () => {
   const getStatusColor = (status: Order["status"]) => {
     switch (status) {
       case "Processing":
-        return "bg-yellow-400 text-white";
+        return "text-yellow-400";
       case "Delivered":
         return "text-green-500";
       case "Cancelled":
         return "text-red-500";
       case "Pending":
-        return "bg-blue-500 text-white";
+        return "text-blue-500";
       default:
         return "text-gray-500";
     }
@@ -281,9 +283,7 @@ const AllOrdersPage: React.FC = () => {
                     <td className="px-4 py-3">
                       {order.buyerInfo.first_name} {order.buyerInfo.last_name}
                     </td>
-                    <td className="px-4 py-3">
-                      {(order.items ?? []).map((item) => item.name).join(", ")}
-                    </td>
+                    <td className="px-4 py-3">{order.product.name}</td>
 
                     <td className="px-4 py-3 font-semibold">
                       {formatAmount(order.totalPrice)}

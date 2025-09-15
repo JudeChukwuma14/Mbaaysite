@@ -1,5 +1,9 @@
 import type React from "react";
-import { createPost, get_one_community } from "@/utils/communityApi";
+import {
+  createPost,
+  get_communities,
+  get_one_community,
+} from "@/utils/communityApi";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Smile, ImageIcon, User, XCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -8,6 +12,8 @@ import EmojiPicker, { type EmojiClickData } from "emoji-picker-react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { getAllVendor } from "@/utils/vendorApi";
+import { RootState } from "@/redux/store";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -15,23 +21,20 @@ interface CreatePostModalProps {
 }
 
 interface TaggedUser {
-  id: string;
-  name: string;
+  _id: string;
+  storeName?: string;
+  name?: string;
+  tagType: "vendors" | "community";
 }
 
-const userSuggestions = [
-  { id: "1", name: "John Doe", avatar: "/placeholder.svg?height=32&width=32" },
-  {
-    id: "2",
-    name: "Jane Smith",
-    avatar: "/placeholder.svg?height=32&width=32",
-  },
-  {
-    id: "3",
-    name: "Mike Johnson",
-    avatar: "/placeholder.svg?height=32&width=32",
-  },
-];
+interface Suggestion {
+  _id: string;
+  displayName: string;
+  avatar?: string;
+  tagType: "vendors" | "community";
+  storeName?: string;
+  name?: string;
+}
 
 export default function CreatePostcommModal({
   isOpen,
@@ -49,10 +52,62 @@ export default function CreatePostcommModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const modalContentRef = useRef<HTMLDivElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
+  const imageScrollRef = useRef<HTMLDivElement>(null);
 
+  const user = useSelector((state: RootState) => state.vendor);
+
+  // Fetch all vendors for tagging
+  const { data: allVendorsResponse } = useQuery({
+    queryKey: ["all_vendors"],
+    queryFn: () => getAllVendor(),
+    enabled: !!user?.token && showTagInput,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch all communities for tagging
+  const { data: allCommunitiesResponse } = useQuery({
+    queryKey: ["all_communities_for_tagging"],
+    queryFn: () => get_communities(user?.token),
+    enabled: !!user?.token && showTagInput,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Process vendors data
+  const allVendors: Suggestion[] =
+    allVendorsResponse?.vendors
+      ?.filter((v: any) => v?._id || v?.id)
+      ?.map((v: any) => ({
+        _id: v._id || v.id,
+        displayName: v.storeName || v.name || "Vendor",
+        avatar: v.avatar || "/placeholder.svg",
+        tagType: "vendors" as const,
+        storeName: v.storeName || v.name,
+        name: v.name,
+      })) || [];
+
+  const allCommunities: Suggestion[] =
+    allCommunitiesResponse
+      ?.filter((c: any) => c?._id || c?.id)
+      ?.map((c: any) => ({
+        _id: c._id || c.id,
+        displayName: c.name || c.title || "Community",
+        avatar: c.community_Images || "/placeholder.svg",
+        tagType: "community" as const,
+        name: c.name || c.title,
+      })) || [];
+
+  const userSuggestions: Suggestion[] = [...allVendors, ...allCommunities];
+
+  const filteredSuggestions = userSuggestions.filter((s) => {
+    if (!tagInput.trim()) return false;
+    const term = tagInput.toLowerCase().trim();
+    return (
+      (s.displayName || "").toLowerCase().includes(term) ||
+      (s.storeName || "").toLowerCase().includes(term) ||
+      (s.name || "").toLowerCase().includes(term)
+    );
+  });
   const { communityid } = useParams();
-
-  const user = useSelector((state: any) => state.vendor);
 
   const { data: one_community } = useQuery({
     queryKey: ["one_community"],
@@ -102,21 +157,41 @@ export default function CreatePostcommModal({
     setImagesPreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleTagUser = (user: { id: string; name: string }) => {
-    if (!taggedUsers.find((tagged) => tagged.id === user.id)) {
-      setTaggedUsers([...taggedUsers, user]);
-    }
+  const handleTagUser = (s: Suggestion) => {
+    const newTag: TaggedUser = {
+      _id: s._id,
+      ...(s.tagType === "vendors"
+        ? { storeName: s.storeName || s.displayName }
+        : { name: s.name || s.displayName }),
+      tagType: s.tagType,
+    };
+    if (!taggedUsers.some((t) => t._id === s._id))
+      setTaggedUsers((prev) => [...prev, newTag]);
     setTagInput("");
     setShowSuggestions(false);
   };
 
-  const removeTag = (userId: string) => {
-    setTaggedUsers(taggedUsers.filter((user) => user.id !== userId));
-  };
+  const removeTag = (id: string) =>
+    setTaggedUsers((prev) => prev.filter((t) => t._id !== id));
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
     setContent((prev) => prev + emojiData.emoji);
   };
+
+  // const filteredSuggestions = userSuggestions.filter((suggestion) => {
+  //   if (!tagInput.trim()) return false;
+
+  //   const searchTerm = tagInput.toLowerCase().trim();
+  //   const displayName = (suggestion.displayName || "").toLowerCase();
+  //   const storeName = (suggestion.storeName || "").toLowerCase();
+  //   const name = (suggestion.name || "").toLowerCase();
+
+  //   return (
+  //     displayName.includes(searchTerm) ||
+  //     storeName.includes(searchTerm) ||
+  //     name.includes(searchTerm)
+  //   );
+  // });
 
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,7 +217,7 @@ export default function CreatePostcommModal({
       });
 
       taggedUsers.forEach((user) => {
-        formData.append("tags", user.id);
+        formData.append("tags", user._id);
       });
 
       const token = user?.token || null;
@@ -221,16 +296,25 @@ export default function CreatePostcommModal({
                 />
 
                 {taggedUsers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {taggedUsers.map((user) => (
+                  <div className="flex flex-wrap gap-2">
+                    {taggedUsers.map((u) => (
                       <span
-                        key={user.id}
-                        className="inline-flex items-center gap-1 px-2 py-1 text-sm text-orange-700 bg-orange-100 rounded-full"
+                        key={u._id}
+                        className={`inline-flex items-center gap-1 px-2 py-1 text-sm rounded-full ${
+                          u.tagType === "vendors"
+                            ? "bg-blue-100 text-blue-700 border border-blue-200"
+                            : "bg-green-100 text-green-700 border border-green-200"
+                        }`}
                       >
-                        @{user.name}
+                        @{u.storeName || u.name}
+                        <span className="text-xs opacity-75">
+                          ({u.tagType})
+                        </span>
                         <motion.button
                           type="button"
-                          onClick={() => removeTag(user.id)}
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => removeTag(u._id)}
                         >
                           <XCircle className="w-4 h-4" />
                         </motion.button>
@@ -240,28 +324,52 @@ export default function CreatePostcommModal({
                 )}
 
                 {imagesPreviews.length > 0 && (
-                  <div className="grid grid-cols-2 gap-2 mt-4">
-                    {imagesPreviews.map((preview, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={preview || "/placeholder.svg"}
-                          alt={`Upload ${index + 1}`}
-                          className="object-cover w-full h-32 rounded-lg"
-                        />
-                        <motion.button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute p-1 text-white rounded-full top-1 right-1 bg-black/50 hover:bg-black/70"
+                  <div className="space-y-2">
+                    <motion.div
+                      ref={imageScrollRef}
+                      className="flex gap-2 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                      style={{
+                        scrollBehavior: "smooth",
+                        msOverflowStyle: "none",
+                        scrollbarWidth: "thin",
+                      }}
+                    >
+                      {imagesPreviews.map((preview, index) => (
+                        <motion.div
+                          key={index}
+                          className="relative flex-shrink-0"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
                         >
-                          <X className="w-4 h-4" />
-                        </motion.button>
-                      </div>
-                    ))}
+                          <img
+                            src={preview || "/placeholder.svg"}
+                            alt={`Upload ${index + 1}`}
+                            className="object-cover w-24 h-24 rounded-lg"
+                          />
+                          <motion.button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute p-1 text-white rounded-full top-1 right-1 bg-black/50 hover:bg-black/70"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <X className="w-3 h-3" />
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                    {imagesPreviews.length >= 3 && (
+                      <p className="text-xs text-gray-500">
+                        Scroll horizontally to view all images
+                      </p>
+                    )}
                   </div>
                 )}
 
+                {/* tag input */}
                 {showTagInput && (
-                  <div className="relative mt-2">
+                  <div className="relative">
                     <input
                       type="text"
                       value={tagInput}
@@ -269,33 +377,58 @@ export default function CreatePostcommModal({
                         setTagInput(e.target.value);
                         setShowSuggestions(true);
                       }}
-                      placeholder="Tag someone..."
+                      placeholder="Tag vendors by store name or communities by name..."
                       className="w-full p-2 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                     {showSuggestions && tagInput && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg">
-                        {userSuggestions
-                          .filter((user) =>
-                            user.name
-                              .toLowerCase()
-                              .includes(tagInput.toLowerCase())
-                          )
-                          .map((user) => (
-                            <button
-                              key={user.id}
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border rounded-lg shadow-lg max-h-32"
+                      >
+                        {filteredSuggestions.length ? (
+                          filteredSuggestions.map((s) => (
+                            <motion.button
+                              key={`${s.tagType}-${s._id}`}
                               type="button"
-                              onClick={() => handleTagUser(user)}
-                              className="flex items-center w-full gap-2 p-2 text-left hover:bg-gray-100"
+                              onClick={() => handleTagUser(s)}
+                              className="flex items-center w-full gap-2 p-2 text-left transition-colors hover:bg-gray-100"
+                              whileHover={{ backgroundColor: "#f3f4f6" }}
                             >
-                              <img
-                                src={user.avatar || "/placeholder.svg"}
-                                alt={user.name}
-                                className="w-8 h-8 rounded-full"
-                              />
-                              <span>{user.name}</span>
-                            </button>
-                          ))}
-                      </div>
+                              {s.avatar && s.avatar !== "/placeholder.svg" ? (
+                                <img
+                                  src={s.avatar}
+                                  alt={s.displayName}
+                                  className="object-cover w-8 h-8 rounded-full"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center w-8 h-8 text-white bg-gray-400 rounded-full">
+                                  {s.displayName.charAt(0).toUpperCase() || "U"}
+                                </div>
+                              )}
+                              <div>
+                                <span className="text-sm font-medium">
+                                  {s.displayName}
+                                </span>
+                                <span
+                                  className={`text-xs ml-1 ${
+                                    s.tagType === "vendors"
+                                      ? "text-blue-600"
+                                      : "text-green-600"
+                                  }`}
+                                >
+                                  ({s.tagType})
+                                </span>
+                              </div>
+                            </motion.button>
+                          ))
+                        ) : (
+                          <div className="p-2 text-sm text-center text-gray-500">
+                            No vendors or communities found matching "{tagInput}
+                            "
+                          </div>
+                        )}
+                      </motion.div>
                     )}
                   </div>
                 )}

@@ -313,7 +313,7 @@ export default function CreatePostModal({
 
             <div
               ref={modalContentRef}
-              className="flex-1 p-4 overflow-y-auto min-h-0"
+              className="flex-1 min-h-0 p-4 overflow-y-auto"
             >
               <form onSubmit={handlePost} className="space-y-4">
                 <div className="flex items-center mb-4 space-x-3">
@@ -376,7 +376,7 @@ export default function CreatePostModal({
                   <div className="space-y-2">
                     <motion.div
                       ref={imageScrollRef}
-                      className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                      className="flex gap-2 pb-2 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                       style={{
                         scrollBehavior: "smooth",
                         msOverflowStyle: "none",
@@ -433,7 +433,7 @@ export default function CreatePostModal({
                       <motion.div
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="absolute z-10 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-32 overflow-y-auto"
+                        className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border rounded-lg shadow-lg max-h-32"
                       >
                         {filteredSuggestions.length > 0 ? (
                           filteredSuggestions.map((suggestion) => (
@@ -441,20 +441,25 @@ export default function CreatePostModal({
                               key={`${suggestion.tagType}-${suggestion._id}`}
                               type="button"
                               onClick={() => handleTagUser(suggestion)}
-                              className="flex items-center w-full gap-2 p-2 text-left hover:bg-gray-100 transition-colors"
+                              className="flex items-center w-full gap-2 p-2 text-left transition-colors hover:bg-gray-100"
                               whileHover={{ backgroundColor: "#f3f4f6" }}
                             >
-                              <img
-                                src={suggestion.avatar || "/placeholder.svg"}
-                                alt={suggestion.displayName}
-                                className="w-6 h-6 rounded-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src =
-                                    "/placeholder.svg?height=24&width=24";
-                                }}
-                              />
+                              {suggestion.avatar &&
+                              suggestion.avatar !== "/placeholder.svg" ? (
+                                <img
+                                  src={suggestion.avatar}
+                                  alt={suggestion.displayName}
+                                  className="object-cover w-6 h-6 rounded-full"
+                                />
+                              ) : (
+                                <div className="flex items-center justify-center w-6 h-6 text-white bg-orange-300 rounded-full">
+                                  {suggestion.displayName
+                                    .charAt(0)
+                                    .toUpperCase()}
+                                </div>
+                              )}
                               <div>
-                                <span className="font-medium text-sm">
+                                <span className="text-sm font-medium">
                                   {suggestion.displayName}
                                 </span>
                                 <span
@@ -470,7 +475,7 @@ export default function CreatePostModal({
                             </motion.button>
                           ))
                         ) : (
-                          <div className="p-2 text-sm text-gray-500 text-center">
+                          <div className="p-2 text-sm text-center text-gray-500">
                             No vendors or communities found matching "{tagInput}
                             "
                           </div>
@@ -482,7 +487,7 @@ export default function CreatePostModal({
               </form>
             </div>
 
-            <div className="p-4 bg-white border-t flex-shrink-0">
+            <div className="flex-shrink-0 p-4 bg-white border-t">
               <div className="flex items-center justify-between">
                 <div className="flex space-x-4">
                   <div ref={emojiPickerRef} className="relative">
