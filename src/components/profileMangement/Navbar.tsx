@@ -1,17 +1,18 @@
+"use client"
 
-import { Link } from "react-router-dom";
-import MobileNavbar from "../ui/MobileNavbar";
-import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+import { Link } from "react-router-dom"
+import MobileNavbar from "../ui/MobileNavbar"
+import { motion } from "framer-motion"
+import { useSelector } from "react-redux"
+import type { RootState } from "@/redux/store"
 
 const Navbar = () => {
-    // Access user and vendor from Redux store
-  const { user } = useSelector((state: RootState) => state.user);
-  const { vendor } = useSelector((state: RootState) => state.vendor);
+  // Access user and vendor from Redux store
+  const { user } = useSelector((state: RootState) => state.user)
+  const { vendor } = useSelector((state: RootState) => state.vendor)
 
   // Determine the display name and initials
-  const displayName = user?.name || vendor?.storeName || "";
+  const displayName = user?.name || vendor?.storeName || ""
   const initials = displayName
     ? displayName
         .split(" ")
@@ -19,7 +20,8 @@ const Navbar = () => {
         .join("")
         .slice(0, 2)
         .toUpperCase()
-    : "";
+    : ""
+
   return (
     <motion.nav
       initial={{ y: -50, opacity: 0 }}
@@ -63,7 +65,7 @@ const Navbar = () => {
         </div>
       </div>
     </motion.nav>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

@@ -28,6 +28,7 @@ const Forgotpassword: React.FC = () => {
     try {
       const response = await forgotPassword(data.email)
       const message = response.message
+      console.log("DEBUG: Forgot password response:", message);
       if(message){
          toast.success(message, {
         position: "top-right",

@@ -1,3 +1,4 @@
+
 import React, {
   useState,
   useRef,
@@ -5,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFacebookMessenger } from "react-icons/fa";
 import { useSelector } from "react-redux";
@@ -1064,6 +1066,7 @@ export default function ChatInterface() {
     });
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+
   const [currentTime] = useState(0);
   const [duration] = useState(0);
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
@@ -1071,6 +1074,7 @@ export default function ChatInterface() {
   );
   const [isUploading] = useState(false);
   const [optimisticMsgs, setOptimisticMsgs] = useState<Message[]>([]);
+
 
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1662,6 +1666,7 @@ export default function ChatInterface() {
         )}
 
         {activeChatDetails && (
+
           <MessageInput
             message={message}
             editingMessageId={editingMessageId}
@@ -1696,6 +1701,7 @@ export default function ChatInterface() {
               setMessage("");
             }}
           />
+
         )}
       </div>
 

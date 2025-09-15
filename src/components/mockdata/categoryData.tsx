@@ -1075,7 +1075,7 @@ export const categories = [
     link: "/traditional-fashion",
     subcategories: [
       {
-        link: "/traditional-clothing",
+        link: "/traditional-fashion",
         title: "Traditional Clothing",
         items: [
           { title: "Men’s Traditional Wear", items: ["Dashikis", "Agbada, Buba & Sokoto", "Boubous", "Kente Cloth Attire", "Sherwanis", "Kimono"] },

@@ -1,16 +1,26 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { addItem, updateQuantity } from "@/redux/slices/cartSlice";
 import { addWishlistItem } from "@/redux/slices/wishlistSlice";
 import { toast } from "react-toastify";
-import { getProductsById } from "@/utils/productApi"; // Added getVendorByProduct
-import { Heart, ShoppingCart, Minus, Plus, Star, ChevronRight, Share2 } from "lucide-react";
+import { getProductsById } from "@/utils/productApi";
+import { startChat, sendMessage } from "@/utils/UserChat";
+import {
+  Heart,
+  ShoppingCart,
+  Minus,
+  Plus,
+  Star,
+  ChevronRight,
+  // Share2,
+  MessageCircle,
+} from "lucide-react";
 import Spinner from "@/components/Common/Spinner";
-import { convertPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
 import { addToCart, updateCartQuantity } from "@/utils/cartApi";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import { get_single_vendor } from "@/utils/vendorApi";
@@ -18,7 +28,11 @@ import { get_single_vendor } from "@/utils/vendorApi";
 interface Product {
   _id: string;
   name: string;
-  poster: string;
+  poster: {
+    _id: string;
+    storeName: string;
+    avatar?: string;
+  } | null; // Updated to reflect poster structure
   description: string;
   price: number;
   inventory: number;
@@ -32,17 +46,18 @@ interface Product {
   updatedAt: string;
   __v: number;
   upload_type?: string;
-  vendorId?: string; // Added for vendor reference
+  vendorId?: string;
 }
 
 interface Vendor {
   _id: string;
   storeName: string;
-  businessLogo?: string;
+  avatar?: string;
 }
 
 const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,23 +67,46 @@ const ProductDetails: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [activeTab, setActiveTab] = useState<"description" | "reviews">("description");
+  const [activeTab, setActiveTab] = useState<"description" | "reviews">(
+    "description"
+  );
   const [convertedPrice, setConvertedPrice] = useState(0);
   const [isPriceLoading, setIsPriceLoading] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const dispatch = useDispatch();
-  const currency = useSelector((state: RootState) => state.settings.currency || "NGN");
+  const currency = useSelector(
+    (state: RootState) => state.settings.currency || "NGN"
+  );
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const vendorState = useSelector((state: RootState) => state.vendor);
+  const user = useSelector((state: RootState) => state.user.user);
+
+  // Debug user and session state
+  useEffect(() => {
+    console.log("DEBUG: User state:", JSON.stringify(user, null, 2));
+    console.log(
+      "DEBUG: Session ID:",
+      sessionId,
+      "isSessionLoading:",
+      isSessionLoading
+    );
+  }, [user, sessionId, isSessionLoading]);
 
   // Initialize sessionId if missing
   useEffect(() => {
     if (!sessionId) {
       const initialize = async () => {
         setIsSessionLoading(true);
-        await dispatch(initializeSession());
-        setIsSessionLoading(false);
+        try {
+          await dispatch(initializeSession());
+          console.log("DEBUG: Session initialized successfully");
+        } catch (error) {
+          console.error("DEBUG: Session initialization failed:", error);
+          toast.error("Failed to initialize session. Please try again.");
+        } finally {
+          setIsSessionLoading(false);
+        }
       };
       initialize();
     }
@@ -81,21 +119,67 @@ const ProductDetails: React.FC = () => {
       try {
         if (!id) throw new Error("Product ID is undefined");
         const data = await getProductsById(id);
-        if (!data.product || !data.product._id) throw new Error("Product not found");
+        console.log(
+          "DEBUG: Product data:",
+          JSON.stringify(data.product, null, 2)
+        );
+        if (!data.product || !data.product._id)
+          throw new Error("Product not found");
         setProduct(data.product);
-        setSelectedMedia(data.product.images[0] || data.product.poster || "/placeholder.svg");
+        setSelectedMedia(
+          data.product.images[0] || data.product.poster || "/placeholder.svg"
+        );
 
-        // Fetch vendor if vendorId is available
-        if (data.product.vendorId) {
-          const vendorData = vendorState?.vendor?._id === data.product.vendorId
-            ? vendorState.vendor
-            : await get_single_vendor(id);
-            console.log("Vendor Data:", vendorData); 
-          setVendor(vendorData || null);
+        // Set vendor from poster or vendorId
+        let vendorData: Vendor | null = null;
+        if (
+          data.product.poster &&
+          data.product.poster._id &&
+          data.product.poster.storeName
+        ) {
+          console.log(
+            "DEBUG: Using poster as vendor data:",
+            JSON.stringify(data.product.poster, null, 2)
+          );
+          vendorData = {
+            _id: data.product.poster._id,
+            storeName: data.product.poster.storeName,
+            avatar: data.product.poster.avatar,
+          };
+        } else if (data.product.vendorId) {
+          console.log(
+            "DEBUG: Fetching vendor with vendorId:",
+            data.product.vendorId
+          );
+          vendorData =
+            vendorState?.vendor?._id === data.product.vendorId
+              ? vendorState.vendor
+              : await get_single_vendor(data.product.vendorId);
+          console.log(
+            "DEBUG: Vendor data from API:",
+            JSON.stringify(vendorData, null, 2)
+          );
+          if (!vendorData || !vendorData._id) {
+            throw new Error(
+              "Vendor data not found for vendorId: " + data.product.vendorId
+            );
+          }
+        } else {
+          console.warn(
+            "DEBUG: No vendorId or valid poster found in product data"
+          );
+          setError("Vendor information unavailable for this product.");
         }
-      } catch (err) {
-        console.error("Fetch error:", err);
-        setError("Failed to load product or vendor. Please try again.");
+        setVendor(vendorData);
+        console.log(
+          "DEBUG: Vendor state set:",
+          JSON.stringify(vendorData, null, 2)
+        );
+      } catch (err: any) {
+        console.error("DEBUG: Fetch error:", err);
+        setError(
+          err.message || "Failed to load product or vendor. Please try again."
+        );
       } finally {
         setLoading(false);
       }
@@ -112,8 +196,14 @@ const ProductDetails: React.FC = () => {
       try {
         const price = await convertPrice(product.price, "NGN", currency);
         setConvertedPrice(price);
+        console.log(
+          "DEBUG: Price converted:",
+          price,
+          "for currency:",
+          currency
+        );
       } catch (error) {
-        console.error("Failed to convert price:", error);
+        console.error("DEBUG: Failed to convert price:", error);
         setConvertedPrice(product.price); // Fallback to base price
       } finally {
         setIsPriceLoading(false);
@@ -122,10 +212,73 @@ const ProductDetails: React.FC = () => {
     convert();
   }, [product, currency]);
 
+  // Handle Start Chat
+  const handleStartChat = async () => {
+    if (!user?._id) {
+      toast.error("Please log in to start a chat.");
+      navigate("/login");
+      return;
+    }
+    if (!vendor) {
+      toast.error("Vendor information unavailable for this product.");
+      return;
+    }
+    if (!product) {
+      toast.error("Product information is missing.");
+      return;
+    }
+    try {
+      console.log(
+        "DEBUG: Starting chat with vendor:",
+        vendor._id,
+        "for product:",
+        product._id
+      );
+      const newChat = await startChat(vendor._id);
+      console.log(
+        "DEBUG: startChat response:",
+        JSON.stringify(newChat, null, 2)
+      );
+      if (!newChat?.success || !newChat?.chat?._id) {
+        throw new Error("Failed to start chat");
+      }
+
+      // Send initial message about the product
+      const initialMessage = `Hi, I'm interested in ${product.name}`;
+      const messageResponse = await sendMessage(
+        newChat.chat._id,
+        initialMessage
+      );
+      console.log(
+        "DEBUG: sendMessage response:",
+        JSON.stringify(messageResponse, null, 2)
+      );
+      if (!messageResponse?.success) {
+        throw new Error("Failed to send initial message");
+      }
+
+      // Navigate to chat interface with chatId and vendorDetails
+      navigate("/dashboard/messages", {
+        state: {
+          chatId: newChat.chat._id,
+          vendorDetails: {
+            storeName: vendor.storeName,
+            avatar: vendor.avatar,
+          },
+        },
+      });
+      // toast.success(`Started chat with ${vendor.storeName} about ${product.name}`);
+    } catch (error: any) {
+      console.error("DEBUG: Start chat error:", error);
+      toast.error(error.message || "Failed to start chat. Please try again.");
+    }
+  };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!imageContainerRef.current || !isZoomed) return;
 
-    const { left, top, width, height } = imageContainerRef.current.getBoundingClientRect();
+    const { left, top, width, height } =
+      imageContainerRef.current.getBoundingClientRect();
     const x = ((e.clientX - left) / width) * 100;
     const y = ((e.clientY - top) / height) * 100;
 
@@ -151,7 +304,10 @@ const ProductDetails: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-lg text-red-500">{error}</p>
-        <Link to="/" className="px-4 py-2 mt-4 transition-colors bg-gray-100 rounded-md hover:bg-gray-200">
+        <Link
+          to="/"
+          className="px-4 py-2 mt-4 transition-colors bg-gray-100 rounded-md hover:bg-gray-200"
+        >
           Return to Home
         </Link>
       </div>
@@ -161,7 +317,10 @@ const ProductDetails: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-lg text-gray-500">Product not found</p>
-        <Link to="/" className="px-4 py-2 mt-4 transition-colors bg-gray-100 rounded-md hover:bg-gray-200">
+        <Link
+          to="/"
+          className="px-4 py-2 mt-4 transition-colors bg-gray-100 rounded-md hover:bg-gray-200"
+        >
           Return to Home
         </Link>
       </div>
@@ -180,7 +339,10 @@ const ProductDetails: React.FC = () => {
           name: product.name,
           price: product.price,
           quantity,
-          image: product.images[0] || product.poster,
+          image:
+            product.images[0] ||
+            product.poster?.avatar ||
+            "/placeholder.svg",
         })
       );
       toast.success(`${product.name} added to cart!`);
@@ -199,7 +361,10 @@ const ProductDetails: React.FC = () => {
         name: product.name,
         price: product.price,
         quantity: 1,
-        image: product.images[0] || product.poster,
+        image:
+          product.images[0] ||
+          product.poster?.avatar ||
+          "/placeholder.svg",
       })
     );
     toast.success(`${product.name} added to your wishlist!`);
@@ -207,14 +372,17 @@ const ProductDetails: React.FC = () => {
 
   const getYouTubeVideoId = (url: string) => {
     if (!url.includes("youtube.com") && !url.includes("youtu.be")) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return match && match[2].length === 11 ? match[2] : null;
   };
 
   const mediaItems = [
     ...product.images,
-    ...(product.product_video && getYouTubeVideoId(product.product_video) ? [product.product_video] : []),
+    ...(product.product_video && getYouTubeVideoId(product.product_video)
+      ? [product.product_video]
+      : []),
   ];
 
   const handleUpdateQuantity = async (itemId: string, newQuantity: number) => {
@@ -260,7 +428,9 @@ const ProductDetails: React.FC = () => {
             </>
           )}
           <ChevronRight className="w-4 h-4 mx-1 text-gray-400" />
-          <span className="font-medium text-gray-900 line-clamp-1">{product.name}</span>
+          <span className="font-medium text-gray-900 line-clamp-1">
+            {product.name}
+          </span>
         </nav>
 
         <div className="grid grid-cols-1 gap-y-6 sm:gap-y-8 lg:grid-cols-2 lg:gap-x-8">
@@ -269,7 +439,9 @@ const ProductDetails: React.FC = () => {
               {isVideo ? (
                 <div className="w-full h-full">
                   <iframe
-                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(selectedMedia || "")}`}
+                    src={`https://www.youtube.com/embed/${getYouTubeVideoId(
+                      selectedMedia || ""
+                    )}`}
                     title={`${product.name} Video`}
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -290,8 +462,10 @@ const ProductDetails: React.FC = () => {
                     alt={product.name}
                     className="object-contain w-full h-full transition-transform duration-200"
                     style={{
-                      transform: isZoomed ? "scale(1.5)" : "scale(1)", // Reduced scale for mobile
-                      transformOrigin: isZoomed ? `${mousePosition.x}% ${mousePosition.y}%` : "center center",
+                      transform: isZoomed ? "scale(1.5)" : "scale(1)",
+                      transformOrigin: isZoomed
+                        ? `${mousePosition.x}% ${mousePosition.y}%`
+                        : "center center",
                     }}
                   />
                 </div>
@@ -303,11 +477,17 @@ const ProductDetails: React.FC = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedMedia(media)}
-                  className={`aspect-square overflow-hidden rounded-md border ${selectedMedia === media ? "border-2 border-orange-600" : "border-gray-200 hover:border-gray-300"} transition-all`}
+                  className={`aspect-square overflow-hidden rounded-md border ${
+                    selectedMedia === media
+                      ? "border-2 border-orange-600"
+                      : "border-gray-200 hover:border-gray-300"
+                  } transition-all`}
                 >
                   {media.includes("youtube.com") ? (
                     <img
-                      src={`https://img.youtube.com/vi/${getYouTubeVideoId(media)}/0.jpg`}
+                      src={`https://img.youtube.com/vi/${getYouTubeVideoId(
+                        media
+                      )}/0.jpg`}
                       alt={`${product.name} video thumbnail`}
                       className="object-cover w-full h-full"
                     />
@@ -325,16 +505,16 @@ const ProductDetails: React.FC = () => {
 
           <div className="flex flex-col min-w-0">
             {/* Vendor Information */}
-            {vendor && (
+            {vendor ? (
               <div className="mb-4">
                 <Link
-                  to={`/vendor/${vendor._id}`}
+                  to={`/veiws-profile/${vendor._id}`}   key={vendor._id} 
                   className="flex items-center gap-2 group"
                   aria-label={`View ${vendor.storeName}'s profile`}
                 >
-                  {vendor.businessLogo ? (
+                  {vendor.avatar ? (
                     <img
-                      src={vendor.businessLogo}
+                      src={vendor.avatar}
                       alt={`${vendor.storeName} logo`}
                       className="object-cover w-8 h-8 transition-transform border border-gray-300 rounded-full group-hover:scale-110"
                       onError={(e) => {
@@ -351,27 +531,41 @@ const ProductDetails: React.FC = () => {
                   </span>
                 </Link>
               </div>
+            ) : (
+              <div className="mb-4 text-sm text-gray-500">
+                Vendor information unavailable
+              </div>
             )}
 
             <div className="mb-4">
-              <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl line-clamp-2">{product.name}</h1>
+              <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl line-clamp-2">
+                {product.name}
+              </h1>
               <div className="flex items-center mt-2">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 sm:h-5 sm:w-5 ${i < 4 ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`}
+                      className={`h-4 w-4 sm:h-5 sm:w-5 ${
+                        i < 4
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-gray-300"
+                      }`}
                     />
                   ))}
                 </div>
-                <span className="ml-2 text-xs text-gray-500 sm:text-sm">4.0 (150 reviews)</span>
+                <span className="ml-2 text-xs text-gray-500 sm:text-sm">
+                  4.0 (150 reviews)
+                </span>
               </div>
             </div>
 
             <div className="mb-4">
               <div className="flex items-center">
                 <p className="text-2xl font-bold text-gray-900 sm:text-3xl">
-                  {isPriceLoading ? "Loading..." : `${currencySymbol}${convertedPrice.toFixed(2)}`}
+                  {isPriceLoading
+                    ? "Loading..."
+                    : `${currencySymbol} ${formatPrice(convertedPrice)}`}
                 </p>
                 {isInStock ? (
                   <span className="ml-3 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -385,7 +579,9 @@ const ProductDetails: React.FC = () => {
               </div>
               {isInStock && (
                 <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-                  {product.inventory < 10 ? `Only ${product.inventory} left in stock` : ""}
+                  {product.inventory < 10
+                    ? `Only ${product.inventory} left in stock`
+                    : ""}
                 </p>
               )}
             </div>
@@ -397,15 +593,24 @@ const ProductDetails: React.FC = () => {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="quantity" className="block mb-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="quantity"
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
                 Quantity
               </label>
               <div className="flex items-center w-32">
                 <button
                   type="button"
-                  onClick={() => handleUpdateQuantity(product._id, quantity - 1)}
+                  onClick={() =>
+                    handleUpdateQuantity(product._id, quantity - 1)
+                  }
                   disabled={quantity <= 1 || isSessionLoading}
-                  className={`rounded-l-md p-1.5 sm:p-2 border border-r-0 border-gray-300 ${quantity <= 1 || isSessionLoading ? "bg-gray-100 text-gray-400" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                  className={`rounded-l-md p-1.5 sm:p-2 border border-r-0 border-gray-300 ${
+                    quantity <= 1 || isSessionLoading
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
                   <Minus className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
@@ -418,9 +623,15 @@ const ProductDetails: React.FC = () => {
                 />
                 <button
                   type="button"
-                  onClick={() => handleUpdateQuantity(product._id, quantity + 1)}
+                  onClick={() =>
+                    handleUpdateQuantity(product._id, quantity + 1)
+                  }
                   disabled={quantity >= product.inventory || isSessionLoading}
-                  className={`rounded-r-md p-1.5 sm:p-2 border border-l-0 border-gray-300 ${quantity >= product.inventory || isSessionLoading ? "bg-gray-100 text-gray-400" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+                  className={`rounded-r-md p-1.5 sm:p-2 border border-l-0 border-gray-300 ${
+                    quantity >= product.inventory || isSessionLoading
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
                 >
                   <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
@@ -428,52 +639,76 @@ const ProductDetails: React.FC = () => {
             </div>
 
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+              {/* Add to Cart Button */}
               <button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!isInStock || isSessionLoading || isPriceLoading}
-                className={`flex-1 flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-md text-sm sm:text-base font-medium text-white ${isInStock && !isSessionLoading && !isPriceLoading
-                  ? "bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
-                  : "bg-gray-400 cursor-not-allowed"
-                  }`}
+                className={`flex-1 flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-md text-sm sm:text-base font-medium text-white transition-colors duration-200 ${
+                  isInStock && !isSessionLoading && !isPriceLoading
+                    ? "bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                    : "bg-gray-400 cursor-not-allowed"
+                }`}
+                aria-label="Add to cart"
+                aria-disabled={!isInStock || isSessionLoading || isPriceLoading}
               >
                 <ShoppingCart className="w-4 h-4 mr-2 sm:w-5 sm:h-5" />
                 Add to Cart
               </button>
+
+              {/* Wishlist Button */}
               <button
                 type="button"
                 onClick={handleAddToWishlist}
                 disabled={isSessionLoading || isPriceLoading}
-                className={`flex items-center justify-center px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md ${isSessionLoading || isPriceLoading ? "cursor-not-allowed" : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"}`}
+                className={`flex flex-1 items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-md text-sm sm:text-base font-medium text-gray-700 bg-white border border-gray-300 transition-colors duration-200 ${
+                  isSessionLoading || isPriceLoading
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                }`}
+                aria-label="Add to wishlist"
+                aria-disabled={isSessionLoading || isPriceLoading}
               >
                 <Heart className="w-4 h-4 mr-2 sm:w-5 sm:h-5" />
                 Wishlist
               </button>
+
+              {/* Start Chat Button */}
               <button
                 type="button"
-                className={`items-center justify-center p-2 sm:p-3 text-gray-700 bg-white border border-gray-300 rounded-md sm:flex ${isSessionLoading || isPriceLoading ? "cursor-not-allowed" : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"} hidden sm:flex`}
-                disabled={isSessionLoading || isPriceLoading}
+                onClick={handleStartChat}
+                disabled={isSessionLoading || !vendor || !user?._id}
+                className={`flex flex-1 items-center justify-center px-4 py-2 sm:px-6 sm:py-3 rounded-md text-sm sm:text-base font-medium text-gray-700 bg-white border border-gray-300 transition-colors duration-200 ${
+                  isSessionLoading || !vendor || !user?._id
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+                }`}
+                aria-label="Start chat with vendor"
+                aria-disabled={isSessionLoading || !vendor || !user?._id}
               >
-                <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                <MessageCircle className="w-4 h-4 mr-2 sm:w-5 sm:h-5" />
+                Start Chat
               </button>
             </div>
 
             <div className="pt-4 mt-6 border-t border-gray-200">
               <div className="flex border-b border-gray-200">
                 <button
-                  className={`pb-3 px-1 ${activeTab === "description"
-                    ? "border-b-2 border-orange-600 text-orange-600"
-                    : "text-gray-500 hover:text-gray-700"
-                    } font-medium text-sm sm:text-base`}
+                  className={`pb-3 px-1 ${
+                    activeTab === "description"
+                      ? "border-b-2 border-orange-600 text-orange-600"
+                      : "text-gray-500 hover:text-gray-700"
+                  } font-medium text-sm sm:text-base`}
                   onClick={() => setActiveTab("description")}
                 >
                   Description
                 </button>
                 <button
-                  className={`ml-4 sm:ml-8 pb-3 px-1 ${activeTab === "reviews"
-                    ? "border-b-2 border-orange-600 text-orange-600"
-                    : "text-gray-500 hover:text-gray-700"
-                    } font-medium text-sm sm:text-base`}
+                  className={`ml-4 sm:ml-8 pb-3 px-1 ${
+                    activeTab === "reviews"
+                      ? "border-b-2 border-orange-600 text-orange-600"
+                      : "text-gray-500 hover:text-gray-700"
+                  } font-medium text-sm sm:text-base`}
                   onClick={() => setActiveTab("reviews")}
                 >
                   Reviews (150)
@@ -483,9 +718,13 @@ const ProductDetails: React.FC = () => {
               <div className="py-4 sm:py-6">
                 {activeTab === "description" ? (
                   <div className="prose-sm prose text-gray-500 max-w-none">
-                    <p className="text-sm whitespace-pre-line sm:text-base">{product.description}</p>
+                    <p className="text-sm whitespace-pre-line sm:text-base">
+                      {product.description}
+                    </p>
                     <div className="mt-4 sm:mt-6">
-                      <h3 className="text-sm font-medium text-gray-900">Categories</h3>
+                      <h3 className="text-sm font-medium text-gray-900">
+                        Categories
+                      </h3>
                       <div className="flex flex-wrap items-center gap-2 mt-2 space-x-2">
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-600">
                           {product.category}

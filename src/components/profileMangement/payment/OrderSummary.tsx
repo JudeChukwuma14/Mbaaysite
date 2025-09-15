@@ -4,7 +4,7 @@ import { RootState } from "@/redux/store";
 import { motion } from "framer-motion";
 import { calculatePricing } from "@/utils/pricingUtils";
 import { getCurrencySymbol, convertPrice, formatPrice } from "@/utils/currencyCoverter";
-import ImageWithFallback from "../Reuseable/ImageWithFallback";
+import ImageWithFallback from "../../Reuseable/ImageWithFallback";
 
 interface OrderSummaryProps {
   couponCode: string;

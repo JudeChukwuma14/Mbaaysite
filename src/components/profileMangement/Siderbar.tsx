@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+"use client";
+
+import type React from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -37,7 +40,7 @@ const sidebarLayout: SidebarItem[] = [
   },
   {
     icons: <Wallet size={20} />,
-    label: "Payment Method",
+    label: "Payment",
     urlLink: "/dashboard/checkout",
   },
   {
@@ -47,17 +50,16 @@ const sidebarLayout: SidebarItem[] = [
   },
   {
     icons: <MessagesSquare size={20} />,
-    label: "Index",
-    urlLink: "/dashboard/user-index",
+    label: "Messages",
+    urlLink: "/dashboard/messages",
   },
   {
     icons: <ShoppingCartIcon size={20} />,
     label: "Order",
-
     children: [
       { title: "Order List", link: "/dashboard/orderlist" },
-      { title: "Order Detail", link: "/dashboard/orderdetail" },
-      { title: "Cancellation Page", link: "/dashboard/canclellation" },
+      // { title: "Order Detail", link: "/dashboard/orderdetail" },
+      { title: "Cancellation Order", link: "/dashboard/canclellation" },
       { title: "Review", link: "/dashboard/review" },
     ],
   },
@@ -80,43 +82,53 @@ const Siderbar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    dispatch(clearSessionId())
+    dispatch(clearSessionId());
     dispatch(logout());
     navigate("/signin");
   };
 
   return (
-    <section className="sticky left-0 top-0 flex h-screen w-full flex-col justify-between p-6 pt-24 text-black bg-[#F3F4F6] max-sm:hidden lg:w-[264px]">
+    <section className="sticky left-0 top-0 flex h-screen w-full flex-col justify-between p-6 pt-24 text-black bg-[#F3F4F6] max-sm:hidden lg:w-[200px]">
+
       <div className="flex flex-col gap-2">
         {sidebarLayout.map((item) => {
           const isActive = location.pathname === item.urlLink;
           const hasChildren = item.children && item.children.length > 0;
-
           return (
             <div key={item.label}>
               {item.urlLink ? (
                 <NavLink
                   to={item.urlLink}
-                  className={`flex items-center p-3 gap-3 ${isActive ? "bg-orange-500 text-white" : "hover:bg-orange-300"
-                    }`}
+                  className={`flex items-center p-3 gap-3 rounded-lg transition-colors ${
+                    isActive
+                      ? "bg-orange-500 text-white"
+                      : "hover:bg-orange-300"
+                  }`}
                   onClick={() => handleItemClick(item.label)}
                 >
                   {item.icons}
-                  <p className="font-semibold">{item.label}</p>
+                  <p className="font-semibold text-[0.9rem]">{item.label}</p>
                 </NavLink>
               ) : (
                 <motion.div
-                  className={`flex items-center p-3 gap-3 cursor-pointer ${openDropdown === item.label ? "bg-orange-500 text-white" : "hover:bg-orange-300"
-                    }`}
+                  className={`flex items-center p-3 gap-3 cursor-pointer rounded-lg transition-colors ${
+                    openDropdown === item.label
+                      ? "bg-orange-500 text-white"
+                      : "hover:bg-orange-300"
+                  }`}
                   onClick={() => toggleDropdown(item.label)}
-                  whileHover={{ scale: 1.02 }} // Subtle hover animation
+                  whileHover={{ scale: 1.02 }}
                   transition={{ duration: 0.2 }}
                 >
                   {item.icons}
-                  <p className="font-semibold">{item.label}</p>
+                  <p className="font-semibold text-[0.9rem]">{item.label}</p>
                   {hasChildren && (
                     <span className="ml-auto">
-                      {openDropdown === item.label ? <ChevronUpIcon /> : <ChevronDownIcon />}
+                      {openDropdown === item.label ? (
+                        <ChevronUpIcon />
+                      ) : (
+                        <ChevronDownIcon />
+                      )}
                     </span>
                   )}
                 </motion.div>
@@ -135,9 +147,9 @@ const Siderbar: React.FC = () => {
                         <NavLink
                           key={child.title}
                           to={child.link}
-                          className="flex items-center p-2 rounded-lg hover:bg-orange-300"
+                          className="flex items-center p-2 rounded-lg hover:bg-orange-300 transition-colors"
                         >
-                          <p className="font-semibold">{child.title}</p>
+                          <p className="font-semibold text-[0.9rem]">{child.title}</p>
                         </NavLink>
                       ))}
                     </motion.div>
@@ -148,10 +160,9 @@ const Siderbar: React.FC = () => {
           );
         })}
       </div>
-
       <button
         onClick={handleLogout}
-        className="flex items-center gap-4 p-3 hover:bg-orange-300"
+        className="flex items-center gap-4 p-3 hover:bg-orange-300 rounded-lg transition-colors"
       >
         <LogOutIcon width={30} />
         <p className="text-sm font-semibold">Logout</p>

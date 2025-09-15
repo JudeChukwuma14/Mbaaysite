@@ -183,16 +183,20 @@ const ChatItem = memo(
     chat,
     isActive,
     onSelect,
+
     typingMap, // ← rename prop to match parent
+
   }: {
     chat: Chat;
     isActive: boolean;
     onSelect: (chatId: string) => void;
+
     typingMap: Record<string, boolean>; // ← correct type
   }) => {
     const isVendor = chat.isVendor === "vendors";
     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
     const lastLine = chat.lastMessage || "Media";
+
 
     return (
       <motion.button
@@ -208,7 +212,9 @@ const ChatItem = memo(
             : "hover:bg-gray-50"
         }`}
       >
+
         {/* avatar / online dot */}
+
         <div className="relative">
           {hasAvatar ? (
             <img
@@ -233,7 +239,9 @@ const ChatItem = memo(
           )}
         </div>
 
+
         {/* text column */}
+
         <div className="flex-1 min-w-0 text-left">
           <div className="flex items-start justify-between">
             <div className="truncate">
@@ -256,6 +264,7 @@ const ChatItem = memo(
             </div>
           </div>
 
+
           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
             {lastLine}
           </p>
@@ -267,11 +276,13 @@ const ChatItem = memo(
               typing…
             </span>
           )}
+
         </div>
       </motion.button>
     );
   }
 );
+
 // const ChatItem = memo(
 //   ({
 //     chat,
@@ -360,6 +371,7 @@ const ChatItem = memo(
 //   }
 // );
 
+
 export function ChatListSidebar({
   activeChat,
   setActiveChat,
@@ -447,6 +459,7 @@ export function ChatListSidebar({
           user.vendor._id
         );
 
+
         // read cached messages for this chat (no hook inside loop)
         const cached = queryClient.getQueryData(["messages", chat._id]) as any;
         const chatMessages = cached?.messages ?? [];
@@ -455,6 +468,7 @@ export function ChatListSidebar({
           chatMessages.length > 0
             ? chatMessages[chatMessages.length - 1]
             : chat.lastMessage;
+
 
         return {
           _id: chat._id,
@@ -503,6 +517,7 @@ export function ChatListSidebar({
     );
   }, [chatList, searchQuery]);
 
+
   useEffect(() => {
     if (!socket) return;
 
@@ -513,6 +528,7 @@ export function ChatListSidebar({
       ids.forEach((id: any) => socket.emit("leaveChat", id));
     };
   }, [socket, chatList]);
+
 
   const handleChatSelect = useCallback(
     (chatId: string) => {

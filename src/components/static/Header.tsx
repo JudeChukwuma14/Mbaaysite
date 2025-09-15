@@ -17,7 +17,11 @@ import i18next from "@/utils/i18n";
 import { setSettings } from "@/redux/slices/settingsSlice";
 import { Country, type ICountry } from "country-state-city";
 import Dropdown from "./Dropdrop";
-import { convertPrice, getCurrencyByCountry, getLanguageByCountry } from "@/utils/currencyCoverter";
+import {
+  convertPrice,
+  getCurrencyByCountry,
+  getLanguageByCountry,
+} from "@/utils/currencyCoverter";
 
 const Header: React.FC = () => {
   const { t } = useTranslation();
@@ -65,11 +69,17 @@ const Header: React.FC = () => {
   const firstLetter = vendor?.vendor?.storeName
     ? vendor.vendor.storeName.charAt(0).toUpperCase()
     : vendor?.vendor?._id
-      ? "V"
-      : user?.name
-        ? user.name.charAt(0).toUpperCase()
-        : "";
-  const dashboardLink = vendor ? "/app" : "/dashboard";
+    ? "V"
+    : user?.name
+    ? user.name.charAt(0).toUpperCase()
+    : "";
+
+  const dashboardLink = vendor?.vendor?._id ? "/app" : "/dashboard";
+  const vendorLink = vendor?.vendor?._id ? "/app" : "/signup-vendor";
+  const vendorText = vendor?.vendor?._id
+    ? "Vendor Dashboard"
+    : "Become a Vendor";
+
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const totalQuantity = cartItems.reduce(
     (total, item) => total + item.quantity,
@@ -125,7 +135,6 @@ const Header: React.FC = () => {
   }, [word]);
 
   useEffect(() => {
-    console.log("Current language:", i18next.language);
     console.log("Translation for 'welcome':", t("welcome"));
   }, [t]);
 
@@ -137,10 +146,11 @@ const Header: React.FC = () => {
           {vendor.vendor?.storeName
             ? `, ${vendor.vendor.storeName}`
             : vendor?.vendor?._id
-              ? ", Vendor"
-              : user?.name
-                ? `, ${user.name}`
-                : t("global_marketplaces")}!
+            ? ", Vendor"
+            : user?.name
+            ? `, ${user.name}`
+            : t("global_marketplaces")}
+          !
         </p>
         <div className="flex items-center gap-6">
           <Link
@@ -155,10 +165,12 @@ const Header: React.FC = () => {
               className="flex items-center gap-2 font-medium transition-colors duration-200 hover:underline"
               aria-label={`Select country, current: ${settings.countryCode}`}
             >
-              {countries.find((c) => c.isoCode === settings.countryCode)?.name ||
-                "Select Country"}
+              {countries.find((c) => c.isoCode === settings.countryCode)
+                ?.name || "Select Country"}
               <svg
-                className={`w-4 h-4 transform ${isCountryOpen ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transform ${
+                  isCountryOpen ? "rotate-180" : ""
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -221,12 +233,13 @@ const Header: React.FC = () => {
             Recently Viewed
           </Link>
           <Link
-            to={vendor ? "/app" : "/signup-vendor"}
+            to={vendorLink}
             className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
+            aria-label={vendorText}
           >
-            {vendor ? "Vendor Dashboard" : "Become a Vendor"}
+            {vendorText}
           </Link>
-          {vendor && (
+          {vendor?.vendor?._id && (
             <Link
               to="/app/all-post"
               className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
@@ -275,7 +288,11 @@ const Header: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{item.name}</span>
                         <span className="font-semibold text-orange-600">
-                          {convertPrice(item.price, "USD", settings.currency).toLocaleString(settings.language, {
+                          {convertPrice(
+                            item.price,
+                            "USD",
+                            settings.currency
+                          ).toLocaleString(settings.language, {
                             style: "currency",
                             currency: settings.currency,
                           })}
@@ -329,10 +346,7 @@ const Header: React.FC = () => {
             </Link>
             <div className="ml-2">
               {vendor?.vendor?.businessLogo ? (
-                <Link
-                  to="/app"
-                  aria-label="Vendor Dashboard"
-                >
+                <Link to="/app" aria-label="Vendor Dashboard">
                   <div className="w-10 h-10 overflow-hidden border-2 border-orange-400 rounded-full">
                     <img
                       src={vendor.vendor.avatar || "/placeholder.svg"}
@@ -411,7 +425,11 @@ const Header: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{item.name}</span>
                       <span className="font-semibold text-orange-600">
-                        {convertPrice(item.price, "USD", settings.currency).toLocaleString(settings.language, {
+                        {convertPrice(
+                          item.price,
+                          "USD",
+                          settings.currency
+                        ).toLocaleString(settings.language, {
                           style: "currency",
                           currency: settings.currency,
                         })}
@@ -441,13 +459,13 @@ const Header: React.FC = () => {
               Recently Viewed
             </Link>
             <Link
-              to={vendor ? "/app" : "/signup-vendor"}
+              to={vendorLink}
               className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
-              onClick={toggleMenu}
+              aria-label={vendorText}
             >
-              {vendor ? "Vendor Dashboard" : "Become a Vendor"}
+              {vendorText}
             </Link>
-            {vendor && (
+            {vendor.vendor?._id && (
               <Link
                 to="/app/all-post"
                 className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"

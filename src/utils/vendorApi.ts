@@ -19,7 +19,6 @@ export const createVendor = async (userData: any) => {
 export const LoginVendorAPI = async (userData: any) => {
   try {
     const response = await api.post("/login_vendor", userData);
-    console.log(response);
     return response.data;
   } catch (error: any) {
     console.error("Signup Error:", error.response?.data || error);
@@ -34,10 +33,10 @@ export const get_single_vendor = async (token: string | null) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // console.log(response.data.data)
     return response.data.data;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.error(error);
+    throw error.response?.data?.message || "Check your network connection";
   }
 };
 
@@ -51,18 +50,19 @@ export const upload_return_policy = async (token: string | null, data: any) => {
     });
 
     return response;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.error(error);
+    throw error.response?.data?.message || "Check your network connection";
   }
 };
 
 export const getAllVendor = async () => {
   try {
-    const response = await api.get("/get_all_vendors");
-    console.log(response);
+    const response = await api.get("/get_all_vendors")
     return response.data;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.error(error);
+    throw error.response?.data?.message || "Check your network connection";
   }
 };
 
@@ -71,8 +71,46 @@ export const getAlllVendor = async () => {
     const response = await api.get("/get_all_vendors");
     // console.log(response.data.vendors);
     return response.data.vendors;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    console.error(error);
+    throw error.response?.data?.message || "Check your network connection";
+  }
+};
+
+// Verify Google ID token
+export const verifyVendorGoogle = async (idToken: string) => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/google-verify`,
+      { token: idToken },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Google verification failed"
+    );
+  }
+};
+
+// Complete Google signup
+export const completeVendorSignup = async (data: {
+  tempToken: string;
+  storeName: string;
+  craftCategories: string[];
+  storePhone: string;
+}) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/google-complete`, data, {
+      headers: { "Content-Type": "application/json" },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Signup completion failed"
+    );
   }
 };
 

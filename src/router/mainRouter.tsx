@@ -60,6 +60,7 @@ import CEF from "@/components/AllCategory/Fashion/subcategory/OF/CEF";
 import WA from "@/components/AllCategory/Fashion/subcategory/FC/WA";
 import FCO from "@/components/AllCategory/Fashion/subcategory/FC/FCO";
 import REC from "@/components/AllCategory/Fashion/subcategory/FC/REC";
+import ChatInterface from "@/components/VendorInfo/chat/Inbox";
 
 const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
@@ -70,15 +71,19 @@ const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
   () => import("@/components/profileMangement/EditProfile")
 );
-const OrderList = lazy(() => import("@/components/profileMangement/Orderlist"));
+const OrderList = lazy(
+  () => import("@/components/profileMangement/payment/Orderlist")
+);
 const Canclellation = lazy(
-  () => import("@/components/profileMangement/CancellationForm")
+  () => import("@/components/profileMangement/payment/CancellationForm")
 );
 const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
-  () => import("@/components/profileMangement/OrderDetail")
+  () => import("@/components/profileMangement/payment/OrderDetail")
 );
-const CheckOut = lazy(() => import("@/components/profileMangement/CheckOut"));
+const CheckOut = lazy(
+  () => import("@/components/profileMangement/payment/CheckOut")
+);
 const Login = lazy(() => import("@/components/userAuth/Signin"));
 const Signup = lazy(() => import("@/components/userAuth/Signup"));
 const SelectionPath = lazy(() => import("@/components/userAuth/SelectOption"));
@@ -127,6 +132,7 @@ const EditVendorProfile = lazy(
 const KycVerification = lazy(
   () => import("@/components/VendorInfo/Setting/KycVerification")
 );
+
 const MyOrders = lazy(() => import("../components/VendorInfo/Orders/MyOrders"));
 const OrderCancellation = lazy(
   () => import("../components/VendorInfo/Orders/OrderCancellation")
@@ -135,6 +141,7 @@ const ReturnProducts = lazy(
   () => import("../components/VendorInfo/Products/ReturnProducts")
 );
 const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
+
 // const CommunityPage = lazy(() => import("../components/VendorInfo/Community&Res/Community"))
 const CommunitySection = lazy(
   () => import("../components/VendorInfo/Community&Res/CommunitySection")
@@ -153,9 +160,12 @@ const ProductDetailModal = lazy(
   () => import("@/components/VendorInfo/Products/ProductDetailModal")
 );
 const AuctionView = lazy(() => import("@/components/AuctionPage/AuctionView"));
-// const AuctionDetail = lazy(()=>import("@/components/AuctionPage/AuctionDetail"))
+const AuctionDetail = lazy(
+  () => import("@/components/AuctionPage/AuctionDetail")
+);
 const Error = lazy(() => import("@/components/Error/Error"));
-const userIndex = lazy(() => import("@/components/profileMangement/Index"));
+// const userIndex = lazy(() => import("@/components/profileMangement/chat/ChatInterface"));
+import ChatInterfaceChat from "@/components/profileMangement/chat/ChatInterfaceChat";
 const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const ProductInfo = lazy(() => import("@/page/ProductInfo"));
 const RandomProductPage = lazy(() => import("@/page/RandomProductPage"));
@@ -774,7 +784,11 @@ const FaliedPayment = lazy(() => import("@/components/Payment/PaymentFailed"));
 const PaymentCallback = lazy(
   () => import("@/components/Payment/PaymentCallback")
 );
+import RestrictVendorRoute from "./RestrictVendorRoute";
+import CompleteSignup from "@/components/auth/CompleteSignup";
+import PendingApproval from "@/components/auth/PendingApproval";
 
+const AuctionList = lazy(() => import("@/components/AuctionPage/AuctionList"));
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -802,6 +816,8 @@ const routesConfig: RouteObject[] = [
         errorElement: <ErrorPage />,
       },
       { path: "/auctionview", element: withSuspense(AuctionView) },
+      { path: "/auction/:id", element: withSuspense(AuctionDetail) },
+      { path: "/auctionlist", element: withSuspense(AuctionList) },
       { path: "/random-product", element: withSuspense(RandomProductPage) },
       { path: "/more-vendor", element: withSuspense(AllVendor) },
       {
@@ -1097,12 +1113,22 @@ const routesConfig: RouteObject[] = [
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
       { path: "/dashboard/addresses", element: withSuspense(Address) },
-      { path: "/dashboard/user-index", element: withSuspense(userIndex) },
+      {
+        path: "/dashboard/messages",
+        element: (
+          <RestrictVendorRoute>
+            {withSuspense(() => (
+              <ChatInterfaceChat />
+            ))}
+          </RestrictVendorRoute>
+        ),
+      },
     ],
   },
   {
     path: "/app",
     element: <ProtectedVendor />,
+    errorElement: <ErrorPage />,
     children: [
       {
         element: <VendorLayout />,
@@ -1124,6 +1150,7 @@ const routesConfig: RouteObject[] = [
           },
 
           { path: "kyc-verification", element: withSuspense(KycVerification) },
+
           { path: "myorders", element: withSuspense(MyOrders) },
           { path: "return-product", element: withSuspense(ReturnProducts) },
           {
@@ -1131,6 +1158,7 @@ const routesConfig: RouteObject[] = [
             element: withSuspense(OrderCancellation),
           },
           { path: "inbox", element: withSuspense(Inbox) },
+
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },
@@ -1176,6 +1204,8 @@ const routesConfig: RouteObject[] = [
 
   { path: "login-vendor", element: withSuspense(LoginVendor) },
   { path: "signup-vendor", element: withSuspense(SignupVendor) },
+  { path: "complete-signup", element: withSuspense(CompleteSignup) },
+  { path: "pending-approval", element: withSuspense(PendingApproval) },
 
   // Payment
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },

@@ -1,84 +1,90 @@
-import React, { useState } from "react";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
+
+type FormData = {
+  name: string;
+  email: string;
+  address: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmNewPassword?: string;
+};
+
+// Define the shape of your Redux state (based on your user slice)
+interface User {
+  name: string;
+  email: string;
+  address?: string; // Optional, as it may not always be present
+}
+
+interface RootState {
+  user: {
+    user: User | null;
+    token: string | null;
+  };
+}
 
 const EditProfile: React.FC = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    address: "",
-    currentPassword: "",
-    newPassword: "",
-    confirmNewPassword: "",
-  });
+  // Access user data from Redux
+  const user = useSelector((state: RootState) => state.user.user);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (formData.newPassword !== formData.confirmNewPassword) {
-      alert("New passwords do not match.");
-      return;
-    }
-    console.log("Form submitted:", formData);
-    // Reset the form after successful submission (optional)
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      address: "",
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      name: user?.name || "",
+      email: user?.email || "",
+      address: user?.address || "",
       currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
-    });
+    },
+  });
+
+  const onSubmit = (data: FormData) => {
+    if (data.newPassword && data.newPassword !== data.confirmNewPassword) {
+      alert("New passwords do not match.");
+      return;
+    }
+    console.log("Form submitted:", data);
+    reset();
   };
 
   return (
-    <div className="flex flex-col min-h-screen md:flex-row ">
+    <div className="flex flex-col min-h-screen md:flex-row">
       <div className="flex-1 w-full p-6">
         <div className="p-6 bg-white">
           <h1 className="mb-4 text-2xl font-bold">Edit Your Profile</h1>
-          <form onSubmit={handleSubmit}>
+
+          <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* First Name */}
               <div>
                 <label
-                  htmlFor="firstName"
+                  htmlFor="name"
                   className="block mb-2 font-bold text-gray-700"
                 >
-                  First Name
+                  Full Name
                 </label>
                 <input
                   type="text"
-                  id="firstName"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
+                  id="name"
+                  {...register("name", {
+                    required: "First name is required",
+                  })}
                   className="w-full p-2 border rounded"
-                  required
                 />
+                {errors.name && (
+                  <p className="text-sm text-red-500">{errors.name.message}</p>
+                )}
               </div>
-              <div>
-                <label
-                  htmlFor="lastName"
-                  className="block mb-2 font-bold text-gray-700"
-                >
-                  Last Name
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="w-full p-2 border rounded"
-                  required
-                />
-              </div>
+
+              {/* Email */}
               <div>
                 <label
                   htmlFor="email"
@@ -89,13 +95,21 @@ const EditProfile: React.FC = () => {
                 <input
                   type="email"
                   id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
+                  {...register("email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+                      message: "Invalid email address",
+                    },
+                  })}
                   className="w-full p-2 border rounded"
-                  required
                 />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </div>
+
+              {/* Address */}
               <div>
                 <label
                   htmlFor="address"
@@ -106,13 +120,17 @@ const EditProfile: React.FC = () => {
                 <input
                   type="text"
                   id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
+                  {...register("address", { required: "Address is required" })}
                   className="w-full p-2 border rounded"
-                  required
                 />
+                {errors.address && (
+                  <p className="text-sm text-red-500">
+                    {errors.address.message}
+                  </p>
+                )}
               </div>
+
+              {/* Current Password */}
               <div>
                 <label
                   htmlFor="currentPassword"
@@ -123,12 +141,12 @@ const EditProfile: React.FC = () => {
                 <input
                   type="password"
                   id="currentPassword"
-                  name="currentPassword"
-                  value={formData.currentPassword}
-                  onChange={handleChange}
+                  {...register("currentPassword")}
                   className="w-full p-2 border rounded"
                 />
               </div>
+
+              {/* New Password */}
               <div>
                 <label
                   htmlFor="newPassword"
@@ -139,12 +157,12 @@ const EditProfile: React.FC = () => {
                 <input
                   type="password"
                   id="newPassword"
-                  name="newPassword"
-                  value={formData.newPassword}
-                  onChange={handleChange}
+                  {...register("newPassword")}
                   className="w-full p-2 border rounded"
                 />
               </div>
+
+              {/* Confirm New Password */}
               <div>
                 <label
                   htmlFor="confirmNewPassword"
@@ -155,17 +173,24 @@ const EditProfile: React.FC = () => {
                 <input
                   type="password"
                   id="confirmNewPassword"
-                  name="confirmNewPassword"
-                  value={formData.confirmNewPassword}
-                  onChange={handleChange}
+                  {...register("confirmNewPassword")}
                   className="w-full p-2 border rounded"
                 />
+                {watch("newPassword") &&
+                  watch("confirmNewPassword") &&
+                  watch("newPassword") !== watch("confirmNewPassword") && (
+                    <p className="text-sm text-red-500">
+                      Passwords do not match
+                    </p>
+                  )}
               </div>
             </div>
+
             <div className="flex justify-end mt-6 space-x-4">
               <button
                 type="button"
                 className="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                onClick={() => reset()}
               >
                 Cancel
               </button>

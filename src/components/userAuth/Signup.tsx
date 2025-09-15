@@ -9,6 +9,8 @@ import Sliding from "../Reuseable/Sliding";
 import { createUser } from "@/utils/api";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { GoogleButton } from "../Reuseable/GoogleButton";
+
 
 interface FormData {
   name: string;
@@ -31,6 +33,7 @@ const Signup: React.FC = () => {
     watch,
   } = useForm<FormData>();
 
+
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
@@ -50,6 +53,7 @@ const Signup: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -57,14 +61,12 @@ const Signup: React.FC = () => {
   return (
     <div className="w-full h-screen">
       <ToastContainer />
-      <div className="flex flex-col md:flex-row ">
+      <div className="flex flex-col md:flex-row">
         <Sliding />
-
         <motion.div
           style={bg}
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[500px] pb-10"
         >
-          {/* Logo for small screens */}
           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
               <img src={logo} width={50} alt="" />
@@ -78,7 +80,6 @@ const Signup: React.FC = () => {
           </div>
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
-              {/* Header */}
               <h1 className="mb-2 text-2xl font-bold">Let's go!</h1>
               <h2 className="mb-2 text-xl font-semibold">
                 Join with our Platform
@@ -102,7 +103,6 @@ const Signup: React.FC = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="mb-2">
                   <input
                     type="email"
@@ -137,7 +137,6 @@ const Signup: React.FC = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="relative mb-2">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -163,7 +162,6 @@ const Signup: React.FC = () => {
                     </p>
                   )}
                 </div>
-
                 <div className="relative mb-2">
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -187,10 +185,9 @@ const Signup: React.FC = () => {
                     </p>
                   )}
                 </div>
-
                 <button
                   type="submit"
-                  className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 hover:bg-orange-600"
+                  className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -201,19 +198,12 @@ const Signup: React.FC = () => {
                 </button>
               </form>
 
-              {/* Divider */}
               <div className="flex items-center my-4">
                 <hr className="flex-grow border-gray-300" />
                 <span className="mx-2 text-gray-500">or sign up with</span>
                 <hr className="flex-grow border-gray-300" />
               </div>
-
-              {/* Sign up with Google */}
-              <button className="flex items-center justify-center w-full p-3 font-semibold text-white transition duration-300 bg-black hover:bg-gray-800">
-                <i className="mr-2 fab fa-google"></i> Sign up with Google
-              </button>
-
-              {/* Vendor/Seller Link */}
+              <GoogleButton/>
               <div className="mt-4 text-left">
                 <Link
                   to={"/signup-vendor"}
