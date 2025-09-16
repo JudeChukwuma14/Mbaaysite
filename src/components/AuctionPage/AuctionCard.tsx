@@ -106,6 +106,9 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
   const truncatedCategory =
     category.length > 15 ? `${category.slice(0, 12)}...` : category;
 
+     const truncatedTittle =
+    title.length > 15 ? `${title.slice(0, 12)}...` : title;
+
   const handleAddToCartClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -256,8 +259,8 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
         {/* Content Section */}
         <div className="p-5">
           <div className="mb-3 flex items-start justify-between">
-            <h3 className="font-semibold leading-tight text-card-foreground line-clamp-2 text-lg">
-              {title}
+            <h3 className="font-semibold text-card-foreground text-lg line-clamp-2">
+              {truncatedTittle}
             </h3>
             <Badge
               variant="outline"
@@ -273,7 +276,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
               {isLoading ? (
                 <span className="text-2xl font-bold">Loading...</span>
               ) : (
-                <p className="text-lg font-bold bg-gradient-primary bg-clip-text text-transparent">
+                <p className="text-sm font-bold bg-gradient-primary bg-clip-text text-transparent">
                   {currencySymbol} {formatPrice(convertedPrice)}
                 </p>
               )}
