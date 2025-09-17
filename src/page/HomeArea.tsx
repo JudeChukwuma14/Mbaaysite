@@ -205,7 +205,7 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading
             ? Array.from({ length: 10 }).map((_, i) => (
                 <ProductSkeleton key={i} />
@@ -241,7 +241,7 @@ const HomeArea: React.FC = () => {
             Best Selling Products
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => <ProductSkeleton key={i} />)
           ) : bestSellingProducts.length > 0 ? (
@@ -328,7 +328,7 @@ const HomeArea: React.FC = () => {
             View All <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2  gap-3 md:gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {loading ? (
             Array.from({ length: 10 }).map((_, i) => (
               <ProductSkeleton key={i} />
