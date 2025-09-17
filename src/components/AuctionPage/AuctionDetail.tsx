@@ -25,7 +25,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AuctionDetailSkeleton from "./AuctionDetailSkeleton";
 import { getAuctionById, placeBid, upgradeBid } from "@/utils/productApi";
 import { toast } from "react-toastify";
-import { convertPrice, formatPrice, getCurrencySymbol } from "@/utils/currencyCoverter";
+import {
+  convertPrice,
+  formatPrice,
+  getCurrencySymbol,
+} from "@/utils/currencyCoverter";
 import { RootState } from "@/redux/store";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -40,10 +44,20 @@ interface Auction {
   sub_category: string;
   auctionEndDate: string;
   auctionStatus: string;
-  highestBid: { bidder: string; bidderModel: string; amount: number } | null;
+  highestBid: {
+    bidder: string & { _id: string; storeName: string } | { _id: string; name: string };
+    bidderModel: string;
+    amount: number;
+  } | null;
   poster: { _id: string; storeName: string; email: string; image?: string };
   verified: boolean;
-  bids: { bidder: string &{_id:string, name:string} ; bidderModel: string; amount: number; createdAt: string; _id: string }[];
+  bids: {
+    bidder: string & { _id: string; name: string } | { _id: string; storeName: string };
+    bidderModel: string;
+    amount: number;
+    createdAt: string;
+    _id: string;
+  }[];
   createdAt: string;
   updatedAt: string;
   inventory: number;
@@ -162,7 +176,7 @@ const AuctionDetail = () => {
         // Notify on new bids
         if (auction && auctionItem.bids.length > prevBidsRef.current.length) {
           const newBids = auctionItem.bids.filter(
-            (newBid: any) => !prevBidsRef.current.some((prevBid) => prevBid._id === newBid._id)
+            (newBid:any) => !prevBidsRef.current.some((prevBid) => prevBid._id === newBid._id)
           );
           for (const bid of newBids) {
             if (bid.bidder !== currentUserId) {
@@ -245,11 +259,11 @@ const AuctionDetail = () => {
   const isEnded = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
 
   // Resolve bidder names
-  const getBidderName = (bidder: string, bidderModel: string) => {
-    if (bidderModel === "users" && user?._id === bidder) return user.name || "You";
-    if (bidderModel === "vendors" && vendor?._id === bidder) return vendor.storeName || "You";
-    if (auction && bidder === auction.poster._id) return auction.poster.storeName;
-    return "Anonymous Bidder";
+  const getBidderName = (bidder: any, bidderModel: string) => {
+    if (bidderModel === "users" && user && user._id === bidder._id) return user.name || "You";
+    if (bidderModel === "vendors" && vendor && vendor._id === bidder._id) return vendor.storeName || "You";
+    if (auction && bidder._id === auction.poster._id) return auction.poster.storeName;
+    return "storeName" in bidder ? bidder.storeName : "name" in bidder ? bidder.name : "Anonymous Bidder";
   };
 
   const handlePlaceBid = async () => {
@@ -289,12 +303,14 @@ const AuctionDetail = () => {
   if (loading) return <AuctionDetailSkeleton />;
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8 text-center">
-        <p className="text-red-500">{error}</p>
-        <Button onClick={() => window.location.reload()} className="mt-4">Retry</Button>
-        <Link to="/">
-          <Button className="mt-4 ml-4">Back to Auctions</Button>
-        </Link>
+      <div className="container mx-auto px-4 py-6 text-center">
+        <p className="text-red-500 text-sm sm:text-base">{error}</p>
+        <div className="mt-4 flex flex-col sm:flex-row justify-center gap-2">
+          <Button onClick={() => window.location.reload()} className="w-full sm:w-auto">Retry</Button>
+          <Link to="/">
+            <Button className="w-full sm:w-auto mt-2 sm:mt-0">Back to Auctions</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -304,9 +320,8 @@ const AuctionDetail = () => {
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
-          <p className="text-lg font-semibold text-foreground mb-2">Welcome to Mbaay</p>
-          <div className="flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm sm:text-base">
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Auctions</span>
             </Link>
@@ -315,12 +330,12 @@ const AuctionDetail = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsWatching(!isWatching)}
-                className={isWatching ? "text-red-500 border-red-500" : ""}
+                className={`min-w-[100px] ${isWatching ? "text-red-500 border-red-500" : ""}`}
               >
                 <Heart className={`h-4 w-4 mr-2 ${isWatching ? "fill-red-500" : ""}`} />
                 {isWatching ? "Watching" : "Watch"}
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="min-w-[100px]">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
@@ -329,8 +344,8 @@ const AuctionDetail = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-8 xl:gap-12">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 xl:gap-12">
           <div className="space-y-4">
             <div className="relative aspect-square bg-muted rounded-xl overflow-hidden shadow-auction">
               <img
@@ -343,16 +358,22 @@ const AuctionDetail = () => {
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 h-9 w-9 rounded-full p-0 bg-white/90 hover:bg-white"
-                    onClick={() => setCurrentImageIndex(currentImageIndex === 0 ? auction.images.length - 1 : currentImageIndex - 1)}
+                    className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0 bg-white/90 hover:bg-white"
+                    onClick={() =>
+                      setCurrentImageIndex(
+                        currentImageIndex === 0 ? auction.images.length - 1 : currentImageIndex - 1
+                      )
+                    }
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="secondary"
                     size="sm"
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2 h-9 w-9 rounded-full p-0 bg-white/90 hover:bg-white"
-                    onClick={() => setCurrentImageIndex((currentImageIndex + 1) % auction.images.length)}
+                    className="absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0 bg-white/90 hover:bg-white"
+                    onClick={() =>
+                      setCurrentImageIndex((currentImageIndex + 1) % auction.images.length)
+                    }
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
@@ -360,13 +381,14 @@ const AuctionDetail = () => {
               )}
             </div>
             {auction.images.length > 1 && (
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
                 {auction.images.map((image, index) => (
                   <button
                     key={image || `image-${index}`}
                     onClick={() => setCurrentImageIndex(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === index ? "border-primary shadow-md" : "border-border hover:border-primary/50"
-                      }`}
+                    className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      currentImageIndex === index ? "border-primary shadow-md" : "border-border hover:border-primary/50"
+                    }`}
                   >
                     <img src={image} alt={`${auction.name} ${index + 1}`} className="w-full h-full object-cover" />
                   </button>
@@ -375,24 +397,27 @@ const AuctionDetail = () => {
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div>
-              <div className="flex items-center gap-3 mb-3">
-                <Badge variant={isEnded ? "destructive" : "default"} className={isEnded ? "border-auction-ended text-slate-500" : "border-auction-live"}>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                <Badge
+                  variant={isEnded ? "destructive" : "default"}
+                  className={`text-xs sm:text-sm ${isEnded ? "border-auction-ended text-slate-500" : "border-auction-live"}`}
+                >
                   <Gavel className="mr-1 h-3 w-3" />
                   {isEnded ? "Auction Ended" : "Live Auction"}
                 </Badge>
                 {auction.verified && (
-                  <Badge className="bg-gradient-gold text-primary font-semibold">
+                  <Badge className="bg-gradient-gold text-primary font-semibold text-xs sm:text-sm">
                     <Award className="mr-1 h-3 w-3" />
                     Premium
                   </Badge>
                 )}
-                <Badge variant="outline">Lot #LOT{auction._id.slice(-4)}</Badge>
+                <Badge variant="outline" className="text-xs sm:text-sm">Lot #LOT{auction._id.slice(-4)}</Badge>
               </div>
-              <h1 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">{auction.name}</h1>
-              <p className="text-muted-foreground mb-4">{auction.description}</p>
-              <div className="flex items-center gap-6 text-sm text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">{auction.name}</h1>
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">{auction.description}</p>
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
                   {auction.bids.length} views
@@ -408,32 +433,32 @@ const AuctionDetail = () => {
             </div>
 
             <Card className="border-primary/20 shadow-auction">
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 <motion.div
                   key={prices.currentBid}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
                     <div>
-                      <p className="text-sm text-muted-foreground mb-1">Current Bid</p>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Current Bid</p>
                       {isPriceLoading ? (
-                        <span className="text-4xl font-bold">Loading...</span>
+                        <span className="text-2xl sm:text-3xl lg:text-4xl font-bold">Loading...</span>
                       ) : (auction.highestBid?.amount ?? 0) === 0 && auction.bids.length === 0 ? (
-                        <p className="text-4xl font-bold text-muted-foreground">No bids yet</p>
+                        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-muted-foreground">No bids yet</p>
                       ) : (
-                        <p className="text-4xl font-bold bg-gradient-primary bg-clip-text">
+                        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-primary bg-clip-text">
                           {currencySymbol} {formatPrice(prices.currentBid)}
                         </p>
                       )}
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground mb-1">Starting Bid</p>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">Starting Bid</p>
                       {isPriceLoading ? (
-                        <span className="text-lg font-semibold text-foreground">Loading...</span>
+                        <span className="text-base sm:text-lg font-semibold text-foreground">Loading...</span>
                       ) : (
-                        <p className="text-lg font-semibold text-foreground">
+                        <p className="text-base sm:text-lg font-semibold text-foreground">
                           {currencySymbol} {formatPrice(prices.startingPrice)}
                         </p>
                       )}
@@ -442,18 +467,20 @@ const AuctionDetail = () => {
                 </motion.div>
 
                 {!isEnded && (
-                  <div className="bg-muted rounded-xl p-4 mb-4">
+                  <div className="bg-muted rounded-xl p-3 sm:p-4 mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm font-medium text-muted-foreground">Time Remaining</span>
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">Time Remaining</span>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
                       {["days", "hours", "minutes", "seconds"].map((unit) => (
                         <div key={unit} className="text-center">
-                          <div className="text-2xl font-bold text-foreground">
+                          <div className="text-lg sm:text-2xl font-bold text-foreground">
                             {timeLeft[unit as keyof typeof timeLeft].toString().padStart(2, "0")}
                           </div>
-                          <div className="text-xs text-muted-foreground">{unit.charAt(0).toUpperCase() + unit.slice(1)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {unit.charAt(0).toUpperCase() + unit.slice(1)}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -462,39 +489,38 @@ const AuctionDetail = () => {
 
                 {isEnded ? (
                   <div className="text-center py-4">
-                    <p className="text-lg font-semibold text-muted-foreground">Auction has ended</p>
+                    <p className="text-base sm:text-lg font-semibold text-muted-foreground">Auction has ended</p>
                     {auction.highestBid ? (
-                      <p className="text-md text-foreground mt-2">
-                        Winner: {getBidderName(auction.highestBid.bidder, auction.highestBid.bidderModel)} at {currencySymbol}{" "}
-                        {formatPrice(prices.currentBid)}
+                      <p className="text-sm sm:text-md text-foreground mt-2">
+                        Winner: {"storeName" in auction.highestBid.bidder
+                          ? auction.highestBid.bidder.storeName
+                          : auction.highestBid.bidder.name} at {currencySymbol} {formatPrice(prices.currentBid)}
                       </p>
                     ) : (
-                      <p className="text-md text-foreground mt-2">No bids were placed.</p>
+                      <p className="text-sm sm:text-md text-foreground mt-2">No bids were placed.</p>
                     )}
-                    <Button variant="outline" className="mt-2">
-                      View Final Results
-                    </Button>
+                    <Button variant="outline" className="mt-2 w-full sm:w-auto">View Final Results</Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
                       <Input
                         type="number"
                         placeholder={`Minimum bid: ${currencySymbol} ${formatPrice(prices.nextBid)}`}
                         value={bidAmount}
                         onChange={(e) => setBidAmount(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 text-sm sm:text-base h-10"
                         disabled={isOwner}
                       />
                       <Button
                         onClick={handlePlaceBid}
                         disabled={isOwner || !bidAmount || parseFloat(bidAmount) < prices.nextBid}
-                        className="bg-gradient-gold hover:opacity-90 text-primary font-semibold px-8"
+                        className="w-full sm:w-auto bg-gradient-gold hover:opacity-90 text-primary font-semibold px-4 sm:px-8 h-10"
                       >
                         {isOwner ? "You can't bid" : showUpdateBid ? "Update Bid" : "Place Bid"}
                       </Button>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {[0, 500, 1000].map((increment) => (
                         <Button
                           key={increment}
@@ -502,6 +528,7 @@ const AuctionDetail = () => {
                           size="sm"
                           onClick={() => setBidAmount((prices.nextBid + increment).toString())}
                           disabled={isOwner}
+                          className="flex-1 sm:flex-none min-w-[80px] h-10 text-xs sm:text-sm"
                         >
                           {currencySymbol} {formatPrice(prices.nextBid + increment)}
                         </Button>
@@ -513,23 +540,23 @@ const AuctionDetail = () => {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Avatar className="h-12 w-12 ring-2 ring-border">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-border">
                       <AvatarImage src={auction.poster.image || "/placeholder.svg"} alt={auction.poster.storeName} />
-                      <AvatarFallback className="font-bold text-xl">{auction.poster.storeName.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="font-bold text-lg sm:text-xl">{auction.poster.storeName.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground">{auction.poster.storeName}</h3>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">{auction.poster.storeName}</h3>
                         {auction.verified && <Shield className="h-4 w-4 text-green-600" />}
                       </div>
-                      <div className="text-sm text-muted-foreground">★ 4.9 • 0 sales</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">★ 4.9 • 0 sales</div>
                     </div>
                   </div>
                   <Link to={`/views-profile/${auction.poster._id}`}>
-                    <Button variant="outline">View Profile</Button>
+                    <Button variant="outline" className="w-full sm:w-auto h-10">View Profile</Button>
                   </Link>
                 </div>
               </CardContent>
@@ -537,15 +564,16 @@ const AuctionDetail = () => {
           </div>
         </div>
 
-        <div className="mt-12">
+        <div className="mt-6 sm:mt-12">
           <div className="w-full">
-            <div className="grid w-full grid-cols-3 lg:grid-cols-4 lg:w-auto bg-muted p-1 rounded-md">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1 bg-muted p-1 rounded-md">
               {["details", "bidding", "condition", "shipping"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-3 py-1.5 text-sm font-medium rounded-sm transition-all ${activeTab === tab ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                    } ${tab === "shipping" ? "hidden lg:flex" : ""}`}
+                  className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium rounded-sm transition-all ${
+                    activeTab === tab ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  } ${tab === "shipping" ? "hidden sm:flex" : ""}`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -553,20 +581,20 @@ const AuctionDetail = () => {
             </div>
 
             {activeTab === "details" && (
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Info className="h-5 w-5" />
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <Info className="h-4 w-4 sm:h-5 sm:w-5" />
                       Item Details
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-foreground mb-2">Specifications</h4>
-                          <div className="space-y-2 text-sm">
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">Specifications</h4>
+                          <div className="space-y-2 text-xs sm:text-sm">
                             {[
                               { label: "Category", value: auction.category },
                               { label: "Sub-Category", value: auction.sub_category },
@@ -583,11 +611,11 @@ const AuctionDetail = () => {
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-foreground mb-2">Provenance</h4>
-                          <p className="text-sm text-muted-foreground mb-3">
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">Provenance</h4>
+                          <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                             This item is from a reputable seller and has been verified for authenticity.
                           </p>
-                          <div className="space-y-2 text-sm">
+                          <div className="space-y-2 text-xs sm:text-sm">
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Authenticity:</span>
                               <span className="font-medium text-green-600">
@@ -608,15 +636,15 @@ const AuctionDetail = () => {
             )}
 
             {activeTab === "bidding" && (
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Bidding History</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">Bidding History</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 max-h-96 overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="space-y-3 max-h-80 sm:max-h-96 overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
                       {auction.bids.length === 0 ? (
-                        <p className="text-muted-foreground">No bids yet.</p>
+                        <p className="text-muted-foreground text-sm">No bids yet.</p>
                       ) : (
                         <AnimatePresence>
                           {[...auction.bids]
@@ -628,14 +656,21 @@ const AuctionDetail = () => {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
                                 transition={{ duration: 0.3 }}
-                                className="flex items-center justify-between p-3 rounded-lg bg-muted"
+                                className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted text-xs sm:text-sm"
                               >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 sm:gap-3">
                                   <div
-                                    className={`w-2 h-2 rounded-full ${bid.amount === auction.highestBid?.amount ? "bg-green-500" : "bg-muted-foreground"
-                                      }`}
+                                    className={`w-2 h-2 rounded-full ${
+                                      bid.amount === auction.highestBid?.amount ? "bg-green-500" : "bg-muted-foreground"
+                                    }`}
                                   />
-                                  <span className="font-medium">{bid.bidder.name}</span>
+                                  <span className="font-medium">
+                                    {"storeName" in bid.bidder
+                                      ? bid.bidder.storeName
+                                      : "name" in bid.bidder
+                                      ? bid.bidder.name
+                                      : "Anonymous Bidder"}
+                                  </span>
                                 </div>
                                 <div className="text-right">
                                   <div className="font-semibold">
@@ -660,20 +695,20 @@ const AuctionDetail = () => {
             )}
 
             {activeTab === "condition" && (
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Condition Report</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">Condition Report</CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 sm:p-6">
                     <div className="space-y-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800">
+                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm">
                             {auction.verified ? "Excellent" : "Unknown"}
                           </Badge>
                         </div>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="text-xs sm:text-sm text-muted-foreground mb-4">
                           Condition details are not provided in the API. Please contact the seller for a detailed condition report.
                         </p>
                       </div>
@@ -684,24 +719,24 @@ const AuctionDetail = () => {
             )}
 
             {activeTab === "shipping" && (
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Shipping & Payment</CardTitle>
+                    <CardTitle className="text-base sm:text-lg">Shipping & Payment</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <h4 className="font-semibold mb-3">Shipping Information</h4>
-                        <div className="space-y-2 text-sm">
+                        <h4 className="font-semibold text-sm sm:text-base mb-3">Shipping Information</h4>
+                        <div className="space-y-2 text-xs sm:text-sm">
                           <p className="text-muted-foreground">Contact seller for shipping details.</p>
                           <p><span className="font-medium">Domestic:</span> Available</p>
                           <p><span className="font-medium">International:</span> Available</p>
                         </div>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-3">Payment Methods</h4>
-                        <div className="space-y-2 text-sm">
+                        <h4 className="font-semibold text-sm sm:text-base mb-3">Payment Methods</h4>
+                        <div className="space-y-2 text-xs sm:text-sm">
                           <p className="text-muted-foreground">Contact seller for payment options.</p>
                           <p>• Wire Transfer</p>
                           <p>• Credit Card</p>
