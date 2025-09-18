@@ -321,7 +321,7 @@ const AuctionDetail = () => {
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm sm:text-base">
+            <Link to="/auctionlist" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm sm:text-base">
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Auctions</span>
             </Link>
