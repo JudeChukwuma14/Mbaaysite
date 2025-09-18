@@ -500,13 +500,13 @@ const Header: React.FC = () => {
               </Link>
             )}
             <Link
-              to="/auctionview"
+              to="/auctionlist"
               className="flex items-center px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
             >
               Auction
               {hasLiveAuction && (
-                <span className="ml-2 px-2 py-0.3 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse tracking-wide absolute -top-3 -right-10">
+                <span className="ml-2 px-2 py-0.3 rounded-full bg-red-500 text-white text-[10px] font-bold animate-pulse tracking-wide ">
                   LIVE
                 </span>
               )}
