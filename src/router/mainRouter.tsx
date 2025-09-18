@@ -152,6 +152,16 @@ const AllPost = lazy(
   () => import("@/components/VendorInfo/Community&Res/AllPost")
 );
 const Pricing = lazy(() => import("@/components/VendorInfo/Pricing/Pricing"));
+const Upgrade = lazy(() => import("@/components/VendorInfo/Pricing/Upgrade"));
+const Subscription = lazy(
+  () => import("@/components/VendorInfo/Subcription/SubscriptionCallback")
+);
+const SubscriptionSuccess = lazy(
+  () => import("@/components/VendorInfo/Subcription/SubscriptionSuccess")
+);
+const SubscriptionFailure = lazy(
+  () => import("@/components/VendorInfo/Subcription/SubscriptionFailed")
+);
 const ProfilePage = lazy(
   () => import("../components/VendorInfo/Community&Res/Proflie")
 );
@@ -1125,6 +1135,7 @@ const routesConfig: RouteObject[] = [
       },
     ],
   },
+
   {
     path: "/app",
     element: <ProtectedVendor />,
@@ -1135,6 +1146,7 @@ const routesConfig: RouteObject[] = [
         children: [
           { index: true, element: withSuspense(Dashboard) },
           { path: "orders", element: withSuspense(AllOrder) },
+
           {
             path: "order-details/:orderId",
             element: withSuspense(OrderDetails),
@@ -1164,6 +1176,7 @@ const routesConfig: RouteObject[] = [
           { path: "my-community", element: withSuspense(CommunitySection) },
           { path: "reviews", element: withSuspense(Reviews) },
           { path: "pricing", element: withSuspense(Pricing) },
+          { path: "upgrade", element: withSuspense(Upgrade) },
           {
             path: "comunity-detail/:communityid",
             element: withSuspense(CommunityDetailPage),
@@ -1211,6 +1224,18 @@ const routesConfig: RouteObject[] = [
   { path: "/:sessionId/success", element: withSuspense(SuccessPayment) },
   { path: "/failed", element: withSuspense(FaliedPayment) },
   { path: "/payment_callback", element: withSuspense(PaymentCallback) },
+
+  // Subcription
+  { path: "/subscription-callback", element: withSuspense(Subscription) },
+
+  {
+    path: "/subscription_success",
+    element: withSuspense(SubscriptionSuccess),
+  },
+  {
+    path: "/subscription_failed",
+    element: withSuspense(SubscriptionFailure),
+  },
 
   { path: "*", element: withSuspense(Error), errorElement: <ErrorPage /> }, // 404 page not found
 ];

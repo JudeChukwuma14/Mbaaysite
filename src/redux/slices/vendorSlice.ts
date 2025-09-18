@@ -1,4 +1,3 @@
-
 // import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // interface Vendor {
@@ -136,7 +135,7 @@ const vendorSlice = createSlice({
   },
 });
 
-
-export const { setVendor, logoutVendor } = vendorSlice.actions;
+export const { setVendor, logoutVendor, addMessage, setMessages, setChatId } =
+  vendorSlice.actions;
 
 export default vendorSlice.reducer;
