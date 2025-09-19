@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { initializeSession } from "@/redux/slices/sessionSlice";
@@ -33,6 +33,21 @@ import {
 import { RootState } from "@/redux/store";
 import { motion, AnimatePresence } from "framer-motion";
 
+interface Bidder {
+  _id: string;
+  name?: string;
+  storeName?: string;
+  email?: string;
+}
+
+interface Bid {
+  bidder: Bidder;
+  bidderModel: string;
+  amount: number;
+  createdAt: string;
+  _id?: string;
+}
+
 interface Auction {
   _id: string;
   name: string;
@@ -45,19 +60,13 @@ interface Auction {
   auctionEndDate: string;
   auctionStatus: string;
   highestBid: {
-    bidder: string & { _id: string; storeName: string } | { _id: string; name: string };
+    bidder: Bidder;
     bidderModel: string;
     amount: number;
   } | null;
   poster: { _id: string; storeName: string; email: string; image?: string };
   verified: boolean;
-  bids: {
-    bidder: string & { _id: string; name: string } | { _id: string; storeName: string };
-    bidderModel: string;
-    amount: number;
-    createdAt: string;
-    _id: string;
-  }[];
+  bids: Bid[];
   createdAt: string;
   updatedAt: string;
   inventory: number;
@@ -89,12 +98,19 @@ const useConvertedPrices = (auction: Auction | null, currency: string) => {
             convertPrice(auction.startingPrice, "NGN", currency),
             convertPrice((auction.highestBid?.amount || auction.startingPrice) + 250, "NGN", currency),
             Promise.all(
-              auction.bids.map(async (bid) => ({
-                _id: bid._id,
-                amount: Math.round(await convertPrice(bid.amount, "NGN", currency)),
-              }))
-            ).then((bids) => bids.reduce((acc, { _id, amount }) => ({ ...acc, [_id]: amount }), {})),
+              auction.bids.map(async (bid, index) => {
+                const bidKey = bid._id || `${bid.bidder._id}-${bid.createdAt}-${index}`;
+                const convertedAmount = await convertPrice(bid.amount, "NGN", currency);
+                return {
+                  _id: bidKey,
+                  amount: Math.round(convertedAmount),
+                };
+              })
+            ).then((bids) =>
+              bids.reduce((acc, { _id, amount }) => ({ ...acc, [_id]: amount }), {})
+            ),
           ]);
+
           setPrices({
             currentBid: Math.round(currentBid),
             startingPrice: Math.round(startingPrice),
@@ -107,7 +123,13 @@ const useConvertedPrices = (auction: Auction | null, currency: string) => {
             currentBid: auction.highestBid?.amount || auction.startingPrice,
             startingPrice: auction.startingPrice,
             nextBid: (auction.highestBid?.amount || auction.startingPrice) + 250,
-            bids: auction.bids.reduce((acc, bid) => ({ ...acc, [bid._id]: bid.amount }), {}),
+            bids: auction.bids.reduce(
+              (acc, bid, index) => ({
+                ...acc,
+                [bid._id || `${bid.bidder._id}-${bid.createdAt}-${index}`]: bid.amount,
+              }),
+              {}
+            ),
           });
         } finally {
           setIsPriceLoading(false);
@@ -132,7 +154,7 @@ const AuctionDetail = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isWatching, setIsWatching] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
-  const prevBidsRef = useRef<Auction["bids"]>([]);
+  const prevBidsRef = useRef<Bid[]>([]);
 
   // Redux selectors
   const user = useSelector((state: RootState) => state.user.user);
@@ -147,12 +169,31 @@ const AuctionDetail = () => {
   // Owner and bidding status
   const currentUserId = user?._id || vendor?._id;
   const isOwner = auction?.poster._id === currentUserId;
-  const userBids = auction?.bids.filter((bid) => bid.bidder === currentUserId) || [];
+  const userBids = auction?.bids.filter((bid) => bid.bidder._id === currentUserId) || [];
   const showUpdateBid = userBids.length > 0;
   const hasExistingBid = userBids.length > 0;
 
   // Convert prices using custom hook
   const { prices, isPriceLoading } = useConvertedPrices(auction, currency);
+
+  // Calculate time left
+  const getTimeLeft = (endTime: string) => {
+    const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
+    const diff = new Date(endTime).getTime() - new Date(now).getTime();
+    if (diff <= 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((diff / (1000 * 60)) % 60),
+      seconds: Math.floor((diff / 1000) % 60),
+    };
+  };
+
+  const isEnded = useMemo(() => {
+    return timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
+  }, [timeLeft]);
 
   // Initialize sessionId
   useEffect(() => {
@@ -173,23 +214,37 @@ const AuctionDetail = () => {
         const auctionItem = auctionData?.data;
         if (!auctionItem) throw new Error("Auction not found");
 
-        // Notify on new bids
-        if (auction && auctionItem.bids.length > prevBidsRef.current.length) {
-          const newBids = auctionItem.bids.filter(
-            (newBid:any) => !prevBidsRef.current.some((prevBid) => prevBid._id === newBid._id)
+        // Validate highestBid consistency
+        const maxBid = auctionItem.bids.length
+          ? Math.max(...auctionItem.bids.map((bid: Bid) => bid.amount))
+          : auctionItem.startingPrice;
+        if (auctionItem.highestBid?.amount !== maxBid) {
+          console.warn(
+            `Highest bid mismatch: API returned ${auctionItem.highestBid?.amount}, but max bid is ${maxBid}`
           );
-          for (const bid of newBids) {
-            if (bid.bidder !== currentUserId) {
-              const convertedAmount = await convertPrice(bid.amount, "NGN", currency);
-              toast.info(
-                `New bid placed: ${currencySymbol} ${formatPrice(Math.round(convertedAmount))} by ${getBidderName(
-                  bid.bidder,
-                  bid.bidderModel
-                )}`
-              );
-            }
-          }
         }
+
+        // Notify on new bids
+        // if (auction && auctionItem.bids.length > prevBidsRef.current.length) {
+        //   const newBids = auctionItem.bids.filter(
+        //     (newBid: Bid) =>
+        //       !prevBidsRef.current.some(
+        //         (prevBid) =>
+        //           prevBid.createdAt === newBid.createdAt &&
+        //           prevBid.bidder._id === newBid.bidder._id
+        //       )
+        //   );
+        //   for (const bid of newBids) {
+        //     if (bid.bidder._id !== currentUserId) {
+        //       const convertedAmount = await convertPrice(bid.amount, "NGN", currency);
+        //       toast.info(
+        //         `New bid placed: ${currencySymbol} ${formatPrice(
+        //           Math.round(convertedAmount)
+        //         )} by ${getBidderName(bid.bidder, bid.bidderModel)}`
+        //       );
+        //     }
+        //   }
+        // }
         prevBidsRef.current = auctionItem.bids;
 
         setAuction(auctionItem);
@@ -206,17 +261,17 @@ const AuctionDetail = () => {
     };
 
     fetchAuctionData();
-    if (!timeLeft.days && !timeLeft.hours && !timeLeft.minutes && !timeLeft.seconds) {
-      return; // Stop polling if auction has ended
+    
+    if (!isEnded) {
+      const intervalId = setInterval(fetchAuctionData, 5000);
+      return () => clearInterval(intervalId);
     }
-    const intervalId = setInterval(fetchAuctionData, 5000);
-    return () => clearInterval(intervalId);
-  }, [id, currentUserId, currencySymbol, currency, timeLeft]);
+  }, [id, currentUserId, currencySymbol, currency, isEnded]);
 
   // Pre-fill bid amount for existing bids
   useEffect(() => {
     if (hasExistingBid && auction) {
-      const currentBid = auction.bids.find((bid) => bid.bidder === currentUserId);
+      const currentBid = auction.bids.find((bid) => bid.bidder._id === currentUserId);
       if (currentBid) {
         (async () => {
           try {
@@ -241,29 +296,12 @@ const AuctionDetail = () => {
     }
   }, [auction]);
 
-  // Calculate time left
-  const getTimeLeft = (endTime: string) => {
-    const now = new Date().toLocaleString("en-US", { timeZone: "Africa/Lagos" });
-    const diff = new Date(endTime).getTime() - new Date(now).getTime();
-    if (diff <= 0) {
-      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
-    }
-    return {
-      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-      minutes: Math.floor((diff / (1000 * 60)) % 60),
-      seconds: Math.floor((diff / 1000) % 60),
-    };
-  };
-
-  const isEnded = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
-
   // Resolve bidder names
-  const getBidderName = (bidder: any, bidderModel: string) => {
+  const getBidderName = (bidder: Bidder, bidderModel: string) => {
     if (bidderModel === "users" && user && user._id === bidder._id) return user.name || "You";
     if (bidderModel === "vendors" && vendor && vendor._id === bidder._id) return vendor.storeName || "You";
     if (auction && bidder._id === auction.poster._id) return auction.poster.storeName;
-    return "storeName" in bidder ? bidder.storeName : "name" in bidder ? bidder.name : "Anonymous Bidder";
+    return bidder.storeName || bidder.name || "Anonymous Bidder";
   };
 
   const handlePlaceBid = async () => {
@@ -306,7 +344,9 @@ const AuctionDetail = () => {
       <div className="container mx-auto px-4 py-6 text-center">
         <p className="text-red-500 text-sm sm:text-base">{error}</p>
         <div className="mt-4 flex flex-col sm:flex-row justify-center gap-2">
-          <Button onClick={() => window.location.reload()} className="w-full sm:w-auto">Retry</Button>
+          <Button onClick={() => window.location.reload()} className="w-full sm:w-auto">
+            Retry
+          </Button>
           <Link to="/">
             <Button className="w-full sm:w-auto mt-2 sm:mt-0">Back to Auctions</Button>
           </Link>
@@ -321,7 +361,10 @@ const AuctionDetail = () => {
       <div className="border-b bg-card">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <Link to="/auctionlist" className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm sm:text-base">
+            <Link
+              to="/auctionlist"
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm sm:text-base"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span>Back to Auctions</span>
             </Link>
@@ -387,10 +430,16 @@ const AuctionDetail = () => {
                     key={image || `image-${index}`}
                     onClick={() => setCurrentImageIndex(index)}
                     className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      currentImageIndex === index ? "border-primary shadow-md" : "border-border hover:border-primary/50"
+                      currentImageIndex === index
+                        ? "border-primary shadow-md"
+                        : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <img src={image} alt={`${auction.name} ${index + 1}`} className="w-full h-full object-cover" />
+                    <img
+                      src={image}
+                      alt={`${auction.name} ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
                   </button>
                 ))}
               </div>
@@ -402,7 +451,9 @@ const AuctionDetail = () => {
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
                 <Badge
                   variant={isEnded ? "destructive" : "default"}
-                  className={`text-xs sm:text-sm ${isEnded ? "border-auction-ended text-slate-500" : "border-auction-live"}`}
+                  className={`text-xs sm:text-sm ${
+                    isEnded ? "border-auction-ended text-slate-500" : "border-auction-live"
+                  }`}
                 >
                   <Gavel className="mr-1 h-3 w-3" />
                   {isEnded ? "Auction Ended" : "Live Auction"}
@@ -413,9 +464,13 @@ const AuctionDetail = () => {
                     Premium
                   </Badge>
                 )}
-                <Badge variant="outline" className="text-xs sm:text-sm">Lot #LOT{auction._id.slice(-4)}</Badge>
+                <Badge variant="outline" className="text-xs sm:text-sm">
+                  Lot #LOT{auction._id.slice(-4)}
+                </Badge>
               </div>
-              <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">{auction.name}</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground mb-2">
+                {auction.name}
+              </h1>
               <p className="text-sm sm:text-base text-muted-foreground mb-4">{auction.description}</p>
               <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
@@ -446,7 +501,9 @@ const AuctionDetail = () => {
                       {isPriceLoading ? (
                         <span className="text-2xl sm:text-3xl lg:text-4xl font-bold">Loading...</span>
                       ) : (auction.highestBid?.amount ?? 0) === 0 && auction.bids.length === 0 ? (
-                        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-muted-foreground">No bids yet</p>
+                        <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-muted-foreground">
+                          No bids yet
+                        </p>
                       ) : (
                         <p className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-primary bg-clip-text">
                           {currencySymbol} {formatPrice(prices.currentBid)}
@@ -456,7 +513,9 @@ const AuctionDetail = () => {
                     <div className="text-left sm:text-right">
                       <p className="text-xs sm:text-sm text-muted-foreground mb-1">Starting Bid</p>
                       {isPriceLoading ? (
-                        <span className="text-base sm:text-lg font-semibold text-foreground">Loading...</span>
+                        <span className="text-base sm:text-lg font-semibold text-foreground">
+                          Loading...
+                        </span>
                       ) : (
                         <p className="text-base sm:text-lg font-semibold text-foreground">
                           {currencySymbol} {formatPrice(prices.startingPrice)}
@@ -470,7 +529,9 @@ const AuctionDetail = () => {
                   <div className="bg-muted rounded-xl p-3 sm:p-4 mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">Time Remaining</span>
+                      <span className="text-xs sm:text-sm font-medium text-muted-foreground">
+                        Time Remaining
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4">
                       {["days", "hours", "minutes", "seconds"].map((unit) => (
@@ -489,17 +550,21 @@ const AuctionDetail = () => {
 
                 {isEnded ? (
                   <div className="text-center py-4">
-                    <p className="text-base sm:text-lg font-semibold text-muted-foreground">Auction has ended</p>
+                    <p className="text-base sm:text-lg font-semibold text-muted-foreground">
+                      Auction has ended
+                    </p>
                     {auction.highestBid ? (
                       <p className="text-sm sm:text-md text-foreground mt-2">
-                        Winner: {"storeName" in auction.highestBid.bidder
-                          ? auction.highestBid.bidder.storeName
-                          : auction.highestBid.bidder.name} at {currencySymbol} {formatPrice(prices.currentBid)}
+                        Winner:{" "}
+                        {getBidderName(auction.highestBid.bidder, auction.highestBid.bidderModel)}{" "}
+                        at {currencySymbol} {formatPrice(prices.currentBid)}
                       </p>
                     ) : (
                       <p className="text-sm sm:text-md text-foreground mt-2">No bids were placed.</p>
                     )}
-                    <Button variant="outline" className="mt-2 w-full sm:w-auto">View Final Results</Button>
+                    <Button variant="outline" className="mt-2 w-full sm:w-auto">
+                      View Final Results
+                    </Button>
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -544,19 +609,28 @@ const AuctionDetail = () => {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4">
                     <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-border">
-                      <AvatarImage src={auction.poster.image || "/placeholder.svg"} alt={auction.poster.storeName} />
-                      <AvatarFallback className="font-bold text-lg sm:text-xl">{auction.poster.storeName.charAt(0)}</AvatarFallback>
+                      <AvatarImage
+                        src={auction.poster.image || "/placeholder.svg"}
+                        alt={auction.poster.storeName}
+                      />
+                      <AvatarFallback className="font-bold text-lg sm:text-xl">
+                        {auction.poster.storeName.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-foreground text-sm sm:text-base">{auction.poster.storeName}</h3>
+                        <h3 className="font-semibold text-foreground text-sm sm:text-base">
+                          {auction.poster.storeName}
+                        </h3>
                         {auction.verified && <Shield className="h-4 w-4 text-green-600" />}
                       </div>
                       <div className="text-xs sm:text-sm text-muted-foreground">★ 4.9 • 0 sales</div>
                     </div>
                   </div>
                   <Link to={`/views-profile/${auction.poster._id}`}>
-                    <Button variant="outline" className="w-full sm:w-auto h-10">View Profile</Button>
+                    <Button variant="outline" className="w-full sm:w-auto h-10">
+                      View Profile
+                    </Button>
                   </Link>
                 </div>
               </CardContent>
@@ -572,7 +646,9 @@ const AuctionDetail = () => {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm font-medium rounded-sm transition-all ${
-                    activeTab === tab ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                    activeTab === tab
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   } ${tab === "shipping" ? "hidden sm:flex" : ""}`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -593,7 +669,9 @@ const AuctionDetail = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">Specifications</h4>
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">
+                            Specifications
+                          </h4>
                           <div className="space-y-2 text-xs sm:text-sm">
                             {[
                               { label: "Category", value: auction.category },
@@ -611,7 +689,9 @@ const AuctionDetail = () => {
                       </div>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">Provenance</h4>
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base mb-2">
+                            Provenance
+                          </h4>
                           <p className="text-xs sm:text-sm text-muted-foreground mb-3">
                             This item is from a reputable seller and has been verified for authenticity.
                           </p>
@@ -624,7 +704,9 @@ const AuctionDetail = () => {
                             </div>
                             <div className="flex justify-between">
                               <span className="text-muted-foreground">Created At:</span>
-                              <span className="font-medium">{new Date(auction.createdAt).toLocaleDateString()}</span>
+                              <span className="font-medium">
+                                {new Date(auction.createdAt).toLocaleDateString()}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -642,50 +724,58 @@ const AuctionDetail = () => {
                     <CardTitle className="text-base sm:text-lg">Bidding History</CardTitle>
                   </CardHeader>
                   <CardContent className="p-4 sm:p-6">
-                    <div className="space-y-3 max-h-80 sm:max-h-96 overflow-y-auto pr-2" style={{ scrollbarWidth: "thin" }}>
+                    <div
+                      className="space-y-3 max-h-80 sm:max-h-96 overflow-y-auto pr-2"
+                      style={{ scrollbarWidth: "thin" }}
+                    >
                       {auction.bids.length === 0 ? (
                         <p className="text-muted-foreground text-sm">No bids yet.</p>
                       ) : (
                         <AnimatePresence>
                           {[...auction.bids]
                             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                            .map((bid) => (
-                              <motion.div
-                                key={bid._id}
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted text-xs sm:text-sm"
-                              >
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                  <div
-                                    className={`w-2 h-2 rounded-full ${
-                                      bid.amount === auction.highestBid?.amount ? "bg-green-500" : "bg-muted-foreground"
-                                    }`}
-                                  />
-                                  <span className="font-medium">
-                                    {"storeName" in bid.bidder
-                                      ? bid.bidder.storeName
-                                      : "name" in bid.bidder
-                                      ? bid.bidder.name
-                                      : "Anonymous Bidder"}
-                                  </span>
-                                </div>
-                                <div className="text-right">
-                                  <div className="font-semibold">
-                                    {currencySymbol} {formatPrice(prices.bids[bid._id] || bid.amount)}
+                            .map((bid, index) => {
+                              const bidKey = bid._id || `${bid.bidder._id}-${bid.createdAt}-${index}`;
+                              return (
+                                <motion.div
+                                  key={bidKey}
+                                  initial={{ opacity: 0, y: -10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -10 }}
+                                  transition={{ duration: 0.3 }}
+                                  className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-muted text-xs sm:text-sm"
+                                >
+                                  <div className="flex items-center gap-2 sm:gap-3">
+                                    <div
+                                      className={`w-2 h-2 rounded-full ${
+                                        bid.amount === auction.highestBid?.amount
+                                          ? "bg-green-500"
+                                          : "bg-muted-foreground"
+                                      }`}
+                                    />
+                                    <span className="font-medium">
+                                      {getBidderName(bid.bidder, bid.bidderModel)}
+                                    </span>
                                   </div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {new Date(bid.createdAt).toLocaleString("en-NG", {
-                                      timeZone: "Africa/Lagos",
-                                      dateStyle: "medium",
-                                      timeStyle: "short",
-                                    })}
+                                  <div className="text-right">
+                                    <div className="font-semibold">
+                                      {isPriceLoading ? (
+                                        <span className="text-muted-foreground">Loading bid...</span>
+                                      ) : (
+                                        `${currencySymbol} ${formatPrice(prices.bids[bidKey] || bid.amount)}`
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {new Date(bid.createdAt).toLocaleString("en-NG", {
+                                        timeZone: "Africa/Lagos",
+                                        dateStyle: "medium",
+                                        timeStyle: "short",
+                                      })}
+                                    </div>
                                   </div>
-                                </div>
-                              </motion.div>
-                            ))}
+                                </motion.div>
+                              );
+                            })}
                         </AnimatePresence>
                       )}
                     </div>
@@ -704,12 +794,16 @@ const AuctionDetail = () => {
                     <div className="space-y-4">
                       <div>
                         <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs sm:text-sm">
+                          <Badge
+                            variant="secondary"
+                            className="bg-green-100 text-green-800 text-xs sm:text-sm"
+                          >
                             {auction.verified ? "Excellent" : "Unknown"}
                           </Badge>
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                          Condition details are not provided in the API. Please contact the seller for a detailed condition report.
+                          Condition details are not provided in the API. Please contact the seller for a
+                          detailed condition report.
                         </p>
                       </div>
                     </div>
@@ -730,8 +824,12 @@ const AuctionDetail = () => {
                         <h4 className="font-semibold text-sm sm:text-base mb-3">Shipping Information</h4>
                         <div className="space-y-2 text-xs sm:text-sm">
                           <p className="text-muted-foreground">Contact seller for shipping details.</p>
-                          <p><span className="font-medium">Domestic:</span> Available</p>
-                          <p><span className="font-medium">International:</span> Available</p>
+                          <p>
+                            <span className="font-medium">Domestic:</span> Available
+                          </p>
+                          <p>
+                            <span className="font-medium">International:</span> Available
+                          </p>
                         </div>
                       </div>
                       <div>
