@@ -70,13 +70,6 @@ export default function Upgrade() {
   const selectedCategories = locationState?.selectedCategories || [];
   const maxCategories = locationState?.maxCategories || 0;
   const [billing, setBilling] = useState<DisplayBillingCycle>("Monthly");
-  const data = {
-    plan,
-    billing,
-  };
-
-  const store = localStorage.setItem("plan", JSON.stringify(data));
-  console.log(store);
   const user = useSelector((s: any) => s.vendor);
 
   const pricing: PricingTiers = {
@@ -175,6 +168,14 @@ export default function Upgrade() {
         ? "Yearly"
         : billing
     ];
+  const data = {
+    plan,
+    billing,
+    amount,
+  };
+
+  const store = localStorage.setItem("plan", JSON.stringify(data));
+  console.log(store);
 
   const billingLabel =
     billing === "HalfYearly"

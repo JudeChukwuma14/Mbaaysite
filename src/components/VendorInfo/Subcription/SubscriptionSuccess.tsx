@@ -12,6 +12,7 @@ interface LocationState {
   plan: string; // "Shelf" | "Counter" | ...
   ref: string; // Paystack reference
   billing: string; // "Monthly" | "Quarterly" | ...
+  amount: number;
 }
 
 export default function SubscriptionSuccess() {
@@ -36,7 +37,7 @@ export default function SubscriptionSuccess() {
     );
   }
 
-  const { plan, ref: reference, billing } = state;
+  const { plan, ref: reference, billing, amount } = state;
 
   /* ---- helpers ---- */
   const copyRef = () => {
@@ -83,7 +84,7 @@ export default function SubscriptionSuccess() {
         20,
         80
       );
-      // doc.text(`Amount: ₦${amount.toLocaleString()}`, 20, 85);
+      doc.text(`Amount: ₦${amount.toLocaleString()}`, 20, 85);
 
       doc.save(`subscription_${plan}_${reference}.pdf`);
       toast.success("PDF downloaded!");
@@ -118,7 +119,7 @@ export default function SubscriptionSuccess() {
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: `Mbaay ${plan} Subscription`,
-          text: `I just upgraded to ${plan} on Mbaay! Reference: ${reference}`,
+          text: `I just upgraded to ${plan} on Mbaay! Reference: ${reference} Price: ${amount}`,
           files: [file],
         });
         toast.success("Receipt shared!");
@@ -190,6 +191,10 @@ export default function SubscriptionSuccess() {
             <div>
               <div className="mb-1 text-sm text-gray-500">Billing</div>
               <div className="text-gray-800">{billing}</div>
+            </div>
+            <div>
+              <div className="mb-1 text-sm text-gray-500">Amount</div>
+              <div className="text-gray-800">{amount}</div>
             </div>
             <div>
               <div className="mb-1 text-sm text-gray-500">Date</div>

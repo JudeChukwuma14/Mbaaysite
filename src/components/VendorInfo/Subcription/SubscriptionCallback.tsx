@@ -21,6 +21,7 @@ export default function SubscriptionCallback() {
       // Now you can access the properties of the retrieved object
       const plan = retrievedData.plan;
       const billing = retrievedData.billing;
+      const amount = retrievedData.amount;
 
       console.log("Retrieved plan:", plan);
       console.log("Retrieved selectedCategories:", billing);
@@ -32,6 +33,7 @@ export default function SubscriptionCallback() {
             plan: plan,
             ref: reference,
             billing: billing,
+            amount: amount,
           },
         });
         setIsLoading(false);
@@ -50,6 +52,7 @@ export default function SubscriptionCallback() {
                 plan: plan,
                 ref: reference,
                 billing: billing,
+                amount: amount,
               },
               replace: true,
             });
@@ -61,6 +64,7 @@ export default function SubscriptionCallback() {
                 plan: plan,
                 ref: reference,
                 billing: billing,
+                amount: amount,
               },
               replace: true,
             });

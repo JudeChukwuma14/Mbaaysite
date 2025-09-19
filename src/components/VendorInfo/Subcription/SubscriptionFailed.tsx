@@ -32,7 +32,7 @@ export default function SubscriptionFailed() {
 
   /* ---- defaults ---- */
   const plan = state?.plan || searchParams.get("plan") || "Unknown Plan";
-  // const amount = state?.amount || searchParams.get("amount") || "$0.00";
+  const amount = state?.amount || searchParams.get("amount") || "$0.00";
   const billing = state?.billing || searchParams.get("billing") || "Monthly";
   const errorCode =
     state?.errorCode ||
@@ -133,6 +133,13 @@ export default function SubscriptionFailed() {
             <div>
               <div className="mb-1 text-sm text-gray-500">Billing Cycle</div>
               <div className="text-gray-800">{billing}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <div className="mb-1 text-sm text-gray-500">Amount</div>
+              <div className="text-gray-800">{amount}</div>
             </div>
           </div>
 
