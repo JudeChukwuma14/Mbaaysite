@@ -6,6 +6,7 @@ import { useDarkMode } from "../Context/DarkModeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ChatWidget } from "./VendorCustomerCare/CustomerCareWidget";
+// import DashboardPaymentHandler from "./DashboardPaymentHandler";
 // Import dark mode context
 
 const VendorLayout: React.FC = () => {
@@ -18,6 +19,7 @@ const VendorLayout: React.FC = () => {
       <div className={darkMode ? "dark" : ""}>
         <div className="flex h-screen">
           {/* Sidebar */}
+          {/* <DashboardPaymentHandler /> */}
           <DashboardSidebar darkMode={darkMode} />
 
           {/* Main Content */}

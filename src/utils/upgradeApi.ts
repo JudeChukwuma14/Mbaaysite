@@ -2,15 +2,15 @@ import axios from "axios";
 
 const API_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
 
-export interface UpgradePlanPayload {
-  token: string;
-  currentPlan: string;
-  newPlan: "Shelf" | "Counter" | "Shop";
-  newCategories: string[];
-}
-
 export interface CraftCategoriesResponse {
   craftCategories: string[];
+}
+
+export interface UpgradePlanPayload {
+  token: string;
+  newPlan: "Shelf" | "Counter" | "Shop" | "Premium";
+  newCategories: string[];
+  billingCycle: "Monthly" | "Quarterly" | "HalfYearly" | "Yearly";
 }
 
 export const upgradePlan = async (payload: UpgradePlanPayload) => {
@@ -23,10 +23,25 @@ export const upgradePlan = async (payload: UpgradePlanPayload) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
+
     return response.data;
   } catch (error: any) {
     throw new Error(error.response?.data?.message || "Failed to upgrade plan");
+  }
+};
+
+export const verifySubscriptionPayment = async (reference: string) => {
+  try {
+    const response = await axios.patch(
+      `${API_URL}/verify_subscription_payment?reference=${reference}`,
+      {}
+    );
+    console.log("res" + reference);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || "Failed to verify payment"
+    );
   }
 };
 
