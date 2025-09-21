@@ -135,7 +135,9 @@ const vendorSlice = createSlice({
   },
 });
 
+
 export const { setVendor, logoutVendor, addMessage, setMessages, setChatId } =
   vendorSlice.actions;
+
 
 export default vendorSlice.reducer;

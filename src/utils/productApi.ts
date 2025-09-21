@@ -86,3 +86,29 @@ export const placeBid = async (productId: string, bidAmount: number, token: stri
     throw error;
   }
 };
+
+
+export const upgradeBid = async (productId: string, newBidAmount: number, authToken: string) => {
+  if (!authToken) {
+    console.error("No valid auth token provided for upgrading bid on product:", productId);
+    throw new Error("Authentication token is missing. Please log in.");
+  }
+  try {
+    console.log("Upgrading bid for product:", productId, "New Amount:", newBidAmount, "Token:", authToken);
+    const response = await axios.patch(
+      `${AUCTION_BASE_URL}/upgrade_bid/${productId}`,
+      { newBidAmount },
+      {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log("Upgrade bid response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error(`Error upgrading bid on ${productId}:`, error);
+    throw error;
+  }
+};

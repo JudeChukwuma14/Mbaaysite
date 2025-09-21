@@ -8,8 +8,8 @@ import AuctionCard from "@/components/AuctionPage/AuctionCard";
 import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import NewArrival from "@/components/Cards/NewArrival";
-import { Auction, flashSale } from "@/components/mockdata/data";
-import { getAllProduct } from "@/utils/productApi";
+import { flashSale } from "@/components/mockdata/data";
+import { getAllProduct, getAuctionProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
@@ -21,6 +21,7 @@ const CategoriesSection = lazy(
 
 import BestSellingCard from "@/components/Cards/BestSellingCard";
 import CategoriesSectionSkeleton from "@/components/skeletons/CategoriesSectionSkeleton";
+import AuctionCardSkeleton from "@/components/AuctionPage/AuctionCardSkeleton";
 
 interface Product {
   _id: string;
@@ -57,6 +58,8 @@ const HomeArea: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [getVender, setGetVendor] = useState<VendorProfile[]>([]);
+  const [auctionProducts, setAuctionProducts] = useState<any[]>([]);
+  const [auctionLoading, setAuctionLoading] = useState<boolean>(true);
 
   const createInitialAvatar = (name: string) => {
     const firstLetter = name.trim().charAt(0).toUpperCase();
@@ -138,6 +141,25 @@ const HomeArea: React.FC = () => {
     getVendor();
   }, []);
 
+  useEffect(() => {
+    const fetchAuctions = async () => {
+      setAuctionLoading(true);
+      try {
+        const result = await getAuctionProduct();
+        console.log(result);
+        // result should be an array of auction products
+        setAuctionProducts(
+          Array.isArray(result) ? result : result.data || []
+        );
+      } catch (err) {
+        console.error("Error fetching auctions:", err);
+      } finally {
+        setAuctionLoading(false);
+      }
+    };
+    fetchAuctions();
+  }, []);
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -183,7 +205,7 @@ const HomeArea: React.FC = () => {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading
             ? Array.from({ length: 10 }).map((_, i) => (
                 <ProductSkeleton key={i} />
@@ -219,7 +241,7 @@ const HomeArea: React.FC = () => {
             Best Selling Products
           </h2>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 md:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading ? (
             Array.from({ length: 5 }).map((_, i) => <ProductSkeleton key={i} />)
           ) : bestSellingProducts.length > 0 ? (
@@ -306,7 +328,7 @@ const HomeArea: React.FC = () => {
             View All <ChevronRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2  gap-3 md:gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {loading ? (
             Array.from({ length: 10 }).map((_, i) => (
               <ProductSkeleton key={i} />
@@ -376,20 +398,38 @@ const HomeArea: React.FC = () => {
             Auction
           </h2>
           <Link
-            to="/auctions"
+            to="/auctionlist"
             className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
           >
             View All <ChevronRight size={16} />
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-6 mb-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-          {Auction.slice(0, 8).map((item, index) => (
-            <AuctionCard key={index} {...item} />
-          ))}
+          {auctionLoading
+            ? Array.from({ length: 8 }).map((_, idx) => (
+                <AuctionCardSkeleton key={idx} />
+              ))
+            : auctionProducts
+                .slice(0, 8)
+                .map((item) => (
+                  <AuctionCard
+                    key={item._id}
+                    id={item._id}
+                    image={item.images?.[0] || "/placeholder.svg"}
+                    title={item.name}
+                    currentBid={item.highestBid?.amount || item.startingPrice}
+                    lotNumber={item._id.slice(-4)}
+                    seller={item.poster?.storeName || "Unknown"}
+                    sellerImage={item.poster?.image || "/placeholder.svg"}
+                    endTime={item.auctionEndDate}
+                    category={item.category}
+                    isPremium={item.verified}
+                  />
+                ))}
         </div>
         <div className="flex justify-center">
           <NavLink
-            to="/auctionview"
+            to="/auctionlist"
             className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
           >
             View All Auctions
