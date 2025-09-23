@@ -79,7 +79,7 @@ interface Vendor {
   verificationStatus: string;
   kycStatus: "Pending" | "Approved" | "Rejected" | "Processing"; // Example statuses
   __v: number;
-}
+}    
 
 export interface Message {
   id: string;
