@@ -10,7 +10,10 @@ const WebLayout: React.FC = () => {
     <div className="overflow-hidden">
       <ScrollToTop />
       <Header />
-      <Outlet />
+      {/* Add main content wrapper with padding-top */}
+      <main className="pt-[158px] md:pt-[155px]"> 
+        <Outlet />
+      </main>
       <ChatWidget />
       <Footer />
     </div>

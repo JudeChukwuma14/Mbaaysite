@@ -84,17 +84,17 @@ const LoginVendor: React.FC = () => {
           className="bg-center bg-no-repeat bg-cover w-full min-h-screen px-4 lg:ml-[400px]"
         >
           <div className="flex items-center justify-between px-4 my-6 ">
-            <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
-            </div>
-
+            <Link to={"/"}>
+              <div className="lg:hidden">
+                <img src={logo} width={50} alt="" />
+              </div>
+            </Link>
             <div className="hidden w-full text-end lg:block">
               <span className="text-gray-600">Don't have an account? </span>
-              <NavLink
-                to={"/signup-vendor"}
-                className="text-blue-500 hover:underline"
-              >
-                Sign up now!
+              <NavLink to={"/signup-vendor"}>
+                <span className="text-blue-500 hover:underline">
+                  Sign up now!
+                </span>
               </NavLink>
             </div>
           </div>
@@ -102,7 +102,7 @@ const LoginVendor: React.FC = () => {
           <div className="flex items-center justify-center px-4">
             <div className="w-full max-w-md">
               {/* Header */}
-              <h1 className="mb-2 text-2xl font-bold">Log in to Mbaay.com</h1>
+              <h1 className="mb-2 text-2xl font-bold">Log in to Mbaay</h1>
               <p className="mb-6 text-gray-600">
                 Enter your valid email address and password to log in to your
                 account.
@@ -205,14 +205,13 @@ const LoginVendor: React.FC = () => {
               </div>
               <VendorGoogleButton />
 
-              <div className="mt-4 text-left">
-                <Link
-                  to={"/signin"}
-                  className="text-orange-500 hover:underline"
-                >
-                  Login as a user
-                </Link>
-              </div>
+              <Link to={"/signin"}>
+                <div className="mt-4 text-left">
+                  <span className="text-orange-500 hover:underline">
+                    Login as a user
+                  </span>
+                </div>
+              </Link>
               <div className="flex items-center justify-between mb-4">
                 <div className="block my-2 text-left lg:hidden">
                   <span className="text-gray-600">Don't have an account? </span>
@@ -220,17 +219,17 @@ const LoginVendor: React.FC = () => {
                     to={"/signup-vendor"}
                     className="text-blue-500 hover:underline"
                   >
-                    Sign up now!
+                    <span>Sign up now!</span>
                   </Link>
                 </div>
-                <div className="text-left ">
-                  <Link
-                    to={"/forgot-password"}
-                    className="text-blue-500 hover:underline"
-                  >
-                    Forgot Password ?
-                  </Link>
-                </div>
+                <Link
+                  to={"/forgot-password"}
+                  className="text-blue-500 hover:underline"
+                >
+                  <div className="text-left ">
+                    <span>Forgot Password?</span>
+                  </div>
+                </Link>
               </div>
             </div>
           </div>
