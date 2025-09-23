@@ -9,6 +9,7 @@ import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
 import { CreateNewPassword } from "@/utils/ForgetpassApi";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface ResetPasswordFormData {
   email: string;
@@ -54,9 +55,13 @@ const ResetPassword: React.FC = () => {
   const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await CreateNewPassword(data.email, data.otp, data.newPassword);
+      const response = await CreateNewPassword(
+        data.email,
+        data.otp,
+        data.newPassword
+      );
       const message = response?.message;
-      console.log(message)
+      console.log(message);
       if (message) {
         toast.success(message, {
           position: "top-right",
@@ -95,7 +100,9 @@ const ResetPassword: React.FC = () => {
           {/* Logo for small screens */}
           <div className="items-left mt-6 flex-col min-h-[130px]">
             <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
+              <Link to="/">
+                <img src={logo} width={50} alt="" />
+              </Link>
             </div>
           </div>
           <div className="flex items-center justify-center w-full">

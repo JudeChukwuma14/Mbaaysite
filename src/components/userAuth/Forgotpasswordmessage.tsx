@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const Forgotpasswordmessage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -52,7 +53,9 @@ const Forgotpasswordmessage: React.FC = () => {
           {/* Logo for small screens */}
           <div className="items-left mt-6 flex-col min-h-[150px]">
             <div className="lg:hidden">
+             <Link to="/">
               <img src={logo} width={50} alt="" />
+             </Link>
             </div>
           </div>
           <div className="flex items-center justify-center">
