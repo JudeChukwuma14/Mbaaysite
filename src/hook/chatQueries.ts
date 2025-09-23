@@ -94,11 +94,9 @@ export const useSendMessage = () => {
         context?.previousMessages // ← was previousMessage
       );
     },
-    onSettled: (_data, _error, variables) => {
-      // Soft re-fetch so the server id replaces the optimistic one
-      queryClient.invalidateQueries({
-        queryKey: ["messages", variables.chatId],
-      });
+    onSettled: (_data, _error, _variables) => {
+      // Avoid re-fetching messages to prevent flicker; socket will sync them.
+      // Still refresh chat list metadata (last message, time)
       queryClient.invalidateQueries({ queryKey: ["chats"] });
     },
   });
@@ -228,15 +226,17 @@ export const useSendMediaMessage = () => {
       token,
       content,
       replyTo,
+      onProgress,
     }: {
       chatId: string;
-      files: { images?: File[]; video?: File };
+      files: { images?: File[]; video?: File; documents?: File[] };
       token: string | null;
       content?: string;
       replyTo?: string;
+      onProgress?: (percent: number) => void;
     }) => {
       const formData = prepareMediaFormData(files, content, replyTo);
-      return sendMediaMessage(chatId, formData, token);
+      return sendMediaMessage(chatId, formData, token, onProgress);
     },
 
     onMutate: async (variables) => {
@@ -246,7 +246,12 @@ export const useSendMediaMessage = () => {
 
       const prev = queryClient.getQueryData(["messages", variables.chatId]);
 
-      const optimisticFiles = [];
+      const optimisticFiles: Array<{
+        type: "image" | "video" | "document";
+        url: string;
+        name: string;
+        size: number;
+      }> = [];
       variables.files.images?.forEach((f) =>
         optimisticFiles.push({
           type: "image" as const,
@@ -262,6 +267,14 @@ export const useSendMediaMessage = () => {
           name: variables.files.video.name,
           size: variables.files.video.size,
         });
+      variables.files.documents?.forEach((f) =>
+        optimisticFiles.push({
+          type: "document" as const,
+          url: URL.createObjectURL(f),
+          name: f.name,
+          size: f.size,
+        })
+      );
 
       const optimisticMsg = {
         _id: `opt-media-${Date.now()}`,
@@ -293,14 +306,7 @@ export const useSendMediaMessage = () => {
     },
 
     onSuccess: (serverMsg, vars) => {
-      // clean up blob URLs
-      vars.files.images?.forEach((f) =>
-        URL.revokeObjectURL(URL.createObjectURL(f))
-      );
-      if (vars.files.video)
-        URL.revokeObjectURL(URL.createObjectURL(vars.files.video));
-
-      // swap optimistic entry for real one
+      // swap optimistic entry for real one (socket will also deliver)
       queryClient.setQueryData(["messages", vars.chatId], (old: any) => {
         if (!old?.messages) return old;
         return {

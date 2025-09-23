@@ -168,14 +168,11 @@ export default function Upgrade() {
         ? "Yearly"
         : billing
     ];
-  const data = {
-    plan,
-    billing,
-    amount,
-  };
-
-  const store = localStorage.setItem("plan", JSON.stringify(data));
-  console.log(store);
+  // Persist current selection for recovery (side-effect, not during render)
+  useEffect(() => {
+    const data = { plan, billing, amount };
+    localStorage.setItem("plan", JSON.stringify(data));
+  }, [plan, billing, amount]);
 
   const billingLabel =
     billing === "HalfYearly"
@@ -203,178 +200,145 @@ export default function Upgrade() {
   }
 
   return (
-    <div className="min-h-screen px-4 py-12 bg-gradient-to-br from-gray-50 to-white">
-      <div className="max-w-md mx-auto">
-        <div className="mb-4">
+    <div className="min-h-screen bg-background">
+      <div className="max-w-3xl mx-auto px-4 py-10">
+        {/* Back */}
+        <div className="mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate("/app/pricing")}
-            className="flex items-center gap-2 text-gray-600"
+            className="flex items-center gap-2 text-muted-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Pricing
           </Button>
         </div>
 
+        {/* Header */}
+        <div className="text-center mb-8">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl sm:text-4xl font-bold"
+          >
+            Upgrade to {plan}
+          </motion.h1>
+          <p className="text-muted-foreground mt-2">
+            Choose your billing cycle and confirm your upgrade
+          </p>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-6 bg-white border-2 border-blue-500 shadow-lg rounded-2xl"
+          className="rounded-2xl border bg-card p-6 shadow-sm"
         >
-          <h2 className="mb-2 text-2xl font-bold text-center text-gray-900">
-            {plan} Plan
-          </h2>
-          <p className="mb-6 text-sm text-center text-gray-600">
-            Choose your billing cycle and confirm upgrade
-          </p>
-
           {/* Selected Categories Summary */}
           {selectedCategories.length > 0 && (
-            <div className="p-4 mb-6 rounded-lg bg-green-50">
-              <h3 className="mb-2 font-medium text-green-800">
-                Selected Categories:
-              </h3>
-              <div className="text-sm text-green-700">
+            <div className="p-4 mb-6 rounded-lg bg-primary/5">
+              <h3 className="mb-2 font-medium text-primary">Selected Categories</h3>
+              <div className="text-sm">
                 {selectedCategories.slice(0, 3).join(", ")}
                 {selectedCategories.length > 3 && (
-                  <span className="font-medium">
-                    {" "}
-                    and {selectedCategories.length - 3} more
-                  </span>
+                  <span className="font-medium"> and {selectedCategories.length - 3} more</span>
                 )}
               </div>
-              <div className="mt-1 text-xs text-green-600">
+              <div className="mt-1 text-xs text-muted-foreground">
                 Total: {selectedCategories.length} of {maxCategories} categories
               </div>
             </div>
           )}
 
-          {/* Billing toggle */}
-          <div className="mb-6">
-            <label className="block mb-2 text-sm font-medium text-gray-700">
-              Billing Cycle
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  "Monthly",
-                  "Quarterly",
-                  "HalfYearly",
-                  "Yearly",
-                ] as DisplayBillingCycle[]
-              ).map((cycle) => (
+          {/* Billing Toggle */}
+          <div className="flex justify-center mb-6">
+            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg">
+              {(["Monthly", "Quarterly", "HalfYearly", "Yearly"] as DisplayBillingCycle[]).map((cycle) => (
                 <button
                   key={cycle}
                   onClick={() => setBilling(cycle)}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition ${
-                    billing === cycle
-                      ? "bg-blue-500 text-white shadow"
-                      : "text-gray-600 hover:text-gray-900 bg-gray-100"
+                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    billing === cycle ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <div className="font-medium">
-                    {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
-                  </div>
+                  {cycle === "HalfYearly" ? "6 Months" : cycle}
                   {cycle !== "Monthly" && (
-                    <div className="mt-1 text-xs">
-                      Save{" "}
+                    <span className="ml-1 text-xs text-primary">-
                       {discount[cycle.toLowerCase() as keyof DiscountRates]}%
-                    </div>
+                    </span>
                   )}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Features list */}
-          <div className="pt-4 mb-6 border-t border-gray-200">
-            <h3 className="mb-3 font-medium text-gray-900">Plan includes:</h3>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 mr-2 text-green-500" />
-                <span className="text-sm">All {plan} plan features</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 mr-2 text-green-500" />
-                <span className="text-sm">Priority support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 mr-2 text-green-500" />
-                <span className="text-sm">No setup fees</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check className="w-5 h-5 mr-2 text-green-500" />
-                <span className="text-sm">30-day money-back guarantee</span>
-              </li>
-              {selectedCategories.length > 0 && (
-                <li className="flex items-start gap-2">
-                  <Check className="w-5 h-5 mr-2 text-green-500" />
-                  <span className="text-sm">
-                    Access to {selectedCategories.length} categor
-                    {selectedCategories.length === 1 ? "y" : "ies"}
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-
           {/* Price */}
-          <div className="p-4 mb-6 rounded-lg bg-blue-50">
-            <div className="text-3xl font-bold text-center text-gray-900">
-              ₦{amount.toLocaleString()}
-            </div>
-            <div className="text-sm text-center text-gray-600">
-              per {billingLabel}
+          <div className="rounded-lg bg-muted/40 p-4 mb-6">
+            <div className="text-center">
+              <div className="text-3xl font-bold">₦{amount.toLocaleString()}</div>
+              <div className="text-sm text-muted-foreground">
+                per {billingLabel}
+                {billing !== "Monthly" && (
+                  <div className="mt-1">
+                    <span className="font-medium text-green-600">
+                      Save {savingsPercentage}% (₦{savingsAmount.toLocaleString()})
+                    </span>
+                  </div>
+                )}
+              </div>
               {billing !== "Monthly" && (
-                <div className="mt-1">
-                  <span className="font-medium text-green-600">
-                    Save {savingsPercentage}% (₦{savingsAmount.toLocaleString()}
-                    )
-                  </span>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  Equivalent to ₦
+                  {Math.round(
+                    amount / (billing === "Quarterly" ? 3 : billing === "HalfYearly" ? 6 : 12)
+                  ).toLocaleString()}
+                  /month
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Equivalent monthly price */}
-            {billing !== "Monthly" && (
-              <div className="mt-2 text-xs text-center text-gray-50">
-                Equivalent to ₦
-                {Math.round(
-                  amount /
-                    (billing === "Quarterly"
-                      ? 3
-                      : billing === "HalfYearly"
-                      ? 6
-                      : 12)
-                ).toLocaleString()}
-                /month
+          {/* Features */}
+          <div className="space-y-2 mb-6">
+            <div className="flex items-start gap-2 text-sm">
+              <Check className="w-4 h-4 text-primary mt-0.5" />
+              <span>All {plan} plan features</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <Check className="w-4 h-4 text-primary mt-0.5" />
+              <span>Priority support</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <Check className="w-4 h-4 text-primary mt-0.5" />
+              <span>No setup fees</span>
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <Check className="w-4 h-4 text-primary mt-0.5" />
+              <span>30-day money-back guarantee</span>
+            </div>
+            {selectedCategories.length > 0 && (
+              <div className="flex items-start gap-2 text-sm">
+                <Check className="w-4 h-4 text-primary mt-0.5" />
+                <span>
+                  Access to {selectedCategories.length} categor{selectedCategories.length === 1 ? "y" : "ies"}
+                </span>
               </div>
             )}
           </div>
 
           {/* Action */}
-          <Button
-            onClick={() => mutate()}
-            disabled={isPending}
-            className="w-full"
-            size="lg"
-          >
+          <Button onClick={() => mutate()} disabled={isPending} className="w-full" size="lg">
             {isPending ? "Processing..." : `Upgrade to ${plan}`}
           </Button>
 
-          <p className="mt-4 text-xs text-center text-gray-500">
-            Your payment will be automatically charged at the end of each
-            billing period until canceled.
+          <p className="mt-4 text-xs text-center text-muted-foreground">
+            Your subscription renews automatically at the end of each billing period until canceled. You can manage your
+            plan in Account Settings.
           </p>
         </motion.div>
 
         {/* Error message for missing billing selection */}
         {!billing && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 p-3 mt-4 text-red-700 rounded-lg bg-red-50"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 p-3 mt-4 text-red-700 rounded-lg bg-red-50">
             <AlertCircle className="w-4 h-4" />
             <span className="text-sm">Please select a billing cycle</span>
           </motion.div>

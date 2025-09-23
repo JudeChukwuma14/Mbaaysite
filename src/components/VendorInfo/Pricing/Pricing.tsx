@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Check,
   X,
-  Layers,
-  LayoutGrid,
-  Store,
-  Crown,
-  LucideListStart,
+  Zap,
+  Users,
+  Shield,
 } from "lucide-react";
+
+
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +22,9 @@ export default function UpgradePage() {
     "Shelf" | "Counter" | "Shop" | "Premium" | null
   >(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [billingCycle, setBillingCycle] = useState<
+    "Monthly" | "Quarterly" | "HalfYearly" | "Yearly"
+  >("Monthly");
 
   const user = useSelector((state: any) => state.vendor);
   const navigate = useNavigate();
@@ -33,6 +36,94 @@ export default function UpgradePage() {
 
   // Plan hierarchy for progression
   const planHierarchy = ["Starter", "Shelf", "Counter", "Shop", "Premium"];
+
+  // New design data
+  const plans = [
+    {
+      name: "Starter",
+      description: "Perfect for new vendors getting started",
+      categories: 1,
+      pricing: { Monthly: 3000, Quarterly: 8100, HalfYearly: 15300, Yearly: 30000 },
+      features: [
+        { name: "1 product category", included: true },
+        { name: "5 products per category", included: true },
+        { name: "Basic listing features", included: true },
+        { name: "Email support", included: true },
+        { name: "Mobile app access", included: true },
+        { name: "Advanced analytics", included: false },
+        { name: "Priority support", included: false },
+        { name: "Custom branding", included: false },
+      ],
+    },
+    {
+      name: "Shelf",
+      description: "Great for growing businesses",
+      categories: 2,
+      pricing: { Monthly: 5000, Quarterly: 13500, HalfYearly: 25500, Yearly: 54000 },
+      features: [
+        { name: "2 product categories", included: true },
+        { name: "Unlimited products", included: true },
+        { name: "Customer chat integration", included: true },
+        { name: "Basic analytics", included: true },
+        { name: "Email support", included: true },
+        { name: "Mobile app access", included: true },
+        { name: "Advanced analytics", included: false },
+        { name: "Priority support", included: false },
+      ],
+    },
+    {
+      name: "Counter",
+      description: "Enhanced features for established vendors",
+      categories: 5,
+      popular: true,
+      pricing: { Monthly: 7500, Quarterly: 20250, HalfYearly: 38250, Yearly: 81000 },
+      features: [
+        { name: "5 product categories", included: true },
+        { name: "Unlimited products", included: true },
+        { name: "Advanced customer features", included: true },
+        { name: "Advanced analytics", included: true },
+        { name: "Priority email support", included: true },
+        { name: "Mobile app access", included: true },
+        { name: "Custom branding", included: true },
+        { name: "API access", included: false },
+      ],
+    },
+    {
+      name: "Shop",
+      description: "Comprehensive solution for serious sellers",
+      categories: 8,
+      pricing: { Monthly: 12000, Quarterly: 32400, HalfYearly: 61200, Yearly: 129600 },
+      features: [
+        { name: "8 product categories", included: true },
+        { name: "Unlimited products", included: true },
+        { name: "Full feature access", included: true },
+        { name: "Advanced analytics & insights", included: true },
+        { name: "Priority support", included: true },
+        { name: "Custom branding", included: true },
+        { name: "API access", included: true },
+        { name: "Dedicated account manager", included: false },
+      ],
+    },
+    {
+      name: "Premium",
+      description: "Enterprise-grade solution with all features",
+      categories: 13,
+      recommended: true,
+      pricing: { Monthly: 20000, Quarterly: 54000, HalfYearly: 102000, Yearly: 216000 },
+      features: [
+        { name: "All 13 categories", included: true },
+        { name: "Unlimited everything", included: true },
+        { name: "Full platform access", included: true },
+        { name: "Advanced analytics & insights", included: true },
+        { name: "24/7 priority support", included: true },
+        { name: "Custom branding", included: true },
+        { name: "Full API access", included: true },
+        { name: "Dedicated account manager", included: true },
+      ],
+    },
+  ] as const;
+
+  const discounts = { Quarterly: 10, HalfYearly: 15, Yearly: 20 } as const;
 
   // Hard-coded categories (13 total)
   const allCategories = [
@@ -224,259 +315,175 @@ export default function UpgradePage() {
   const upgradeInfo = getUpgradeInfo();
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className="flex flex-col min-h-screen bg-background">
       <ToastContainer />
-      <main className="flex-1 px-4 py-12">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            className="mb-8 text-center"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <h1 className="text-2xl font-bold">
-              Upgrade Your Class Option for more Features
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Current Account: {vendor?.storeType}
-              {vendorCategories.length > 0 && (
-                <span className="block mt-1">
-                  Current Categories: {vendorCategories.join(", ")} (
-                  {vendorCategories.length}/13)
-                </span>
-              )}
-            </p>
-          </motion.div>
+      <main className="flex-1">
+        {/* Header */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
+          <div className="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+            <div className="text-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
+              >
+                <Zap className="w-4 h-4" />
+                Introducing Multi-Term Pricing
+              </motion.div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-5">
-            {/* Starter Plan */}
-            <motion.div
-              className="overflow-hidden bg-white border rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="flex items-center gap-3 p-4 bg-gray-50">
-                <div className="flex items-center justify-center w-8 h-8 bg-gray-200 rounded-full">
-                  <LucideListStart className="w-4 h-4 text-gray-600" />
-                </div>
-                <h3 className="font-semibold">Starter</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products up to 10 different categories
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Add products to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Stay available to help buyers and potential customers
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-black shrink-0 mt-0.5" />
-                    <span className="text-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">{renderPlanButton("Starter")}</div>
-            </motion.div>
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="text-4xl sm:text-5xl lg:text-6xl font-bold text-balance mb-6"
+              >
+                Plans and Pricing
+              </motion.h1>
 
-            {/* Shelf Plan */}
-            <motion.div
-              className="overflow-hidden bg-white border rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="flex items-center gap-3 p-4 bg-gray-50">
-                <div className="flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full">
-                  <Layers className="w-4 h-4 text-gray-600" />
-                </div>
-                <h3 className="font-semibold">Shelf</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Categorize products up to 100 products
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products in your own shelf
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Get verified</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">{renderPlanButton("Shelf")}</div>
-            </motion.div>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto mb-8"
+              >
+                Get started immediately for free. Upgrade for more categories, features and collaboration.
+              </motion.p>
 
-            {/* Counter Plan */}
-            <motion.div
-              className="overflow-hidden bg-white border rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="flex items-center gap-3 p-4 bg-gray-50">
-                <div className="flex items-center justify-center w-8 h-8 bg-yellow-100 rounded-full">
-                  <LayoutGrid className="w-4 h-4 text-yellow-600" />
-                </div>
-                <h3 className="font-semibold">Counter</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Categorize products up to 100 products
-                    </span>
-                  </li>
-                  <li className="flex items-start gap极2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products in your own counter
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Get verified</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text极-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">{renderPlanButton("Counter")}</div>
-            </motion.div>
-
-            {/* Shop Plan */}
-            <motion.div
-              className="overflow-hidden bg-white border rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="flex items-center gap-3 p-4 bg-gray-50">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                  <Store className="w-4 h-4 text-blue-600" />
-                </div>
-                <h3 className="font-semib极old">Shop</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Categorize products up to 500
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0极 mt-0.5" />
-                    <span className="text-sm">
-                      Showcase products in your own shop
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Have access to local order processing
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Clients can contact</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">{renderPlanButton("Shop")}</div>
-            </motion.div>
-
-            {/* Premium Plan */}
-            <motion.div
-              className="overflow-hidden bg-white border rounded-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-              whileHover={{
-                y: -5,
-                boxShadow: "0 10px 25px -5px rgba极(0, 0, 0, 0.1)",
-              }}
-            >
-              <div className="flex items-center gap-3 p极-4 bg-gray-50">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                  <Crown className="w-4 h-4 text-blue-600" />
-                </div>
-                <h3 className="font-semibold">Premium</h3>
-              </div>
-              <div className="p-4">
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Unlimited products</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Have access to local and global order processing
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">
-                      Have analytics for sales and product performance
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Premium chat support</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />
-                    <span className="text-sm">Access to all 13 categories</span>
-                  </li>
-                </ul>
-              </div>
-              <div className="p-4 pt-0">{renderPlanButton("Premium")}</div>
-            </motion.div>
+              {/* Billing Toggle */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg"
+              >
+                {(["Monthly", "Quarterly", "HalfYearly", "Yearly"] as const).map((cycle) => (
+                  <button
+                    key={cycle}
+                    onClick={() => setBillingCycle(cycle)}
+                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                      billingCycle === cycle
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {cycle === "HalfYearly" ? "6 Months" : cycle}
+                    {cycle !== "Monthly" && (
+                      <span className="ml-1 text-xs text-primary">-{discounts[cycle as keyof typeof discounts]}%</span>
+                    )}
+                  </button>
+                ))}
+              </motion.div>
+            </div>
           </div>
+        </div>
+
+        {/* Pricing Cards */}
+        <div className="max-w-7xl mx-auto px-4 pb-16 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {plans.map((plan, index) => {
+              const price = plan.pricing[billingCycle];
+              const monthlyEquivalent =
+                billingCycle !== "Monthly"
+                  ? price / (billingCycle === "Quarterly" ? 3 : billingCycle === "HalfYearly" ? 6 : 12)
+                  : price;
+
+              return (
+                <motion.div
+                  key={plan.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index }}
+                  className={`relative rounded-2xl border bg-card p-6`}
+                >
+                  {/* Badge
+                  {plan.popular && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                      <Star className="w-3 h-3 mr-1" />
+                      Popular
+                    </Badge>
+                  )}
+                  {plan.recommended && (
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      Recommended
+                    </Badge>
+                  )} */}
+
+                  {/* Plan Header */}
+                  <div className="mb-6">
+                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+
+                    <div className="mb-4">
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">₦{price.toLocaleString()}</span>
+                        <span className="text-muted-foreground">
+                          /
+                          {billingCycle === "HalfYearly"
+                            ? "6mo"
+                            : billingCycle === "Quarterly"
+                            ? "3mo"
+                            : billingCycle === "Yearly"
+                            ? "year"
+                            : "month"}
+                        </span>
+                      </div>
+                      {billingCycle !== "Monthly" && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          ₦{Math.round(monthlyEquivalent).toLocaleString()}/month equivalent
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                      <Users className="w-4 h-4" />
+                      {plan.categories === 13 ? "All categories" : `${plan.categories} categor${plan.categories === 1 ? "y" : "ies"}`}
+                    </div>
+                  </div>
+
+                  {/* Features */}
+                  <div className="space-y-3 mb-6">
+                    {plan.features.map((feature, featureIndex) => (
+                      <div key={featureIndex} className="flex items-start gap-3">
+                        <div className={`mt-0.5 ${feature.included ? "text-primary" : "text-muted-foreground"}`}>
+                          <Check className="w-4 h-4" />
+                        </div>
+                        <span className={`text-sm ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA Button - preserve existing behavior */}
+                  <div className="w-full">
+                    {renderPlanButton(plan.name)}
+                  </div>
+
+                  {plan.name === "Premium" && (
+                    <p className="text-xs text-center text-muted-foreground mt-3">
+                      <Shield className="w-3 h-3 inline mr-1" />
+                      30-day money-back guarantee
+                    </p>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Additional Info */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-16 text-center"
+          >
+            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Shield className="w-4 h-4" />
+              All plans include mobile app access, email support, and no setup fees
+            </div>
+          </motion.div>
         </div>
       </main>
 

@@ -1,4 +1,3 @@
-
 import React, {
   useState,
   useRef,
@@ -79,6 +78,7 @@ interface Message {
   isMe?: boolean;
   tempId?: string;
   status: Status;
+  clientKey?: string;
 }
 
 interface ChatParticipant {
@@ -99,7 +99,7 @@ interface Chat {
   avatar: string;
   lastMessage: string;
   timestamp: string;
-  isVendor: string;
+  isVendor: boolean;
   isOnline: boolean;
   messages: Message[];
   storeName?: string;
@@ -250,6 +250,23 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
+// Normalize attachments coming from API
+const normalizeAttachmentType = (t: any): FileAttachment["type"] => {
+  const s = typeof t === "string" ? t.toLowerCase() : "";
+  if (s.startsWith("image")) return "image";
+  if (s.startsWith("video")) return "video";
+  return "document";
+};
+
+const extractFileUrl = (f: any): string => {
+  return f?.url || f?.location || f?.src || f?.secure_url || "";
+};
+
+const extractFileName = (f: any, url: string): string => {
+  const fromUrl = typeof url === "string" ? url.split("/").pop() : "";
+  return f?.name || fromUrl || "file";
+};
+
 // Components
 const Toast = React.memo(({ message }: { message: string }) => (
   <motion.div
@@ -269,48 +286,100 @@ const Toast = React.memo(({ message }: { message: string }) => (
 //   </span>
 // ));
 
-const FilePreview = React.memo(({ file }: { file: FileAttachment }) => {
-  const displayType =
-    /(pdf|msword|text\/plain)/i.test(file.name) &&
-    !file.type.startsWith("image") &&
-    !file.type.startsWith("video")
-      ? "document"
-      : file.type;
+const FilePreview = React.memo(
+  ({ file, onClick }: { file: FileAttachment; onClick?: () => void }) => {
+    const isImage = file.type === "image";
+    const isVideo = file.type === "video";
 
-  return (
-    <div className="relative w-full h-full overflow-hidden rounded-lg">
-      {displayType === "image" ? (
-        <img
-          src={file.url}
-          alt={file.name}
-          className="object-cover w-full h-full"
-          loading="lazy"
-        />
-      ) : displayType === "video" ? (
-        <>
-          <video src={file.url} className="object-cover w-full h-full" />
-          <Play className="absolute inset-0 w-8 h-8 m-auto text-white" />
-        </>
-      ) : (
-        <a
-          href={file.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex flex-col items-center justify-center p-2 text-center transition bg-gray-100 hover:bg-gray-200"
+    /* skeleton while thumb is loading */
+    const [ready, setReady] = React.useState(!isImage);
+
+    const handleDownload = async (e: React.MouseEvent) => {
+      e.stopPropagation();
+      try {
+        // Force download even for cross-origin by fetching as a Blob
+        const res = await fetch(file.url, { mode: "cors" });
+        if (!res.ok) throw new Error("Network error");
+        const blob = await res.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = objectUrl;
+        link.download = file.name || "file";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
+      } catch (err) {
+        // As a last resort, try the direct anchor download (still no new tab)
+        const link = document.createElement("a");
+        link.href = file.url;
+        link.download = file.name || "file";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    };
+
+    return (
+      <div
+        onClick={onClick}
+        className="group relative w-full max-w-[290px] cursor-pointer rounded-2xl
+                   bg-white shadow-md ring-1 ring-black/5
+                   transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 h-full "
+      >
+        {/* visual area */}
+        <div className="relative w-full overflow-hidden aspect-video rounded-t-2xl h-full">
+          {!ready && (
+            <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+          )}
+
+          {isImage ? (
+            <img
+              src={file.url}
+              alt={file.name}
+              draggable={false}
+              loading="lazy"
+              onLoad={() => setReady(true)}
+              className={`h-full w-full object-cover transition-opacity duration-500 ${
+                ready ? "opacity-100" : "opacity-0 blur-sm"
+              }`}
+            />
+          ) : isVideo ? (
+            <>
+              <video
+                src={file.url}
+                preload="metadata"
+                className="object-cover w-full h-full"
+              />
+              {/* play icon */}
+              <div className="absolute inset-0 grid place-content-center bg-black/20">
+                <Play className="w-10 h-10 text-white drop-shadow-lg" />
+              </div>
+            </>
+          ) : (
+            /* generic document */
+            <div className="grid w-full h-full place-content-center bg-gradient-to-br from-orange-50 to-amber-100">
+              <FileText className="w-12 h-12 text-orange-400" />
+            </div>
+          )}
+        </div>
+
+        {/* info footer */}
+     
+
+        {/* floating download icon */}
+        <button
+          type="button"
+          onClick={handleDownload}
+          title={`Download ${file.name}`}
+          className="absolute grid w-8 h-8 transition rounded-full shadow opacity-0 right-3 top-3 place-content-center bg-white/80 backdrop-blur group-hover:opacity-100 hover:bg-white pointer-events-auto"
         >
-          <FileText className="w-8 h-8 mb-1 text-gray-600" />
-          <span className="max-w-full text-xs font-medium truncate">
-            {file.name}
-          </span>
-          <span className="text-xs text-gray-500">
-            {formatFileSize(file.size)}
-          </span>
-          <Download className="w-4 h-4 mt-1 text-gray-500" />
-        </a>
-      )}
-    </div>
-  );
-});
+          <Download className="w-4 h-4 text-gray-700" />
+        </button>
+      </div>
+    );
+  }
+);
 
 // Extracted Components
 const PinnedMessagesSection = React.memo(
@@ -395,6 +464,7 @@ const MessageItem = React.memo(
     message: msg,
     activeChatDetails,
     user,
+    allMessages,
     onReply,
     onCopy,
     onEdit,
@@ -405,6 +475,7 @@ const MessageItem = React.memo(
     message: Message;
     activeChatDetails: Chat;
     user: any;
+    allMessages: Message[];
     onReply: (messageId: string) => void;
     onCopy: (text: string) => void;
     onEdit: (messageId: string) => void;
@@ -412,19 +483,35 @@ const MessageItem = React.memo(
     onPin: (messageId: string) => void;
     onOpenMedia: (files: FileAttachment[], index: number) => void;
   }) => (
+    
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
       className={`flex gap-3 mb-4 ${msg.isMe ? "justify-end" : ""}`}
     >
       {!msg.isMe && activeChatDetails && (
-        <img
-          src={activeChatDetails.avatar || "/placeholder.svg"}
-          alt={msg.sender}
-          className="self-end object-cover w-8 h-8 rounded-full"
-          loading="lazy"
-        />
+       <>
+         { activeChatDetails?.avatar && activeChatDetails?.avatar !== "/placeholder.svg" ? (
+            <img
+              src={activeChatDetails?.avatar}
+              alt={msg.sender}
+              className="self-end object-cover w-8 h-8 rounded-full"
+              loading="lazy"
+            />
+          ) : (
+            <div
+              className={`self-end object-cover w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg  ${
+                activeChatDetails?.isVendor === true
+                  ? "bg-gradient-to-br from-orange-500 to-orange-600"
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              }`}
+            >
+              {
+              activeChatDetails?.name.charAt(0).toUpperCase() 
+              }
+            </div>
+          )}
+       </>
       )}
 
       <div className={`max-w-[70%] ${msg.isMe ? "order-1" : "order-2"}`}>
@@ -435,19 +522,21 @@ const MessageItem = React.memo(
               : "bg-white border border-gray-200"
           }`}
         >
+          {msg.replyTo && (
+            <ReplyPreview
+              replyingTo={msg.replyTo}
+              activeMessages={allMessages}
+              isInline
+            />
+          )}
           {msg.files && msg.files.length > 0 && (
-            <div className="flex flex-col gap-2 mt-2">
-              {msg.files.map((file, i) => (
-                <div
-                  key={i}
-                  className="relative overflow-hidden rounded-lg cursor-pointer group"
-                  onClick={() => onOpenMedia(msg.files!, i)}
-                >
-                  <FilePreview file={file} />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 bg-black/30 group-hover:opacity-100">
-                    <Download className="w-6 h-6 text-white" />
-                  </div>
-                </div>
+            <div className="flex flex-wrap gap-3 mt-2 h-[200px]">
+              {msg.files.map((file, idx) => (
+                <FilePreview
+                  key={idx}
+                  file={file}
+                  onClick={() => onOpenMedia(msg.files!, idx)}
+                />
               ))}
             </div>
           )}
@@ -521,12 +610,25 @@ const MessageItem = React.memo(
       </div>
 
       {msg.isMe && (
-        <img
-          src={user.vendor.avatar || "/placeholder.svg"}
-          alt="You"
-          className="self-end object-cover w-8 h-8 rounded-full"
-          loading="lazy"
-        />
+        <>
+        {user.vendor.avatar && user.vendor.avatar !== "/placeholder.svg" ?
+  <img
+  src={user.vendor.avatar}
+  alt="You"
+  className="self-end object-cover w-8 h-8 rounded-full"
+  loading="lazy"
+/> : 
+  <div
+  className={`self-end object-cover w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg 
+   bg-gradient-to-br from-orange-500 to-orange-600
+     `}
+>
+  {
+  user.vendor?.storeName.charAt(0).toUpperCase() 
+  }
+</div>
+         }
+        </>
       )}
     </motion.div>
   )
@@ -559,10 +661,11 @@ const MessageList = React.memo(
         .filter((msg: any) => msg.deletedFor === "none")
         .map((msg: any) => (
           <MessageItem
-            key={msg._id}
+            key={msg.clientKey || msg._id}
             message={msg}
             activeChatDetails={activeChatDetails}
             user={user}
+            allMessages={messages}
             onReply={onReply}
             onCopy={onCopy}
             onEdit={onEdit}
@@ -590,13 +693,21 @@ const ReplyPreview = React.memo(
     const replyMessage = activeMessages.find((m: any) => m._id === replyingTo);
     if (!replyMessage) return null;
 
+    const trimmed = (replyMessage.content || "").trim();
+    const hasFiles = Array.isArray(replyMessage.files) && replyMessage.files.length > 0;
+    const hasImage = hasFiles && replyMessage?.files?.some((f) => f.type === "image");
+    const hasVideo = hasFiles && replyMessage?.files?.some((f) => f.type === "video");
+    const hasDoc = hasFiles && replyMessage?.files?.some((f) => f.type === "document");
+    const mediaLabel = hasVideo ? "Video" : hasImage ? "Photo" : hasDoc ? "Document" : "Message";
+    const previewText = trimmed.length > 0 ? `${trimmed.slice(0, 50)}${trimmed.length > 50 ? "…" : ""}` : mediaLabel;
+
     return isInline ? (
       <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 border-l-4 border-orange-500 rounded-t-lg">
         <div className="flex items-center gap-1 mb-1 text-xs text-orange-600">
           <Reply className="w-3 h-3" />
           Replying to:
         </div>
-        {replyMessage.content?.slice(0, 50)}…
+        {previewText}
       </div>
     ) : (
       <div className="flex items-center justify-between flex-shrink-0 p-3 border-t border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100">
@@ -605,7 +716,7 @@ const ReplyPreview = React.memo(
           <p className="text-sm font-medium text-orange-800">
             Replying to:{" "}
             <span className="text-orange-600">
-              {replyMessage.content?.slice(0, 50)}...
+              {previewText}
             </span>
           </p>
         </div>
@@ -630,6 +741,7 @@ const MessageInput = React.memo(
     editingMessageId,
     showEmojiPicker,
     isUploading,
+    uploadProgress,
     inputRef,
     imageInputRef,
     videoInputRef,
@@ -647,6 +759,7 @@ const MessageInput = React.memo(
     editingMessageId: string | null;
     showEmojiPicker: boolean;
     isUploading: boolean;
+    uploadProgress?: number | null;
     inputRef: React.RefObject<HTMLInputElement>;
     imageInputRef: React.RefObject<HTMLInputElement>;
     videoInputRef: React.RefObject<HTMLInputElement>;
@@ -767,6 +880,20 @@ const MessageInput = React.memo(
             onEmojiClick={({ emoji }) => onEmojiSelect(emoji)}
             autoFocusSearch={false}
           />
+        </div>
+      )}
+
+      {isUploading && (
+        <div className="mt-2">
+          <div className="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
+            <div
+              className="h-2 bg-orange-500 transition-all"
+              style={{ width: `${Math.min(uploadProgress ?? 0, 100)}%` }}
+            />
+          </div>
+          <div className="mt-1 text-xs text-gray-500">
+            Uploading… {Math.min(uploadProgress ?? 0, 100)}%
+          </div>
         </div>
       )}
     </motion.div>
@@ -1072,9 +1199,9 @@ export default function ChatInterface() {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  const [isUploading] = useState(false);
-  const [optimisticMsgs, setOptimisticMsgs] = useState<Message[]>([]);
-
+  // Upload progress (null when idle)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  // We rely on React Query's optimistic updates instead of local duplicates
 
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1140,37 +1267,57 @@ export default function ChatInterface() {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        isMe: m.sender?._id === user.vendor._id,
-        status: "delivered" as Status,
-        files: [
-          ...(m.images || []).map((url: string) => ({
-            type: "image" as const,
-            url,
-            name: url.split("/").pop() || "image",
-            size: 0,
-          })),
-          ...(m.video
-            ? [
-                {
-                  type: "video" as const,
-                  url: m.video,
-                  name: m.video.split("/").pop() || "video",
+        // Treat react-query optimistic entries (sender._id === "current-user") as me
+        isMe:
+          m.sender?._id === user.vendor._id || m.sender?._id === "current-user",
+        status: (m.isOptimistic ? "pending" : "delivered") as Status,
+        clientKey: m.clientKey || m._id,
+        files:
+          Array.isArray(m.files) && m.files.length > 0
+            ? m.files.map((f: any) => ({
+                type: normalizeAttachmentType(
+                  f?.type || f?.mimetype || f?.mime
+                ),
+                url: extractFileUrl(f),
+                name: extractFileName(f, extractFileUrl(f)),
+                size: typeof f?.size === "number" ? f.size : 0,
+              }))
+            : [
+                ...(m.images || []).map((url: string) => ({
+                  type: "image" as const,
+                  url,
+                  name: url.split("/").pop() || "image",
                   size: 0,
-                },
-              ]
-            : []),
-        ],
-        replyTo: m.replyTo,
+                })),
+                ...(m.video
+                  ? [
+                      {
+                        type: "video" as const,
+                        url: m.video,
+                        name: m.video.split("/").pop() || "video",
+                        size: 0,
+                      },
+                    ]
+                  : []),
+                ...(m.documents || []).map((url: string) => ({
+                  type: "document" as const,
+                  url,
+                  name: url.split("/").pop() || "document",
+                  size: 0,
+                })),
+              ],
+        replyTo:
+          typeof m.replyTo === "string"
+            ? m.replyTo
+            : m.replyTo?.id || m.replyTo?._id || undefined,
         isEdited: m.isEdited || false,
         deletedFor: m.deletedFor || "none",
       })),
     [apiMessages, user.vendor._id]
   );
 
-  const visibleMessages = useMemo(
-    () => [...optimisticMsgs, ...activeMessages],
-    [optimisticMsgs, activeMessages]
-  );
+  // Render messages directly from the query cache mapping
+  const visibleMessages = activeMessages;
 
   const isTyping = useTyping(socket, activeChat);
   // const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -1221,10 +1368,67 @@ export default function ChatInterface() {
     if (!activeChat || !socket) return;
     socket.emit("joinChat", activeChat);
     const onNew = (m: any) =>
-      queryClient.setQueryData(["messages", activeChat], (o: any) => ({
-        ...o,
-        messages: [...(o?.messages || []), m],
-      }));
+      queryClient.setQueryData(["messages", activeChat], (o: any) => {
+        const existing: any[] = Array.isArray(o?.messages) ? o.messages : [];
+        // 1) If server ID already present, replace that entry
+        const idxById = existing.findIndex((x) => x?._id === m._id);
+        if (idxById !== -1) {
+          const copy = existing.slice();
+          const preservedReplyTo = existing[idxById]?.replyTo;
+          copy[idxById] = {
+            ...m,
+            // if server payload is missing replyTo (often the case on minimal events), keep optimistic
+            replyTo: m.replyTo ?? preservedReplyTo,
+            clientKey: existing[idxById].clientKey || existing[idxById]._id,
+          };
+          return { ...o, messages: copy };
+        }
+        // 2) If there is an optimistic entry that matches by content+time, replace IN PLACE
+        const idxOptimisticSimilar = existing.findIndex(
+          (x: any) =>
+            x?.isOptimistic &&
+            x?.content === m?.content &&
+            Math.abs(
+              new Date(x?.createdAt).getTime() -
+                new Date(m?.createdAt).getTime()
+            ) < 10000
+        );
+        if (idxOptimisticSimilar !== -1) {
+          const copy = existing.slice();
+          const preservedReplyTo = existing[idxOptimisticSimilar]?.replyTo;
+          copy[idxOptimisticSimilar] = {
+            ...m,
+            replyTo: m.replyTo ?? preservedReplyTo,
+            clientKey:
+              existing[idxOptimisticSimilar].clientKey ||
+              existing[idxOptimisticSimilar]._id,
+          };
+          return { ...o, messages: copy };
+        }
+        // 3) Fallback: if any optimistic exists, replace the latest one in-place
+        const lastOptimisticIdx = [...existing]
+          .map((x, i) => ({ x, i }))
+          .filter(({ x }) => x?.isOptimistic)
+          .map(({ i }) => i)
+          .pop();
+        if (lastOptimisticIdx !== undefined) {
+          const copy = existing.slice();
+          const preservedReplyTo = copy[lastOptimisticIdx]?.replyTo;
+          copy[lastOptimisticIdx] = {
+            ...m,
+            replyTo: m.replyTo ?? preservedReplyTo,
+            clientKey:
+              copy[lastOptimisticIdx].clientKey || copy[lastOptimisticIdx]._id,
+          };
+          return { ...o, messages: copy };
+        }
+        // 4) Otherwise, append but first drop other stale optimistics (rare)
+        const withoutOptimistic = existing.filter((x: any) => !x?.isOptimistic);
+        return {
+          ...o,
+          messages: [...withoutOptimistic, { ...m, clientKey: m._id }],
+        };
+      });
     const onEdit = (u: any) =>
       queryClient.setQueryData(["messages", activeChat], (o: any) => ({
         ...o,
@@ -1240,12 +1444,9 @@ export default function ChatInterface() {
     socket.on("messageDeleted", onDelete);
 
     /* optimistic -> delivered tick */
-    const onDelivered = ({ tempId, _id }: { tempId: string; _id: string }) =>
-      setOptimisticMsgs((prev) =>
-        prev.map((m) =>
-          m.tempId === tempId ? { ...m, _id, status: "delivered" } : m
-        )
-      );
+    const onDelivered = (_payload: { tempId: string; _id: string }) => {
+      // We no longer keep local optimistic messages; nothing to do here.
+    };
     socket.on("messageDelivered", onDelivered);
 
     return () => {
@@ -1256,6 +1457,25 @@ export default function ChatInterface() {
       socket.off("messageDelivered", onDelivered);
     };
   }, [activeChat, socket, queryClient]);
+
+  // Scroll to bottom and focus input when switching chats
+  useEffect(() => {
+    if (!activeChat) return;
+    // Let content render first
+    const id = window.setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      // Focus and bring input into view
+      messageInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      messageInputRef.current?.focus();
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [activeChat]);
+
+  // Keep view pinned to bottom when new messages arrive
+  useEffect(() => {
+    if (!activeChat) return;
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeChat, visibleMessages.length]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -1299,34 +1519,18 @@ export default function ChatInterface() {
 
   const handleSendMessage = async () => {
     if (!message.trim() || !activeChat) return;
-    const tempId = Date.now().toString();
-    const opt: Message = {
-      tempId,
-      _id: tempId,
-      content: message.trim(),
-      sender: "You",
-      timestamp: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-      isMe: true,
-      status: "pending",
-      files: [],
-      isVendor: true,
-    };
-    setOptimisticMsgs((prev) => [...prev, opt]);
     setMessage("");
     setReplyingTo(null);
     try {
-      const res = await sendMessageMutation.mutateAsync({
+    await sendMessageMutation.mutateAsync({
         chatId: activeChat,
         content: message.trim(),
         token: user.token,
         replyTo: replyingTo || undefined,
       });
-      socket?.emit("sendMessage", { chatId: activeChat, ...res, tempId });
+      // Do not emit via socket here; server will broadcast newMessage
     } catch {
-      setOptimisticMsgs((prev) => prev.filter((m) => m.tempId !== tempId));
+      // react-query will rollback its optimistic update on error
     }
   };
 
@@ -1340,17 +1544,29 @@ export default function ChatInterface() {
       const authToken = user.token;
       if (!authToken) return;
       try {
+        setUploadProgress(0);
         const payload = {
           chatId: activeChat,
-          files: { [type]: type === "images" ? Array.from(files) : files[0] },
+          files:
+            type === "images"
+              ? { images: Array.from(files) }
+              : type === "documents"
+              ? { documents: Array.from(files) }
+              : { video: files[0] },
           token: authToken,
           content: message.trim() || undefined,
           replyTo: replyingTo || undefined,
+          onProgress: (p: number) => setUploadProgress(p),
         };
         await sendMediaMessageMutation.mutateAsync(payload);
         setMessage("");
         setReplyingTo(null);
+        setUploadProgress(null);
       } catch {}
+      finally {
+        // Ensure we clear progress on error as well
+        setUploadProgress(null);
+      }
     },
     [activeChat, user.token, message, replyingTo]
   );
@@ -1568,6 +1784,16 @@ export default function ChatInterface() {
     [showFeedback]
   );
 
+  const getInitials = (name: string) => {
+    return `${name.charAt(0).toUpperCase()}${
+      name.split(" ")[1]?.charAt(0).toUpperCase() || ""
+    }`;
+  };
+
+  const isVendor = activeChatDetails?.isVendor === true;
+  console.log(activeChatDetails);
+  const hasAvatar = activeChatDetails?.avatar && activeChatDetails?.avatar !== "/placeholder.svg";
+  console.log(user.vendor);
   // Render
   return (
     <div className="flex h-screen bg-gray-50">
@@ -1580,19 +1806,31 @@ export default function ChatInterface() {
         typingMap={typingMap}
       />
 
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 overflow-hidden">
         {activeChatDetails ? (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
           >
+           {hasAvatar ? (
             <img
-              src={activeChatDetails.avatar || "/placeholder.svg"}
-              alt={activeChatDetails.name}
+              src={activeChatDetails?.avatar}
+              alt={activeChatDetails?.name}
               className="object-cover w-12 h-12 rounded-full"
               loading="lazy"
             />
+          ) : (
+            <div
+              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+                isVendor
+                  ? "bg-gradient-to-br from-orange-500 to-orange-600"
+                  : "bg-gradient-to-br from-blue-500 to-blue-600"
+              }`}
+            >
+              {getInitials(activeChatDetails?.name)}
+            </div>
+          )}
             <div className="flex-1">
               <div className="flex-1">
                 <h2 className="text-lg font-semibold">
@@ -1666,12 +1904,12 @@ export default function ChatInterface() {
         )}
 
         {activeChatDetails && (
-
           <MessageInput
             message={message}
             editingMessageId={editingMessageId}
             showEmojiPicker={showEmojiPicker}
-            isUploading={isUploading}
+            isUploading={uploadProgress !== null}
+            uploadProgress={uploadProgress}
             inputRef={messageInputRef}
             imageInputRef={imageInputRef}
             videoInputRef={videoInputRef}
@@ -1701,7 +1939,6 @@ export default function ChatInterface() {
               setMessage("");
             }}
           />
-
         )}
       </div>
 
