@@ -1,7 +1,4 @@
-"use client";
-
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Sun, Moon, Bell, X, Check, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
