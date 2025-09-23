@@ -159,7 +159,7 @@ const Header: React.FC = () => {
   }, [t]);
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white shadow-md">
+    <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white shadow-lg">
       <div className="bg-[#ff710b] py-2 flex items-center justify-between px-4 md:px-10 text-white text-sm">
         <p className="font-medium ">
           {t("welcome")}{" "}

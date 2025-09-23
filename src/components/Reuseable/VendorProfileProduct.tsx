@@ -101,7 +101,7 @@ const VendorProfileProduct: React.FC = () => {
   };
 
   if (!id) {
-    return <Navigate to="/shop" replace />;
+    return <Navigate to="/random-product" replace />;
   }
   if (loading) {
     return <Spinner />;
