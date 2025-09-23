@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Sun, Moon, Bell, X, Check, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
@@ -47,6 +47,7 @@ const VendorHeader: React.FC = () => {
   const { data: notificationsData } = useQuery({
     queryKey: ["vendorNotification", user.vendor._id],
     queryFn: () => getVendorNotification(user.vendor._id),
+    refetchInterval: 15000,
   });
   const notifications = notificationsData?.data.notifications;
 
@@ -80,6 +81,47 @@ const VendorHeader: React.FC = () => {
   });
 
   const handleMarkAllNot = () => markNotificationAsRead.mutate();
+
+  // --- Sound on new notifications ---
+  const prevIdsRef = useRef<Set<string>>(new Set());
+
+  const playBeep = () => {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 880; // A5 beep
+      o.connect(g);
+      g.connect(ctx.destination);
+      g.gain.setValueAtTime(0.0001, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01);
+      o.start();
+      // short decay
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.2);
+      o.stop(ctx.currentTime + 0.25);
+      // close context shortly after to free resources
+      setTimeout(() => ctx.close(), 300);
+    } catch {}
+  };
+
+  useEffect(() => {
+    const list = (notifications as any[]) || [];
+    const current = new Set<string>(list.map((n: any) => String(n._id || n.id)));
+    if (prevIdsRef.current.size === 0) {
+      prevIdsRef.current = current;
+      return;
+    }
+    // Trigger sound if any new id appears
+    let hasNew = false;
+    current.forEach((id) => {
+      if (!prevIdsRef.current.has(id)) hasNew = true;
+    });
+    if (hasNew) playBeep();
+    prevIdsRef.current = current;
+  }, [notifications]);
   const handleMarkSingleNotification = (
     notificationId: string,
     vendorId: string
@@ -233,8 +275,8 @@ const VendorHeader: React.FC = () => {
                               <button
                                 onClick={() =>
                                   handleMarkSingleNotification(
-                                    notification.recipient,
-                                    notification._id
+                                    notification._id,
+                                    user.vendor._id
                                   )
                                 }
                                 className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-full transition-all hover:scale-110 ${

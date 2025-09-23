@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, MessageCircle, Users, Clock } from "lucide-react";
+import { Search, Plus, MessageCircle, Users, Clock, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -185,6 +185,7 @@ const ChatItem = memo(
     onSelect,
 
     typingMap, // ← rename prop to match parent
+    itemRef,
 
   }: {
     chat: Chat;
@@ -192,10 +193,13 @@ const ChatItem = memo(
     onSelect: (chatId: string) => void;
 
     typingMap: Record<string, boolean>; // ← correct type
+    itemRef?: (el: HTMLButtonElement | null) => void;
   }) => {
     const isVendor = chat.isVendor === "vendors";
     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
-    const lastLine = chat.lastMessage || "Media";
+    const lastLine = (chat.lastMessage && chat.lastMessage.trim().length > 0)
+      ? chat.lastMessage
+      : "No messages yet";
 
 
     return (
@@ -206,9 +210,10 @@ const ChatItem = memo(
         whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
         whileTap={{ scale: 0.98 }}
         onClick={() => onSelect(chat._id)}
+        ref={itemRef}
         className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
           isActive
-            ? "bg-orange-50 border-l-4 border-l-orange-500"
+            ? "bg-orange-50/60 border-l-4 border-l-orange-500"
             : "hover:bg-gray-50"
         }`}
       >
@@ -220,12 +225,12 @@ const ChatItem = memo(
             <img
               src={chat.avatar}
               alt={chat.name}
-              className="object-cover w-12 h-12 rounded-full"
+              className="object-cover w-12 h-12 rounded-full ring-1 ring-gray-200"
               loading="lazy"
             />
           ) : (
             <div
-              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow ${
                 isVendor
                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
                   : "bg-gradient-to-br from-blue-500 to-blue-600"
@@ -263,7 +268,6 @@ const ChatItem = memo(
               {formatTime(chat.timestamp)}
             </div>
           </div>
-
 
           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
             {lastLine}
@@ -464,11 +468,38 @@ export function ChatListSidebar({
         const cached = queryClient.getQueryData(["messages", chat._id]) as any;
         const chatMessages = cached?.messages ?? [];
 
-        const lastMsg =
-          chatMessages.length > 0
-            ? chatMessages[chatMessages.length - 1]
-            : chat.lastMessage;
+        // Prefer the last non-deleted cached message; if none, fall back to API lastMessage
+        const lastNonDeleted = [...chatMessages]
+          .reverse()
+          .find((m: any) => (m?.deletedFor ?? "none") === "none");
 
+        const lastMsg = lastNonDeleted || chat.lastMessage;
+
+        // Build preview: prefer text; otherwise specific media labels; else show No messages yet
+        let lastMessagePreview = "";
+        if (lastMsg) {
+          const m: any = lastMsg;
+          const content = m?.content;
+          const hasFiles = Array.isArray(m?.files) && m.files.length > 0;
+          const hasImages = hasFiles && m.files.some((f: any) => f.type === "image");
+          const hasVideo = hasFiles && m.files.some((f: any) => f.type === "video");
+          const hasDocs = hasFiles && m.files.some((f: any) => f.type === "document");
+          const hasLegacyImages = Array.isArray(m?.images) && m.images.length > 0;
+          const hasLegacyDocs = Array.isArray(m?.documents) && m.documents.length > 0;
+          const hasLegacyVideo = Boolean(m?.video);
+
+          if (typeof content === "string" && content.trim().length > 0) {
+            lastMessagePreview = content;
+          } else if (hasImages || hasLegacyImages) {
+            lastMessagePreview = "Photo";
+          } else if (hasVideo || hasLegacyVideo) {
+            lastMessagePreview = "Video";
+          } else if (hasDocs || hasLegacyDocs) {
+            lastMessagePreview = "Document";
+          } else {
+            lastMessagePreview = "No messages yet";
+          }
+        }
 
         return {
           _id: chat._id,
@@ -477,8 +508,8 @@ export function ChatListSidebar({
             participant?.profileImage ||
             participant?.details?.avatar ||
             "/placeholder.svg",
-          lastMessage: lastMsg?.content || lastMsg?.name || "Media",
-          timestamp: lastMsg?.createdAt || chat.updatedAt,
+          lastMessage: lastMessagePreview,
+          timestamp: (lastNonDeleted as any)?.createdAt || chat.updatedAt,
           isVendor: participant?.model || false,
           isOnline: participant?.isOnline || false,
           messages: chatMessages,
@@ -499,13 +530,9 @@ export function ChatListSidebar({
   // }, [chatList, isTyping, user.vendor._id]);
   console.log("chatList", chatList);
   const socket = useSocket(user.token);
-  useEffect(() => {
-    if (!socket) return;
-    chatList.forEach((c: any) => socket.emit("joinChat", c._id));
-    return () => {
-      chatList.forEach((c: any) => socket.emit("leaveChat", c._id));
-    };
-  }, [socket, chatList]);
+
+  // Local typing map sourced directly from socket events per chatId
+  const [sidebarTypingMap, setSidebarTypingMap] = useState<Record<string, boolean>>({});
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
@@ -524,8 +551,25 @@ export function ChatListSidebar({
     const ids = chatList.map((c: any) => c._id).filter(Boolean);
     ids.forEach((id: any) => socket.emit("joinChat", id));
 
+    // Listen for typing events to update local typing map for any chat in the list
+    const onTyping = ({ chatId, sender }: { chatId: string; sender: string }) => {
+      if (sender !== user.vendor._id) {
+        setSidebarTypingMap((m) => ({ ...m, [chatId]: true }));
+      }
+    };
+    const onStopTyping = ({ chatId, sender }: { chatId: string; sender: string }) => {
+      if (sender !== user.vendor._id) {
+        setSidebarTypingMap((m) => ({ ...m, [chatId]: false }));
+      }
+    };
+
+    socket.on("typing", onTyping);
+    socket.on("stopTyping", onStopTyping);
+
     return () => {
       ids.forEach((id: any) => socket.emit("leaveChat", id));
+      socket.off("typing", onTyping);
+      socket.off("stopTyping", onStopTyping);
     };
   }, [socket, chatList]);
 
@@ -536,6 +580,32 @@ export function ChatListSidebar({
     },
     [setActiveChat]
   );
+
+  // Keep a ref to each chat item to auto-scroll active into view
+  const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const listContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!activeChat) return;
+    // Defer until layout is settled
+    const id = requestAnimationFrame(() => {
+      const el = itemRefs.current[activeChat];
+      const container = listContainerRef.current;
+      if (el && container) {
+        try {
+          const elTop = el.offsetTop;
+          const elHeight = el.offsetHeight;
+          const containerHeight = container.clientHeight;
+          const targetTop = Math.max(0, elTop - (containerHeight - elHeight) / 2);
+          container.scrollTo({ top: targetTop, behavior: "smooth" });
+        } catch {
+          // Fallback
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [activeChat, filteredChats.length]);
 
   // Loading state with skeleton
   if (isChatsLoading) {
@@ -587,7 +657,7 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="flex flex-col bg-white border-r shadow-lg w-80"
+      className="flex flex-col bg-white border-r shadow-lg w-80 h-full min-h-0"
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
@@ -599,14 +669,20 @@ export function ChatListSidebar({
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-2 transition-colors rounded-full hover:bg-orange-100"
+                className="p-2 transition-colors rounded-full hover:bg-orange-100 cursor-pointer"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Plus className="w-5 h-5 text-orange-500" />
+
+               {!isDropdownOpen ? (
+                 <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
+               ) : (
+                <X className="w-5 h-5 text-orange-500 cursor-pointer" />
+
+               )}
               </motion.button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0">
+            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0 h-[calc(100vh-100px)]">
               <DropdownMenuItem className="font-semibold text-orange-600">
                 <Users className="w-4 h-4 mr-2" />
                 New Chat
@@ -629,7 +705,7 @@ export function ChatListSidebar({
                   <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="overflow-y-auto max-h-60">
+                <div className="overflow-y-auto max-h-full">
                   {searchResults.map((contact: Contact) => (
                     <ContactItem
                       key={contact._id}
@@ -663,7 +739,7 @@ export function ChatListSidebar({
       </div>
 
       {/* Chat List */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div ref={listContainerRef} className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (
             <motion.div
@@ -686,7 +762,8 @@ export function ChatListSidebar({
                 chat={chat}
                 isActive={activeChat === chat._id}
                 onSelect={handleChatSelect}
-                typingMap={typingMap}
+                typingMap={{ ...typingMap, ...sidebarTypingMap }}
+                itemRef={(el) => (itemRefs.current[chat._id] = el)}
               />
             ))
           )}
