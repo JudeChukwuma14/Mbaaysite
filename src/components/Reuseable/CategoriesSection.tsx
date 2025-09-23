@@ -88,12 +88,7 @@ const CategoriesSection = () => {
 
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">Browse By Category</h2>
-        <a
-          href="/categories"
-          className="flex items-center text-sm text-gray-600 transition-colors duration-200 hover:text-orange-500"
-        >
-          View All <ChevronRight size={16} />
-        </a>
+       
       </div>
 
       {/* Scrollable Categories Container */}

@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Sun, Moon, Bell, X, Check, CheckCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
@@ -47,7 +47,6 @@ const VendorHeader: React.FC = () => {
   const { data: notificationsData } = useQuery({
     queryKey: ["vendorNotification", user.vendor._id],
     queryFn: () => getVendorNotification(user.vendor._id),
-    refetchInterval: 15000,
   });
   const notifications = notificationsData?.data.notifications;
   
@@ -82,6 +81,7 @@ const VendorHeader: React.FC = () => {
   });
 
   const handleMarkAllNot = () => markNotificationAsRead.mutate();
+
 
   // --- Sound on new notifications ---
   const prevIdsRef = useRef<Set<string>>(new Set());
@@ -163,6 +163,7 @@ const VendorHeader: React.FC = () => {
     }
     prevUnreadRef.current = unreadCount;
   }, [unreadCount]);
+
   const handleMarkSingleNotification = (
     notificationId: string,
     vendorId: string
@@ -315,8 +316,8 @@ const VendorHeader: React.FC = () => {
                               <button
                                 onClick={() =>
                                   handleMarkSingleNotification(
-                                    notification._id,
-                                    user.vendor._id
+                                    notification.recipient,
+                                    notification._id
                                   )
                                 }
                                 className={`opacity-0 group-hover:opacity-100 p-1.5 rounded-full transition-all hover:scale-110 ${

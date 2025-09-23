@@ -625,33 +625,33 @@ const ChatInterfaceChat: React.FC = () => {
   }, [selectedChat, chats, pendingChat]);
 
   // Add this useEffect in your ChatInterfaceChat component, right after the other useEffects
-useEffect(() => {
-  if (selectedChat && messages.length > 0) {
-    const lastMessage = messages[messages.length - 1];
-    const lastMessageContent = lastMessage.images?.length 
-      ? "📷 Image" 
-      : lastMessage.video 
-      ? "🎥 Video" 
-      : lastMessage.type === "file" 
-      ? "📎 File" 
-      : lastMessage.content;
+  useEffect(() => {
+    if (selectedChat && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      const lastMessageContent = lastMessage.images?.length
+        ? "📷 Image"
+        : lastMessage.video
+        ? "🎥 Video"
+        : lastMessage.type === "file"
+        ? "📎 File"
+        : lastMessage.content;
 
-    // Update the chat with the latest message info
-    setChats((prev) =>
-      prev.map((chat) =>
-        chat._id === selectedChat
-          ? {
-              ...chat,
-              lastMessage: lastMessageContent,
-              time: lastMessage.time,
-              timestamp: lastMessage.timestamp,
-              hasMessages: true,
-            }
-          : chat
-      )
-    );
-  }
-}, [messages, selectedChat]);
+      // Update the chat with the latest message info
+      setChats((prev) =>
+        prev.map((chat) =>
+          chat._id === selectedChat
+            ? {
+                ...chat,
+                lastMessage: lastMessageContent,
+                time: lastMessage.time,
+                timestamp: lastMessage.timestamp,
+                hasMessages: true,
+              }
+            : chat
+        )
+      );
+    }
+  }, [messages, selectedChat]);
 
   const handleSendMessage = async (
     content: string,
@@ -1084,12 +1084,6 @@ useEffect(() => {
                 chat={selectedChatData}
                 onBack={isMobile ? handleBackToList : undefined}
               />
-              {typingUsers.length > 0 && (
-                <div className="text-xs text-gray-500 p-2">
-                  {typingUsers.join(", ")}{" "}
-                  {typingUsers.length > 1 ? "are" : "is"} typing...
-                </div>
-              )}
             </div>
             <ScrollArea className="flex-1 pt-16 pb-20 overflow-y-auto">
               <div className="p-4">
@@ -1111,6 +1105,17 @@ useEffect(() => {
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
+            <div>
+              {typingUsers.length > 0 && (
+                <div className="sticky bottom-16  p-2">
+                  <div className="text-xs text-gray-500">
+                    {typingUsers.join(", ")}{" "}
+                    {typingUsers.length > 1 ? "are" : "is"} typing...
+                    <span className="ml-1 animate-pulse">...</span>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="sticky bottom-0 z-10">
               <MessageInput
                 onSendMessage={handleSendMessage}

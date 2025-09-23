@@ -107,8 +107,8 @@ const KYCVerification: React.FC = () => {
     }
   };
 
-  // Processing State
-  if (user?.vendor?.kycStatus === "Processing") {
+  // Pending State
+  if (user?.vendor?.kycStatus === "Pending") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <motion.div
@@ -131,7 +131,7 @@ const KYCVerification: React.FC = () => {
               </motion.div>
 
               <h2 className="mb-3 text-2xl font-bold text-foreground">
-                Verification Processing
+                Verification in Progress
               </h2>
               <p className="mb-6 text-muted-foreground">
                 We're reviewing your documents. This usually takes 1-2 business
