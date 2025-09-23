@@ -153,12 +153,14 @@ export const getVendorNotification = async (id: string | null) => {
 };
 
 export const markOneAsRead = async (
-  id: string | null,
-  notificationsId: string | null
+  vendorId: string | null,
+  notificationId: string | null
 ) => {
   try {
+    // Backend expects: {BASE}/notifications/{notificationId}/{vendorId}
+    // Here BASE is .../api/v1/notifications, but routes are under an extra 'notifications' segment, consistent with read-all
     const response = await axios.patch(
-      `${NotBaseUrl}/notifications/${notificationsId}/${id}`
+      `${NotBaseUrl}/notifications/${notificationId}/${vendorId}`
     );
     return response.data;
   } catch (error) {

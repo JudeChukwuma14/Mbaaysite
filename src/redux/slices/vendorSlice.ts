@@ -77,7 +77,7 @@ interface Vendor {
   products: string[];
   returnPolicy?: string;
   verificationStatus: string;
-  kycStatus: "Pending" | "Approved" | "Rejected"; // Example statuses
+  kycStatus: "Pending" | "Approved" | "Rejected" | "Processing"; // Example statuses
   __v: number;
 }
 
