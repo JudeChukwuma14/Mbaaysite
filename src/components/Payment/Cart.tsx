@@ -274,7 +274,7 @@ const Cart: React.FC = () => {
           {t("Shopping Cart")}
         </motion.h1>
         <motion.button
-          onClick={() => navigate("/shop")}
+          onClick={() => navigate("/random-product")}
           className="flex items-center gap-2 px-4 py-2 text-gray-600 transition-colors duration-200 hover:text-gray-900"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -309,7 +309,7 @@ const Cart: React.FC = () => {
             {t("Add some items to get started")}
           </p>
           <motion.button
-            onClick={() => navigate("/shop")}
+            onClick={() => navigate("/random-product")}
             className="px-6 py-3 font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -590,7 +590,7 @@ const Cart: React.FC = () => {
                 </motion.button>
 
                 <motion.button
-                  onClick={() => navigate("/shop")}
+                  onClick={() => navigate("/random-product")}
                   className="w-full py-3 mt-3 font-semibold text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}

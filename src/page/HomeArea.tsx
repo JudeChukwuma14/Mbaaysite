@@ -167,7 +167,7 @@ const HomeArea: React.FC = () => {
         <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
         <p className="max-w-md mb-6 text-gray-500">{error}</p>
         <Link
-          to="/shop"
+          to="/random-product"
           className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
         >
           <FaShoppingCart />
