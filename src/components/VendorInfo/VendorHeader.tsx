@@ -49,6 +49,7 @@ const VendorHeader: React.FC = () => {
     queryFn: () => getVendorNotification(user.vendor._id),
   });
   const notifications = notificationsData?.data.notifications;
+  
 
   // Mark All Read
   const markNotificationAsRead = useMutation({
@@ -66,7 +67,7 @@ const VendorHeader: React.FC = () => {
       vendorId: string | any;
       notificationId: string;
     }) => {
-      return markOneAsRead(notificationId, vendorId);
+      return markOneAsRead(vendorId, notificationId);
     },
     onSuccess: (data) => {
       console.log("Single notification marked as read:", data);
@@ -80,6 +81,89 @@ const VendorHeader: React.FC = () => {
   });
 
   const handleMarkAllNot = () => markNotificationAsRead.mutate();
+
+
+  // --- Sound on new notifications ---
+  const prevIdsRef = useRef<Set<string>>(new Set());
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const userPrimedRef = useRef(false);
+
+  // Prime AudioContext on first user interaction to satisfy autoplay policies
+  useEffect(() => {
+    const onFirstInteraction = async () => {
+      if (userPrimedRef.current) return;
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      try {
+        const ctx: AudioContext = audioCtxRef.current || new AudioCtx();
+        // Create a silent buffer to unlock audio
+        const buffer = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        if (ctx.state === "suspended") await ctx.resume();
+        source.start(0);
+        audioCtxRef.current = ctx;
+        userPrimedRef.current = true;
+      } catch {}
+    };
+    window.addEventListener("pointerdown", onFirstInteraction, { once: true });
+    return () => window.removeEventListener("pointerdown", onFirstInteraction);
+  }, []);
+
+  const playBeep = async () => {
+    try {
+      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      // Reuse a primed context if available
+      const ctx: AudioContext = audioCtxRef.current || new AudioCtx();
+      if (ctx.state === "suspended") {
+        try { await ctx.resume(); } catch {}
+      }
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "square"; // square is more audible
+      o.frequency.value = 880; // A5 beep
+      o.connect(g);
+      g.connect(ctx.destination);
+      const now = ctx.currentTime;
+      g.gain.setValueAtTime(0.0001, now);
+      // Louder attack
+      g.gain.exponentialRampToValueAtTime(0.22, now + 0.02);
+      o.start();
+      // short decay
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+      o.stop(now + 0.4);
+      audioCtxRef.current = ctx;
+    } catch {}
+  };
+
+  useEffect(() => {
+    const list = (notifications as any[]) || [];
+    const current = new Set<string>(list.map((n: any) => String(n._id || n.id)));
+    if (prevIdsRef.current.size === 0) {
+      prevIdsRef.current = current;
+      return;
+    }
+    // Trigger sound if any new id appears
+    let hasNew = false;
+    current.forEach((id) => {
+      if (!prevIdsRef.current.has(id)) hasNew = true;
+    });
+    if (hasNew) playBeep();
+    prevIdsRef.current = current;
+  }, [notifications]);
+
+  // Also trigger beep when unread count increases (covers backends that reuse IDs but update isRead)
+  const prevUnreadRef = useRef<number>(0);
+  const unreadCount = notifications?.filter((n: any) => !n.isRead)?.length || 0;
+  useEffect(() => {
+    if (unreadCount > prevUnreadRef.current) {
+      playBeep();
+    }
+    prevUnreadRef.current = unreadCount;
+  }, [unreadCount]);
+
   const handleMarkSingleNotification = (
     notificationId: string,
     vendorId: string
@@ -87,7 +171,6 @@ const VendorHeader: React.FC = () => {
     markSingleNotificationAsRead.mutate({ notificationId, vendorId });
   };
 
-  const unreadCount = notifications?.filter((n: any) => !n.isRead)?.length || 0;
 
   return (
     <header
@@ -168,7 +251,7 @@ const VendorHeader: React.FC = () => {
                   {notifications?.length > 0 ? (
                     notifications.map((notification: any, index: number) => (
                       <div
-                        key={notification.id || index}
+                        key={notification._id || index}
                         className={`group relative flex items-start gap-3 p-4 border-b transition-all ${
                           darkMode
                             ? "border-gray-700 hover:bg-gray-750"
