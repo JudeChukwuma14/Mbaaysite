@@ -16,6 +16,7 @@ interface Product {
   category: string;
   sub_category?: string;
   sub_category2?: string;
+inventory: number; 
 }
 
 const TraditionalSnacksSweets = () => {

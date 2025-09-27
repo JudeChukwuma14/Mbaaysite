@@ -6,6 +6,7 @@ interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  inventory?: number; // Optional inventory field for validation
 }
 
 interface CartState {
@@ -25,12 +26,19 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addItem: (state, action: PayloadAction<CartItem>) => {
-      console.log("Data...", action.payload);
       const existingItem = state.items.find(
         (item) => item.id === action.payload.id
       );
+      
       if (existingItem) {
-        existingItem.quantity += 1;
+        // Check if adding one more would exceed inventory
+        const maxAllowed = action.payload.inventory || Infinity;
+        if (existingItem.quantity < maxAllowed) {
+          existingItem.quantity += 1;
+        } else {
+          // You can show a toast here or handle the error
+          console.warn(`Cannot add more than ${maxAllowed} items`);
+        }
       } else {
         state.items.push({ ...action.payload, quantity: 1 });
       }
@@ -44,7 +52,9 @@ const cartSlice = createSlice({
     ) => {
       const item = state.items.find((item) => item.id === action.payload.id);
       if (item) {
-        item.quantity = action.payload.quantity;
+        // Validate against inventory if available
+        const maxAllowed = item.inventory || Infinity;
+        item.quantity = Math.min(action.payload.quantity, maxAllowed);
       }
     },
     setCartItems: (state, action: PayloadAction<CartItem[]>) => {

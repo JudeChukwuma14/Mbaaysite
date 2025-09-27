@@ -7,15 +7,16 @@ import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 
 interface Product {
-    _id: string;
-    id?: string;
-    name: string;
-    price: number;
-    images: string[];
-    createdAt: string;
-    category: string;
-    sub_category?: string;
-    sub_category2?: string;
+  _id: string;
+  id?: string;
+  name: string;
+  price: number;
+  images: string[];
+  createdAt: string;
+  category: string;
+  sub_category?: string;
+  sub_category2?: string;
+inventory: number; 
 }
 
 const ReligiousCulturalArt = () => {

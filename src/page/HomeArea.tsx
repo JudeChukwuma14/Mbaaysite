@@ -31,6 +31,7 @@ interface Product {
   images: string[];
   createdAt: string;
   productType: string;
+  inventory:number
 }
 
 interface VendorProfile {

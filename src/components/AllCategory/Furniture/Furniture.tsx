@@ -14,6 +14,7 @@ import NewArrival from "@/components/Cards/NewArrival";
 // Define interfaces for type safety
 interface Product {
   _id: string;
+  id?: string;
   name: string;
   price: number;
   images: string[];
@@ -21,8 +22,8 @@ interface Product {
   category: string;
   sub_category?: string;
   sub_category2?: string;
+inventory: number; 
 }
-
 interface Subcategory {
   image: string;
   link: string;

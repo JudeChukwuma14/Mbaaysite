@@ -17,6 +17,7 @@ interface Product {
   images: string[];
   poster: string; // Vendor ID
   [key: string]: any;
+  inventory: number; 
 }
 
 interface Vendor {
