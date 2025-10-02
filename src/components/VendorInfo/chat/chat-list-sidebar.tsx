@@ -1,6 +1,6 @@
 import { useState, useRef, useMemo, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Plus, MessageCircle, Users, Clock, X } from "lucide-react";
+import { Search, Plus, MessageCircle, Users, Clock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -187,14 +187,17 @@ const ChatItem = memo(
     onSelect,
 
     typingMap, // ← rename prop to match parent
+
     itemRef,
     unread = 0,
+
   }: {
     chat: Chat;
     isActive: boolean;
     onSelect: (chatId: string) => void;
 
     typingMap: Record<string, boolean>; // ← correct type
+
     itemRef?: (el: HTMLButtonElement | null) => void;
     unread?: number;
   }) => {
@@ -205,6 +208,7 @@ const ChatItem = memo(
         ? chat.lastMessage
         : "No messages yet";
 
+
     return (
       <motion.button
         initial={{ opacity: 0, y: 20 }}
@@ -213,10 +217,9 @@ const ChatItem = memo(
         whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
         whileTap={{ scale: 0.98 }}
         onClick={() => onSelect(chat._id)}
-        ref={itemRef}
         className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
           isActive
-            ? "bg-orange-50/60 border-l-4 border-l-orange-500"
+            ? "bg-orange-50 border-l-4 border-l-orange-500"
             : "hover:bg-gray-50"
         }`}
       >
@@ -227,12 +230,12 @@ const ChatItem = memo(
             <img
               src={chat.avatar}
               alt={chat.name}
-              className="object-cover w-12 h-12 rounded-full ring-1 ring-gray-200"
+              className="object-cover w-12 h-12 rounded-full"
               loading="lazy"
             />
           ) : (
             <div
-              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow ${
+              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
                 isVendor
                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
                   : "bg-gradient-to-br from-blue-500 to-blue-600"
@@ -276,6 +279,7 @@ const ChatItem = memo(
               </div>
             </div>
           </div>
+
 
           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
             {lastLine}
@@ -477,6 +481,7 @@ export function ChatListSidebar({
         const cached = queryClient.getQueryData(["messages", chat._id]) as any;
         const chatMessages = cached?.messages ?? [];
 
+
         // Prefer the last non-deleted cached message; if none, fall back to API lastMessage
         const lastNonDeleted = [...chatMessages]
           .reverse()
@@ -515,6 +520,7 @@ export function ChatListSidebar({
           }
         }
 
+
         return {
           _id: chat._id,
           name: participant?.details?.name || participant?.details?.storeName,
@@ -522,8 +528,8 @@ export function ChatListSidebar({
             participant?.profileImage ||
             participant?.details?.avatar ||
             "/placeholder.svg",
-          lastMessage: lastMessagePreview,
-          timestamp: (lastNonDeleted as any)?.createdAt || chat.updatedAt,
+          lastMessage: lastMsg?.content || lastMsg?.name || "Media",
+          timestamp: lastMsg?.createdAt || chat.updatedAt,
           isVendor: participant?.model || false,
           isOnline: participant?.isOnline || false,
           messages: chatMessages,
@@ -545,10 +551,12 @@ export function ChatListSidebar({
   console.log("chatList", chatList);
   const socket = useSocket(user.token);
 
+
   // Local typing map sourced directly from socket events per chatId
   const [sidebarTypingMap, setSidebarTypingMap] = useState<
     Record<string, boolean>
   >({});
+
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
@@ -565,6 +573,7 @@ export function ChatListSidebar({
 
     const ids = chatList.map((c: any) => c._id).filter(Boolean);
     ids.forEach((id: any) => socket.emit("joinChat", id));
+
 
     // Listen for typing events to update local typing map for any chat in the list
     const onTyping = ({
@@ -595,8 +604,6 @@ export function ChatListSidebar({
 
     return () => {
       ids.forEach((id: any) => socket.emit("leaveChat", id));
-      socket.off("typing", onTyping);
-      socket.off("stopTyping", onStopTyping);
     };
   }, [socket, chatList]);
 
@@ -639,6 +646,7 @@ export function ChatListSidebar({
     [setActiveChat, markReadMutation, user?.vendor?._id]
   );
 
+
   // Keep a ref to each chat item to auto-scroll active into view
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -667,6 +675,7 @@ export function ChatListSidebar({
     });
     return () => cancelAnimationFrame(id);
   }, [activeChat, filteredChats.length]);
+
 
   // Loading state with skeleton
   if (isChatsLoading) {
@@ -718,7 +727,9 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
+
       className="flex flex-col bg-white w-80 h-full"
+
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
@@ -737,18 +748,20 @@ export function ChatListSidebar({
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-2 transition-colors rounded-full hover:bg-orange-100 cursor-pointer"
+                className="p-2 transition-colors rounded-full hover:bg-orange-100"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
+
                 {!isDropdownOpen ? (
                   <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
                 ) : (
                   <X className="w-5 h-5 text-orange-500 cursor-pointer" />
                 )}
+
               </motion.button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0 h-[calc(100vh-100px)]">
+            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0">
               <DropdownMenuItem className="font-semibold text-orange-600">
                 <Users className="w-4 h-4 mr-2" />
                 New Chat
@@ -771,7 +784,7 @@ export function ChatListSidebar({
                   <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="overflow-y-auto max-h-full">
+                <div className="overflow-y-auto max-h-60">
                   {searchResults.map((contact: Contact) => (
                     <ContactItem
                       key={contact._id}
@@ -805,10 +818,12 @@ export function ChatListSidebar({
       </div>
 
       {/* Chat List */}
+
       <div
         ref={listContainerRef}
         className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
       >
+
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (
             <motion.div
@@ -831,9 +846,11 @@ export function ChatListSidebar({
                 chat={chat}
                 isActive={activeChat === chat._id}
                 onSelect={handleChatSelect}
+
                 typingMap={{ ...typingMap, ...sidebarTypingMap }}
                 itemRef={(el) => (itemRefs.current[chat._id] = el)}
                 unread={Number(perChatUnread[chat._id] || 0)}
+
               />
             ))
           )}

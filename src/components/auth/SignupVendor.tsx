@@ -106,7 +106,9 @@ const Registration: React.FC = () => {
         >
           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
-              <img src={logo || "/placeholder.svg"} width={50} alt="" />
+              <Link to="/">
+                <img src={logo || "/placeholder.svg"} width={50} alt="" />
+              </Link>
             </div>
           </div>
           <div className="flex items-center justify-center px-4 text-clip">
@@ -116,7 +118,7 @@ const Registration: React.FC = () => {
                   <Store className="w-8 h-8 text-white" />
                 </div>
                 <h1 className="mb-4 text-2xl font-bold text-gray-900 lg:text-5xl">
-                  Welcome to <span className="text-orange-500">Mbaay.com</span>
+                  Welcome to <span className="text-orange-500">Mbaay</span>
                 </h1>
                 <p className="mb-4 text-sm text-center text-gray-600">
                   Join thousands of vendors who are growing their business with
@@ -364,11 +366,10 @@ const Registration: React.FC = () => {
               {/* Login Link */}
               <p className="mt-4 text-center text-gray-600">
                 Already have an account?{" "}
-                <Link
-                  to="/login-vendor"
-                  className="text-orange-500 hover:underline"
-                >
-                  Sign in
+                <Link to="/login-vendor">
+                  <span className="text-orange-500 hover:underline">
+                    Sign in
+                  </span>
                 </Link>
               </p>
             </div>

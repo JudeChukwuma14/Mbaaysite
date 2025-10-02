@@ -8,6 +8,7 @@ import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
 import { forgotPassword } from "@/utils/ForgetpassApi";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 // Define the shape of the form data
 interface ForgotPasswordFormData {
@@ -68,7 +69,9 @@ const Forgotpassword: React.FC = () => {
           {/* Logo for small screens */}
           <div className="items-left mt-6 flex-col min-h-[150px]">
             <div className="lg:hidden">
+              <Link to="/">
               <img src={logo} width={50} alt="" />
+             </Link>
             </div>
           </div>
           <div className="flex items-center justify-center">

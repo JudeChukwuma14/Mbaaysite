@@ -11,7 +11,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { GoogleButton } from "../Reuseable/GoogleButton";
 
-
 interface FormData {
   name: string;
   email: string;
@@ -32,7 +31,6 @@ const Signup: React.FC = () => {
     formState: { errors },
     watch,
   } = useForm<FormData>();
-
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
@@ -69,12 +67,14 @@ const Signup: React.FC = () => {
         >
           <div className="flex items-center justify-between px-4 my-6">
             <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
+              <Link to="/">
+                <img src={logo} width={50} alt="" />
+              </Link>
             </div>
             <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Already have an Account? </span>
-              <Link to="/signin" className="text-blue-500 hover:underline">
-                Sign in
+              <Link to="/signin">
+                <span className="text-blue-500 hover:underline">Sign in</span>
               </Link>
             </div>
           </div>
@@ -203,19 +203,21 @@ const Signup: React.FC = () => {
                 <span className="mx-2 text-gray-500">or sign up with</span>
                 <hr className="flex-grow border-gray-300" />
               </div>
-              <GoogleButton/>
+              <GoogleButton />
               <div className="mt-4 text-left">
-                <Link
-                  to={"/signup-vendor"}
-                  className="text-orange-500 hover:underline"
-                >
-                  Become a Vendor/Seller?
+                <Link to={"/signup-vendor"}>
+                  <span className="text-orange-500 hover:underline">
+                    Become a Vendor/Seller?
+                  </span>
                 </Link>
               </div>
               <div className="block my-2 text-left lg:hidden">
                 <span className="text-gray-600">Already have an Account? </span>
-                <Link to={"/signin"} className="text-blue-500 hover:underline">
-                  Sign in
+                <Link to={"/signin"}>
+                  <span className="text-blue-500 hover:underline">
+                    {" "}
+                    Sign in
+                  </span>
                 </Link>
               </div>
             </div>

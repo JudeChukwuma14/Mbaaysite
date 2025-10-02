@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
   Home,
@@ -172,18 +172,15 @@ const NavItem = ({
   badgeCount?: number;
 }) => {
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const handleClick = () => {
     if (onClick) {
       onClick();
-    } else if (to && !subItems) {
-      navigate(to);
     } else if (subItems) {
       setOpen(!open);
     }
   };
+
 
   // If it's a direct link without subitems, use NavLink to get active styling
   if (to && !subItems) {
@@ -222,18 +219,30 @@ const NavItem = ({
   useEffect(() => {
     if (isAnySubActive && !open) setOpen(true);
   }, [isAnySubActive]);
-
   return (
     <div>
       <div
-        className={`p-2 flex items-center justify-between gap-3 cursor-pointer rounded transition-colors ${
-          open || isAnySubActive ? "bg-orange-400 text-white" : "hover:bg-orange-100"
+        className={`p-2 flex items-center justify-between gap-3 cursor-pointer hover:bg-orange-400 rounded ${
+          open ? "bg-orange-400 text-white" : ""
         }`}
         onClick={handleClick}
       >
         <div className="flex items-center gap-3">
           {Icon && <Icon className="w-5 h-5" />}
-          <span>{title}</span>
+          {to && !subItems ? (
+            <NavLink
+              to={to}
+              className={({ isActive }) =>
+                isActive
+                  ? "font-semibold text-orange-500"
+                  : "text-gray-700 dark:text-gray-300"
+              }
+            >
+              {title}
+            </NavLink>
+          ) : (
+            <span>{title}</span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {typeof badgeCount === "number" && badgeCount > 0 && (

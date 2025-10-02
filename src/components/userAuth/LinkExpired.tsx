@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick-theme.css";
 import logo from "../../assets/image/MBLogo.png";
 import Sliding from "../Reuseable/Sliding";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const LinkExpired: React.FC = () => {
   const bg = {
@@ -25,7 +26,9 @@ const LinkExpired: React.FC = () => {
           {/* Logo for small screens */}
           <div className="  items-left mt-6 flex-col min-h-[150px]">
             <div className="lg:hidden">
-              <img src={logo} width={50} alt="" />
+              <Link to="/">
+                <img src={logo} width={50} alt="" />
+              </Link>
             </div>
           </div>
           <div className="flex items-center justify-center">

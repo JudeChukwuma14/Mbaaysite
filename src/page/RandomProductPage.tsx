@@ -11,6 +11,7 @@ interface Product {
   price: number;
   images: string[];
   category: string;
+  inventory:number
 }
 
 interface ProductApiResponse {
