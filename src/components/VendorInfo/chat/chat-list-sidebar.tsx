@@ -13,6 +13,8 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   useCreateOrGetChat,
   useSearchContacts,
+  useUnreadChatCount,
+  useMarkChatAsRead,
 } from "@/hook/userVendorQueries";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -186,7 +188,7 @@ const ChatItem = memo(
 
     typingMap, // ← rename prop to match parent
     itemRef,
-
+    unread = 0,
   }: {
     chat: Chat;
     isActive: boolean;
@@ -194,13 +196,14 @@ const ChatItem = memo(
 
     typingMap: Record<string, boolean>; // ← correct type
     itemRef?: (el: HTMLButtonElement | null) => void;
+    unread?: number;
   }) => {
     const isVendor = chat.isVendor === "vendors";
     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
-    const lastLine = (chat.lastMessage && chat.lastMessage.trim().length > 0)
-      ? chat.lastMessage
-      : "No messages yet";
-
+    const lastLine =
+      chat.lastMessage && chat.lastMessage.trim().length > 0
+        ? chat.lastMessage
+        : "No messages yet";
 
     return (
       <motion.button
@@ -217,7 +220,6 @@ const ChatItem = memo(
             : "hover:bg-gray-50"
         }`}
       >
-
         {/* avatar / online dot */}
 
         <div className="relative">
@@ -244,7 +246,6 @@ const ChatItem = memo(
           )}
         </div>
 
-
         {/* text column */}
 
         <div className="flex-1 min-w-0 text-left">
@@ -263,9 +264,16 @@ const ChatItem = memo(
                 {isVendor ? "Vendor" : "User"}
               </span>
             </div>
-            <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-              <Clock className="w-3 h-3" />
-              {formatTime(chat.timestamp)}
+            <div className="flex items-center gap-2 whitespace-nowrap">
+              {unread > 0 && (
+                <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs font-semibold text-white bg-red-500 rounded-full">
+                  {unread}
+                </span>
+              )}
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <Clock className="w-3 h-3" />
+                {formatTime(chat.timestamp)}
+              </div>
             </div>
           </div>
 
@@ -280,7 +288,6 @@ const ChatItem = memo(
               typing…
             </span>
           )}
-
         </div>
       </motion.button>
     );
@@ -375,7 +382,6 @@ const ChatItem = memo(
 //   }
 // );
 
-
 export function ChatListSidebar({
   activeChat,
   setActiveChat,
@@ -387,6 +393,10 @@ export function ChatListSidebar({
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const user = useSelector((state: any) => state.vendor);
+  const { data: unreadData } = useUnreadChatCount(user?.vendor?._id);
+  const unreadCount = Number(unreadData?.count || 0);
+  const perChatUnread: Record<string, number> = (unreadData as any)?.chats || {};
+  const markReadMutation = useMarkChatAsRead();
 
   const {
     data: my_chats,
@@ -463,7 +473,6 @@ export function ChatListSidebar({
           user.vendor._id
         );
 
-
         // read cached messages for this chat (no hook inside loop)
         const cached = queryClient.getQueryData(["messages", chat._id]) as any;
         const chatMessages = cached?.messages ?? [];
@@ -481,11 +490,16 @@ export function ChatListSidebar({
           const m: any = lastMsg;
           const content = m?.content;
           const hasFiles = Array.isArray(m?.files) && m.files.length > 0;
-          const hasImages = hasFiles && m.files.some((f: any) => f.type === "image");
-          const hasVideo = hasFiles && m.files.some((f: any) => f.type === "video");
-          const hasDocs = hasFiles && m.files.some((f: any) => f.type === "document");
-          const hasLegacyImages = Array.isArray(m?.images) && m.images.length > 0;
-          const hasLegacyDocs = Array.isArray(m?.documents) && m.documents.length > 0;
+          const hasImages =
+            hasFiles && m.files.some((f: any) => f.type === "image");
+          const hasVideo =
+            hasFiles && m.files.some((f: any) => f.type === "video");
+          const hasDocs =
+            hasFiles && m.files.some((f: any) => f.type === "document");
+          const hasLegacyImages =
+            Array.isArray(m?.images) && m.images.length > 0;
+          const hasLegacyDocs =
+            Array.isArray(m?.documents) && m.documents.length > 0;
           const hasLegacyVideo = Boolean(m?.video);
 
           if (typeof content === "string" && content.trim().length > 0) {
@@ -532,7 +546,9 @@ export function ChatListSidebar({
   const socket = useSocket(user.token);
 
   // Local typing map sourced directly from socket events per chatId
-  const [sidebarTypingMap, setSidebarTypingMap] = useState<Record<string, boolean>>({});
+  const [sidebarTypingMap, setSidebarTypingMap] = useState<
+    Record<string, boolean>
+  >({});
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
@@ -544,7 +560,6 @@ export function ChatListSidebar({
     );
   }, [chatList, searchQuery]);
 
-
   useEffect(() => {
     if (!socket) return;
 
@@ -552,12 +567,24 @@ export function ChatListSidebar({
     ids.forEach((id: any) => socket.emit("joinChat", id));
 
     // Listen for typing events to update local typing map for any chat in the list
-    const onTyping = ({ chatId, sender }: { chatId: string; sender: string }) => {
+    const onTyping = ({
+      chatId,
+      sender,
+    }: {
+      chatId: string;
+      sender: string;
+    }) => {
       if (sender !== user.vendor._id) {
         setSidebarTypingMap((m) => ({ ...m, [chatId]: true }));
       }
     };
-    const onStopTyping = ({ chatId, sender }: { chatId: string; sender: string }) => {
+    const onStopTyping = ({
+      chatId,
+      sender,
+    }: {
+      chatId: string;
+      sender: string;
+    }) => {
       if (sender !== user.vendor._id) {
         setSidebarTypingMap((m) => ({ ...m, [chatId]: false }));
       }
@@ -573,12 +600,43 @@ export function ChatListSidebar({
     };
   }, [socket, chatList]);
 
+  // On new incoming message in any other chat, refresh unread count immediately
+  useEffect(() => {
+    if (!socket) return;
+
+    const onNew = (payload: any) => {
+      try {
+        const chatId = payload?.chatId || payload?.chat?._id || payload?._id;
+        const sender = payload?.sender || payload?.from;
+        if (
+          chatId &&
+          chatId !== activeChat &&
+          sender &&
+          sender !== user?.vendor?._id
+        ) {
+          queryClient.invalidateQueries({
+            queryKey: ["unread-chat-count", user?.vendor?._id],
+          });
+        }
+      } catch {}
+    };
+
+    socket.on("newMessage", onNew);
+    return () => {
+      socket.off("newMessage", onNew);
+    };
+  }, [socket, activeChat, user?.vendor?._id, queryClient]);
 
   const handleChatSelect = useCallback(
     (chatId: string) => {
       setActiveChat(chatId);
+      // Mark this chat as read for this user
+      const userId = user?.vendor?._id;
+      if (userId && chatId) {
+        markReadMutation.mutate({ chatId, userId });
+      }
     },
-    [setActiveChat]
+    [setActiveChat, markReadMutation, user?.vendor?._id]
   );
 
   // Keep a ref to each chat item to auto-scroll active into view
@@ -596,7 +654,10 @@ export function ChatListSidebar({
           const elTop = el.offsetTop;
           const elHeight = el.offsetHeight;
           const containerHeight = container.clientHeight;
-          const targetTop = Math.max(0, elTop - (containerHeight - elHeight) / 2);
+          const targetTop = Math.max(
+            0,
+            elTop - (containerHeight - elHeight) / 2
+          );
           container.scrollTo({ top: targetTop, behavior: "smooth" });
         } catch {
           // Fallback
@@ -657,14 +718,21 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="flex flex-col bg-white border-r shadow-lg w-80 h-full min-h-0"
+      className="flex flex-col bg-white w-80 h-full"
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-6 h-6 text-orange-500" />
-            <h1 className="text-xl font-bold text-gray-900">Chats</h1>
+            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              Chats
+              {unreadCount > 0 && (
+                <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs text-white bg-red-500 rounded-full">
+                  {unreadCount}
+                </span>
+              )}
+            </h1>
           </div>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
@@ -673,13 +741,11 @@ export function ChatListSidebar({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-
-               {!isDropdownOpen ? (
-                 <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
-               ) : (
-                <X className="w-5 h-5 text-orange-500 cursor-pointer" />
-
-               )}
+                {!isDropdownOpen ? (
+                  <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
+                ) : (
+                  <X className="w-5 h-5 text-orange-500 cursor-pointer" />
+                )}
               </motion.button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0 h-[calc(100vh-100px)]">
@@ -739,7 +805,10 @@ export function ChatListSidebar({
       </div>
 
       {/* Chat List */}
-      <div ref={listContainerRef} className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+      <div
+        ref={listContainerRef}
+        className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+      >
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (
             <motion.div
@@ -764,6 +833,7 @@ export function ChatListSidebar({
                 onSelect={handleChatSelect}
                 typingMap={{ ...typingMap, ...sidebarTypingMap }}
                 itemRef={(el) => (itemRefs.current[chat._id] = el)}
+                unread={Number(perChatUnread[chat._id] || 0)}
               />
             ))
           )}

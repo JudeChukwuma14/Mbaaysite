@@ -1,7 +1,12 @@
 // src/api/sidebar-queries.ts
 import { getAllUsers } from "@/utils/allUsersApi";
 import { getAlllVendor } from "@/utils/vendorApi";
-import { create_or_get_chat, getUserChats } from "@/utils/vendorChatApi";
+import {
+  create_or_get_chat,
+  getUserChats,
+  getUnreadChatCount,
+  markChatAsRead,
+} from "@/utils/vendorChatApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export const useVendors = () => {
@@ -76,5 +81,89 @@ export const useUserChats = (token: string | null) => {
     enabled: !!token,
     staleTime: 1000 * 60 * 2, // 2 min – tune to taste
     retry: 1,
+  });
+};
+
+// Unread count for chats (by user/vendor id)
+export const useUnreadChatCount = (userId: string | null | undefined) => {
+  return useQuery({
+    queryKey: ["unread-chat-count", userId],
+    queryFn: async () => {
+      if (!userId) return { count: 0 };
+      const data = await getUnreadChatCount(userId);
+      // Backend shape:
+      // { success: true, data: [{ chatId: string, unreadCount: number }, ...] }
+      try {
+        const items = Array.isArray(data?.data) ? data.data : [];
+        const chats: Record<string, number> = {};
+        let total = 0;
+        for (const it of items) {
+          const cId = String(it?.chatId ?? "");
+          const c = Number(it?.unreadCount ?? 0);
+          if (!cId) continue;
+          chats[cId] = c;
+          total += c;
+        }
+        return { count: total, chats } as any;
+      } catch {
+        // Fallback compatibility: number or {count}
+        if (typeof data === "number") return { count: data } as any;
+        return { count: Number((data as any)?.count || 0) } as any;
+      }
+    },
+    enabled: !!userId,
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+};
+
+// Mark an entire chat as read for a given user/vendor id
+export const useMarkChatAsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      chatId,
+      userId,
+    }: {
+      chatId: string;
+      userId: string;
+    }) => markChatAsRead(chatId, userId),
+    onSuccess: (_data, variables) => {
+      // Refresh chats list and unread badge
+      queryClient.invalidateQueries({ queryKey: ["chats"] });
+      // Invalidate the specific unread count for this user
+      queryClient.invalidateQueries({ queryKey: ["unread-chat-count", variables.userId] });
+
+      // Optimistically set this chat's unread to 0 and recompute total
+      queryClient.setQueryData(["unread-chat-count", variables.userId], (prev: any) => {
+        try {
+          const chats = { ...(prev?.chats || {}) } as Record<string, number>;
+          if (variables.chatId) chats[variables.chatId] = 0;
+          const total = Object.values(chats).reduce((a, b) => a + (Number(b) || 0), 0);
+          return { count: total, chats } as any;
+        } catch {
+          // Fallback simple decrement
+          const prevCount = Number(prev?.count ?? 0);
+          return { count: Math.max(0, prevCount - 1) } as any;
+        }
+      });
+      // Also update this chat's messages cache to mark my sent messages as read
+      queryClient.setQueryData(["messages", variables.chatId], (prev: any) => {
+        if (!prev) return prev;
+        try {
+          const updated = {
+            ...prev,
+            messages: Array.isArray(prev.messages)
+              ? prev.messages.map((m: any) =>
+                  m?.isMe && m?.status !== "read" ? { ...m, status: "read" } : m
+                )
+              : prev.messages,
+          };
+          return updated;
+        } catch {
+          return prev;
+        }
+      });
+    },
   });
 };

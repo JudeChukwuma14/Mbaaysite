@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/chat";
+const API_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/chat";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -12,13 +12,17 @@ export const create_or_get_chat = async (
   token: any
 ) => {
   try {
+    console.debug("[CHAT] POST /create_or_get_chat", { data });
     const response = await api.post("/create_or_get_chat", data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-    console.log(response);
+    console.debug("[CHAT] RESP /create_or_get_chat", {
+      status: response.status,
+      data: response.data,
+    });
     return response.data.chat;
   } catch (error) {
     console.error("Error creating/getting chat:", error);
@@ -33,13 +37,17 @@ export const sendMessage = async (
   token: string | null
 ) => {
   try {
+    console.debug(`{CHAT} POST /chat/${chatId}/message`, { data });
     const response = await api.post(`/chat/${chatId}/message`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
     });
-    console.log("message", response);
+    console.debug("[CHAT] RESP message", {
+      status: response.status,
+      data: response.data,
+    });
     return response;
   } catch (error) {
     console.error("Error sending message:", error);
@@ -50,12 +58,16 @@ export const sendMessage = async (
 // Get user's chats
 export const getUserChats = async (token: string | null) => {
   try {
+    console.debug("[CHAT] GET /chats");
     const response = await api.get("/chats", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response.data);
+    console.debug("[CHAT] RESP /chats", {
+      status: response.status,
+      data: response.data,
+    });
     return response.data.chats;
   } catch (error) {
     console.error("Error getting user chats:", error);
@@ -66,7 +78,12 @@ export const getUserChats = async (token: string | null) => {
 // Get messages in a chat
 export const getChatMessages = async (chatId: string) => {
   try {
+    console.debug(`[CHAT] GET /chat/${chatId}/messages`);
     const response = await api.get(`/chat/${chatId}/messages`);
+    console.debug("[CHAT] RESP messages", {
+      status: response.status,
+      data: response.data,
+    });
     return response.data;
   } catch (error) {
     console.error("Error getting chat messages:", error);
@@ -81,11 +98,16 @@ export const editMessage = async (
   token: string | null
 ) => {
   try {
+    console.debug(`[CHAT] PATCH /edit/${messageId}`, { data });
     const response = await api.patch(`/edit/${messageId}`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
+    });
+    console.debug("[CHAT] RESP edit", {
+      status: response.status,
+      data: response.data,
     });
     return response.data;
   } catch (error) {
@@ -100,10 +122,15 @@ export const deleteMessage = async (
   token: string | null
 ) => {
   try {
+    console.debug(`[CHAT] DELETE /delete/${messageId}`);
     const response = await api.delete(`/delete/${messageId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+    });
+    console.debug("[CHAT] RESP delete", {
+      status: response.status,
+      data: response.data,
     });
     return response.data;
   } catch (error) {
@@ -119,6 +146,7 @@ export const sendMediaMessage = async (
   onUploadProgress?: (percent: number) => void
 ) => {
   try {
+    console.debug(`[CHAT] POST /chat/${chatId}/send_media_message`);
     const response = await api.post(
       `/chat/${chatId}/send_media_message`,
       formData,
@@ -136,7 +164,10 @@ export const sendMediaMessage = async (
         },
       }
     );
-
+    console.debug("[CHAT] RESP media", {
+      status: response.status,
+      data: response.data,
+    });
     return response.data;
   } catch (error: any) {
     console.error("Error sending media message:", error);
@@ -184,4 +215,39 @@ export const prepareMediaFormData = (
   }
 
   return formData;
+};
+
+// Get total unread chat count for a user
+export const getUnreadChatCount = async (userId: string) => {
+  try {
+    const url = `/get_unread_chat_count/${userId}`;
+    console.log(`[CHAT] GET ${url}`);
+    const res = await api.get(url);
+    console.log("[CHAT] RESP unread-count", {
+      status: res.status,
+      data: res.data,
+    });
+    // Expecting a shape like { count: number }
+    return res.data;
+  } catch (error) {
+    console.error("Error getting unread chat count:", error);
+    throw error;
+  }
+};
+
+// Mark a chat as read for a user
+export const markChatAsRead = async (chatId: string, userId: string) => {
+  try {
+    const url = `/mark_chat_as_read/${chatId}/${userId}`;
+    console.log(`[CHAT] PATCH ${url}`);
+    const res = await api.patch(url);
+    console.log("[CHAT] RESP mark-as-read", {
+      status: res.status,
+      data: res.data,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error marking chat as read:", error);
+    throw error;
+  }
 };

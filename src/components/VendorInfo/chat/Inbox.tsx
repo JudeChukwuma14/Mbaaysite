@@ -18,7 +18,6 @@ import {
   SendIcon,
   Edit,
   Trash,
-  Reply,
   Pin,
   X,
   Video,
@@ -28,7 +27,6 @@ import {
   Save,
   VolumeX,
   Volume2,
-  Maximize,
   ChevronLeft,
   ChevronRight,
   ImageIcon,
@@ -37,6 +35,9 @@ import {
   Download,
   Clock,
   CheckCircle2,
+  CheckCheck,
+  Maximize,
+  Reply,
 } from "lucide-react";
 import { ChatListSidebar } from "./chat-list-sidebar";
 import {
@@ -50,7 +51,7 @@ import {
 } from "@/hook/chatQueries";
 
 // Constants
-export const SOCKET_URL = "https://mbayy-be.onrender.com";
+export const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com/";
 
 // Types
 interface FileAttachment {
@@ -328,7 +329,7 @@ const FilePreview = React.memo(
                    transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 h-full "
       >
         {/* visual area */}
-        <div className="relative w-full overflow-hidden aspect-video rounded-t-2xl h-full">
+        <div className="relative w-full h-full overflow-hidden aspect-video rounded-t-2xl">
           {!ready && (
             <div className="absolute inset-0 bg-gray-100 animate-pulse" />
           )}
@@ -365,14 +366,13 @@ const FilePreview = React.memo(
         </div>
 
         {/* info footer */}
-     
 
         {/* floating download icon */}
         <button
           type="button"
           onClick={handleDownload}
           title={`Download ${file.name}`}
-          className="absolute grid w-8 h-8 transition rounded-full shadow opacity-0 right-3 top-3 place-content-center bg-white/80 backdrop-blur group-hover:opacity-100 hover:bg-white pointer-events-auto"
+          className="absolute grid w-8 h-8 transition rounded-full shadow opacity-0 pointer-events-auto right-3 top-3 place-content-center bg-white/80 backdrop-blur group-hover:opacity-100 hover:bg-white"
         >
           <Download className="w-4 h-4 text-gray-700" />
         </button>
@@ -483,15 +483,15 @@ const MessageItem = React.memo(
     onPin: (messageId: string) => void;
     onOpenMedia: (files: FileAttachment[], index: number) => void;
   }) => (
-    
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className={`flex gap-3 mb-4 ${msg.isMe ? "justify-end" : ""}`}
     >
       {!msg.isMe && activeChatDetails && (
-       <>
-         { activeChatDetails?.avatar && activeChatDetails?.avatar !== "/placeholder.svg" ? (
+        <>
+          {activeChatDetails?.avatar &&
+          activeChatDetails?.avatar !== "/placeholder.svg" ? (
             <img
               src={activeChatDetails?.avatar}
               alt={msg.sender}
@@ -506,12 +506,10 @@ const MessageItem = React.memo(
                   : "bg-gradient-to-br from-blue-500 to-blue-600"
               }`}
             >
-              {
-              activeChatDetails?.name.charAt(0).toUpperCase() 
-              }
+              {activeChatDetails?.name.charAt(0).toUpperCase()}
             </div>
           )}
-       </>
+        </>
       )}
 
       <div className={`max-w-[70%] ${msg.isMe ? "order-1" : "order-2"}`}>
@@ -547,6 +545,7 @@ const MessageItem = React.memo(
               <Clock size={12} className="animate-spin" />
             )}
             {msg.status === "delivered" && <CheckCircle2 size={12} />}
+            {msg.status === "read" && <CheckCheck size={12} />}
           </div>
         </div>
 
@@ -611,23 +610,22 @@ const MessageItem = React.memo(
 
       {msg.isMe && (
         <>
-        {user.vendor.avatar && user.vendor.avatar !== "/placeholder.svg" ?
-  <img
-  src={user.vendor.avatar}
-  alt="You"
-  className="self-end object-cover w-8 h-8 rounded-full"
-  loading="lazy"
-/> : 
-  <div
-  className={`self-end object-cover w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg 
+          {user.vendor.avatar && user.vendor.avatar !== "/placeholder.svg" ? (
+            <img
+              src={user.vendor.avatar}
+              alt="You"
+              className="self-end object-cover w-8 h-8 rounded-full"
+              loading="lazy"
+            />
+          ) : (
+            <div
+              className={`self-end object-cover w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg 
    bg-gradient-to-br from-orange-500 to-orange-600
      `}
->
-  {
-  user.vendor?.storeName.charAt(0).toUpperCase() 
-  }
-</div>
-         }
+            >
+              {user.vendor?.storeName.charAt(0).toUpperCase()}
+            </div>
+          )}
         </>
       )}
     </motion.div>
@@ -694,12 +692,25 @@ const ReplyPreview = React.memo(
     if (!replyMessage) return null;
 
     const trimmed = (replyMessage.content || "").trim();
-    const hasFiles = Array.isArray(replyMessage.files) && replyMessage.files.length > 0;
-    const hasImage = hasFiles && replyMessage?.files?.some((f) => f.type === "image");
-    const hasVideo = hasFiles && replyMessage?.files?.some((f) => f.type === "video");
-    const hasDoc = hasFiles && replyMessage?.files?.some((f) => f.type === "document");
-    const mediaLabel = hasVideo ? "Video" : hasImage ? "Photo" : hasDoc ? "Document" : "Message";
-    const previewText = trimmed.length > 0 ? `${trimmed.slice(0, 50)}${trimmed.length > 50 ? "…" : ""}` : mediaLabel;
+    const hasFiles =
+      Array.isArray(replyMessage.files) && replyMessage.files.length > 0;
+    const hasImage =
+      hasFiles && replyMessage?.files?.some((f) => f.type === "image");
+    const hasVideo =
+      hasFiles && replyMessage?.files?.some((f) => f.type === "video");
+    const hasDoc =
+      hasFiles && replyMessage?.files?.some((f) => f.type === "document");
+    const mediaLabel = hasVideo
+      ? "Video"
+      : hasImage
+      ? "Photo"
+      : hasDoc
+      ? "Document"
+      : "Message";
+    const previewText =
+      trimmed.length > 0
+        ? `${trimmed.slice(0, 50)}${trimmed.length > 50 ? "…" : ""}`
+        : mediaLabel;
 
     return isInline ? (
       <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 border-l-4 border-orange-500 rounded-t-lg">
@@ -714,10 +725,7 @@ const ReplyPreview = React.memo(
         <div className="flex items-center gap-2">
           <Reply className="w-4 h-4 text-orange-600" />
           <p className="text-sm font-medium text-orange-800">
-            Replying to:{" "}
-            <span className="text-orange-600">
-              {previewText}
-            </span>
+            Replying to: <span className="text-orange-600">{previewText}</span>
           </p>
         </div>
         {onCancel && (
@@ -887,7 +895,7 @@ const MessageInput = React.memo(
         <div className="mt-2">
           <div className="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
             <div
-              className="h-2 bg-orange-500 transition-all"
+              className="h-2 transition-all bg-orange-500"
               style={{ width: `${Math.min(uploadProgress ?? 0, 100)}%` }}
             />
           </div>
@@ -1465,7 +1473,10 @@ export default function ChatInterface() {
     const id = window.setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
       // Focus and bring input into view
-      messageInputRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      messageInputRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
       messageInputRef.current?.focus();
     }, 0);
     return () => window.clearTimeout(id);
@@ -1522,7 +1533,7 @@ export default function ChatInterface() {
     setMessage("");
     setReplyingTo(null);
     try {
-    await sendMessageMutation.mutateAsync({
+      await sendMessageMutation.mutateAsync({
         chatId: activeChat,
         content: message.trim(),
         token: user.token,
@@ -1562,8 +1573,8 @@ export default function ChatInterface() {
         setMessage("");
         setReplyingTo(null);
         setUploadProgress(null);
-      } catch {}
-      finally {
+      } catch {
+      } finally {
         // Ensure we clear progress on error as well
         setUploadProgress(null);
       }
@@ -1792,11 +1803,13 @@ export default function ChatInterface() {
 
   const isVendor = activeChatDetails?.isVendor === true;
   console.log(activeChatDetails);
-  const hasAvatar = activeChatDetails?.avatar && activeChatDetails?.avatar !== "/placeholder.svg";
+  const hasAvatar =
+    activeChatDetails?.avatar &&
+    activeChatDetails?.avatar !== "/placeholder.svg";
   console.log(user.vendor);
   // Render
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-full bg-gray-50">
       <ChatListSidebar
         chats={chats}
         activeChat={activeChat}
@@ -1813,24 +1826,24 @@ export default function ChatInterface() {
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
           >
-           {hasAvatar ? (
-            <img
-              src={activeChatDetails?.avatar}
-              alt={activeChatDetails?.name}
-              className="object-cover w-12 h-12 rounded-full"
-              loading="lazy"
-            />
-          ) : (
-            <div
-              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
-                isVendor
-                  ? "bg-gradient-to-br from-orange-500 to-orange-600"
-                  : "bg-gradient-to-br from-blue-500 to-blue-600"
-              }`}
-            >
-              {getInitials(activeChatDetails?.name)}
-            </div>
-          )}
+            {hasAvatar ? (
+              <img
+                src={activeChatDetails?.avatar}
+                alt={activeChatDetails?.name}
+                className="object-cover w-12 h-12 rounded-full"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
+                  isVendor
+                    ? "bg-gradient-to-br from-orange-500 to-orange-600"
+                    : "bg-gradient-to-br from-blue-500 to-blue-600"
+                }`}
+              >
+                {getInitials(activeChatDetails?.name)}
+              </div>
+            )}
             <div className="flex-1">
               <div className="flex-1">
                 <h2 className="text-lg font-semibold">

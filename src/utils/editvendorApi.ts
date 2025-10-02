@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
+const API_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

@@ -16,6 +16,7 @@ import { MdOutlineReviews } from "react-icons/md";
 import { MdVerifiedUser } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
+import { useUnreadChatCount } from "@/hook/userVendorQueries";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
 import Logo from "@/assets/image/mbbaylogo.png";
 import { Link } from "react-router-dom";
@@ -68,6 +69,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
     navigate("/login-vendor");
   };
 
+  // Unread count for Inbox badge
+  const { data: unreadData } = useUnreadChatCount((user as any)?.vendor?._id);
+  const inboxUnreadTotal = Number((unreadData as any)?.count || 0);
+
   return (
     <aside
       className={`w-64 p-5 h-screen flex flex-col justify-between overflow-y-auto transition-colors ${
@@ -93,7 +98,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
             Icon={Box}
           />
           <NavItem title="Customers" to="customers" Icon={Users} />
-          <NavItem title="Inbox" to="inbox" Icon={Inbox} />
+          <NavItem title="Inbox" to="inbox" Icon={Inbox} badgeCount={inboxUnreadTotal} />
           <NavItem
             title="Payment"
             subItems={["Payments", "Preview Invoice"]}
@@ -157,12 +162,14 @@ const NavItem = ({
   subItems,
   Icon,
   onClick,
+  badgeCount,
 }: {
   title: string;
   to?: string;
   onClick?: () => void;
   subItems?: string[];
   Icon?: React.ComponentType<{ className?: string }>;
+  badgeCount?: number;
 }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -196,6 +203,11 @@ const NavItem = ({
           {Icon && <Icon className="w-5 h-5" />}
           <span>{title}</span>
         </div>
+        {typeof badgeCount === "number" && badgeCount > 0 && (
+          <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs font-semibold text-white bg-red-500 rounded-full">
+            {badgeCount}
+          </span>
+        )}
       </NavLink>
     );
   }
@@ -223,9 +235,16 @@ const NavItem = ({
           {Icon && <Icon className="w-5 h-5" />}
           <span>{title}</span>
         </div>
-        {subItems && (
-          <ChevronDown className={`w-5 h-5 ${open && "rotate-180"}`} />
-        )}
+        <div className="flex items-center gap-2">
+          {typeof badgeCount === "number" && badgeCount > 0 && (
+            <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs font-semibold text-white bg-red-500 rounded-full">
+              {badgeCount}
+            </span>
+          )}
+          {subItems && (
+            <ChevronDown className={`w-5 h-5 ${open && "rotate-180"}`} />
+          )}
+        </div>
       </div>
       {subItems && (
         <motion.div

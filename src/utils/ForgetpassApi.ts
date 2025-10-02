@@ -1,14 +1,12 @@
 import axios from "axios";
 
-const API_BASE_URL = " https://mbayy-be.onrender.com/api/v1/vendor";
+const API_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 export const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-
 
 // forgot-password
 export const forgotPassword = async (email: string) => {

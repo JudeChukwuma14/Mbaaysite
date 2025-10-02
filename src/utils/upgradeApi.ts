@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
+const API_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
 export interface CraftCategoriesResponse {
   craftCategories: string[];

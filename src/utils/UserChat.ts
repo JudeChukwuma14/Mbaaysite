@@ -1,8 +1,8 @@
 import store from "@/redux/store";
 import axios from "axios";
 
-const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/chat";
-const API_VENDOR_BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
+const API_CHAT_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/chat";
+const API_VENDOR_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
 const getAuthToken = () => {
   const state = store.getState();

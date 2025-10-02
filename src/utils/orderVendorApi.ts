@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://mbayy-be.onrender.com/api/v1";
+const BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1";
 
 // Create axios instance with default config
 const orderApi = axios.create({

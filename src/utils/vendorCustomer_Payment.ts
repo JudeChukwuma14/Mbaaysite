@@ -2,7 +2,7 @@
 import axios, { AxiosError } from "axios";
 
 /* 1. Clean base URL */
-const BASE_URL = "https://mbayy-be.onrender.com/api/v1/vendor";
+const BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
 /* 2. Axios instance */
 const vendorApi = axios.create({
