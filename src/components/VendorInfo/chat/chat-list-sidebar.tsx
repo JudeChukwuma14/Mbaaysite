@@ -266,7 +266,7 @@ const ChatItem = memo(
             </div>
             <div className="flex items-center gap-2 whitespace-nowrap">
               {unread > 0 && (
-                <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs font-semibold text-white bg-red-500 rounded-full">
+                <span className="inline-flex items-center justify-center h-5 px-2 text-xs font-semibold text-white bg-red-500 rounded-full min-w-5">
                   {unread}
                 </span>
               )}
@@ -294,93 +294,6 @@ const ChatItem = memo(
   }
 );
 
-// const ChatItem = memo(
-//   ({
-//     chat,
-//     isActive,
-//     onSelect,
-//     Typing,
-//   }: {
-//     chat: Chat;
-//     isActive: boolean;
-//     onSelect: (chatId: string) => void;
-//     Typing: Record<string, boolean>;
-//   }) => {
-//     const isVendor = chat.isVendor === "vendors";
-//     const hasAvatar = chat.avatar && chat.avatar !== "/placeholder.svg";
-//     const lastLine = chat.lastMessage || "Media";
-//     return (
-//       <motion.button
-//         initial={{ opacity: 0, y: 20 }}
-//         animate={{ opacity: 1, y: 0 }}
-//         exit={{ opacity: 0, y: -20 }}
-//         whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
-//         whileTap={{ scale: 0.98 }}
-//         onClick={() => onSelect(chat._id)}
-//         className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
-//           isActive
-//             ? "bg-orange-50 border-l-4 border-l-orange-500"
-//             : "hover:bg-gray-50"
-//         }`}
-//       >
-//         <div className="relative">
-//           {hasAvatar ? (
-//             <img
-//               src={chat.avatar}
-//               alt={chat.name}
-//               className="object-cover w-12 h-12 rounded-full"
-//               loading="lazy"
-//             />
-//           ) : (
-//             <div
-//               className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
-//                 isVendor
-//                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
-//                   : "bg-gradient-to-br from-blue-500 to-blue-600"
-//               }`}
-//             >
-//               {getInitials(chat.name)}
-//             </div>
-//           )}
-//           {chat.isOnline && (
-//             <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full shadow-sm" />
-//           )}
-//         </div>
-//         <div className="flex-1 min-w-0 text-left">
-//           <div className="flex items-start justify-between">
-//             <div className="truncate">
-//               <p className="font-semibold text-gray-900 truncate">
-//                 {chat.name}
-//               </p>
-//               <span
-//                 className={`text-xs px-2 py-1 rounded-full ${
-//                   isVendor
-//                     ? "bg-orange-100 text-orange-700"
-//                     : "bg-blue-100 text-blue-700"
-//                 }`}
-//               >
-//                 {isVendor ? "Vendor" : "User"}
-//               </span>
-//             </div>
-//             <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap">
-//               <Clock className="w-3 h-3" />
-//               {formatTime(chat.timestamp)}
-//             </div>
-//           </div>
-//           <p className="mt-2 text-sm leading-relaxed text-gray-600 truncate">
-//             {lastLine}
-//           </p>
-//           {Typing[chat._id] && (
-//             <span className="flex items-center gap-1 mt-1 text-xs text-gray-500">
-//               <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-//               typing…
-//             </span>
-//           )}
-//         </div>
-//       </motion.button>
-//     );
-//   }
-// );
 
 export function ChatListSidebar({
   activeChat,
@@ -718,17 +631,17 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="flex flex-col bg-white w-80 h-full"
+      className="flex flex-col h-full bg-white w-80"
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <MessageCircle className="w-6 h-6 text-orange-500" />
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="flex items-center gap-2 text-xl font-bold text-gray-900">
               Chats
               {unreadCount > 0 && (
-                <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs text-white bg-red-500 rounded-full">
+                <span className="inline-flex items-center justify-center h-5 px-2 text-xs text-white bg-red-500 rounded-full min-w-5">
                   {unreadCount}
                 </span>
               )}
@@ -737,7 +650,7 @@ export function ChatListSidebar({
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <motion.button
-                className="p-2 transition-colors rounded-full hover:bg-orange-100 cursor-pointer"
+                className="p-2 transition-colors rounded-full cursor-pointer hover:bg-orange-100"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -771,7 +684,7 @@ export function ChatListSidebar({
                   <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="overflow-y-auto max-h-full">
+                <div className="max-h-full overflow-y-auto">
                   {searchResults.map((contact: Contact) => (
                     <ContactItem
                       key={contact._id}
@@ -807,7 +720,7 @@ export function ChatListSidebar({
       {/* Chat List */}
       <div
         ref={listContainerRef}
-        className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
       >
         <AnimatePresence mode="wait">
           {filteredChats.length === 0 ? (

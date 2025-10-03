@@ -365,9 +365,6 @@ const FilePreview = React.memo(
           )}
         </div>
 
-        {/* info footer */}
-
-        {/* floating download icon */}
         <button
           type="button"
           onClick={handleDownload}
