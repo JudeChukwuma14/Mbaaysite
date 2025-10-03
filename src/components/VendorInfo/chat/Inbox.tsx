@@ -1,4 +1,3 @@
-
 import React, {
   useState,
   useRef,
@@ -270,7 +269,6 @@ const Toast = React.memo(({ message }: { message: string }) => (
 //   </span>
 // ));
 
-
 const FilePreview = React.memo(
   ({ file, onClick }: { file: FileAttachment; onClick?: () => void }) => {
     const isImage = file.type === "image";
@@ -354,7 +352,6 @@ const FilePreview = React.memo(
           onClick={handleDownload}
           title={`Download ${file.name}`}
           className="absolute grid w-8 h-8 transition rounded-full shadow opacity-0 pointer-events-auto right-3 top-3 place-content-center bg-white/80 backdrop-blur group-hover:opacity-100 hover:bg-white"
-
         >
           <FileText className="w-8 h-8 mb-1 text-gray-600" />
           <span className="max-w-full text-xs font-medium truncate">
@@ -364,11 +361,11 @@ const FilePreview = React.memo(
             {formatFileSize(file.size)}
           </span>
           <Download className="w-4 h-4 mt-1 text-gray-500" />
-        </a>
-      )}
-    </div>
-  );
-});
+        </button>
+      </div>
+    );
+  }
+);
 
 // Extracted Components
 const PinnedMessagesSection = React.memo(
@@ -477,7 +474,6 @@ const MessageItem = React.memo(
       className={`flex gap-3 mb-4 ${msg.isMe ? "justify-end" : ""}`}
     >
       {!msg.isMe && activeChatDetails && (
-
         <>
           {activeChatDetails?.avatar &&
           activeChatDetails?.avatar !== "/placeholder.svg" ? (
@@ -490,7 +486,7 @@ const MessageItem = React.memo(
           ) : (
             <div
               className={`self-end object-cover w-8 h-8 rounded-full flex items-center justify-center text-white font-bold shadow-lg  ${
-                activeChatDetails?.isVendor === true
+                activeChatDetails?.isVendor === "true"
                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
                   : "bg-gradient-to-br from-blue-500 to-blue-600"
               }`}
@@ -499,7 +495,6 @@ const MessageItem = React.memo(
             </div>
           )}
         </>
-
       )}
 
       <div className={`max-w-[70%] ${msg.isMe ? "order-1" : "order-2"}`}>
@@ -597,7 +592,6 @@ const MessageItem = React.memo(
       </div>
 
       {msg.isMe && (
-
         <>
           {user.vendor.avatar && user.vendor.avatar !== "/placeholder.svg" ? (
             <img
@@ -616,7 +610,6 @@ const MessageItem = React.memo(
             </div>
           )}
         </>
-
       )}
     </motion.div>
   )
@@ -680,7 +673,6 @@ const ReplyPreview = React.memo(
     const replyMessage = activeMessages.find((m: any) => m._id === replyingTo);
     if (!replyMessage) return null;
 
-
     const trimmed = (replyMessage.content || "").trim();
     const hasFiles =
       Array.isArray(replyMessage.files) && replyMessage.files.length > 0;
@@ -702,7 +694,6 @@ const ReplyPreview = React.memo(
         ? `${trimmed.slice(0, 50)}${trimmed.length > 50 ? "…" : ""}`
         : mediaLabel;
 
-
     return isInline ? (
       <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 border-l-4 border-orange-500 rounded-t-lg">
         <div className="flex items-center gap-1 mb-1 text-xs text-orange-600">
@@ -716,9 +707,7 @@ const ReplyPreview = React.memo(
         <div className="flex items-center gap-2">
           <Reply className="w-4 h-4 text-orange-600" />
           <p className="text-sm font-medium text-orange-800">
-
             Replying to: <span className="text-orange-600">{previewText}</span>
-
           </p>
         </div>
         {onCancel && (
@@ -742,6 +731,7 @@ const MessageInput = React.memo(
     editingMessageId,
     showEmojiPicker,
     isUploading,
+    uploadProgress,
     inputRef,
     imageInputRef,
     videoInputRef,
@@ -759,6 +749,7 @@ const MessageInput = React.memo(
     editingMessageId: string | null;
     showEmojiPicker: boolean;
     isUploading: boolean;
+    uploadProgress: number | null;
     inputRef: React.RefObject<HTMLInputElement>;
     imageInputRef: React.RefObject<HTMLInputElement>;
     videoInputRef: React.RefObject<HTMLInputElement>;
@@ -882,7 +873,6 @@ const MessageInput = React.memo(
         </div>
       )}
 
-
       {isUploading && (
         <div className="mt-2">
           <div className="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
@@ -896,7 +886,6 @@ const MessageInput = React.memo(
           </div>
         </div>
       )}
-
     </motion.div>
   )
 );
@@ -1201,8 +1190,8 @@ export default function ChatInterface() {
     null
   );
   const [isUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [optimisticMsgs, setOptimisticMsgs] = useState<Message[]>([]);
-
 
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1385,7 +1374,6 @@ export default function ChatInterface() {
     };
   }, [activeChat, socket, queryClient]);
 
-
   // Scroll to bottom and focus input when switching chats
   useEffect(() => {
     if (!activeChat) return;
@@ -1469,9 +1457,7 @@ export default function ChatInterface() {
     setMessage("");
     setReplyingTo(null);
     try {
-
-      await sendMessageMutation.mutateAsync({
-
+      const res = await sendMessageMutation.mutateAsync({
         chatId: activeChat,
         content: message.trim(),
         token: user.token,
@@ -1510,7 +1496,6 @@ export default function ChatInterface() {
         // Ensure we clear progress on error as well
         setUploadProgress(null);
       }
-
     },
     [activeChat, user.token, message, replyingTo]
   );
@@ -1728,14 +1713,13 @@ export default function ChatInterface() {
     [showFeedback]
   );
 
-
   const getInitials = (name: string) => {
     return `${name.charAt(0).toUpperCase()}${
       name.split(" ")[1]?.charAt(0).toUpperCase() || ""
     }`;
   };
 
-  const isVendor = activeChatDetails?.isVendor === true;
+  const isVendor = activeChatDetails?.isVendor === "true";
   console.log(activeChatDetails);
   const hasAvatar =
     activeChatDetails?.avatar &&
@@ -1761,7 +1745,6 @@ export default function ChatInterface() {
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
           >
-
             {hasAvatar ? (
               <img
                 src={activeChatDetails?.avatar}
@@ -1853,44 +1836,41 @@ export default function ChatInterface() {
           />
         )}
 
-        {activeChatDetails && (
-
-          <MessageInput
-            message={message}
-            editingMessageId={editingMessageId}
-            showEmojiPicker={showEmojiPicker}
-            isUploading={isUploading}
-            inputRef={messageInputRef}
-            imageInputRef={imageInputRef}
-            videoInputRef={videoInputRef}
-            docInputRef={docInputRef}
-            onChange={(e) => {
-              setMessage(e.target.value);
-              handleTyping();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                editingMessageId ? handleSaveEdit() : handleSendMessage();
-              }
-              if (e.key === "Escape") {
-                e.preventDefault();
-                setEditingMessageId(null);
-                setMessage("");
-              }
-            }}
-            onEmojiSelect={(emoji) => setMessage((prev) => prev + emoji)}
-            onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
-            onFileUpload={handleFileUpload}
-            onSaveEdit={handleSaveEdit}
-            onSend={handleSendMessage}
-            onCancelEdit={() => {
+        <MessageInput
+          message={message}
+          editingMessageId={editingMessageId}
+          showEmojiPicker={showEmojiPicker}
+          isUploading={isUploading}
+          uploadProgress={uploadProgress}
+          inputRef={messageInputRef}
+          imageInputRef={imageInputRef}
+          videoInputRef={videoInputRef}
+          docInputRef={docInputRef}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            handleTyping();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              editingMessageId ? handleSaveEdit() : handleSendMessage();
+            }
+            if (e.key === "Escape") {
+              e.preventDefault();
               setEditingMessageId(null);
               setMessage("");
-            }}
-          />
-
-        )}
+            }
+          }}
+          onEmojiSelect={(emoji) => setMessage((prev) => prev + emoji)}
+          onToggleEmojiPicker={() => setShowEmojiPicker(!showEmojiPicker)}
+          onFileUpload={handleFileUpload}
+          onSaveEdit={handleSaveEdit}
+          onSend={handleSendMessage}
+          onCancelEdit={() => {
+            setEditingMessageId(null);
+            setMessage("");
+          }}
+        />
       </div>
 
       <DeleteDialog
