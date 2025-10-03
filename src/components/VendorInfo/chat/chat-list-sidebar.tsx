@@ -187,7 +187,8 @@ const ChatItem = memo(
     onSelect,
 
     typingMap, // ← rename prop to match parent
-    itemRef,
+
+    // itemRef,
     unread = 0,
   }: {
     chat: Chat;
@@ -195,6 +196,7 @@ const ChatItem = memo(
     onSelect: (chatId: string) => void;
 
     typingMap: Record<string, boolean>; // ← correct type
+
     itemRef?: (el: HTMLButtonElement | null) => void;
     unread?: number;
   }) => {
@@ -213,10 +215,9 @@ const ChatItem = memo(
         whileHover={{ backgroundColor: "rgba(249, 115, 22, 0.05)" }}
         whileTap={{ scale: 0.98 }}
         onClick={() => onSelect(chat._id)}
-        ref={itemRef}
         className={`w-full p-4 flex items-start gap-3 border-b transition-all duration-200 ${
           isActive
-            ? "bg-orange-50/60 border-l-4 border-l-orange-500"
+            ? "bg-orange-50 border-l-4 border-l-orange-500"
             : "hover:bg-gray-50"
         }`}
       >
@@ -227,12 +228,12 @@ const ChatItem = memo(
             <img
               src={chat.avatar}
               alt={chat.name}
-              className="object-cover w-12 h-12 rounded-full ring-1 ring-gray-200"
+              className="object-cover w-12 h-12 rounded-full"
               loading="lazy"
             />
           ) : (
             <div
-              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow ${
+              className={`flex items-center justify-center w-12 h-12 text-white rounded-full text-[17px] font-bold shadow-lg ${
                 isVendor
                   ? "bg-gradient-to-br from-orange-500 to-orange-600"
                   : "bg-gradient-to-br from-blue-500 to-blue-600"
@@ -294,7 +295,6 @@ const ChatItem = memo(
   }
 );
 
-
 export function ChatListSidebar({
   activeChat,
   setActiveChat,
@@ -308,7 +308,8 @@ export function ChatListSidebar({
   const user = useSelector((state: any) => state.vendor);
   const { data: unreadData } = useUnreadChatCount(user?.vendor?._id);
   const unreadCount = Number(unreadData?.count || 0);
-  const perChatUnread: Record<string, number> = (unreadData as any)?.chats || {};
+  const perChatUnread: Record<string, number> =
+    (unreadData as any)?.chats || {};
   const markReadMutation = useMarkChatAsRead();
 
   const {
@@ -435,8 +436,8 @@ export function ChatListSidebar({
             participant?.profileImage ||
             participant?.details?.avatar ||
             "/placeholder.svg",
-          lastMessage: lastMessagePreview,
-          timestamp: (lastNonDeleted as any)?.createdAt || chat.updatedAt,
+          lastMessage: lastMsg?.content || lastMsg?.name || "Media",
+          timestamp: lastMsg?.createdAt || chat.updatedAt,
           isVendor: participant?.model || false,
           isOnline: participant?.isOnline || false,
           messages: chatMessages,
@@ -462,6 +463,7 @@ export function ChatListSidebar({
   const [sidebarTypingMap, setSidebarTypingMap] = useState<
     Record<string, boolean>
   >({});
+
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
@@ -508,8 +510,6 @@ export function ChatListSidebar({
 
     return () => {
       ids.forEach((id: any) => socket.emit("leaveChat", id));
-      socket.off("typing", onTyping);
-      socket.off("stopTyping", onStopTyping);
     };
   }, [socket, chatList]);
 
@@ -661,7 +661,7 @@ export function ChatListSidebar({
                 )}
               </motion.button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0 h-[calc(100vh-100px)]">
+            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0">
               <DropdownMenuItem className="font-semibold text-orange-600">
                 <Users className="w-4 h-4 mr-2" />
                 New Chat
@@ -718,6 +718,7 @@ export function ChatListSidebar({
       </div>
 
       {/* Chat List */}
+
       <div
         ref={listContainerRef}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"

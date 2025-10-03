@@ -142,8 +142,7 @@ export const deleteMessage = async (
 export const sendMediaMessage = async (
   chatId: string,
   formData: FormData,
-  token: string | null,
-  onUploadProgress?: (percent: number) => void
+  token: string | null
 ) => {
   try {
     console.debug(`[CHAT] POST /chat/${chatId}/send_media_message`);
@@ -153,14 +152,6 @@ export const sendMediaMessage = async (
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (evt) => {
-          if (!onUploadProgress) return;
-          if (evt.total) {
-            const percent = Math.round((evt.loaded * 100) / evt.total);
-            onUploadProgress(percent);
-          }
         },
       }
     );
@@ -177,7 +168,7 @@ export const sendMediaMessage = async (
 
 // Prepare form data for media messages
 export const prepareMediaFormData = (
-  files: { images?: File[]; video?: File; documents?: File[] },
+  files: { images?: File[]; video?: File },
   content?: string,
   replyTo?: string
 ): FormData => {
@@ -204,14 +195,6 @@ export const prepareMediaFormData = (
   // Add video if provided (max 1 as per backend)
   if (files.video) {
     formData.append("video", files.video);
-  }
-
-  // Add documents if provided (limit to 5 to be safe)
-  if (files.documents && files.documents.length > 0) {
-    const docsToUpload = files.documents.slice(0, 5);
-    docsToUpload.forEach((doc) => {
-      formData.append("documents", doc);
-    });
   }
 
   return formData;

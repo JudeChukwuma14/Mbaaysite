@@ -34,7 +34,7 @@ const Signin: React.FC = () => {
     formState: { errors },
   } = useForm<FormData>();
 
-    const onSubmit: SubmitHandler<FormData> = async (data) => {
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
     setIsLoading(true);
     try {
       // Ensure sessionId exists
@@ -55,7 +55,11 @@ const Signin: React.FC = () => {
             if (guestCart && Array.isArray(guestCart)) {
               await Promise.all(
                 guestCart.map((item: any) =>
-                  updateCartQuantity(currentSessionId, item.product._id, item.quantity)
+                  updateCartQuantity(
+                    currentSessionId,
+                    item.product._id,
+                    item.quantity
+                  )
                 )
               );
               const updatedCart = await getCart(currentSessionId);
@@ -110,8 +114,10 @@ const Signin: React.FC = () => {
             </div>
             <div className="hidden my-4 text-right lg:block md:mx-16 lg:w-full">
               <span className="text-gray-600">Don't have an Account? </span>
-              <Link to="/signup" className="text-blue-500 hover:underline">
-                Sign Up now!
+              <Link to="/signup">
+                <span className="text-blue-500 hover:underline">
+                  Sign Up now!
+                </span>
               </Link>
             </div>
           </div>
@@ -195,21 +201,20 @@ const Signin: React.FC = () => {
                 <hr className="flex-grow border-gray-300" />
               </div>
 
-             <GoogleButton/>
+              <GoogleButton />
 
               <div className="mt-4 text-left">
-                <Link
-                  to={"/signup-vendor"}
-                  className="text-orange-500 hover:underline"
-                >
-                  Become a Vendor/Seller?
+                <Link to={"/signup-vendor"}>
+                  <span className="text-orange-500 hover:underline">
+                    Become a Vendor/Seller?
+                  </span>
                 </Link>
               </div>
 
               <div className="block my-2 text-left lg:hidden">
                 <span className="text-gray-600">Don't have an account? </span>
-                <Link to={"/signup"} className="text-blue-500 hover:underline">
-                  Sign up
+                <Link to={"/signup"}>
+                  <span className="text-blue-500 hover:underline">Sign up</span>
                 </Link>
               </div>
             </div>

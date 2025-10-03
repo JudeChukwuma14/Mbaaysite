@@ -1,3 +1,4 @@
+
 import React, {
   useState,
   useRef,
@@ -79,7 +80,6 @@ interface Message {
   isMe?: boolean;
   tempId?: string;
   status: Status;
-  clientKey?: string;
 }
 
 interface ChatParticipant {
@@ -100,7 +100,7 @@ interface Chat {
   avatar: string;
   lastMessage: string;
   timestamp: string;
-  isVendor: boolean;
+  isVendor: string;
   isOnline: boolean;
   messages: Message[];
   storeName?: string;
@@ -251,23 +251,6 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
 
-// Normalize attachments coming from API
-const normalizeAttachmentType = (t: any): FileAttachment["type"] => {
-  const s = typeof t === "string" ? t.toLowerCase() : "";
-  if (s.startsWith("image")) return "image";
-  if (s.startsWith("video")) return "video";
-  return "document";
-};
-
-const extractFileUrl = (f: any): string => {
-  return f?.url || f?.location || f?.src || f?.secure_url || "";
-};
-
-const extractFileName = (f: any, url: string): string => {
-  const fromUrl = typeof url === "string" ? url.split("/").pop() : "";
-  return f?.name || fromUrl || "file";
-};
-
 // Components
 const Toast = React.memo(({ message }: { message: string }) => (
   <motion.div
@@ -286,6 +269,7 @@ const Toast = React.memo(({ message }: { message: string }) => (
 //     typing…
 //   </span>
 // ));
+
 
 const FilePreview = React.memo(
   ({ file, onClick }: { file: FileAttachment; onClick?: () => void }) => {
@@ -370,13 +354,21 @@ const FilePreview = React.memo(
           onClick={handleDownload}
           title={`Download ${file.name}`}
           className="absolute grid w-8 h-8 transition rounded-full shadow opacity-0 pointer-events-auto right-3 top-3 place-content-center bg-white/80 backdrop-blur group-hover:opacity-100 hover:bg-white"
+
         >
-          <Download className="w-4 h-4 text-gray-700" />
-        </button>
-      </div>
-    );
-  }
-);
+          <FileText className="w-8 h-8 mb-1 text-gray-600" />
+          <span className="max-w-full text-xs font-medium truncate">
+            {file.name}
+          </span>
+          <span className="text-xs text-gray-500">
+            {formatFileSize(file.size)}
+          </span>
+          <Download className="w-4 h-4 mt-1 text-gray-500" />
+        </a>
+      )}
+    </div>
+  );
+});
 
 // Extracted Components
 const PinnedMessagesSection = React.memo(
@@ -461,7 +453,6 @@ const MessageItem = React.memo(
     message: msg,
     activeChatDetails,
     user,
-    allMessages,
     onReply,
     onCopy,
     onEdit,
@@ -472,7 +463,6 @@ const MessageItem = React.memo(
     message: Message;
     activeChatDetails: Chat;
     user: any;
-    allMessages: Message[];
     onReply: (messageId: string) => void;
     onCopy: (text: string) => void;
     onEdit: (messageId: string) => void;
@@ -483,9 +473,11 @@ const MessageItem = React.memo(
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
       className={`flex gap-3 mb-4 ${msg.isMe ? "justify-end" : ""}`}
     >
       {!msg.isMe && activeChatDetails && (
+
         <>
           {activeChatDetails?.avatar &&
           activeChatDetails?.avatar !== "/placeholder.svg" ? (
@@ -507,6 +499,7 @@ const MessageItem = React.memo(
             </div>
           )}
         </>
+
       )}
 
       <div className={`max-w-[70%] ${msg.isMe ? "order-1" : "order-2"}`}>
@@ -517,21 +510,19 @@ const MessageItem = React.memo(
               : "bg-white border border-gray-200"
           }`}
         >
-          {msg.replyTo && (
-            <ReplyPreview
-              replyingTo={msg.replyTo}
-              activeMessages={allMessages}
-              isInline
-            />
-          )}
           {msg.files && msg.files.length > 0 && (
-            <div className="flex flex-wrap gap-3 mt-2 h-[200px]">
-              {msg.files.map((file, idx) => (
-                <FilePreview
-                  key={idx}
-                  file={file}
-                  onClick={() => onOpenMedia(msg.files!, idx)}
-                />
+            <div className="flex flex-col gap-2 mt-2">
+              {msg.files.map((file, i) => (
+                <div
+                  key={i}
+                  className="relative overflow-hidden rounded-lg cursor-pointer group"
+                  onClick={() => onOpenMedia(msg.files!, i)}
+                >
+                  <FilePreview file={file} />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 bg-black/30 group-hover:opacity-100">
+                    <Download className="w-6 h-6 text-white" />
+                  </div>
+                </div>
               ))}
             </div>
           )}
@@ -606,6 +597,7 @@ const MessageItem = React.memo(
       </div>
 
       {msg.isMe && (
+
         <>
           {user.vendor.avatar && user.vendor.avatar !== "/placeholder.svg" ? (
             <img
@@ -624,6 +616,7 @@ const MessageItem = React.memo(
             </div>
           )}
         </>
+
       )}
     </motion.div>
   )
@@ -656,11 +649,10 @@ const MessageList = React.memo(
         .filter((msg: any) => msg.deletedFor === "none")
         .map((msg: any) => (
           <MessageItem
-            key={msg.clientKey || msg._id}
+            key={msg._id}
             message={msg}
             activeChatDetails={activeChatDetails}
             user={user}
-            allMessages={messages}
             onReply={onReply}
             onCopy={onCopy}
             onEdit={onEdit}
@@ -688,6 +680,7 @@ const ReplyPreview = React.memo(
     const replyMessage = activeMessages.find((m: any) => m._id === replyingTo);
     if (!replyMessage) return null;
 
+
     const trimmed = (replyMessage.content || "").trim();
     const hasFiles =
       Array.isArray(replyMessage.files) && replyMessage.files.length > 0;
@@ -709,20 +702,23 @@ const ReplyPreview = React.memo(
         ? `${trimmed.slice(0, 50)}${trimmed.length > 50 ? "…" : ""}`
         : mediaLabel;
 
+
     return isInline ? (
       <div className="p-2 mb-1 text-sm text-gray-600 bg-gray-100 border-l-4 border-orange-500 rounded-t-lg">
         <div className="flex items-center gap-1 mb-1 text-xs text-orange-600">
           <Reply className="w-3 h-3" />
           Replying to:
         </div>
-        {previewText}
+        {replyMessage.content?.slice(0, 50)}…
       </div>
     ) : (
       <div className="flex items-center justify-between flex-shrink-0 p-3 border-t border-orange-200 bg-gradient-to-r from-orange-50 to-orange-100">
         <div className="flex items-center gap-2">
           <Reply className="w-4 h-4 text-orange-600" />
           <p className="text-sm font-medium text-orange-800">
+
             Replying to: <span className="text-orange-600">{previewText}</span>
+
           </p>
         </div>
         {onCancel && (
@@ -746,7 +742,6 @@ const MessageInput = React.memo(
     editingMessageId,
     showEmojiPicker,
     isUploading,
-    uploadProgress,
     inputRef,
     imageInputRef,
     videoInputRef,
@@ -764,7 +759,6 @@ const MessageInput = React.memo(
     editingMessageId: string | null;
     showEmojiPicker: boolean;
     isUploading: boolean;
-    uploadProgress?: number | null;
     inputRef: React.RefObject<HTMLInputElement>;
     imageInputRef: React.RefObject<HTMLInputElement>;
     videoInputRef: React.RefObject<HTMLInputElement>;
@@ -888,6 +882,7 @@ const MessageInput = React.memo(
         </div>
       )}
 
+
       {isUploading && (
         <div className="mt-2">
           <div className="w-full h-2 overflow-hidden bg-gray-200 rounded-full">
@@ -901,6 +896,7 @@ const MessageInput = React.memo(
           </div>
         </div>
       )}
+
     </motion.div>
   )
 );
@@ -1204,9 +1200,9 @@ export default function ChatInterface() {
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(
     null
   );
-  // Upload progress (null when idle)
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  // We rely on React Query's optimistic updates instead of local duplicates
+  const [isUploading] = useState(false);
+  const [optimisticMsgs, setOptimisticMsgs] = useState<Message[]>([]);
+
 
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1272,57 +1268,37 @@ export default function ChatInterface() {
           hour: "2-digit",
           minute: "2-digit",
         }),
-        // Treat react-query optimistic entries (sender._id === "current-user") as me
-        isMe:
-          m.sender?._id === user.vendor._id || m.sender?._id === "current-user",
-        status: (m.isOptimistic ? "pending" : "delivered") as Status,
-        clientKey: m.clientKey || m._id,
-        files:
-          Array.isArray(m.files) && m.files.length > 0
-            ? m.files.map((f: any) => ({
-                type: normalizeAttachmentType(
-                  f?.type || f?.mimetype || f?.mime
-                ),
-                url: extractFileUrl(f),
-                name: extractFileName(f, extractFileUrl(f)),
-                size: typeof f?.size === "number" ? f.size : 0,
-              }))
-            : [
-                ...(m.images || []).map((url: string) => ({
-                  type: "image" as const,
-                  url,
-                  name: url.split("/").pop() || "image",
+        isMe: m.sender?._id === user.vendor._id,
+        status: "delivered" as Status,
+        files: [
+          ...(m.images || []).map((url: string) => ({
+            type: "image" as const,
+            url,
+            name: url.split("/").pop() || "image",
+            size: 0,
+          })),
+          ...(m.video
+            ? [
+                {
+                  type: "video" as const,
+                  url: m.video,
+                  name: m.video.split("/").pop() || "video",
                   size: 0,
-                })),
-                ...(m.video
-                  ? [
-                      {
-                        type: "video" as const,
-                        url: m.video,
-                        name: m.video.split("/").pop() || "video",
-                        size: 0,
-                      },
-                    ]
-                  : []),
-                ...(m.documents || []).map((url: string) => ({
-                  type: "document" as const,
-                  url,
-                  name: url.split("/").pop() || "document",
-                  size: 0,
-                })),
-              ],
-        replyTo:
-          typeof m.replyTo === "string"
-            ? m.replyTo
-            : m.replyTo?.id || m.replyTo?._id || undefined,
+                },
+              ]
+            : []),
+        ],
+        replyTo: m.replyTo,
         isEdited: m.isEdited || false,
         deletedFor: m.deletedFor || "none",
       })),
     [apiMessages, user.vendor._id]
   );
 
-  // Render messages directly from the query cache mapping
-  const visibleMessages = activeMessages;
+  const visibleMessages = useMemo(
+    () => [...optimisticMsgs, ...activeMessages],
+    [optimisticMsgs, activeMessages]
+  );
 
   const isTyping = useTyping(socket, activeChat);
   // const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -1373,67 +1349,10 @@ export default function ChatInterface() {
     if (!activeChat || !socket) return;
     socket.emit("joinChat", activeChat);
     const onNew = (m: any) =>
-      queryClient.setQueryData(["messages", activeChat], (o: any) => {
-        const existing: any[] = Array.isArray(o?.messages) ? o.messages : [];
-        // 1) If server ID already present, replace that entry
-        const idxById = existing.findIndex((x) => x?._id === m._id);
-        if (idxById !== -1) {
-          const copy = existing.slice();
-          const preservedReplyTo = existing[idxById]?.replyTo;
-          copy[idxById] = {
-            ...m,
-            // if server payload is missing replyTo (often the case on minimal events), keep optimistic
-            replyTo: m.replyTo ?? preservedReplyTo,
-            clientKey: existing[idxById].clientKey || existing[idxById]._id,
-          };
-          return { ...o, messages: copy };
-        }
-        // 2) If there is an optimistic entry that matches by content+time, replace IN PLACE
-        const idxOptimisticSimilar = existing.findIndex(
-          (x: any) =>
-            x?.isOptimistic &&
-            x?.content === m?.content &&
-            Math.abs(
-              new Date(x?.createdAt).getTime() -
-                new Date(m?.createdAt).getTime()
-            ) < 10000
-        );
-        if (idxOptimisticSimilar !== -1) {
-          const copy = existing.slice();
-          const preservedReplyTo = existing[idxOptimisticSimilar]?.replyTo;
-          copy[idxOptimisticSimilar] = {
-            ...m,
-            replyTo: m.replyTo ?? preservedReplyTo,
-            clientKey:
-              existing[idxOptimisticSimilar].clientKey ||
-              existing[idxOptimisticSimilar]._id,
-          };
-          return { ...o, messages: copy };
-        }
-        // 3) Fallback: if any optimistic exists, replace the latest one in-place
-        const lastOptimisticIdx = [...existing]
-          .map((x, i) => ({ x, i }))
-          .filter(({ x }) => x?.isOptimistic)
-          .map(({ i }) => i)
-          .pop();
-        if (lastOptimisticIdx !== undefined) {
-          const copy = existing.slice();
-          const preservedReplyTo = copy[lastOptimisticIdx]?.replyTo;
-          copy[lastOptimisticIdx] = {
-            ...m,
-            replyTo: m.replyTo ?? preservedReplyTo,
-            clientKey:
-              copy[lastOptimisticIdx].clientKey || copy[lastOptimisticIdx]._id,
-          };
-          return { ...o, messages: copy };
-        }
-        // 4) Otherwise, append but first drop other stale optimistics (rare)
-        const withoutOptimistic = existing.filter((x: any) => !x?.isOptimistic);
-        return {
-          ...o,
-          messages: [...withoutOptimistic, { ...m, clientKey: m._id }],
-        };
-      });
+      queryClient.setQueryData(["messages", activeChat], (o: any) => ({
+        ...o,
+        messages: [...(o?.messages || []), m],
+      }));
     const onEdit = (u: any) =>
       queryClient.setQueryData(["messages", activeChat], (o: any) => ({
         ...o,
@@ -1449,9 +1368,12 @@ export default function ChatInterface() {
     socket.on("messageDeleted", onDelete);
 
     /* optimistic -> delivered tick */
-    const onDelivered = (_payload: { tempId: string; _id: string }) => {
-      // We no longer keep local optimistic messages; nothing to do here.
-    };
+    const onDelivered = ({ tempId, _id }: { tempId: string; _id: string }) =>
+      setOptimisticMsgs((prev) =>
+        prev.map((m) =>
+          m.tempId === tempId ? { ...m, _id, status: "delivered" } : m
+        )
+      );
     socket.on("messageDelivered", onDelivered);
 
     return () => {
@@ -1462,6 +1384,7 @@ export default function ChatInterface() {
       socket.off("messageDelivered", onDelivered);
     };
   }, [activeChat, socket, queryClient]);
+
 
   // Scroll to bottom and focus input when switching chats
   useEffect(() => {
@@ -1527,18 +1450,36 @@ export default function ChatInterface() {
 
   const handleSendMessage = async () => {
     if (!message.trim() || !activeChat) return;
+    const tempId = Date.now().toString();
+    const opt: Message = {
+      tempId,
+      _id: tempId,
+      content: message.trim(),
+      sender: "You",
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      isMe: true,
+      status: "pending",
+      files: [],
+      isVendor: true,
+    };
+    setOptimisticMsgs((prev) => [...prev, opt]);
     setMessage("");
     setReplyingTo(null);
     try {
+
       await sendMessageMutation.mutateAsync({
+
         chatId: activeChat,
         content: message.trim(),
         token: user.token,
         replyTo: replyingTo || undefined,
       });
-      // Do not emit via socket here; server will broadcast newMessage
+      socket?.emit("sendMessage", { chatId: activeChat, ...res, tempId });
     } catch {
-      // react-query will rollback its optimistic update on error
+      setOptimisticMsgs((prev) => prev.filter((m) => m.tempId !== tempId));
     }
   };
 
@@ -1552,29 +1493,24 @@ export default function ChatInterface() {
       const authToken = user.token;
       if (!authToken) return;
       try {
-        setUploadProgress(0);
         const payload = {
           chatId: activeChat,
-          files:
-            type === "images"
-              ? { images: Array.from(files) }
-              : type === "documents"
-              ? { documents: Array.from(files) }
-              : { video: files[0] },
+          files: { [type]: type === "images" ? Array.from(files) : files[0] },
           token: authToken,
           content: message.trim() || undefined,
           replyTo: replyingTo || undefined,
-          onProgress: (p: number) => setUploadProgress(p),
         };
         await sendMediaMessageMutation.mutateAsync(payload);
         setMessage("");
         setReplyingTo(null);
+
         setUploadProgress(null);
       } catch {
       } finally {
         // Ensure we clear progress on error as well
         setUploadProgress(null);
       }
+
     },
     [activeChat, user.token, message, replyingTo]
   );
@@ -1792,6 +1728,7 @@ export default function ChatInterface() {
     [showFeedback]
   );
 
+
   const getInitials = (name: string) => {
     return `${name.charAt(0).toUpperCase()}${
       name.split(" ")[1]?.charAt(0).toUpperCase() || ""
@@ -1804,6 +1741,7 @@ export default function ChatInterface() {
     activeChatDetails?.avatar &&
     activeChatDetails?.avatar !== "/placeholder.svg";
   console.log(user.vendor);
+
   // Render
   return (
     <div className="flex h-full bg-gray-50">
@@ -1816,13 +1754,14 @@ export default function ChatInterface() {
         typingMap={typingMap}
       />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1">
         {activeChatDetails ? (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
           >
+
             {hasAvatar ? (
               <img
                 src={activeChatDetails?.avatar}
@@ -1841,6 +1780,7 @@ export default function ChatInterface() {
                 {getInitials(activeChatDetails?.name)}
               </div>
             )}
+
             <div className="flex-1">
               <div className="flex-1">
                 <h2 className="text-lg font-semibold">
@@ -1914,12 +1854,12 @@ export default function ChatInterface() {
         )}
 
         {activeChatDetails && (
+
           <MessageInput
             message={message}
             editingMessageId={editingMessageId}
             showEmojiPicker={showEmojiPicker}
-            isUploading={uploadProgress !== null}
-            uploadProgress={uploadProgress}
+            isUploading={isUploading}
             inputRef={messageInputRef}
             imageInputRef={imageInputRef}
             videoInputRef={videoInputRef}
@@ -1949,6 +1889,7 @@ export default function ChatInterface() {
               setMessage("");
             }}
           />
+
         )}
       </div>
 

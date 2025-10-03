@@ -127,50 +127,31 @@ const Dashboard = () => {
     }
   };
 
-  // Month helpers
-  const monthsShort = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const now = new Date();
-  const currentMonthIndex = now.getMonth(); // 0-11
-  // Rolling last-12 months labels ending at current month
-  const rollingLabels = Array.from({ length: 12 }, (_v, i) => {
-    const idx = (currentMonthIndex - 11 + i + 12 * 2) % 12; // ensure positive mod
-    return monthsShort[idx];
-  });
+  // Build month labels (full names)
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
 
-  // Attempt to read monthly revenue from API if available
-  // Support several possible shapes: venstat.monthlyRevenue or venstat.stats.monthlyRevenue
-  const rawMonthly: any = (venstat as any)?.monthlyRevenue || (venstat as any)?.stats?.monthlyRevenue || [];
-  const monthlyMap = new Map<number, number>();
-  if (Array.isArray(rawMonthly)) {
-    rawMonthly.forEach((item: any) => {
-      // Accept either numeric month (0-11 or 1-12) or string month name
-      let m = item?.month;
-      let idx: number | null = null;
-      if (typeof m === "number") {
-        idx = m >= 1 && m <= 12 ? m - 1 : (m >= 0 && m <= 11 ? m : null);
-      } else if (typeof m === "string") {
-        const up = m.slice(0,3).toLowerCase();
-        idx = monthsShort.findIndex((s) => s.toLowerCase() === up);
-      }
-      if (idx !== null && idx >= 0) {
-        monthlyMap.set(idx, Number(item?.revenue ?? item?.value ?? 0));
-      }
-    });
-  }
+  // Find current month index
+  const currentMonthIndex = new Date().getMonth(); // 0-11
 
-  // Build data aligned to rollingLabels
-  const revenuePerMonth = rollingLabels.map((label) => {
-    const idx = monthsShort.findIndex((s) => s === label);
-    if (monthlyMap.has(idx)) return monthlyMap.get(idx)!;
-    // Fallback: only put totalRevenue in current month if no monthly breakdown
-    if (idx === currentMonthIndex && monthlyMap.size === 0) {
-      return venstat?.stats?.totalRevenue ?? 0;
-    }
-    return 0;
-  });
+  // Create a 12-item array of zeros except the current month
+  const revenuePerMonth = Array(12).fill(0);
+  revenuePerMonth[currentMonthIndex] = venstat?.stats?.totalRevenue ?? 0;
 
   const chartData = {
-    labels: rollingLabels,
+    labels: months,
     datasets: [
       {
         label: "Revenue (₦)",
@@ -200,7 +181,7 @@ const Dashboard = () => {
   return (
     <main className="flex-1 p-5 overflow-auto">
       {/* Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-5">
         {[
           {
             title: "Money Earned",
@@ -236,7 +217,7 @@ const Dashboard = () => {
         ].map((card, index) => (
           <motion.div
             key={index}
-            className="flex items-center justify-between p-5 bg-white rounded-xl shadow-sm ring-1 ring-gray-100"
+            className="flex items-center justify-between p-5 bg-white rounded-lg shadow"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
@@ -260,12 +241,12 @@ const Dashboard = () => {
       {/* Chart and Notifications */}
       <div className="w-full gap-4">
         <motion.div
-          className="col-span-2 p-5 bg-white rounded-xl shadow-sm ring-1 ring-gray-100"
+          className="col-span-2 p-5 bg-white rounded-lg shadow"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="mb-4 text-lg font-semibold">Revenue Report (last 12 months)</h2>
+          <h2 className="mb-4 font-bold">Revenue Report</h2>
           {/* <div className="flex justify-end mb-3">
             {[1, 3, 6].map((month) => (
               <button

@@ -17,6 +17,7 @@ interface Product {
   price: number;
   images: string[];
   poster: string;
+  inventory: number; // Add inventory field
 }
 
 interface NewArrivalProps {
@@ -27,8 +28,15 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   const dispatch = useDispatch();
   const { currency } = useSelector((state: RootState) => state.settings);
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [convertedPrice, setConvertedPrice] = useState(product.price);
+
+  // Calculate available quantity (inventory - what's already in cart)
+  const cartQuantity = cartItems.find(item => item.id === product._id)?.quantity || 0;
+  const availableQuantity = Math.max(0, product.inventory - cartQuantity);
+  const isOutOfStock = availableQuantity === 0;
 
   // Ensure sessionId is initialized
   useEffect(() => {
@@ -46,7 +54,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
         setConvertedPrice(price);
       } catch (error) {
         console.error("Failed to convert price:", error);
-        setConvertedPrice(product.price); // Fallback to base price
+        setConvertedPrice(product.price);
       } finally {
         setIsLoading(false);
       }
@@ -63,13 +71,24 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
       return;
     }
 
+    if (isOutOfStock) {
+      toast.error("This product is out of stock!");
+      return;
+    }
+
+    // Additional check to prevent adding more than available
+    if (cartQuantity >= product.inventory) {
+      toast.error(`Only ${product.inventory} items available!`);
+      return;
+    }
+
     try {
       await addToCart(sessionId, product._id, 1);
       dispatch(
         addItem({
           id: product._id,
           name: product.name,
-          price: product.price, // Store base price (NGN) in cart
+          price: product.price,
           quantity: 1,
           image: product.images[0] || product.poster || "/placeholder.svg",
         })
@@ -91,7 +110,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
       addWishlistItem({
         id: product._id,
         name: product.name,
-        price: product.price, // Store base price (NGN) in wishlist
+        price: product.price,
         quantity: 1,
         image: product.images[0] || product.poster,
       })
@@ -110,6 +129,12 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
             alt={product.name}
             className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
           />
+          {/* Show out of stock badge */}
+          {isOutOfStock && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-medium">
+              Out of Stock
+            </div>
+          )}
           <div className="absolute flex flex-col gap-2 transition-all duration-300 transform translate-x-2 opacity-0 top-3 right-3 group-hover:opacity-100 group-hover:translate-x-0">
             <button
               className="flex items-center justify-center text-gray-700 bg-white rounded-full shadow-md w-9 h-9 hover:bg-gray-100"
@@ -123,7 +148,7 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
 
         <div className="p-4">
           <h3 className="mb-1 text-base font-medium text-gray-800 line-clamp-1">{product.name}</h3>
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             {isLoading ? (
               <span className="text-sm font-semibold text-gray-900">Loading...</span>
             ) : (
@@ -131,16 +156,27 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
                 {currencySymbol} {formatPrice(convertedPrice)}
               </span>
             )}
+            {/* Show remaining quantity if low stock */}
+            {/* {product.inventory > 0 && availableQuantity < 10 && (
+              <span className={`text-xs ${availableQuantity < 3 ? 'text-red-500' : 'text-orange-500'}`}>
+                {availableQuantity} left
+              </span>
+            )} */}
           </div>
         </div>
 
         <div className="p-4 pt-0">
           <button
-            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-600"
+            className={`flex items-center justify-center w-full px-4 py-2 text-sm font-medium transition-all duration-300 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-600 ${
+              isOutOfStock
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+            }`}
             onClick={handleAddToCartClick}
+            disabled={isOutOfStock}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
+            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
           </button>
         </div>
       </div>

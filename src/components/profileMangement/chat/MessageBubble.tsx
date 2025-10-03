@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { MoreVertical, Edit3, Trash2, Copy, Loader2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  MoreVertical,
+  Edit3,
+  Trash2,
+  Copy,
+  Loader2,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -65,11 +74,13 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
 
   const navigateImage = (direction: "prev" | "next") => {
     if (!message.images) return;
-    
+
     if (direction === "next") {
       setCurrentImageIndex((prev) => (prev + 1) % message.images!.length);
     } else {
-      setCurrentImageIndex((prev) => (prev - 1 + message.images!.length) % message.images!.length);
+      setCurrentImageIndex(
+        (prev) => (prev - 1 + message.images!.length) % message.images!.length
+      );
     }
   };
 
@@ -79,12 +90,18 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
         return (
           <div className="max-w-xs space-y-2">
             {message.images && message.images.length > 0 ? (
-              <div className={`grid gap-2 ${message.images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+              <div
+                className={`grid gap-2 ${
+                  message.images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                }`}
+              >
                 {message.images.slice(0, 4).map((url, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className={`relative cursor-pointer group ${
-                      message.images!.length > 4 && index === 3 ? 'overflow-hidden' : ''
+                      message.images!.length > 4 && index === 3
+                        ? "overflow-hidden"
+                        : ""
                     }`}
                     onClick={() => openLightbox(index)}
                   >
@@ -97,25 +114,30 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                       onError={(e) => {
                         console.log("DEBUG: Image load error:", url);
                         const target = e.currentTarget as HTMLImageElement;
-                        const sibling = target.nextElementSibling as HTMLElement;
+                        const sibling =
+                          target.nextElementSibling as HTMLElement;
                         target.style.display = "none";
                         if (sibling) sibling.style.display = "block";
                       }}
                     />
-                    
+
                     {/* Overlay for more images indicator */}
-                    {message.images && message.images.length > 4 && index === 3 && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
-                        <span className="text-white font-semibold">+{message.images.length - 3}</span>
-                      </div>
-                    )}
-                    
+                    {message.images &&
+                      message.images.length > 4 &&
+                      index === 3 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-lg">
+                          <span className="text-white font-semibold">
+                            +{message.images.length - 3}
+                          </span>
+                        </div>
+                      )}
+
                     {message.isUploading && (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-lg">
                         <Loader2 className="w-6 h-6 text-white animate-spin" />
                       </div>
                     )}
-                    
+
                     <div className="hidden p-2 text-xs rounded bg-chat-muted">
                       📷 Image: {url}
                     </div>
@@ -127,7 +149,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                 📷 No images available
               </div>
             )}
-            
+
             {/* Lightbox Modal */}
             <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
               <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black border-0">
@@ -140,7 +162,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                   >
                     <X className="w-6 h-6" />
                   </Button>
-                  
+
                   {message.images && message.images.length > 1 && (
                     <>
                       <Button
@@ -161,13 +183,13 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                       </Button>
                     </>
                   )}
-                  
+
                   <img
                     src={message.images?.[currentImageIndex]}
                     alt={`Image ${currentImageIndex + 1}`}
                     className="max-w-full max-h-full object-contain"
                   />
-                  
+
                   {message.images && message.images.length > 1 && (
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black/50 px-3 py-1 rounded-full">
                       {currentImageIndex + 1} / {message.images.length}
@@ -178,7 +200,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
             </Dialog>
           </div>
         );
-        
+
       case "video":
         return (
           <div className="relative max-w-xs">
@@ -211,7 +233,7 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
             )}
           </div>
         );
-        
+
       case "file":
         return (
           <div className="max-w-xs p-3 rounded-lg bg-chat-muted">
@@ -223,12 +245,14 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
                 <p className="text-sm font-medium truncate">
                   {message.content.split("/").pop() || "File"}
                 </p>
-                <p className="text-xs text-muted-foreground">Click to download</p>
+                <p className="text-xs text-muted-foreground">
+                  Click to download
+                </p>
               </div>
             </div>
           </div>
         );
-        
+
       default:
         return isEditing ? (
           <div className="space-y-2">
@@ -267,57 +291,71 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
   };
 
   return (
-    <div className={`flex ${message.sent ? "justify-end" : "justify-start"} group mb-4`}>
-      <div className={`max-w-[80%] ${message.sent ? "order-2" : "order-1"}`}>
+    <div
+      className={`flex ${
+        message.sent ? "justify-end" : "justify-start"
+      } group mb-4`}
+    >
+      <div className={`max-w-[80%] ${message.sent ? "order-2" : "order-1 "}`}>
         <div
           className={`relative p-3 rounded-2xl ${
             message.sent
               ? "bg-message-sent text-message-sent-foreground shadow-md"
               : "bg-message-received text-message-received-foreground shadow-md"
-          } ${message.sent ? "rounded-br-md" : "rounded-bl-md"}`}
+          } ${message.sent ? "rounded-br-md bg-orange-500 text-white" : "rounded-bl-md"}`}
         >
           {renderMediaContent()}
           <div className="flex items-end justify-between mt-2 space-x-2">
             <span
               className={`text-xs ${
-                message.sent ? "text-message-sent-foreground/70" : "text-message-received-foreground/70"
+                message.sent
+                  ? "text-message-sent-foreground/70"
+                  : "text-message-received-foreground/70"
               }`}
             >
               {message.time}
             </span>
-            {message.sent && message.type === "text" && !message.isUploading && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-6 h-6 p-0 transition-opacity opacity-0 group-hover:opacity-100 hover:bg-white/20"
+            {message.sent &&
+              message.type === "text" &&
+              !message.isUploading && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-6 h-6 p-0 transition-opacity opacity-0 group-hover:opacity-100 hover:bg-white/20"
+                    >
+                      <MoreVertical className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="bg-card border-chat-border"
                   >
-                    <MoreVertical className="w-3 h-3" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-card border-chat-border">
-                  <DropdownMenuItem
-                    onClick={() => setIsEditing(true)}
-                    className="cursor-pointer"
-                  >
-                    <Edit3 className="w-4 h-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleCopy} className="cursor-pointer">
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copy
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={onDelete}
-                    className="cursor-pointer text-destructive focus:text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                    <DropdownMenuItem
+                      onClick={() => setIsEditing(true)}
+                      className="cursor-pointer"
+                    >
+                      <Edit3 className="w-4 h-4 mr-2" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={handleCopy}
+                      className="cursor-pointer"
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={onDelete}
+                      className="cursor-pointer text-destructive focus:text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
           </div>
         </div>
       </div>

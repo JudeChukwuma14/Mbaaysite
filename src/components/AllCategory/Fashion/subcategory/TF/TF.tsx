@@ -12,14 +12,16 @@ import NewArrival from "@/components/Cards/NewArrival";
 
 // Define interfaces for type safety
 interface Product {
-    _id: string;
-    name: string;
-    price: number;
-    images: string[];
-    createdAt?: string;
-    category: string;
-    sub_category?: string;
-    sub_category2?: string;
+  _id: string;
+  id?: string;
+  name: string;
+  price: number;
+  images: string[];
+  createdAt: string;
+  category: string;
+  sub_category?: string;
+  sub_category2?: string;
+inventory: number; 
 }
 
 interface Subcategory {
@@ -72,7 +74,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
         <h2 className="mb-2 text-2xl font-semibold text-gray-800">Something Went Wrong</h2>
         <p className="max-w-md mb-6 text-gray-600">{message}</p>
         <Link
-            to="/shop"
+            to="/random-product"
             className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
             aria-label="Continue shopping"
         >
@@ -98,7 +100,7 @@ const EmptyState: React.FC = () => (
             No products are available in this category. Browse our shop to find your favorite products!
         </p>
         <Link
-            to="/shop"
+            to="/random-product"
             className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-200 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
             aria-label="Continue shopping"
         >
