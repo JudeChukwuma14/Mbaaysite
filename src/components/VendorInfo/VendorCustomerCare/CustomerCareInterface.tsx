@@ -5,14 +5,38 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
+import {
+  setChatId as setUserChatId,
+  setMessages as setUserMessages,
+  addMessage as addUserMessage,
+} from "@/redux/slices/userSlice";
+import {
+  setChatId as setVendorChatId,
+  setMessages as setVendorMessages,
+  addMessage as addVendorMessage,
+} from "@/redux/slices/vendorSlice";
+import io, { Socket } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
+
+// Notification sound
+const notificationSound = new Audio("/sounds/notification.mp3");
+
+interface Notification {
+  _id: string;
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
 
 interface Message {
   id: string;
   content: string;
-  sender: "user" | "agent";
-  timestamp: Date;
+  sender: "user" | "agent" | "bot";
+  timestamp: string;
+  isOptimistic?: boolean;
+  tempId?: string;
 }
 
 interface ChatInterfaceProps {
@@ -20,23 +44,109 @@ interface ChatInterfaceProps {
   onClose: () => void;
 }
 
-const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/chat";
+const API_CHAT_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/admin";
+const API_NOTIFICATION_BASE_URL =
+  "https://ilosiwaju-mbaay-2025.com/api/v1/notifications";
+const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com";
+const AUTO_RESPONSE_MESSAGE =
+  "Welcome to Mbaay Support! We're here to assist you. An agent will respond shortly.";
 
 export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
-  const [chatId, setChatId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const hasAutoResponse = useRef<boolean>(false);
+  const navigate = useNavigate();
 
-  // Access user or vendor from Redux
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
   const token = useSelector(
     (state: RootState) => state.user.token || state.vendor.token
   );
   const senderId = user?._id || vendor?._id;
+  const isVendor = !!vendor;
+  const chatId = useSelector((state: RootState) =>
+    isVendor ? state.vendor.chatId : state.user.chatId
+  );
+  const messages = useSelector((state: RootState) =>
+    isVendor ? state.vendor.messages || [] : state.user.messages || []
+  );
+
+  // Request notification permission
+  useEffect(() => {
+    if (isOpen && "Notification" in window) {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Notification permission granted");
+        }
+      });
+    }
+  }, [isOpen]);
+
+  // Fetch notifications
+  const fetchNotifications = async () => {
+    if (!senderId || !token) return;
+    try {
+      const response = await axios.get(
+        `${API_NOTIFICATION_BASE_URL}/allnotifications/${senderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setNotifications(response.data.notifications || []);
+    } catch (err: any) {
+      console.error(
+        "Fetch notifications error:",
+        err.response?.data || err.message
+      );
+      setError("Failed to fetch notifications");
+    }
+  };
+
+  // Fetch notifications when chat opens
+  useEffect(() => {
+    if (isOpen && senderId && token) {
+      fetchNotifications();
+    }
+  }, [isOpen, senderId, token]);
+
+  // Play notification sound and show browser notification
+  const triggerNotification = (message: Message) => {
+    notificationSound.play().catch((err) => {
+      console.error("Failed to play notification sound:", err);
+      // Fallback: Visual indicator
+      document.querySelector(".bg-orange-500")?.classList.add("animate-pulse");
+      setTimeout(() => {
+        document
+          .querySelector(".bg-orange-500")
+          ?.classList.remove("animate-pulse");
+      }, 1000);
+    });
+
+    if (
+      "Notification" in window &&
+      Notification.permission === "granted" &&
+      message.sender !== "user"
+    ) {
+      new Notification("Mbaay Support", {
+        body: message.content,
+        icon: "/favicon.ico",
+      });
+    }
+  };
+
+  // Redirect to /selectpath if not authenticated
+  useEffect(() => {
+    if (isOpen && (!senderId || !token)) {
+      console.log("DEBUG: No senderId or token, redirecting to /selectpath");
+      localStorage.setItem("redirectToChat", "true");
+      navigate("/selectpath");
+      onClose();
+    }
+  }, [isOpen, senderId, token, navigate, onClose]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -45,12 +155,162 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   }, [messages]);
 
-  // Start customer care chat
+  // Initialize Socket.IO
   useEffect(() => {
     if (!isOpen || !senderId || !token) return;
 
-    const startChat = async () => {
-      setIsLoading(true);
+    socketRef.current = io(SOCKET_URL, {
+      auth: { token: `Bearer ${token}` },
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+
+    socketRef.current.on("connect", () => {
+      console.log("Socket.IO connected, socketId:", socketRef.current?.id);
+      if (chatId) {
+        socketRef.current?.emit("joinChat", chatId);
+      }
+    });
+
+    socketRef.current.on("customerCareChatStarted", (chat) => {
+      console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
+      dispatch(isVendor ? setVendorChatId(chat._id) : setUserChatId(chat._id));
+      localStorage.setItem(`chatId-${senderId}`, chat._id);
+      socketRef.current?.emit("joinChat", chat._id);
+      fetchMessages(chat._id);
+    });
+
+    socketRef.current.on("customerCareMessage", (msg) => {
+      console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
+      const isSentByCurrentUser = msg.sender?._id === senderId;
+      const newMessage: Message = {
+        id: msg._id,
+        content: msg.content,
+        sender: isSentByCurrentUser
+          ? "user"
+          : msg.sender === "bot"
+          ? "bot"
+          : "agent",
+        timestamp: new Date(msg.createdAt).toISOString(),
+        tempId: msg.tempId,
+        isOptimistic: false,
+      };
+
+      const existingMessage = messages.find(
+        (m) =>
+          m.id === msg._id ||
+          (msg.tempId && m.tempId === msg.tempId) ||
+          (isSentByCurrentUser &&
+            m.sender === "user" &&
+            m.content === msg.content &&
+            Math.abs(
+              new Date(m.timestamp).getTime() -
+                new Date(msg.createdAt).getTime()
+            ) < 2000)
+      );
+      if (existingMessage) {
+        console.log(
+          "DEBUG: Replacing message, id:",
+          msg._id,
+          "tempId:",
+          msg.tempId,
+          "existing:",
+          JSON.stringify(existingMessage, null, 2)
+        );
+        dispatch(
+          isVendor
+            ? setVendorMessages(
+                messages.map((m) =>
+                  m.id === existingMessage.id ||
+                  (msg.tempId && m.tempId === msg.tempId) ||
+                  (isSentByCurrentUser &&
+                    m.sender === "user" &&
+                    m.content === msg.content &&
+                    Math.abs(
+                      new Date(m.timestamp).getTime() -
+                        new Date(msg.createdAt).getTime()
+                    ) < 2000)
+                    ? { ...newMessage }
+                    : m
+                )
+              )
+            : setUserMessages(
+                messages.map((m) =>
+                  m.id === existingMessage.id ||
+                  (msg.tempId && m.tempId === msg.tempId) ||
+                  (isSentByCurrentUser &&
+                    m.sender === "user" &&
+                    m.content === msg.content &&
+                    Math.abs(
+                      new Date(m.timestamp).getTime() -
+                        new Date(msg.createdAt).getTime()
+                    ) < 2000)
+                    ? { ...newMessage }
+                    : m
+                )
+              )
+        );
+      } else {
+        console.log("DEBUG: Adding new message, id:", msg._id);
+        dispatch(
+          isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
+        );
+        if (!isSentByCurrentUser) {
+          triggerNotification(newMessage);
+          fetchNotifications();
+        }
+      }
+    });
+
+    socketRef.current.on("connect_error", (err) => {
+      console.error("Socket.IO error:", err.message);
+      setError("Failed to connect to real-time updates. Please try again.");
+    });
+
+    socketRef.current.on("reconnect", () => {
+      console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
+      if (chatId) {
+        socketRef.current?.emit("joinChat", chatId);
+        fetchMessages(chatId);
+      }
+    });
+
+    return () => {
+      socketRef.current?.emit("leaveChat", chatId);
+      socketRef.current?.disconnect();
+    };
+  }, [isOpen, senderId, token, dispatch, isVendor, chatId, messages]);
+
+  // Reset auto-response flag
+  useEffect(() => {
+    hasAutoResponse.current = false;
+  }, [chatId]);
+
+  // Start chat
+  const startChat = async (retries = 3, delay = 1000) => {
+    if (!senderId || !token) {
+      console.log("DEBUG: No senderId or token in startChat, skipping");
+      return;
+    }
+
+    const storedChatId = localStorage.getItem(`chatId-${senderId}`);
+    if (storedChatId && !chatId) {
+      dispatch(
+        isVendor ? setVendorChatId(storedChatId) : setUserChatId(storedChatId)
+      );
+      await fetchMessages(storedChatId);
+      socketRef.current?.emit("joinChat", storedChatId);
+      return;
+    }
+
+    if (chatId) {
+      await fetchMessages();
+      socketRef.current?.emit("joinChat", chatId);
+      return;
+    }
+
+    for (let i = 0; i < retries; i++) {
       setError(null);
       try {
         console.log("Starting chat with:", { senderId, token });
@@ -64,91 +324,142 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             },
           }
         );
-        console.log("Start chat response:", response.data);
-        setChatId(response.data.chatId);
-        setMessages([
-          {
-            id: "1",
-            content:
-              "Hello! Welcome to our customer support. How can I help you today?",
-            sender: "agent",
-            timestamp: new Date(),
-          },
-        ]);
+        console.log(
+          "Start chat response:",
+          JSON.stringify(response.data, null, 2)
+        );
+        const newChatId = response.data.chatId || response.data.chat?._id;
+        dispatch(
+          isVendor ? setVendorChatId(newChatId) : setUserChatId(newChatId)
+        );
+        localStorage.setItem(`chatId-${senderId}`, newChatId);
+        socketRef.current?.emit("joinChat", newChatId);
+        await fetchMessages(newChatId);
+        return;
       } catch (err: any) {
         console.error("Start chat error:", err.response?.data || err.message);
-        setError(
-          `Failed to start chat: ${err.response?.data?.message || err.message}`
-        );
-      } finally {
-        setIsLoading(false);
+        if (i === retries - 1) {
+          setError(
+            `Failed to start chat: ${
+              err.response?.data?.message || err.message
+            }`
+          );
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
-    };
-
-    startChat();
-  }, [isOpen, senderId, token]);
+    }
+  };
 
   // Fetch messages
-  useEffect(() => {
-    if (!chatId || !token) return;
+  const fetchMessages = async (targetChatId: string = chatId!) => {
+    if (!targetChatId || !token) return;
 
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(
-          `${API_CHAT_BASE_URL}/customer_care_chatmessages/${chatId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const fetchedMessages = response.data.messages.map((msg: any) => ({
+    try {
+      console.log(
+        "Fetching messages for chatId:",
+        targetChatId,
+        "with senderId:",
+        senderId
+      );
+      const response = await axios.get(
+        `${API_CHAT_BASE_URL}/customer_care_chatmessages/${targetChatId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log(
+        "Fetch messages response:",
+        JSON.stringify(response.data, null, 2)
+      );
+      const fetchedMessages = (response.data.messages || []).map(
+        (msg: any) => ({
           id: msg._id,
           content: msg.content,
-          sender: msg.senderId === senderId ? "user" : "agent",
-          timestamp: new Date(msg.createdAt),
-        }));
-        setMessages(fetchedMessages);
-      } catch (err: any) {
-        setError(
-          `Failed to fetch messages: ${
-            err.response?.data?.message || err.message
-          }`
-        );
-      }
-    };
+          sender:
+            msg.sender?._id === senderId
+              ? "user"
+              : msg.sender === "bot"
+              ? "bot"
+              : "agent",
+          timestamp: new Date(msg.createdAt).toISOString(),
+          tempId: msg.tempId,
+        })
+      );
+      dispatch(
+        isVendor
+          ? setVendorMessages(fetchedMessages)
+          : setUserMessages(fetchedMessages)
+      );
+    } catch (err: any) {
+      console.error("Fetch messages error:", err.response?.data || err.message);
+      setError(
+        `Failed to fetch messages: ${
+          err.response?.data?.message || err.message
+        }`
+      );
+    }
+  };
 
-    fetchMessages();
-    const interval = setInterval(fetchMessages, 5000);
-    return () => clearInterval(interval);
-  }, [chatId, senderId, token]);
+  // Start chat when widget opens
+  useEffect(() => {
+    if (isOpen && senderId && token) {
+      startChat();
+    }
+  }, [isOpen, senderId, token]);
 
   // Send message
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !chatId || !senderId || !token) return;
+    if (!inputValue.trim() || !chatId || !senderId || !token) {
+      setError("Cannot send message: Missing input, chatId, or authentication");
+      return;
+    }
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
-    setInputValue("");
+    if (
+      !hasAutoResponse.current &&
+      !messages.some(
+        (m) =>
+          m.sender === "user" ||
+          (m.content === AUTO_RESPONSE_MESSAGE && m.sender === "bot")
+      )
+    ) {
+      const autoResponse: Message = {
+        id: `auto-${Date.now()}`,
+        content: AUTO_RESPONSE_MESSAGE,
+        sender: "bot",
+        timestamp: new Date().toISOString(),
+      };
+      dispatch(
+        isVendor ? addVendorMessage(autoResponse) : addUserMessage(autoResponse)
+      );
+      hasAutoResponse.current = true;
+    }
 
     try {
-      await axios.post(
+      console.log("Sending message with:", {
+        chatId,
+        content: inputValue,
+        senderId,
+        socketId: socketRef.current?.id,
+      });
+      const response = await axios.post(
         `${API_CHAT_BASE_URL}/send-message`,
         { chatId, content: inputValue, senderId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
+            "x-socket-id": socketRef.current?.id,
           },
         }
       );
+      console.log(
+        "Send message response:",
+        JSON.stringify(response.data, null, 2)
+      );
+      setInputValue("");
     } catch (err: any) {
+      console.error("Send message error:", err.response?.data || err.message);
       setError(
         `Failed to send message: ${err.response?.data?.message || err.message}`
       );
-      setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id));
     }
   };
 
@@ -160,19 +471,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   };
 
   if (!isOpen) return null;
-
-  if (!senderId || !token) {
-    return (
-      <Card className="fixed z-40 border-0 shadow-2xl bottom-20 right-6 w-80 h-96">
-        <div className="p-4 text-center">
-          <p className="text-red-500">Please log in to use the chat feature.</p>
-          <Button onClick={onClose} className="mt-4">
-            Close
-          </Button>
-        </div>
-      </Card>
-    );
-  }
 
   return (
     <Card
@@ -187,9 +485,11 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       {/* Header */}
       <div className="flex items-center justify-between p-4 text-white bg-orange-500 rounded-t-lg">
         <div className="flex items-center space-x-2">
-          <Bot className="w-5 h-5" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full ring-2 ring-white">
+            <Bot className="w-5 h-5" />
+          </div>
           <div>
-            <h3 className="font-semibold">Customer Support</h3>
+            <h3 className="font-semibold">Mbaay Customer Support</h3>
             <p className="text-xs opacity-90">We're here to help</p>
           </div>
         </div>
@@ -203,10 +503,54 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         </Button>
       </div>
 
+      {/* Notifications Display */}
+      {notifications.length > 0 && (
+        <div className="p-2 bg-gray-50 border-b">
+          <p className="text-sm font-semibold text-gray-700">
+            Notifications ({notifications.filter((n) => !n.read).length} unread)
+          </p>
+          <ul className="mt-1 max-h-20 overflow-y-auto">
+            {notifications.map((notification) => (
+              <li
+                key={notification._id}
+                className={cn(
+                  "text-xs p-1",
+                  notification.read
+                    ? "text-gray-500"
+                    : "text-gray-800 font-medium"
+                )}
+              >
+                {notification.message}{" "}
+                <span className="text-gray-400">
+                  {new Date(notification.createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Messages */}
       <ScrollArea ref={scrollAreaRef} className="flex-1 h-64 p-4 lg:h-80">
-        {isLoading && <p>Loading...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && (
+          <div className="p-4 text-center">
+            <p className="text-red-500">{error}</p>
+            <Button onClick={() => startChat()} className="mt-2">
+              Retry
+            </Button>
+          </div>
+        )}
+        {!error && (!messages || messages.length === 0) && (
+          <div className="text-center text-gray-600 p-4">
+            <p className="font-semibold">Start a Conversation</p>
+            <p className="text-sm mt-1">
+              Type your message below to connect with our support team.
+            </p>
+          </div>
+        )}
         <div className="space-y-4">
           {messages.map((message) => (
             <div
@@ -221,11 +565,12 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                   "max-w-[80%] rounded-lg p-3 text-sm",
                   message.sender === "user"
                     ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-800"
+                    : "bg-gray-100 text-gray-800",
+                  message.isOptimistic ? "opacity-70" : ""
                 )}
               >
                 <div className="flex items-start space-x-2">
-                  {message.sender === "agent" && (
+                  {(message.sender === "agent" || message.sender === "bot") && (
                     <Bot className="h-4 w-4 mt-0.5 flex-shrink-0 text-orange-500" />
                   )}
                   {message.sender === "user" && (
@@ -241,7 +586,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                           : "text-gray-500"
                       )}
                     >
-                      {message.timestamp.toLocaleTimeString([], {
+                      {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -255,19 +600,21 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       </ScrollArea>
 
       {/* Input */}
-      <div className="p-4 border-t">
-        <div className="flex space-x-2">
+      <div className="px-3 pt-2 pb-5 border-t">
+        <div className="flex items-center space-x-1">
           <input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-1 w-full px-3 py-1 text-base transition-colors bg-transparent border rounded-md shadow-sm h-9 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+            disabled={!chatId}
           />
           <Button
             onClick={handleSendMessage}
             size="sm"
-            className="text-white bg-orange-500 hover:bg-orange-600"
+            className="text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50"
+            disabled={!inputValue.trim() || !chatId}
           >
             <Send className="w-4 h-4" />
           </Button>

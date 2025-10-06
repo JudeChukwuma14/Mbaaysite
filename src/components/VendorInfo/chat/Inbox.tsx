@@ -51,7 +51,7 @@ import {
 } from "@/hook/chatQueries";
 
 // Constants
-export const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com/";
+const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com";
 
 // Types
 interface FileAttachment {

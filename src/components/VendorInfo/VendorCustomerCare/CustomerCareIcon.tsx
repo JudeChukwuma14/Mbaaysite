@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { MessageCircle, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
+import { MessageCircle, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ChatIconProps {
-  onClick: () => void
-  isOpen: boolean
+  onClick: () => void;
+  isOpen: boolean;
 }
 
 export const ChatIcon = ({ onClick, isOpen }: ChatIconProps) => {
@@ -19,7 +19,7 @@ export const ChatIcon = ({ onClick, isOpen }: ChatIconProps) => {
         "hover:scale-110 active:scale-95",
         "transition-all duration-300 ease-out",
         "hover:shadow-xl",
-        isOpen && "rotate-180",
+        isOpen && "rotate-180"
       )}
       size="icon"
     >
@@ -29,5 +29,5 @@ export const ChatIcon = ({ onClick, isOpen }: ChatIconProps) => {
         <MessageCircle className="w-6 h-6 text-white transition-transform duration-300" />
       )}
     </Button>
-  )
-}
+  );
+};
