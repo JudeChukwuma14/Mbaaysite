@@ -496,26 +496,48 @@ export default function SocialFeed() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex gap-3">
-                      {!post?.poster?.avatar ? (
-                        <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                          {post?.poster?.storeName?.charAt(0)?.toUpperCase() ||
-                            "U"}
-                        </div>
+                      {!post?.community ? (
+                        <>
+                          {!post?.poster?.avatar ? (
+                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                              {post?.poster?.storeName
+                                ?.charAt(0)
+                                ?.toUpperCase() || "U"}
+                            </div>
+                          ) : (
+                            <img
+                              src={post?.poster?.avatar || "/placeholder.svg"}
+                              alt="Vendor"
+                              className="w-10 h-10 rounded-full"
+                            />
+                          )}
+                        </>
                       ) : (
                         <img
-                          src={post?.poster?.avatar || "/placeholder.svg"}
+                          src={
+                            post?.community?.community_Images ||
+                            "/placeholder.svg"
+                          }
                           alt="Vendor"
                           className="w-10 h-10 rounded-full"
                         />
                       )}
                       <div>
-                        {post?.posterType === "vendors" ? (
-                          <h3 className="font-semibold">
-                            {post?.poster?.storeName}
-                          </h3>
+                        {!post?.community ? (
+                          <>
+                            {post?.posterType === "vendors" ? (
+                              <h3 className="font-semibold">
+                                {post?.poster?.storeName}
+                              </h3>
+                            ) : (
+                              <h3 className="font-semibold">
+                                {post?.poster?.name || post?.poster?.storeName}
+                              </h3>
+                            )}
+                          </>
                         ) : (
                           <h3 className="font-semibold">
-                            {post?.poster?.name || post?.poster?.storeName}
+                            {post?.community?.name}
                           </h3>
                         )}
                         <p className="text-sm text-gray-500">
