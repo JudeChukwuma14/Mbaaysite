@@ -93,8 +93,8 @@ const formatTime = (timestamp: string) => {
 };
 
 const getInitials = (name: string) => {
-  return `${name.charAt(0).toUpperCase()}${
-    name.split(" ")[1]?.charAt(0).toUpperCase() || ""
+  return `${name?.charAt(0)?.toUpperCase()}${
+    name?.split(" ")[1]?.charAt(0)?.toUpperCase() || ""
   }`;
 };
 
@@ -395,7 +395,8 @@ export function ChatListSidebar({
   const user = useSelector((state: any) => state.vendor);
   const { data: unreadData } = useUnreadChatCount(user?.vendor?._id);
   const unreadCount = Number(unreadData?.count || 0);
-  const perChatUnread: Record<string, number> = (unreadData as any)?.chats || {};
+  const perChatUnread: Record<string, number> =
+    (unreadData as any)?.chats || {};
   const markReadMutation = useMarkChatAsRead();
 
   const {
