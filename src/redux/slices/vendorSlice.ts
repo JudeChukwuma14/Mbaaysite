@@ -116,6 +116,14 @@ const vendorSlice = createSlice({
       state.token = action.payload.token;
       state.messages = state.messages || [];
     },
+    updateKycVendor: (
+      state,
+      action: PayloadAction<"Pending" | "Approved" | "Rejected" | "Processing">
+    ) => {
+      if (state.vendor) {
+        state.vendor.kycStatus = action.payload;
+      }
+    },
     setChatId: (state, action: PayloadAction<string>) => {
       state.chatId = action.payload;
     },
@@ -135,9 +143,13 @@ const vendorSlice = createSlice({
   },
 });
 
-
-export const { setVendor, logoutVendor, addMessage, setMessages, setChatId } =
-  vendorSlice.actions;
-
+export const {
+  setVendor,
+  logoutVendor,
+  addMessage,
+  setMessages,
+  setChatId,
+  updateKycVendor,
+} = vendorSlice.actions;
 
 export default vendorSlice.reducer;

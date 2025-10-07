@@ -28,7 +28,7 @@ export const get_vendors_community = async (token: string | null) => {
         Authorization: `Bearer ${token}`,
       },
     });
-    // console.log(response)
+    console.log("Ven", response);
     return response.data?.vendors;
   } catch (error) {
     console.log(error);
