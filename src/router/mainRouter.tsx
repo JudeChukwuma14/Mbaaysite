@@ -146,6 +146,9 @@ const Inbox = lazy(() => import("@/components/VendorInfo/chat/Inbox"));
 const CommunitySection = lazy(
   () => import("../components/VendorInfo/Community&Res/CommunitySection")
 );
+const VendorProfileCommunity = lazy(
+  () => import("../components/VendorInfo/Community&Res/VendorProfileCommunity")
+);
 const Reviews = lazy(() => import("../components/VendorInfo/Review/Reviews"));
 
 const AllPost = lazy(
@@ -1174,6 +1177,10 @@ const routesConfig: RouteObject[] = [
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },
+          {
+            path: "community-vendor/:id",
+            element: withSuspense(VendorProfileCommunity),
+          },
           { path: "reviews", element: withSuspense(Reviews) },
           { path: "pricing", element: withSuspense(Pricing) },
           { path: "upgrade", element: withSuspense(Upgrade) },

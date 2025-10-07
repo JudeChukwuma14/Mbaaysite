@@ -170,6 +170,31 @@ const VendorHeader: React.FC = () => {
     markSingleNotificationAsRead.mutate({ notificationId, vendorId });
   };
 
+  // Helpers
+  const timeAgo = (iso?: string) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    const diff = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (diff < 60) return `${diff}s ago`;
+    const m = Math.floor(diff / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const days = Math.floor(h / 24);
+    return `${days}d ago`;
+  };
+
+  const typeBadgeClasses = (type?: string) => {
+    switch (type) {
+      case "Message":
+        return "bg-blue-100 text-blue-700 border border-blue-200";
+      case "System":
+        return "bg-amber-100 text-amber-800 border border-amber-200";
+      default:
+        return "bg-gray-100 text-gray-700 border border-gray-200";
+    }
+  };
+
 
   return (
     <header
@@ -255,22 +280,23 @@ const VendorHeader: React.FC = () => {
                           darkMode
                             ? "border-gray-700 hover:bg-gray-750"
                             : "border-gray-100 hover:bg-gray-50"
-                        } ${
+                          } ${
                           !notification.isRead
                             ? "bg-blue-50 dark:bg-blue-900/20"
                             : ""
-                        }`}
+                          }`}
                       >
-                        {/* Avatar */}
-                        {notification.avatar ? (
+                        {/* Avatar / Initials from sender */}
+                        {notification?.sender?.avatar ? (
                           <img
-                            src={notification.avatar || "/placeholder.svg"}
+                            src={notification.sender.avatar || "/placeholder.svg"}
                             alt="Avatar"
                             className="flex-shrink-0 w-10 h-10 rounded-full"
                           />
                         ) : (
                           <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 font-bold text-white rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
-                            {notification.message?.[0]?.toUpperCase() || "N"}
+                            {(notification?.sender?.storeName?.[0] || notification?.sender?.name?.[0] || "N")
+                              .toUpperCase()}
                           </div>
                         )}
 
@@ -278,6 +304,16 @@ const VendorHeader: React.FC = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(notification.type)}`}>
+                                  {notification.type || "Notification"}
+                                </span>
+                                {notification?.sender && (
+                                  <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                    {notification.sender.storeName || notification.sender.name || notification.sender.email}
+                                  </span>
+                                )}
+                              </div>
                               <p
                                 className={`font-medium text-sm leading-relaxed ${
                                   !notification.isRead
@@ -285,15 +321,15 @@ const VendorHeader: React.FC = () => {
                                     : "text-gray-600 dark:text-gray-400"
                                 }`}
                               >
-                                {notification.message}
+                                {notification.title || "Notification"}
                               </p>
-                              {notification.detail && (
+                              {notification.message && (
                                 <p
                                   className={`text-sm mt-1 ${
-                                    darkMode ? "text-gray-400" : "text-gray-500"
+                                    darkMode ? "text-gray-400" : "text-gray-600"
                                   }`}
                                 >
-                                  {notification.detail}
+                                  {notification.message}
                                 </p>
                               )}
                               <div className="flex items-center gap-2 mt-2">
@@ -302,7 +338,7 @@ const VendorHeader: React.FC = () => {
                                     darkMode ? "text-gray-500" : "text-gray-400"
                                   }`}
                                 >
-                                  {notification.time} • {notification.date}
+                                  {timeAgo(notification.createdAt)}
                                 </span>
                                 {!notification.isRead && (
                                   <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -330,6 +366,7 @@ const VendorHeader: React.FC = () => {
                               </button>
                             )}
                           </div>
+
                         </div>
                       </div>
                     ))

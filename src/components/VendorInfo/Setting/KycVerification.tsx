@@ -11,13 +11,14 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { vendorKycUpload } from "@/utils/vendorApi";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { updateKycVendor } from "@/redux/slices/vendorSlice";
 
 interface CountryOption {
   code: string;
@@ -33,9 +34,10 @@ const KYCVerification: React.FC = () => {
   const [backPreview, setBackPreview] = useState<string | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [countries, setCountries] = useState<CountryOption[]>([]);
-  const [uploaded, setUploaded] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [showRejectedScreen, setShowRejectedScreen] = useState(false);
   const [rejectionTimerDone, setRejectionTimerDone] = useState(false);
+  const dispatch = useDispatch();
   const user = useSelector((state: RootState) => state.vendor);
   console.log("User from Redux:", user);
 
@@ -98,10 +100,13 @@ const KYCVerification: React.FC = () => {
     formData.append("back", backFile);
 
     try {
+      setUploading(true);
       const res = await vendorKycUpload(user.token, formData);
       console.log("Upload success:", res);
-      setUploaded(true);
+      dispatch(updateKycVendor("Processing"));
+      setUploading(false);
     } catch (error: any) {
+      setUploading(false);
       console.error("Upload failed:", error.response?.data || error.message);
       alert("Upload failed, please try again.");
     }
@@ -161,7 +166,7 @@ const KYCVerification: React.FC = () => {
   }
 
   // Approved State
-  if (user?.vendor?.kycStatus === "Approved" || uploaded) {
+  if (user?.vendor?.kycStatus === "Approved") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <motion.div
@@ -428,12 +433,14 @@ const KYCVerification: React.FC = () => {
         <button
           type="submit"
           onClick={handleSubmit}
-          className="w-full px-4 py-3 font-bold text-white transition-colors bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className={`w-full px-4 py-3 font-bold text-white transition-colors bg-orange-500 rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed ${
+            uploading ? "opacity-50" : ""
+          }`}
           disabled={
             !agreed || !frontFile || !backFile || !country || !documentType
           }
         >
-          Continue
+          {uploading ? "Loading..." : " Continue"}
         </button>
       </motion.div>
     </div>

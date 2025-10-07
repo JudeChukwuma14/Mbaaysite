@@ -14,6 +14,7 @@ import {
 } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 interface Vendor {
   _id: string;
@@ -27,6 +28,7 @@ export default function SocialList() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const getUserId = () => user.vendor._id || user.vendor.id;
 
@@ -34,6 +36,7 @@ export default function SocialList() {
     queryKey: ["vendors"],
     queryFn: () => get_vendors_community(user.token),
   });
+  console.log("All", vendors);
 
   const { data: all_communities = [] } = useQuery({
     queryKey: ["all_comm"],
@@ -320,6 +323,9 @@ export default function SocialList() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
                       className="flex items-center justify-between"
+                      onClick={() =>
+                        navigate(`community-vendor/:${vendor._id}`)
+                      }
                     >
                       <div className="flex items-center space-x-3 mb-[10px]">
                         <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">

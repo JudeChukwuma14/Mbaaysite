@@ -23,7 +23,7 @@ const CommunitySection: React.FC = () => {
 
   const user = useSelector((state: any) => state.vendor);
 
-  const { data: communities = [] } = useQuery({
+  const { data: communities = [], isLoading } = useQuery({
     queryKey: ["communities"],
     queryFn: () => get_communities(user?.token),
     enabled: !!user?.token, // Only fetch if token exists
@@ -48,9 +48,12 @@ const CommunitySection: React.FC = () => {
   );
 
   return (
-    <div className="p-4 mt-4 bg-white rounded-lg shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="mb-1 mr-3 text-sm font-semibold">COMMUNITIES</h3>
+    <div className="p-5 mt-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="text-base font-semibold tracking-wide text-gray-900">Communities</h3>
+          <p className="mt-1 text-xs text-gray-500">Discover and manage the communities you belong to.</p>
+        </div>
         <motion.select
           name="communityFilter"
           value={filter}
@@ -58,7 +61,7 @@ const CommunitySection: React.FC = () => {
             setFilter(e.target.value as "all" | "owner" | "member");
             setCurrentPage(1); // Reset page when filter changes
           }}
-          className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
         >
           <option value="all">All</option>
           <option value="owner">Owner</option>
@@ -66,52 +69,87 @@ const CommunitySection: React.FC = () => {
         </motion.select>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative grid grid-cols-2 gap-3"
-      >
-        {paginatedCommunities.map((community: Community) => (
-          <Link
-            to={`/app/comunity-detail/${community._id}`}
-            key={community._id}
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileHover={{ scale: 1.03 }}
-              className="relative p-3 rounded-lg bg-orange-50"
+      {/* Loading state */}
+      {isLoading && (
+        <div className="grid grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="p-4 rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
+              <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
+              <div className="h-3 w-16 bg-gray-200 rounded" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && filteredCommunities.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed rounded-xl bg-gray-50"
+        >
+          <div className="mb-4">
+            <svg width="72" height="72" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
+              <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+          <h4 className="text-sm font-semibold text-gray-900">No communities found</h4>
+          <p className="mt-1 text-xs text-gray-600 max-w-sm">
+            You haven't joined or created any communities yet. Change the filter above or check back later.
+          </p>
+        </motion.div>
+      )}
+
+      {/* Communities grid */}
+      {!isLoading && filteredCommunities.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="relative grid grid-cols-2 gap-3"
+        >
+          {paginatedCommunities.map((community: Community) => (
+            <Link
+              to={`/app/comunity-detail/${community._id}`}
+              key={community._id}
             >
-              <h4 className="mb-1 text-sm font-semibold text-orange-800">
-                {community.name}
-              </h4>
-              <p className="text-xs text-orange-600">
-                {community.members?.length || 0} members
-              </p>
-              <span
-                className={`text-xs px-2 py-1 rounded-full mt-2 inline-block ${
-                  community.admin === user?.vendor?.id
-                    ? "bg-orange-200 text-orange-800"
-                    : "bg-blue-200 text-blue-800"
-                }`}
+              <motion.div
+                initial={{ scale: 0.98, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                whileHover={{ scale: 1.02 }}
+                className="relative p-3 rounded-lg bg-gradient-to-br from-orange-50 to-white border border-orange-100 hover:shadow-md transition-shadow"
               >
-                {community.admin === user?.vendor?._id ? "Owner" : "Member"}
-              </span>
-              <div className="w-[50px] h-[50px] bg-red-900 absolute right-[10px] top-[10px] rounded-full overflow-hidden">
-                <img
-                  src={community.community_Images}
-                  alt=""
-                  className="object-cover w-full h-full"
-                />
-              </div>
-            </motion.div>
-          </Link>
-        ))}
-      </motion.div>
+                <h4 className="mb-1 text-sm font-semibold text-gray-900">
+                  {community.name}
+                </h4>
+                <p className="text-xs text-gray-600">
+                  {community.members?.length || 0} members
+                </p>
+                <span
+                  className={`text-[10px] px-2 py-1 rounded-full mt-2 inline-block ${
+                    community.admin === user?.vendor?._id
+                      ? "bg-orange-100 text-orange-700 border border-orange-200"
+                      : "bg-blue-100 text-blue-700 border border-blue-200"
+                  }`}
+                >
+                  {community.admin === user?.vendor?._id ? "Owner" : "Member"}
+                </span>
+                <div className="w-[50px] h-[50px] bg-gray-200 absolute right-2 top-2 rounded-full overflow-hidden ring-2 ring-white shadow-sm">
+                  <img
+                    src={community.community_Images}
+                    alt="Community"
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </motion.div>
+            </Link>
+          ))}
+        </motion.div>
+      )}
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-4">
+      {!isLoading && totalPages > 1 && (
+        <div className="flex items-center justify-between mt-5">
           <motion.button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}

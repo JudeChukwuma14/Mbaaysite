@@ -3,7 +3,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -116,6 +115,14 @@ const AllOrdersPage: React.FC = () => {
     setCurrentPage(1);
   };
 
+  const clearFilters = () => {
+    setCurrentTab("All");
+    setSearchQuery("");
+    setPaymentFilter("All");
+    setSortOrder("newest");
+    setCurrentPage(1);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -150,9 +157,37 @@ const AllOrdersPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="p-5 flex justify-center items-center min-h-[400px]">
-        <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
-        <span className="ml-2 text-gray-600">Loading orders...</span>
+      <main className="p-5">
+        {/* Header skeleton */}
+        <div className="mb-6">
+          <div className="h-7 w-40 bg-gray-200 rounded mb-2 animate-pulse" />
+          <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Controls skeleton */}
+        <div className="flex flex-wrap justify-between gap-3 mb-4">
+          <div className="h-10 w-full sm:w-1/3 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-40 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-40 bg-gray-200 rounded animate-pulse" />
+        </div>
+
+        {/* Table skeleton */}
+        <div className="overflow-hidden bg-white rounded-lg shadow-md">
+          <div className="h-10 bg-gray-100" />
+          <div className="divide-y">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="grid grid-cols-7 gap-4 p-4 animate-pulse">
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 bg-gray-200 rounded col-span-1" />
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     );
   }
@@ -248,8 +283,25 @@ const AllOrdersPage: React.FC = () => {
       {/* Table */}
       <div className="overflow-hidden bg-white rounded-lg shadow-md">
         {filteredOrders.length === 0 ? (
-          <div className="p-12 text-center text-gray-600">
-            No matching orders found.
+          <div className="p-12">
+            <div className="flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl bg-gray-50 p-10">
+              <div className="mb-3">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
+                  <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h4 className="text-sm font-semibold text-gray-900">No matching orders</h4>
+              <p className="mt-1 text-xs text-gray-600 max-w-sm">
+                Try adjusting your search or filters to find orders.
+              </p>
+              <button
+                onClick={clearFilters}
+                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600"
+              >
+                Clear filters
+              </button>
+            </div>
           </div>
         ) : (
           <>
