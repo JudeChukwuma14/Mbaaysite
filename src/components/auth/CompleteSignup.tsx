@@ -74,7 +74,7 @@ const CompleteSignup: React.FC = () => {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        "https://mbayy-be.onrender.com/api/v1/vendor/google-complete",
+        "https://ilosiwaju-mbaay-2025.com/api/v1/vendor/google-complete",
         {
           tempToken: tempToken,
           storeName: data.storeName,

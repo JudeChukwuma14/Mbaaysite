@@ -47,7 +47,7 @@ const MessageInput = ({ onSendMessage, selectedChat }: MessageInputProps) => {
   useEffect(() => {
     if (!currentUserId || !token || !selectedChat) return;
 
-    socketRef.current = io("https://mbayy-be.onrender.com", {
+    socketRef.current = io("https://ilosiwaju-mbaay-2025.com", {
       auth: { token: `Bearer ${token}` },
     });
 

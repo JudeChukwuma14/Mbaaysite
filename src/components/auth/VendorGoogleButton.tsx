@@ -46,7 +46,7 @@ export const VendorGoogleButton = () => {
                 const idToken = credentialResponse.credential;
 
                 const response = await axios.post(
-                  "https://mbayy-be.onrender.com/api/v1/vendor/google-verify",
+                  "https://ilosiwaju-mbaay-2025.com/api/v1/vendor/google-verify",
                   { token: idToken },
                   { headers: { "Content-Type": "application/json" } }
                 );

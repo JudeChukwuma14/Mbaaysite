@@ -63,8 +63,8 @@ interface Message {
 }
 
 const API_NOTIFICATION_BASE_URL =
-  "https://mbayy-be.onrender.com/api/v1/notifications";
-const SOCKET_URL = "https://mbayy-be.onrender.com";
+  "https://ilosiwaju-mbaay-2025.com/api/v1/notifications";
+const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com";
 
 const ChatInterfaceChat: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<string | null>(null);

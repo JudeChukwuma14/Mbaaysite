@@ -31,7 +31,7 @@ export const GoogleButton = () => {
               setIsLoading(true);
               const idToken = credentialResponse.credential;
               const response = await axios.post(
-                "https://mbayy-be.onrender.com/api/v1/user/auth/google/user",
+                "https://ilosiwaju-mbaay-2025.com/api/v1/user/auth/google/user",
                 { token: idToken },
                 { headers: { "Content-Type": "application/json" } }
               );
