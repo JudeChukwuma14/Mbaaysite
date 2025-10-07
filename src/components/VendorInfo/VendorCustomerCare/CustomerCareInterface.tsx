@@ -475,7 +475,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   return (
     <Card
       className={cn(
-        "fixed bottom-20 right-6 z-40 w-80 h-96",
+        "fixed bottom-20 right-6 z-40 w-80 h-96 mb-24",
         "sm:w-96 sm:h-[400px]",
         "lg:w-96 lg:h-[460px]",
         "shadow-2xl border-0",

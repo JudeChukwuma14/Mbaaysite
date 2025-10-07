@@ -14,7 +14,7 @@ export const ChatIcon = ({ onClick, isOpen }: ChatIconProps) => {
     <Button
       onClick={onClick}
       className={cn(
-        "fixed bottom-5 right-6 z-50 h-14 w-14 rounded-full p-0",
+        "fixed bottom-5 right-6 z-50 h-14 w-14 rounded-full p-0 mb-20",
         "bg-orange-500 shadow-lg",
         "hover:scale-110 active:scale-95",
         "transition-all duration-300 ease-out",
