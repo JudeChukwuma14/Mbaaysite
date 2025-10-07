@@ -18,7 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FaHeart } from "react-icons/fa";
 import { GoReply } from "react-icons/go";
 import { toast } from "react-toastify";
-import loading from "../../../assets/loading.gif";
+// import loading from "../../../assets/loading.gif";
 import { CiHeart } from "react-icons/ci";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
@@ -477,11 +477,26 @@ export default function SocialFeed() {
           transition={{ duration: 0.5 }}
         >
           {isLoading ? (
-            <div className="flex justify-center items-center flex-col h-[100vh] relativ">
-              <img src={loading || "/placeholder.svg"} alt="loading_image" />
-              <p className="m-0 absolute top-[70%]">Loading...</p>
+            <div className="space-y-4">
+              {[...Array(4)].map((_, i) => (
+                <div
+                  key={i}
+                  className="p-4 bg-white rounded-lg shadow border border-gray-100 animate-pulse"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-gray-200" />
+                    <div className="space-y-2">
+                      <div className="h-4 w-40 bg-gray-200 rounded" />
+                      <div className="h-3 w-24 bg-gray-200 rounded" />
+                    </div>
+                  </div>
+                  <div className="h-3 w-full bg-gray-200 rounded mb-2" />
+                  <div className="h-3 w-3/4 bg-gray-200 rounded mb-4" />
+                  <div className="h-40 w-full bg-gray-100 rounded" />
+                </div>
+              ))}
             </div>
-          ) : (
+          ) : comm_posts && comm_posts.length > 0 ? (
             comm_posts?.map((post: any, index: any) => {
               const isLiked =
                 likedPosts[post._id] || post.likes.includes(user._id);
@@ -870,6 +885,23 @@ export default function SocialFeed() {
                 </motion.div>
               );
             })
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed rounded-xl bg-gray-50"
+            >
+              <div className="mb-3">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
+                  <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+              <h4 className="text-sm font-semibold text-gray-900">No posts to show</h4>
+              <p className="mt-1 text-xs text-gray-600 max-w-sm">
+                Follow communities and creators or create your first post to see updates here.
+              </p>
+            </motion.div>
           )}
         </motion.div>
 
