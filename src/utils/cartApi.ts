@@ -1,7 +1,7 @@
 // src/api/cartApi.ts
 import axios from "axios";
 
-const API_URL = "https://mbayy-be.vercel.app/api/v1";
+const API_URL = "https://ilosiwaju-mbaay-2025.com/api/v1";
 
 export const addToCart = async (
   sessionId: string,
@@ -19,7 +19,6 @@ export const addToCart = async (
     throw new Error("Failed to add item to cart");
   }
 };
-
 
 export const getCart = async (sessionId: string) => {
   try {
@@ -43,7 +42,11 @@ export const removeFromCart = async (sessionId: string, productId: string) => {
   }
 };
 
-export const updateCartQuantity = async (sessionId: string, productId: string, quantity: number) => {
+export const updateCartQuantity = async (
+  sessionId: string,
+  productId: string,
+  quantity: number
+) => {
   try {
     const response = await axios.patch(
       `${API_URL}/products/update-quantity`,

@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mbayy-be.onrender.com/api/v1/user";
+const API_BASE_URL = import.meta.env.API_URL;
 
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: `${API_BASE_URL}/api/v1/user`,
 });
 
 export const getAllUsers = async () => {

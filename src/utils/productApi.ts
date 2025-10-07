@@ -1,16 +1,17 @@
 import axios from "axios";
 
-const API_BASE_URL = "https://mbayy-be.vercel.app/api/v1/products";
+const API_BASE_URL = import.meta.env.API_URL;
 export const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL:`${API_BASE_URL}/api/v1/products`,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-const AUCTION_BASE_URL = "https://mbayy-be.onrender.com/api/v1/products";
+
+const AUCTION_BASE_URL =import.meta.env.API_URL;
 export const auction = axios.create({
-  baseURL: AUCTION_BASE_URL,
+  baseURL: `${AUCTION_BASE_URL}/api/v1/products`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -29,7 +30,6 @@ export const getAllProduct = async () => {
 export const searchProducts = async (word: string) => {
   try {
     const response = await api.get("/search", { params: { query: word } });
-    console.log("Searching.....", response.data);
     return response.data; // Gives back the matching products
   } catch (error) {
     console.log("Search failed:", error);
@@ -56,7 +56,6 @@ export const getAuctionProduct = async () => {
   }
 };
 
-
 // Fetch single auction product by ID
 export const getAuctionById = async (productId: string) => {
   try {
@@ -69,7 +68,11 @@ export const getAuctionById = async (productId: string) => {
 };
 
 // Place a bid on a product
-export const placeBid = async (productId: string, bidAmount: number, token: string) => {
+export const placeBid = async (
+  productId: string,
+  bidAmount: number,
+  token: string
+) => {
   try {
     const response = await auction.patch(
       `/place_bid/${productId}`,
@@ -87,14 +90,19 @@ export const placeBid = async (productId: string, bidAmount: number, token: stri
   }
 };
 
-
-export const upgradeBid = async (productId: string, newBidAmount: number, authToken: string) => {
+export const upgradeBid = async (
+  productId: string,
+  newBidAmount: number,
+  authToken: string
+) => {
   if (!authToken) {
-    console.error("No valid auth token provided for upgrading bid on product:", productId);
+    console.error(
+      "No valid auth token provided for upgrading bid on product:",
+      productId
+    );
     throw new Error("Authentication token is missing. Please log in.");
   }
   try {
-    console.log("Upgrading bid for product:", productId, "New Amount:", newBidAmount, "Token:", authToken);
     const response = await axios.patch(
       `${AUCTION_BASE_URL}/upgrade_bid/${productId}`,
       { newBidAmount },
@@ -105,7 +113,6 @@ export const upgradeBid = async (productId: string, newBidAmount: number, authTo
         },
       }
     );
-    console.log("Upgrade bid response:", response.data);
     return response.data;
   } catch (error: any) {
     console.error(`Error upgrading bid on ${productId}:`, error);
