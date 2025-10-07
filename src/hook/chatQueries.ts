@@ -60,8 +60,9 @@ export const useSendMessage = () => {
 
       const prev = queryClient.getQueryData(["messages", variables.chatId]);
 
+      const optimisticId = `opt-${Date.now()}`;
       const optimisticMessage = {
-        _id: `opt-${Date.now()}`,
+        _id: optimisticId,
         content: variables.content,
         replyTo: variables.replyTo,
         sender: {
@@ -71,6 +72,7 @@ export const useSendMessage = () => {
         },
         createdAt: new Date().toISOString(),
         isOptimistic: true,
+        failed: false,
         files: [],
         deletedFor: "none",
         isEdited: false,
@@ -85,14 +87,24 @@ export const useSendMessage = () => {
         return { success: true, messages: [optimisticMessage] };
       });
 
-      return { previousMessages: prev };
+      return { previousMessages: prev, chatId: variables.chatId, optimisticId };
     },
 
     onError: (_err, variables, context) => {
-      queryClient.setQueryData(
-        ["messages", variables.chatId],
-        context?.previousMessages // ← was previousMessage
-      );
+      // Mark the optimistic message as failed instead of rolling back, so UI can show a failure indicator
+      const chatId = context?.chatId || variables.chatId;
+      const optId = context?.optimisticId;
+      queryClient.setQueryData(["messages", chatId], (old: any) => {
+        if (!old?.messages) return old;
+        return {
+          ...old,
+          messages: old.messages.map((m: any) =>
+            m._id === optId
+              ? { ...m, isOptimistic: false, failed: true }
+              : m
+          ),
+        };
+      });
     },
     onSettled: (_data, _error, _variables) => {
       // Avoid re-fetching messages to prevent flicker; socket will sync them.
@@ -107,13 +119,13 @@ export const useEditMessage = () => {
   return useMutation({
     mutationFn: ({
       messageId,
-      content,
+      text,
       token,
     }: {
       messageId: string;
-      content: string;
+      text: string;
       token: string | null;
-    }) => editMessage(messageId, { content }, token),
+    }) => editMessage(messageId, { text }, token),
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
         queryKey: ["messages"],
@@ -155,14 +167,14 @@ export const useEditMessage = () => {
                 ...old,
                 messages: old.messages.map((msg: any) =>
                   msg._id === variables.messageId
-                    ? { ...msg, content: variables.content, isEdited: true }
+                    ? { ...msg, content: variables.text, isEdited: true }
                     : msg
                 ),
               };
             } else if (Array.isArray(old)) {
               return old.map((msg: any) =>
                 msg._id === variables.messageId
-                  ? { ...msg, content: variables.content, isEdited: true }
+                  ? { ...msg, content: variables.text, isEdited: true }
                   : msg
               );
             }
@@ -182,19 +194,21 @@ export const useEditMessage = () => {
         );
       }
     },
-    onSuccess: async (_unused, _, context) => {
+    // Apply server response directly to cache instead of refetching to avoid latency/flicker
+    onSuccess: (serverUpdatedMsg: any, _vars, context) => {
       const targetChatId = context?.chatId;
-      if (targetChatId) {
-        await queryClient.refetchQueries({
-          queryKey: ["messages", targetChatId],
-          type: "active",
-        });
-      } else {
-        await queryClient.refetchQueries({
-          queryKey: ["messages"],
-          type: "active",
-        });
-      }
+      if (!targetChatId) return;
+      queryClient.setQueryData(["messages", targetChatId], (old: any) => {
+        if (old && old.messages && Array.isArray(old.messages)) {
+          return {
+            ...old,
+            messages: old.messages.map((msg: any) =>
+              msg._id === serverUpdatedMsg?._id ? { ...msg, ...serverUpdatedMsg } : msg
+            ),
+          };
+        }
+        return old;
+      });
     },
   });
 };
