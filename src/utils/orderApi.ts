@@ -58,9 +58,8 @@ export type OrderStatus =
   | "Cancelled"
   | "Completed";
 
-const API_BASE_URL = import.meta.env.API_URL;
 const api = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1/order`,
+  baseURL: "https://ilosiwaju-mbaay-2025.com/api/v1/order",
   headers: { "Content-Type": "application/json" },
 });
 
@@ -132,7 +131,7 @@ export const confirmOrderReceived = async (orderId: string): Promise<void> => {
     const response = await api.patch(`/confirmOrderReceived/${orderId}`);
 
     if (response.status === 200) {
-      return;
+      return; 
     }
     throw new Error(response.data.message || "Failed to confirm payment");
   } catch (error: any) {

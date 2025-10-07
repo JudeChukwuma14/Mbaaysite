@@ -1,17 +1,16 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.API_URL;
+const API_BASE_URL = "https://ilosiwaju-mbaay-2025.com";
+
 export const api = axios.create({
-  baseURL:`${API_BASE_URL}/api/v1/products`,
+  baseURL: `${API_BASE_URL}/api/v1/products`,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-
-const AUCTION_BASE_URL =import.meta.env.API_URL;
 export const auction = axios.create({
-  baseURL: `${AUCTION_BASE_URL}/api/v1/products`,
+  baseURL: `${API_BASE_URL}/api/v1/products`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -20,59 +19,75 @@ export const auction = axios.create({
 export const getAllProduct = async () => {
   try {
     const response = await api.get("/all");
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
-  } catch (error) {
-    console.error("Oops! Something went wrong", error);
-    throw new Error("Could not get all data from the server");
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Could not fetch products from the server");
   }
 };
 
 export const searchProducts = async (word: string) => {
   try {
     const response = await api.get("/search", { params: { query: word } });
-    return response.data; // Gives back the matching products
-  } catch (error) {
-    console.log("Search failed:", error);
-    throw new Error("Couldn’t find products");
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || "Could not search products");
   }
 };
 
 export const getProductsById = async (productId: string) => {
   try {
     const response = await api.get(`/${productId}`);
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || `Could not fetch product ${productId}`);
   }
 };
 
 export const getAuctionProduct = async () => {
   try {
     const response = await auction.get("/view_all_auction_products");
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
-  } catch (error) {
-    console.error("Error fetching auction products:", error);
-    throw error; // Throw the error to be handled by the caller
+  } catch (error: any) {
+    if (error.response?.status === 404 && error.response?.data?.message === "No auctions found") {
+      return []; // Return empty array for "No auctions found"
+    }
+    throw new Error(error.response?.data?.message || "Could not fetch auction products");
   }
 };
 
-// Fetch single auction product by ID
 export const getAuctionById = async (productId: string) => {
   try {
     const response = await auction.get(`/view_an_auction_product/${productId}`);
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
-  } catch (error) {
-    console.error(`Error fetching auction product ${productId}:`, error);
-    throw error;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || `Could not fetch auction product ${productId}`);
   }
 };
 
-// Place a bid on a product
-export const placeBid = async (
-  productId: string,
-  bidAmount: number,
-  token: string
-) => {
+export const placeBid = async (productId: string, bidAmount: number, token: string) => {
+  if (!token) {
+    throw new Error("Authentication token is missing. Please log in.");
+  }
   try {
     const response = await auction.patch(
       `/place_bid/${productId}`,
@@ -83,39 +98,36 @@ export const placeBid = async (
         },
       }
     );
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
-  } catch (error) {
-    console.error(`Error placing bid on ${productId}:`, error);
-    throw error;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || `Could not place bid on ${productId}`);
   }
 };
 
-export const upgradeBid = async (
-  productId: string,
-  newBidAmount: number,
-  authToken: string
-) => {
+export const upgradeBid = async (productId: string, newBidAmount: number, authToken: string) => {
   if (!authToken) {
-    console.error(
-      "No valid auth token provided for upgrading bid on product:",
-      productId
-    );
     throw new Error("Authentication token is missing. Please log in.");
   }
   try {
-    const response = await axios.patch(
-      `${AUCTION_BASE_URL}/upgrade_bid/${productId}`,
+    const response = await auction.patch(
+      `/upgrade_bid/${productId}`,
       { newBidAmount },
       {
         headers: {
           Authorization: `Bearer ${authToken}`,
-          "Content-Type": "application/json",
         },
       }
     );
+    const contentType = response.headers["content-type"];
+    if (!contentType?.includes("application/json")) {
+      throw new Error("Received non-JSON response from server");
+    }
     return response.data;
   } catch (error: any) {
-    console.error(`Error upgrading bid on ${productId}:`, error);
-    throw error;
+    throw new Error(error.response?.data?.message || `Could not upgrade bid on ${productId}`);
   }
 };

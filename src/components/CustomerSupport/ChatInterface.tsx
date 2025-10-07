@@ -44,10 +44,10 @@ interface ChatInterfaceProps {
   onClose: () => void;
 }
 
-const API_CHAT_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/admin";
+const API_CHAT_BASE_URL = "https://mbayy-be.onrender.com/api/v1/admin";
 const API_NOTIFICATION_BASE_URL =
-  "https://ilosiwaju-mbaay-2025.com/api/v1/notifications";
-const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com";
+  "https://mbayy-be.onrender.com/api/v1/notifications";
+const SOCKET_URL = "https://mbayy-be.onrender.com";
 const AUTO_RESPONSE_MESSAGE =
   "Welcome to Mbaay Support! We're here to assist you. An agent will respond shortly.";
 

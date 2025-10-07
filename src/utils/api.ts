@@ -1,9 +1,8 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.API_URL;
-
+const API_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/user";
 export const api = axios.create({
- baseURL: `${API_BASE_URL}/api/v1/user`,
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

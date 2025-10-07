@@ -20,6 +20,7 @@ export const addToCart = async (
   }
 };
 
+
 export const getCart = async (sessionId: string) => {
   try {
     const response = await axios.get(`${API_URL}/products/get/${sessionId}`);
@@ -42,11 +43,7 @@ export const removeFromCart = async (sessionId: string, productId: string) => {
   }
 };
 
-export const updateCartQuantity = async (
-  sessionId: string,
-  productId: string,
-  quantity: number
-) => {
+export const updateCartQuantity = async (sessionId: string, productId: string, quantity: number) => {
   try {
     const response = await axios.patch(
       `${API_URL}/products/update-quantity`,

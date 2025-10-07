@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   FaSearch,
@@ -45,16 +45,20 @@ const Header: React.FC = () => {
   const settings = useSelector((state: RootState) => state.settings);
 
   const countries = Country.getAllCountries();
-  const filteredCountries = countries.filter((country) =>
-    country.name.toLowerCase().includes(countrySearch.toLowerCase())
+  const filteredCountries = useMemo(
+    () => countries.filter((country) =>
+      country.name.toLowerCase().includes(countrySearch.toLowerCase())
+    ),
+    [countrySearch]
   );
 
   const handleCountryChange = (country: ICountry) => {
     const language = getLanguageByCountry(country.isoCode);
     const currency = getCurrencyByCountry(country.isoCode);
     i18next.changeLanguage(language, (err) => {
-      if (err) console.error("Language change failed:", err);
-      else console.log("Language changed to:", language);
+      if (err && process.env.NODE_ENV === 'development') {
+        console.error("Language change failed:", err);
+      }
     });
     dispatch(
       setSettings({
@@ -97,12 +101,10 @@ const Header: React.FC = () => {
   const toggleSearch = () => setSearchOpen(!searchOpen);
 
   useEffect(() => {
-    // Check for live auctions on mount
     const fetchAuctions = async () => {
       try {
         const result = await getAuctionProduct();
         const auctions = Array.isArray(result) ? result : result.data || [];
-        // Check if any auction is live (end date in the future)
         const now = new Date();
         const live = auctions.some(
           (auction: any) => new Date(auction.auctionEndDate) > now
@@ -153,10 +155,6 @@ const Header: React.FC = () => {
 
     return () => clearTimeout(timer);
   }, [word]);
-
-  useEffect(() => {
-    console.log("Translation for 'welcome':", t("welcome"));
-  }, [t]);
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-md">
