@@ -38,6 +38,7 @@ import {
   CheckCheck,
   Maximize,
   Reply,
+  AlertCircle,
 } from "lucide-react";
 import { ChatListSidebar } from "./chat-list-sidebar";
 import {
@@ -49,6 +50,7 @@ import {
   useSendMediaMessage,
   useSendMessage,
 } from "@/hook/chatQueries";
+import { markChatAsRead } from "@/utils/vendorChatApi";
 
 // Constants
 const SOCKET_URL = "https://ilosiwaju-mbaay-2025.com";
@@ -62,7 +64,7 @@ interface FileAttachment {
   duration?: string;
 }
 
-type Status = "pending" | "delivered" | "read";
+type Status = "pending" | "delivered" | "read" | "failed";
 
 interface Message {
   _id: string;
@@ -484,7 +486,7 @@ const MessageItem = React.memo(
     onOpenMedia: (files: FileAttachment[], index: number) => void;
   }) => (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       className={`flex gap-3 mb-4 ${msg.isMe ? "justify-end" : ""}`}
     >
@@ -546,6 +548,11 @@ const MessageItem = React.memo(
             )}
             {msg.status === "delivered" && <CheckCircle2 size={12} />}
             {msg.status === "read" && <CheckCheck size={12} />}
+            {msg.status === "failed" && (
+              <span className="flex items-center gap-1 text-red-500">
+                <AlertCircle size={12} /> Failed
+              </span>
+            )}
           </div>
         </div>
 
@@ -579,20 +586,37 @@ const MessageItem = React.memo(
             >
               <Reply className="w-4 h-4" />
             </button>
-            <button
-              onClick={() => onCopy(msg.content)}
-              className="relative group"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
+            {(!msg.files || msg.files.length === 0) && (
+              <button
+                onClick={() => onCopy(msg.content)}
+                className="relative group"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+            )}
+            {msg.isMe && msg.status === "failed" && (
+              <>
+                {(!msg.files || msg.files.length === 0) && (
+                  <button
+                    onClick={() => onEdit(msg._id)}
+                    className="relative group"
+                    title="Edit message"
+                  >
+                    <Edit className="w-4 h-4 text-red-500" />
+                  </button>
+                )}
+              </>
+            )}
             {msg.isMe && (
               <>
-                <button
-                  onClick={() => onEdit(msg._id)}
-                  className="relative group"
-                >
-                  <Edit className="w-4 h-4" />
-                </button>
+                {(!msg.files || msg.files.length === 0) && (
+                  <button
+                    onClick={() => onEdit(msg._id)}
+                    className="relative group"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                )}
                 <button
                   onClick={() => onDelete(msg._id)}
                   className="relative group"
@@ -768,12 +792,12 @@ const MessageInput = React.memo(
     showEmojiPicker: boolean;
     isUploading: boolean;
     uploadProgress?: number | null;
-    inputRef: React.RefObject<HTMLInputElement>;
+    inputRef: React.RefObject<HTMLTextAreaElement>;
     imageInputRef: React.RefObject<HTMLInputElement>;
     videoInputRef: React.RefObject<HTMLInputElement>;
     docInputRef: React.RefObject<HTMLInputElement>;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
     onEmojiSelect: (emoji: string) => void;
     onToggleEmojiPicker: () => void;
     onFileUpload: (
@@ -833,16 +857,16 @@ const MessageInput = React.memo(
         </button>
 
         <div className="relative flex w-full">
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
             value={message}
             onChange={onChange}
             onKeyDown={onKeyDown}
             placeholder={
               editingMessageId ? "Editing message…" : "Type your message…"
             }
-            className="flex-1 px-4 py-2 border rounded-full"
+            rows={1}
+            className="flex-1 px-4 py-2 border border-orange-500 rounded-xl resize-none leading-6 min-h-[44px] max-h-40 focus:outline-orange-500"
             disabled={isUploading}
           />
 
@@ -1214,13 +1238,42 @@ export default function ChatInterface() {
   // Refs
   const videoRef = useRef<HTMLVideoElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messageInputRef = useRef<HTMLInputElement>(null);
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   const currentGalleryIndex = useRef(0);
   const queryClient = useQueryClient();
   const socket = useSocket(user.token);
+  const markReadTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced mark-as-read to avoid spamming the API when multiple messages arrive quickly
+  const scheduleMarkAsRead = React.useCallback(() => {
+    if (!activeChat || !user?.vendor?._id) return;
+    if (markReadTimeout.current) clearTimeout(markReadTimeout.current);
+    markReadTimeout.current = setTimeout(async () => {
+      try {
+        await markChatAsRead(activeChat, user.vendor._id);
+        // Refresh chat list and unread counters
+        queryClient.invalidateQueries({ queryKey: ["chats"] });
+        queryClient.invalidateQueries({
+          queryKey: ["unread-chat-count", user.vendor._id],
+        });
+      } catch (e) {
+        // Silently ignore; next schedule will retry
+      }
+    }, 500);
+  }, [activeChat, user?.vendor?._id, queryClient]);
+
+  // Clear any pending mark-as-read timer when chat changes or component unmounts
+  useEffect(() => {
+    return () => {
+      if (markReadTimeout.current) {
+        clearTimeout(markReadTimeout.current);
+        markReadTimeout.current = null;
+      }
+    };
+  }, [activeChat]);
 
   // API Queries
   const createOrGetChatMutation = useCreateOrGetChat();
@@ -1264,63 +1317,79 @@ export default function ChatInterface() {
 
   const activeMessages = useMemo(
     () =>
-      apiMessages.map((m: any) => ({
-        _id: m._id,
-        content: m.content,
-        sender:
-          m.sender?._id === user.vendor._id
-            ? "You"
-            : m.sender?.storeName || "Unknown",
-        timestamp: new Date(m.createdAt).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        // Treat react-query optimistic entries (sender._id === "current-user") as me
-        isMe:
-          m.sender?._id === user.vendor._id || m.sender?._id === "current-user",
-        status: (m.isOptimistic ? "pending" : "delivered") as Status,
-        clientKey: m.clientKey || m._id,
-        files:
-          Array.isArray(m.files) && m.files.length > 0
-            ? m.files.map((f: any) => ({
-                type: normalizeAttachmentType(
-                  f?.type || f?.mimetype || f?.mime
-                ),
-                url: extractFileUrl(f),
-                name: extractFileName(f, extractFileUrl(f)),
-                size: typeof f?.size === "number" ? f.size : 0,
-              }))
-            : [
-                ...(m.images || []).map((url: string) => ({
-                  type: "image" as const,
-                  url,
-                  name: url.split("/").pop() || "image",
-                  size: 0,
-                })),
-                ...(m.video
-                  ? [
-                      {
-                        type: "video" as const,
-                        url: m.video,
-                        name: m.video.split("/").pop() || "video",
-                        size: 0,
-                      },
-                    ]
-                  : []),
-                ...(m.documents || []).map((url: string) => ({
-                  type: "document" as const,
-                  url,
-                  name: url.split("/").pop() || "document",
-                  size: 0,
-                })),
-              ],
-        replyTo:
-          typeof m.replyTo === "string"
-            ? m.replyTo
-            : m.replyTo?.id || m.replyTo?._id || undefined,
-        isEdited: m.isEdited || false,
-        deletedFor: m.deletedFor || "none",
-      })),
+      apiMessages.map((m: any) => {
+        const rawSenderId =
+          typeof m?.sender === "string" ? m.sender : m?.sender?._id;
+        const senderId = rawSenderId != null ? String(rawSenderId) : undefined;
+        const myId =
+          user?.vendor?._id != null ? String(user.vendor._id) : undefined;
+        const senderName =
+          typeof m?.sender === "object"
+            ? m.sender?.storeName || m.sender?.name
+            : undefined;
+        return {
+          _id: m._id,
+          content: m.content,
+          sender:
+            senderId && myId && senderId === myId
+              ? "You"
+              : senderName || "Unknown",
+          timestamp: new Date(m.createdAt).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          // Treat react-query optimistic entries (sender._id === "current-user") as me
+          isMe:
+            (senderId && myId && senderId === myId) ||
+            senderId === "current-user",
+          status: m.failed
+            ? "failed"
+            : m.isOptimistic
+            ? "pending"
+            : ("delivered" as Status),
+          clientKey: m.clientKey || m._id,
+          files:
+            Array.isArray(m.files) && m.files.length > 0
+              ? m.files.map((f: any) => ({
+                  type: normalizeAttachmentType(
+                    f?.type || f?.mimetype || f?.mime
+                  ),
+                  url: extractFileUrl(f),
+                  name: extractFileName(f, extractFileUrl(f)),
+                  size: typeof f?.size === "number" ? f.size : 0,
+                }))
+              : [
+                  ...(m.images || []).map((url: string) => ({
+                    type: "image" as const,
+                    url,
+                    name: url.split("/").pop() || "image",
+                    size: 0,
+                  })),
+                  ...(m.video
+                    ? [
+                        {
+                          type: "video" as const,
+                          url: m.video,
+                          name: m.video.split("/").pop() || "video",
+                          size: 0,
+                        },
+                      ]
+                    : []),
+                  ...(m.documents || []).map((url: string) => ({
+                    type: "document" as const,
+                    url,
+                    name: url.split("/").pop() || "document",
+                    size: 0,
+                  })),
+                ],
+          replyTo:
+            typeof m.replyTo === "string"
+              ? m.replyTo
+              : m.replyTo?.id || m.replyTo?._id || undefined,
+          isEdited: m.isEdited || false,
+          deletedFor: m.deletedFor || "none",
+        };
+      }),
     [apiMessages, user.vendor._id]
   );
 
@@ -1375,7 +1444,7 @@ export default function ChatInterface() {
   useEffect(() => {
     if (!activeChat || !socket) return;
     socket.emit("joinChat", activeChat);
-    const onNew = (m: any) =>
+    const onNew = (m: any) => {
       queryClient.setQueryData(["messages", activeChat], (o: any) => {
         const existing: any[] = Array.isArray(o?.messages) ? o.messages : [];
         // 1) If server ID already present, replace that entry
@@ -1384,9 +1453,11 @@ export default function ChatInterface() {
           const copy = existing.slice();
           const preservedReplyTo = existing[idxById]?.replyTo;
           copy[idxById] = {
+            ...existing[idxById],
             ...m,
-            // if server payload is missing replyTo (often the case on minimal events), keep optimistic
+            // if server payload is missing fields, keep optimistic
             replyTo: m.replyTo ?? preservedReplyTo,
+            sender: m.sender ?? existing[idxById]?.sender,
             clientKey: existing[idxById].clientKey || existing[idxById]._id,
           };
           return { ...o, messages: copy };
@@ -1405,8 +1476,10 @@ export default function ChatInterface() {
           const copy = existing.slice();
           const preservedReplyTo = existing[idxOptimisticSimilar]?.replyTo;
           copy[idxOptimisticSimilar] = {
+            ...existing[idxOptimisticSimilar],
             ...m,
             replyTo: m.replyTo ?? preservedReplyTo,
+            sender: m.sender ?? existing[idxOptimisticSimilar]?.sender,
             clientKey:
               existing[idxOptimisticSimilar].clientKey ||
               existing[idxOptimisticSimilar]._id,
@@ -1423,8 +1496,10 @@ export default function ChatInterface() {
           const copy = existing.slice();
           const preservedReplyTo = copy[lastOptimisticIdx]?.replyTo;
           copy[lastOptimisticIdx] = {
+            ...copy[lastOptimisticIdx],
             ...m,
             replyTo: m.replyTo ?? preservedReplyTo,
+            sender: m.sender ?? copy[lastOptimisticIdx]?.sender,
             clientKey:
               copy[lastOptimisticIdx].clientKey || copy[lastOptimisticIdx]._id,
           };
@@ -1432,15 +1507,25 @@ export default function ChatInterface() {
         }
         // 4) Otherwise, append but first drop other stale optimistics (rare)
         const withoutOptimistic = existing.filter((x: any) => !x?.isOptimistic);
-        return {
+        const updated = {
           ...o,
           messages: [...withoutOptimistic, { ...m, clientKey: m._id }],
         };
+        return updated;
       });
+      // If the new message is from the other participant and this chat is active, mark as read
+      const senderId =
+        typeof m?.sender === "string" ? m.sender : m?.sender?._id;
+      if (activeChat && senderId && senderId !== user?.vendor?._id) {
+        scheduleMarkAsRead();
+      }
+    };
     const onEdit = (u: any) =>
       queryClient.setQueryData(["messages", activeChat], (o: any) => ({
         ...o,
-        messages: o?.messages?.map((m: any) => (m._id === u._id ? u : m)),
+        messages: o?.messages?.map((m: any) =>
+          m._id === u._id ? { ...m, ...u, sender: u.sender ?? m.sender } : m
+        ),
       }));
     const onDelete = ({ messageId }: { messageId: string }) =>
       queryClient.setQueryData(["messages", activeChat], (o: any) => ({
@@ -1582,19 +1667,66 @@ export default function ChatInterface() {
     [activeChat, user.token, message, replyingTo]
   );
 
-  const handleSaveEdit = useCallback(async () => {
+  const handleSaveEdit = async () => {
     if (!editingMessageId || !message.trim()) return;
     try {
+      // Optimistic local update so sender sees edit instantly
+      queryClient.setQueryData(["messages", activeChat], (old: any) => ({
+        ...old,
+        messages: (old?.messages || []).map((m: any) =>
+          m._id === editingMessageId
+            ? {
+                ...m,
+                content: message.trim(),
+                isEdited: true,
+                // ensure sender is me locally (only authors can edit)
+                sender: { _id: user.vendor._id, name: "You", isVendor: true },
+              }
+            : m
+        ),
+      }));
+
       const res = await editMessageMutation.mutateAsync({
         messageId: editingMessageId,
-        content: message.trim(),
+        text: message.trim(),
         token: user.token,
       });
+      // Update locally immediately so the sender sees the change without waiting for socket echo
+      queryClient.setQueryData(["messages", activeChat], (old: any) => ({
+        ...old,
+        messages: (old?.messages || []).map((m: any) =>
+          m._id === res._id
+            ? {
+                ...m,
+                ...res,
+                // if server doesn't send sender, keep as me
+                sender: res.sender ?? m.sender ?? { _id: user.vendor._id },
+              }
+            : m
+        ),
+      }));
       socket?.emit("messageEdited", { chatId: activeChat, ...res });
-    } catch {}
-    setEditingMessageId(null);
-    setMessage("");
-  }, [editingMessageId, message, user.token, activeChat, socket]);
+      setEditingMessageId(null);
+      setMessage("");
+      // Do not emit via socket here; server will broadcast newMessage
+    } catch {
+      // react-query will rollback its optimistic update on error
+    }
+  };
+
+  // const handleSaveEdit = useCallback(async () => {
+  //   if (!editingMessageId || !message.trim()) return;
+  //   try {
+  //     const res = await editMessageMutation.mutateAsync({
+  //       messageId: editingMessageId,
+  //       text: message.trim(),
+  //       token: user.token,
+  //     });
+  //     socket?.emit("messageEdited", { chatId: activeChat, ...res });
+  //   } catch {}
+  //   setEditingMessageId(null);
+  //   setMessage("");
+  // }, []);
 
   const handleDeleteConfirm = useCallback(() => {
     if (!deleteDialog.messageId) return;
@@ -1929,6 +2061,13 @@ export default function ChatInterface() {
             docInputRef={docInputRef}
             onChange={(e) => {
               setMessage(e.target.value);
+              // auto-grow textarea for better UX
+              const el = messageInputRef.current;
+              if (el) {
+                el.style.height = "auto";
+                const max = 160; // ~max-h-40
+                el.style.height = Math.min(el.scrollHeight, max) + "px";
+              }
               handleTyping();
             }}
             onKeyDown={(e) => {

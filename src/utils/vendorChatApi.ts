@@ -94,7 +94,7 @@ export const getChatMessages = async (chatId: string) => {
 // Edit a message
 export const editMessage = async (
   messageId: string,
-  data: { content: string },
+  data: { text: string },
   token: string | null
 ) => {
   try {
@@ -109,7 +109,8 @@ export const editMessage = async (
       status: response.status,
       data: response.data,
     });
-    return response.data;
+    // Normalize to return the updated message object directly
+    return (response.data && (response.data.message || response.data.updated || response.data.data)) || response.data;
   } catch (error) {
     console.error("Error editing message:", error);
     throw error;
