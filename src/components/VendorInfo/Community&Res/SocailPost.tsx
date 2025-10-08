@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, UserPlus, Check } from "lucide-react";
+import { Search, UserPlus, UserMinus } from "lucide-react";
 import {
   follow_vendor,
   unfollow_vendor,
@@ -12,9 +12,9 @@ import {
   join_community,
   search_vendor_community,
 } from "@/utils/communityApi";
+import { get_single_vendor } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-// import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 interface Vendor {
@@ -31,7 +31,17 @@ export default function SocialList() {
   const queryClient = useQueryClient();
   // const navigate = useNavigate();
 
-  const getUserId = () => user.vendor._id || user.vendor.id;
+  // Get the currently logged-in vendor using the same endpoint as KYC
+  const { data: currentVendor } = useQuery({
+    queryKey: ["vendor", user?.token],
+    queryFn: () => get_single_vendor(user?.token || ""),
+    enabled: !!user?.token,
+  });
+
+  console.log("Vendoe", currentVendor);
+
+  const getUserId = () =>
+    currentVendor?._id || user.vendor._id || user.vendor.id;
 
   const { data: vendors = [], isLoading } = useQuery<Vendor[]>({
     queryKey: ["vendors"],
@@ -147,6 +157,7 @@ export default function SocialList() {
       queryClient.refetchQueries({ queryKey: ["vendors"] });
       queryClient.refetchQueries({ queryKey: ["search_res"] });
       queryClient.refetchQueries({ queryKey: ["vendor"] });
+      queryClient.refetchQueries({ queryKey: ["vendor", user?.token] });
       queryClient.refetchQueries({ queryKey: ["communities"] });
     },
   });
@@ -318,7 +329,7 @@ export default function SocialList() {
               return (
                 <motion.div key={vendor._id} layout className="space-y-4">
                   <AnimatePresence>
-                    <Link to={`community-vendor/:${vendor._id}`}>
+                    <Link to={`/app/community-details/${vendor._id}`}>
                       <motion.div
                         layout
                         initial={{ opacity: 0, y: 20 }}
@@ -345,11 +356,15 @@ export default function SocialList() {
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => handleFollowToggle(vendor._id)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleFollowToggle(vendor._id);
+                          }}
                           disabled={isFollowPending}
                           className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] transition-all duration-200 ${
                             isFollowing
-                              ? "bg-gray-100 text-gray-700"
+                              ? "bg-red-500 text-white"
                               : "bg-blue-500 text-white"
                           } ${
                             isFollowPending
@@ -360,17 +375,15 @@ export default function SocialList() {
                           <AnimatePresence mode="wait">
                             {isFollowing ? (
                               <motion.div
-                                key="following"
+                                key="unfollow"
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 className="flex items-center space-x-1"
                               >
-                                <Check className="w-3 h-3" />
+                                <UserMinus className="w-3 h-3" />
                                 <span>
-                                  {isFollowPending
-                                    ? "Updating..."
-                                    : "Following"}
+                                  {isFollowPending ? "Updating..." : "Unfollow"}
                                 </span>
                               </motion.div>
                             ) : (

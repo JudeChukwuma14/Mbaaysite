@@ -1,11 +1,12 @@
-"use client";
-
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
+import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
 import NewArrival from "../../Cards/NewArrival";
 import { getAllVendor } from "@/utils/vendorApi";
 import Spinner from "../../Common/Spinner";
+import { useSelector } from "react-redux";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { follow_vendor, unfollow_vendor } from "@/utils/communityApi";
 import {
   FaRegSadTear,
   FaShoppingCart,
@@ -64,12 +65,15 @@ interface Vendor {
 const PRODUCTS_PER_PAGE = 20;
 
 const VendorProfileCommunity: React.FC = () => {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const user = useSelector((state: any) => state.vendor);
+  const queryClient = useQueryClient();
+  const getUserId = () => user?.vendor?._id || user?.vendor?.id;
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -110,9 +114,45 @@ const VendorProfileCommunity: React.FC = () => {
     fetchVendorData();
   }, [id]);
 
+  const isFollowing = vendor?.followers?.includes(getUserId());
+  const followMutation = useMutation({
+    mutationFn: async (currentlyFollowing: boolean) => {
+      if (!vendor) return;
+      return currentlyFollowing
+        ? unfollow_vendor(user.token, vendor._id)
+        : follow_vendor(user.token, vendor._id);
+    },
+    onMutate: async (currentlyFollowing: boolean) => {
+      setVendor((prev) => {
+        if (!prev) return prev;
+        const updatedFollowers = currentlyFollowing
+          ? prev.followers.filter((id: string) => id !== getUserId())
+          : [...prev.followers, getUserId()];
+        return { ...prev, followers: updatedFollowers };
+      });
+    },
+    onError: () => {
+      // Revert optimistic update by toggling back
+      setVendor((prev) => {
+        if (!prev) return prev;
+        const currentlyFollowing = prev.followers.includes(getUserId());
+        const revertedFollowers = currentlyFollowing
+          ? prev.followers.filter((id: string) => id !== getUserId())
+          : [...prev.followers, getUserId()];
+        return { ...prev, followers: revertedFollowers };
+      });
+    },
+    onSettled: () => {
+      // Keep global caches consistent
+      queryClient.invalidateQueries({ queryKey: ["vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    },
+  });
+
   const handleFollowToggle = () => {
-    setIsFollowing(!isFollowing);
-    // TODO: Implement actual follow API call here
+    if (!vendor) return;
+    followMutation.mutate(!!isFollowing);
   };
 
   // Pagination logic
@@ -227,14 +267,33 @@ const VendorProfileCommunity: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleFollowToggle}
+                  disabled={followMutation.isPending}
                   className={`${
                     isFollowing
                       ? "bg-gray-600 hover:bg-gray-700"
                       : "bg-orange-500 hover:bg-orange-600"
-                  } text-white`}
+                  } text-white ${
+                    followMutation.isPending
+                      ? "opacity-80 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
-                  {isFollowing ? "Following" : "Follow"}
+                  {followMutation.isPending
+                    ? "Updating..."
+                    : isFollowing
+                    ? "Following"
+                    : "Follow"}
                 </Button>
+
+                {/* Back Button */}
+                <button
+                  onClick={() => navigate(-1)}
+                  className="absolute flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-md cursor-pointer top-4 left-4 bg-black/40 hover:bg-black/60"
+                  aria-label="Go back"
+                >
+                  <FaArrowLeft />
+                  Back
+                </button>
               </div>
             </div>
           </div>

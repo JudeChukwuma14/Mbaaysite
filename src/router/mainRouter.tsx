@@ -1163,7 +1163,10 @@ const routesConfig: RouteObject[] = [
             path: "edit-vendor-profile",
             element: withSuspense(EditVendorProfile),
           },
-
+          {
+            path: "community-details/:id",
+            element: withSuspense(VendorProfileCommunity),
+          },
           { path: "kyc-verification", element: withSuspense(KycVerification) },
 
           { path: "myorders", element: withSuspense(MyOrders) },
@@ -1177,10 +1180,6 @@ const routesConfig: RouteObject[] = [
           { path: "all-post", element: withSuspense(AllPost) },
           { path: "profile", element: withSuspense(ProfilePage) },
           { path: "my-community", element: withSuspense(CommunitySection) },
-          {
-            path: "community-vendor/:id",
-            element: withSuspense(VendorProfileCommunity),
-          },
           { path: "reviews", element: withSuspense(Reviews) },
           { path: "pricing", element: withSuspense(Pricing) },
           { path: "upgrade", element: withSuspense(Upgrade) },
