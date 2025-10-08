@@ -268,7 +268,7 @@ export default function SocialList() {
 
       communityMutation.mutate({ communityId, isMember });
     } catch (error) {
-      console.error("Join/Leave failed:", error);
+      console.log("Join/Leave failed:", error);
     }
   };
 
