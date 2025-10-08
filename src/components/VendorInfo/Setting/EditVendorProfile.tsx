@@ -18,6 +18,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
 import { Link } from "react-router-dom";
+import { IoIosContact } from "react-icons/io";
+
+// Default banner image (MBAAY logo)
+const defaultBanner = "https://www.mbaay.com/assets/MBLogo-spwX6zWd.png";
 
 interface VendorProfile {
   companyName: string;
@@ -1007,7 +1011,13 @@ export default function EditVendorProfile() {
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-r from-orange-500 to-black" />
+                <div className="w-full h-full bg-white flex items-center justify-center">
+                  <img
+                    src={defaultBanner}
+                    alt="Default Banner"
+                    className="object-contain max-h-full p-4"
+                  />
+                </div>
               )}
               <motion.input
                 type="file"
@@ -1043,7 +1053,7 @@ export default function EditVendorProfile() {
                       />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full">
-                        <Camera className="w-8 h-8 text-gray-400" />
+                        <IoIosContact className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
                   </div>
@@ -1196,7 +1206,7 @@ export default function EditVendorProfile() {
             <div className="grid gap-4">
               <div>
                 <label className="block mb-1 text-sm text-gray-500">
-                  Company Name
+                  Store Name
                 </label>
                 <motion.input
                   type="text"

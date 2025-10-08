@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Phone,
   Mail,
@@ -13,24 +13,48 @@ import {
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 // import { useSelector } from "react-redux";
 // import type { RootState } from "@/redux/store";
 import { useOneOrder } from "@/hook/useOrders";
 import type { Orders } from "@/utils/orderVendorApi";
 
-// Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl:
-    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
+// Google Maps loader
+declare global {
+  interface Window {
+    google?: any;
+    __googleMapsCallback__?: () => void;
+  }
+}
+
+const loadGoogleMapsScript = (apiKey?: string): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (window.google && window.google.maps) {
+      resolve();
+      return;
+    }
+    // If a script is already present, wait for it
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src^="https://maps.googleapis.com/maps/api/js"]'
+    );
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("Google Maps failed to load")));
+      return;
+    }
+    if (!apiKey) {
+      reject(new Error("Missing Google Maps API key (VITE_GOOGLE_MAPS_API_KEY)"));
+      return;
+    }
+    const script = document.createElement("script");
+    const cbName = "__googleMapsCallback__";
+    (window as any)[cbName] = () => resolve();
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=${cbName}`;
+    script.async = true;
+    script.defer = true;
+    script.onerror = () => reject(new Error("Google Maps failed to load"));
+    document.head.appendChild(script);
+  });
+};
 
 interface LocationCoordinates {
   lat: number;
@@ -47,6 +71,10 @@ const OrderDetailsPage = () => {
   );
   const [isGeocodingLoading, setIsGeocodingLoading] = useState(false);
   const [geocodingError, setGeocodingError] = useState<string | null>(null);
+  const [mapsReady, setMapsReady] = useState(false);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const markerRef = useRef<any>(null);
+  const mapInstanceRef = useRef<any>(null);
 
   // Fetch order details
   const {
@@ -99,12 +127,52 @@ const OrderDetailsPage = () => {
     }
   };
 
+  // Load Google Maps script on mount
+  useEffect(() => {
+    const key = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
+    loadGoogleMapsScript(key)
+      .then(() => setMapsReady(true))
+      .catch((err) => {
+        console.error(err);
+        setGeocodingError("Google Maps failed to load");
+      });
+  }, []);
+
   // Geocode address when order data is available
   useEffect(() => {
     if (order?.buyerInfo?.address) {
       geocodeAddress(order.buyerInfo.address);
     }
   }, [order?.buyerInfo?.address]);
+
+  // Initialize or update Google Map when ready and coordinates change
+  useEffect(() => {
+    if (!mapsReady || !coordinates || !mapRef.current || !(window.google && window.google.maps)) return;
+
+    const center = { lat: coordinates.lat, lng: coordinates.lng };
+
+    if (!mapInstanceRef.current) {
+      mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 13,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: true,
+      });
+    } else {
+      mapInstanceRef.current.setCenter(center);
+    }
+
+    if (!markerRef.current) {
+      markerRef.current = new window.google.maps.Marker({
+        position: center,
+        map: mapInstanceRef.current,
+        title: "Delivery Location",
+      });
+    } else {
+      markerRef.current.setPosition(center);
+    }
+  }, [mapsReady, coordinates]);
 
   type ProductType = {
     price: number;
@@ -280,26 +348,7 @@ const OrderDetailsPage = () => {
                 </div>
               </div>
             ) : coordinates ? (
-              <MapContainer
-                center={[coordinates.lat, coordinates.lng]}
-                zoom={13}
-                style={{ height: "100%", width: "100%" }}
-                className="rounded"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Marker position={[coordinates.lat, coordinates.lng]}>
-                  <Popup>
-                    <div className="text-center">
-                      <strong>Delivery Location</strong>
-                      <br />
-                      {order.buyerInfo?.address}
-                    </div>
-                  </Popup>
-                </Marker>
-              </MapContainer>
+              <div ref={mapRef} className="h-full w-full rounded" />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">

@@ -10,6 +10,7 @@ import DescriptionSection from "./descriptionSection";
 import ImageUploader from "./imageUploader";
 import VideoUploader from "./Video-Uploader";
 import ReturnPolicyPopup from "./ReturnPolicyPopup";
+import BankAccountPopup from "./BankAccountPopup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ChevronDown } from "lucide-react";
@@ -22,6 +23,7 @@ const NewProduct = () => {
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
+  // console.debug("Vendor data", vendors);
 
   const subCategories: Record<string, string[]> = {
     "Beauty and Wellness": ["Skincare", "Haircare", "Makeup", "Fragrance"],
@@ -95,6 +97,7 @@ const NewProduct = () => {
     file?: File;
   } | null>(null);
   const [showReturnPolicyPopup, setShowReturnPolicyPopup] = useState(false);
+  const [showBankAccountPopup, setShowBankAccountPopup] = useState(false);
   const [vendorPlan] = useState<"Shelves" | "Counter" | "Shop" | "Premium">(
     "Counter"
   );
@@ -103,6 +106,7 @@ const NewProduct = () => {
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [vendorCountry, setVendorCountry] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [showListingTypeDropdown, setShowListingTypeDropdown] = useState(false);
   const [listingType, setListingType] = useState<"sales" | "auction">("sales");
   const [auctionDetails, setAuctionDetails] = useState<{
     startingPrice: string;
@@ -117,7 +121,7 @@ const NewProduct = () => {
     Inventory: 0,
     auctionstartTime: "",
   });
-  console.log(auctionDetails);
+  // console.debug("Auction details", auctionDetails);
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
 
@@ -481,6 +485,16 @@ const NewProduct = () => {
   };
 
   const handleAddProduct = async () => {
+    // Require bank account details before allowing upload
+    const hasBankAccountFlag = Boolean(vendors?.bankAccount);
+    const hasBankFields = Boolean(
+      vendors?.accountName && vendors?.accountNumber && vendors?.bankName
+    );
+    if (!hasBankAccountFlag && !hasBankFields) {
+      setShowBankAccountPopup(true);
+      return;
+    }
+
     if (!vendors?.returnPolicy) {
       setShowReturnPolicyPopup(true);
       return;
@@ -602,17 +616,18 @@ const NewProduct = () => {
       const target = event.target as HTMLElement;
       if (!target.closest(".relative")) {
         setShowCategoryDropdown(false);
+        setShowListingTypeDropdown(false);
       }
     };
 
-    if (showCategoryDropdown) {
+    if (showCategoryDropdown || showListingTypeDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showCategoryDropdown]);
+  }, [showCategoryDropdown, showListingTypeDropdown]);
 
   useEffect(() => {
     // Set initial category based on vendor's craftCategories
@@ -633,6 +648,10 @@ const NewProduct = () => {
       transition={{ duration: 0.5 }}
     >
       <ToastContainer />
+      <BankAccountPopup
+        showBankAccountPopup={showBankAccountPopup}
+        setShowBankAccountPopup={setShowBankAccountPopup}
+      />
       <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold">New Product</h1>
@@ -700,41 +719,63 @@ const NewProduct = () => {
             </div>
           )}
 
-          {/*  =====  Listing Type Toggle  =====  */}
-          {/*  =====  Listing Type Toggle (styled like Categories)  =====  */}
-          <div className="relative">
+          {/*  =====  Listing Type Dropdown (custom)  =====  */}
+          <div className="relative" role="listbox" aria-label="Listing type">
             <button
-              onClick={() => {
-                /* open/close by toggling a local state */
-                const sel = document.getElementById(
-                  "listingTypeHidden"
-                ) as HTMLSelectElement;
-                sel.focus();
-                sel.click();
-              }}
+              onClick={() => setShowListingTypeDropdown((v) => !v)}
               className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+              aria-haspopup="listbox"
+              aria-expanded={showListingTypeDropdown}
             >
               <span>{listingType === "sales" ? "Sales" : "Auction"}</span>
               <motion.div
-                animate={{ rotate: listingType ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
+                animate={{ rotate: showListingTypeDropdown ? 180 : 0 }}
+                transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
               >
                 <ChevronDown className="w-4 h-4" />
               </motion.div>
             </button>
 
-            {/* hidden native select (lets us keep the category-style chevron) */}
-            <select
-              id="listingTypeHidden"
-              value={listingType}
-              onChange={(e) =>
-                setListingType(e.target.value as "sales" | "auction")
-              }
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            >
-              <option value="sales">Sales</option>
-              <option value="auction">Auction</option>
-            </select>
+            <AnimatePresence>
+              {showListingTypeDropdown && (
+                <motion.div
+                  className="absolute left-0 z-10 w-40 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg top-full"
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ type: "tween", duration: 0.15, ease: "easeOut" }}
+                >
+                  <div className="p-1">
+                    <button
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                        listingType === "sales" ? "bg-blue-50 text-blue-600" : ""
+                      }`}
+                      onClick={() => {
+                        setListingType("sales");
+                        setShowListingTypeDropdown(false);
+                      }}
+                      role="option"
+                      aria-selected={listingType === "sales"}
+                    >
+                      Sales
+                    </button>
+                    <button
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                        listingType === "auction" ? "bg-blue-50 text-blue-600" : ""
+                      }`}
+                      onClick={() => {
+                        setListingType("auction");
+                        setShowListingTypeDropdown(false);
+                      }}
+                      role="option"
+                      aria-selected={listingType === "auction"}
+                    >
+                      Auction
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 

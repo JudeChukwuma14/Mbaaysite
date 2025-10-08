@@ -1,7 +1,6 @@
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useParams, Link, Navigate, useNavigate } from "react-router-dom";
-import NewArrival from "../../Cards/NewArrival";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { getAllVendor } from "@/utils/vendorApi";
 import Spinner from "../../Common/Spinner";
 import { useSelector } from "react-redux";
@@ -9,9 +8,7 @@ import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { follow_vendor, unfollow_vendor } from "@/utils/communityApi";
 import {
   FaRegSadTear,
-  FaShoppingCart,
   FaArrowLeft,
-  FaArrowRight,
   FaCheckCircle,
   FaClock,
   FaPhone,
@@ -62,15 +59,12 @@ interface Vendor {
   [key: string]: any;
 }
 
-const PRODUCTS_PER_PAGE = 20;
-
 const VendorProfileCommunity: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
   const getUserId = () => user?.vendor?._id || user?.vendor?.id;
@@ -157,22 +151,6 @@ const VendorProfileCommunity: React.FC = () => {
 
   // Pagination logic
   const totalProducts = vendor?.products.length || 0;
-  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const currentProducts =
-    vendor?.products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE) || [];
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
 
   if (!id) {
     return <Navigate to="/shop" replace />;
@@ -190,13 +168,6 @@ const VendorProfileCommunity: React.FC = () => {
           <p className="max-w-md mx-auto mb-6 text-gray-500">
             {error || "Vendor not found"}
           </p>
-          <Link
-            to="/more-vendor"
-            className="flex items-center gap-2 px-6 py-2 mx-auto font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 w-fit"
-          >
-            <FaShoppingCart />
-            Continue Shopping
-          </Link>
         </div>
       </div>
     );
@@ -319,6 +290,14 @@ const VendorProfileCommunity: React.FC = () => {
                       Followers
                     </div>
                   </div>
+                  <div>
+                    <div className="text-2xl font-bold">
+                      {vendor.following.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Following
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/10">
@@ -432,75 +411,6 @@ const VendorProfileCommunity: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Products Section */}
-        <div>
-          <h2 className="mb-6 text-2xl font-bold">Products</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
-                <NewArrival
-                  key={product._id}
-                  product={{
-                    ...product,
-                    id: product._id,
-                    poster: product.images[0] || "/placeholder.svg",
-                  }}
-                />
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center col-span-full">
-                <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
-                <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-                  No Products
-                </h2>
-                <p className="max-w-md mb-6 text-gray-500">
-                  This vendor has no products available at the moment.
-                </p>
-                <Link
-                  to="/more-vendor"
-                  className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
-                >
-                  <FaShoppingCart />
-                  Continue Shopping
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalProducts > PRODUCTS_PER_PAGE && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                  currentPage === 1
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-orange-500 hover:bg-orange-600"
-                }`}
-              >
-                <FaArrowLeft />
-                Previous
-              </button>
-              <span className="text-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                  currentPage === totalPages
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-orange-500 hover:bg-orange-600"
-                }`}
-              >
-                Next
-                <FaArrowRight />
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>
