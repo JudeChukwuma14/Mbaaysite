@@ -15,6 +15,7 @@ import {
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface Vendor {
   _id: string;
@@ -290,7 +291,7 @@ export default function SocialList() {
 
       {/* Search Loading Indicator */}
       {isSearching && (
-        <div className="text-center text-sm text-gray-500 mb-3">
+        <div className="mb-3 text-sm text-center text-gray-500">
           Searching...
         </div>
       )}
@@ -317,76 +318,79 @@ export default function SocialList() {
               return (
                 <motion.div key={vendor._id} layout className="space-y-4">
                   <AnimatePresence>
-                    <motion.div
-                      layout
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between"
-                      onClick={() =>
-                        navigate(`community-vendor/:${vendor._id}`)
-                      }
-                    >
-                      <div className="flex items-center space-x-3 mb-[10px]">
-                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                          <p>{vendor?.storeName?.charAt(0)}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium">
-                            {vendor.storeName}
-                          </p>
-                          {vendor?.craftCategories[0] && (
-                            <p className="text-xs text-gray-500">
-                              {vendor.craftCategories[0]}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleFollowToggle(vendor._id)}
-                        disabled={isFollowPending}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] transition-all duration-200 ${
-                          isFollowing
-                            ? "bg-gray-100 text-gray-700"
-                            : "bg-blue-500 text-white"
-                        } ${
-                          isFollowPending ? "opacity-70 cursor-not-allowed" : ""
-                        }`}
+                    <Link to={`community-vendor/:${vendor._id}`}>
+                      <motion.div
+                        layout
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="flex items-center justify-between cursor-pointer"
                       >
-                        <AnimatePresence mode="wait">
-                          {isFollowing ? (
-                            <motion.div
-                              key="following"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center space-x-1"
-                            >
-                              <Check className="w-3 h-3" />
-                              <span>
-                                {isFollowPending ? "Updating..." : "Following"}
-                              </span>
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="follow"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center space-x-1"
-                            >
-                              <UserPlus className="w-3 h-3" />
-                              <span>
-                                {isFollowPending ? "Following..." : "Follow"}
-                              </span>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </motion.button>
-                    </motion.div>
+                        <div className="flex items-center space-x-3 mb-[10px]">
+                          <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                            <p>{vendor?.storeName?.charAt(0)}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {vendor.storeName}
+                            </p>
+                            {vendor?.craftCategories[0] && (
+                              <p className="text-xs text-gray-500">
+                                {vendor.craftCategories[0]}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleFollowToggle(vendor._id)}
+                          disabled={isFollowPending}
+                          className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] transition-all duration-200 ${
+                            isFollowing
+                              ? "bg-gray-100 text-gray-700"
+                              : "bg-blue-500 text-white"
+                          } ${
+                            isFollowPending
+                              ? "opacity-70 cursor-not-allowed"
+                              : ""
+                          }`}
+                        >
+                          <AnimatePresence mode="wait">
+                            {isFollowing ? (
+                              <motion.div
+                                key="following"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center space-x-1"
+                              >
+                                <Check className="w-3 h-3" />
+                                <span>
+                                  {isFollowPending
+                                    ? "Updating..."
+                                    : "Following"}
+                                </span>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="follow"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center space-x-1"
+                              >
+                                <UserPlus className="w-3 h-3" />
+                                <span>
+                                  {isFollowPending ? "Following..." : "Follow"}
+                                </span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </motion.button>
+                      </motion.div>
+                    </Link>
                   </AnimatePresence>
                 </motion.div>
               );
