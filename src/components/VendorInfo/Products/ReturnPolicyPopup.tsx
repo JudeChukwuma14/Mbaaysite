@@ -28,7 +28,7 @@ ReturnPolicyPopupProps) {
 
   const handleUploadClick = () => {
     setShowReturnPolicyPopup(false);
-    navigate("/app/edit-vendor-profile");
+    navigate("/app/edit-vendor-profile?open=return-policy");
   };
 
   const handleDownloadPolicy = async () => {

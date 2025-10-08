@@ -17,7 +17,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { IoIosContact } from "react-icons/io";
 
 // Default banner image (MBAAY logo)
@@ -212,6 +212,8 @@ const getBankLogo = (bankName: string): string => {
     return bankLogos[bankName];
   }
 
+  console.log("Bank",bankLogos[bankName]);
+
   // Try partial matches for common variations
   const normalizedBankName = bankName.toLowerCase().trim();
 
@@ -246,6 +248,12 @@ export default function EditVendorProfile() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [selectedBankCode, setSelectedBankCode] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const paymentRef = useRef<HTMLDivElement | null>(null);
+  const [flashPayment, setFlashPayment] = useState(false);
+  const returnPolicyRef = useRef<HTMLDivElement | null>(null);
+  const [flashReturnPolicy, setFlashReturnPolicy] = useState(false);
 
   // Form states for popups
   const [newPassword, setNewPassword] = useState("");
@@ -277,7 +285,7 @@ export default function EditVendorProfile() {
       return get_single_vendor(user.token);
     },
   });
-  // console.log("Vendoor", vendors?.avatar);
+  console.log("Vendoor", vendors);
   localStorage.setItem("vendorAvatar", vendors?.avatar || "");
   localStorage.setItem("businessLogo", vendors?.businessLogo || "");
 
@@ -317,6 +325,36 @@ export default function EditVendorProfile() {
     }
   }, [imagesLoaded]);
 
+  // Auto-open/scroll when navigated with ?open=account or ?open=return-policy
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const openParam = params.get("open");
+      if (openParam === "account") {
+        setActivePopup("account");
+        // Next frame to ensure popup is rendered
+        setTimeout(() => {
+          paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setFlashPayment(true);
+          setTimeout(() => setFlashPayment(false), 1600);
+        }, 50);
+        // Clean the URL by removing the query param
+        navigate({ pathname: location.pathname, hash: location.hash }, { replace: true });
+      } else if (openParam === "return-policy") {
+        // Scroll and flash the return policy uploader section
+        setTimeout(() => {
+          returnPolicyRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          setFlashReturnPolicy(true);
+          setTimeout(() => setFlashReturnPolicy(false), 1600);
+        }, 50);
+        // Clean the URL by removing the query param
+        navigate({ pathname: location.pathname, hash: location.hash }, { replace: true });
+      }
+    } catch (e) {
+      // ignore parsing errors
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (vendors) {
       setProfile((prev) => ({
@@ -324,13 +362,13 @@ export default function EditVendorProfile() {
         companyName: vendors.storeName || prev.companyName,
         email: vendors.email || prev.email,
         phone: vendors.storePhone || prev.phone,
-        accountName: vendors.accountName || prev.accountName,
-        accountNumber: vendors.accountNumber || prev.accountNumber,
-        bankName: vendors.bankName || prev.bankName,
+        accountName: vendors.bankAccount?.accountName || prev.accountName,
+        accountNumber: vendors.bankAccount?.accountNumber || prev.accountNumber,
+        bankName: vendors.bankAccount?.bankName || prev.bankName,
       }));
     }
   }, [vendors]);
-
+  console.log("Pro" ,profile);
   // Enhanced useEffect to listen for Mbaay policy upload events
   useEffect(() => {
     const handleMbaayPolicyUpload = (event: CustomEvent) => {
@@ -977,6 +1015,8 @@ export default function EditVendorProfile() {
 
   // Get the current bank logo for display
   const currentBankLogo = getBankLogo(profile.bankName);
+  console.log("Bank", currentBankLogo);
+  console.log("Bank", profile.bankName);
 
   return (
     <motion.div
@@ -1406,7 +1446,7 @@ export default function EditVendorProfile() {
                   <div className="flex items-center w-full gap-2 p-2 border rounded-lg cursor-not-allowed bg-gray-50">
                     {vendors?.bankAccount?.bankName && (
                       <img
-                        src={currentBankLogo || "/placeholder.svg"}
+                        src={currentBankLogo}
                         alt={profile.bankName}
                         className="object-contain w-6 h-6"
                         onError={(e) => {
@@ -1442,14 +1482,21 @@ export default function EditVendorProfile() {
             </div>
           </motion.div>
 
-          <ReturnPolicyUploader
-            returnPolicy={returnPolicy}
-            returnPolicyName={returnPolicyName}
-            setReturnPolicy={setReturnPolicy}
-            setReturnPolicyName={setReturnPolicyName}
-            returnPolicyText={returnPolicyText}
-            setReturnPolicyText={setReturnPolicyText}
-          />
+          <div
+            ref={returnPolicyRef}
+            className={`transition-colors duration-500 ${
+              flashReturnPolicy ? "bg-orange-50 rounded-lg p-2" : ""
+            }`}
+          >
+            <ReturnPolicyUploader
+              returnPolicy={returnPolicy}
+              returnPolicyName={returnPolicyName}
+              setReturnPolicy={setReturnPolicy}
+              setReturnPolicyName={setReturnPolicyName}
+              returnPolicyText={returnPolicyText}
+              setReturnPolicyText={setReturnPolicyText}
+            />
+          </div>
 
           {/* Action Buttons */}
           <motion.div
@@ -1611,7 +1658,12 @@ export default function EditVendorProfile() {
                 {/* Enhanced Account Change Popup */}
                 {activePopup === "account" && (
                   <>
-                    <div className="flex items-center justify-between mb-4">
+                    <div
+                      ref={paymentRef}
+                      className={`flex items-center justify-between mb-4 transition-colors duration-500 ${
+                        flashPayment ? "bg-orange-50 rounded-lg p-2" : ""
+                      }`}
+                    >
                       <h2 className="text-xl font-semibold">
                         {hasAccountDetails
                           ? "Update Account Details"

@@ -23,7 +23,7 @@ export default function BankAccountPopup({
   const handleSetupClick = () => {
     setIsNavigating(true);
     // Navigate to edit vendor profile where bank details can be set
-    navigate("/app/edit-vendor-profile");
+    navigate("/app/edit-vendor-profile?open=account");
     setShowBankAccountPopup(false);
   };
 
