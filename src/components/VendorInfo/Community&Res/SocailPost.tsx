@@ -14,7 +14,7 @@ import {
 } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 interface Vendor {
@@ -29,7 +29,7 @@ export default function SocialList() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const getUserId = () => user.vendor._id || user.vendor.id;
 
