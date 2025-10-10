@@ -212,7 +212,7 @@ const getBankLogo = (bankName: string): string => {
     return bankLogos[bankName];
   }
 
-  console.log("Bank",bankLogos[bankName]);
+  console.log("Bank", bankLogos[bankName]);
 
   // Try partial matches for common variations
   const normalizedBankName = bankName.toLowerCase().trim();
@@ -334,21 +334,33 @@ export default function EditVendorProfile() {
         setActivePopup("account");
         // Next frame to ensure popup is rendered
         setTimeout(() => {
-          paymentRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          paymentRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
           setFlashPayment(true);
           setTimeout(() => setFlashPayment(false), 1600);
         }, 50);
         // Clean the URL by removing the query param
-        navigate({ pathname: location.pathname, hash: location.hash }, { replace: true });
+        navigate(
+          { pathname: location.pathname, hash: location.hash },
+          { replace: true }
+        );
       } else if (openParam === "return-policy") {
         // Scroll and flash the return policy uploader section
         setTimeout(() => {
-          returnPolicyRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+          returnPolicyRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
           setFlashReturnPolicy(true);
           setTimeout(() => setFlashReturnPolicy(false), 1600);
         }, 50);
         // Clean the URL by removing the query param
-        navigate({ pathname: location.pathname, hash: location.hash }, { replace: true });
+        navigate(
+          { pathname: location.pathname, hash: location.hash },
+          { replace: true }
+        );
       }
     } catch (e) {
       // ignore parsing errors
@@ -368,7 +380,7 @@ export default function EditVendorProfile() {
       }));
     }
   }, [vendors]);
-  console.log("Pro" ,profile);
+  console.log("Pro", profile);
   // Enhanced useEffect to listen for Mbaay policy upload events
   useEffect(() => {
     const handleMbaayPolicyUpload = (event: CustomEvent) => {
@@ -746,7 +758,7 @@ export default function EditVendorProfile() {
       return;
     }
 
-    const paystackKey = import.meta.env.VITE_PAYSTACK_KEY;
+    const paystackKey = "sk_live_8e60afeb1befc22f297e02606b679decd84dbeb4";
 
     setIsSearchingAccount(true);
     setFoundAccountName("");
@@ -1051,7 +1063,7 @@ export default function EditVendorProfile() {
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <div className="w-full h-full bg-white flex items-center justify-center">
+                <div className="flex items-center justify-center w-full h-full bg-white">
                   <img
                     src={defaultBanner}
                     alt="Default Banner"

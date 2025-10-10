@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, UserPlus, UserMinus, X } from "lucide-react";
@@ -159,6 +157,7 @@ export default function SocialList() {
         "search_res",
         debouncedSearch,
       ]);
+      const previousMe = queryClient.getQueryData(["vendor", user?.token]);
 
       // Optimistically update vendors list
       queryClient.setQueryData(
@@ -174,6 +173,21 @@ export default function SocialList() {
             }
             return vendor;
           });
+        }
+      );
+
+      // Optimistically update current vendor's following list
+      queryClient.setQueryData(
+        ["vendor", user?.token],
+        (oldMe: any) => {
+          if (!oldMe) return oldMe;
+          const prevFollowing: string[] = Array.isArray(oldMe.following)
+            ? oldMe.following
+            : [];
+          const nextFollowing = isFollowing
+            ? prevFollowing.filter((id) => id !== vendorId)
+            : [...prevFollowing, vendorId];
+          return { ...oldMe, following: nextFollowing };
         }
       );
 
@@ -324,7 +338,10 @@ export default function SocialList() {
       const vendor = displayVendors.find((v: any) => v._id === vendorId);
       if (!vendor) return;
 
-      const isFollowing = vendor.followers.includes(currentUserId);
+      const isFollowing = Boolean(
+        vendor?.followers?.includes(currentUserId) ||
+          (currentVendor as any)?.following?.includes?.(vendorId)
+      );
 
       followMutation.mutate({ vendorId, isFollowing });
     } catch (error) {
@@ -349,7 +366,7 @@ export default function SocialList() {
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md w-full mx-auto bg-white overflow-x-hidden">
+    <div className="flex flex-col w-full h-screen max-w-md mx-auto overflow-x-hidden bg-white">
       {/* Search Bar */}
       <div className="p-4 bg-white">
         <div className="relative mb-2">
@@ -365,7 +382,7 @@ export default function SocialList() {
             <button
               aria-label="Clear search"
               onClick={() => setSearchQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-200"
+              className="absolute p-1 -translate-y-1/2 rounded right-2 top-1/2 hover:bg-gray-200"
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
@@ -385,7 +402,7 @@ export default function SocialList() {
       {/* Vendors & Communities List */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 px-4 pb-6 space-y-8 overflow-y-auto overflow-x-hidden transition-shadow duration-300"
+        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-y-auto transition-shadow duration-300"
       >
         {/* Vendors Section */}
         <div>
@@ -399,7 +416,7 @@ export default function SocialList() {
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gray-200 rounded-full" />
                     <div>
-                      <div className="w-28 h-3 bg-gray-200 rounded mb-2" />
+                      <div className="h-3 mb-2 bg-gray-200 rounded w-28" />
                       <div className="w-16 h-3 bg-gray-100 rounded" />
                     </div>
                   </div>
@@ -411,7 +428,10 @@ export default function SocialList() {
             <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
             displayVendors.map((vendor: any) => {
-              const isFollowing = vendor.followers.includes(currentUserId);
+              const isFollowing = Boolean(
+                vendor?.followers?.includes(currentUserId) ||
+                  (currentVendor as any)?.following?.includes?.(vendor?._id)
+              );
               const isFollowPending = followMutation.isPending;
 
               return (
@@ -422,29 +442,29 @@ export default function SocialList() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between gap-3 p-3 transition border rounded-lg hover:shadow-sm overflow-hidden w-full"
+                      className="flex items-center justify-between w-full gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
                       <Link
                         to={`/app/community-details/${vendor._id}`}
-                        className="flex items-center space-x-3 flex-1 min-w-0 overflow-hidden"
+                        className="flex items-center flex-1 min-w-0 space-x-3 overflow-hidden"
                       >
                         <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center shrink-0">
                           {vendor?.avatar || vendor?.businessLogo ? (
                             <img
                               src={(vendor?.avatar || vendor?.businessLogo) as string}
                               alt={vendor?.storeName || "vendor"}
-                              className="w-full h-full object-cover"
+                              className="object-cover w-full h-full"
                             />
                           ) : (
                             <p>{vendor?.storeName?.charAt(0)}</p>
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium truncate break-words max-w-full">
+                          <p className="max-w-full text-sm font-medium break-words truncate">
                             {vendor.storeName}
                           </p>
                           {vendor?.craftCategories?.[0] && (
-                            <p className="text-xs text-gray-500 truncate break-words max-w-full">
+                            <p className="max-w-full text-xs text-gray-500 break-words truncate">
                               {vendor.craftCategories[0]}
                             </p>
                           )}
@@ -516,7 +536,7 @@ export default function SocialList() {
                 <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
                   <div className="flex items-center space-x-3">
                     <div>
-                      <div className="w-28 h-3 bg-gray-200 rounded mb-2" />
+                      <div className="h-3 mb-2 bg-gray-200 rounded w-28" />
                     </div>
                   </div>
                   <div className="w-16 h-6 bg-gray-200 rounded-full" />
@@ -538,9 +558,9 @@ export default function SocialList() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between gap-3 p-3 transition border rounded-lg hover:shadow-sm overflow-hidden"
+                      className="flex items-center justify-between gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                      <div className="flex items-center flex-1 min-w-0 space-x-3">
                         <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center overflow-hidden">
                           {community?.community_Images ? (
                             <img
@@ -556,7 +576,7 @@ export default function SocialList() {
                           )}
                         </div>
                         <div className="min-w-0 overflow-hidden">
-                          <p className="text-sm font-medium truncate break-words max-w-full">
+                          <p className="max-w-full text-sm font-medium break-words truncate">
                             {community.name}
                           </p>
                         </div>
