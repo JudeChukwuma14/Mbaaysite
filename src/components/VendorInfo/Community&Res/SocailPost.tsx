@@ -50,10 +50,10 @@ export default function SocialList() {
     queryFn: () => get_single_vendor(user?.token || ""),
     enabled: !!user?.token,
   });
-  
+
   // Prefer Redux vendor id first to avoid early-empty id during initial vendor fetch
   const currentUserId: string =
-    user?.vendor?._id ?? user?.vendor?.id ?? ((currentVendor as any)?._id ?? "");
+    user?.vendor?._id ?? user?.vendor?.id ?? (currentVendor as any)?._id ?? "";
 
   const { data: vendors = [], isLoading: isLoadingVendors } = useQuery({
     queryKey: ["vendors"],
@@ -61,10 +61,11 @@ export default function SocialList() {
     enabled: !!user?.token,
   });
 
-  const { data: all_communities = [], isLoading: isLoadingCommunities } = useQuery({
-    queryKey: ["all_comm"],
-    queryFn: () => get_all_communities(),
-  });
+  const { data: all_communities = [], isLoading: isLoadingCommunities } =
+    useQuery({
+      queryKey: ["all_comm"],
+      queryFn: () => get_all_communities(),
+    });
 
   const { data: searchResults, isFetching: isSearching } = useQuery({
     queryKey: ["search_res", debouncedSearch],
@@ -89,7 +90,8 @@ export default function SocialList() {
   }, [all_communities, debouncedSearch]);
 
   const searchVendors = (searchResults?.vendors ?? localFilteredVendors) || [];
-  const searchCommunities = (searchResults?.communities ?? localFilteredCommunities) || [];
+  const searchCommunities =
+    (searchResults?.communities ?? localFilteredCommunities) || [];
 
   const isSearchActive = (debouncedSearch?.trim()?.length ?? 0) >= 1;
   // Daily rotation to make lists feel fresh every day
@@ -105,7 +107,10 @@ export default function SocialList() {
     return [...arr.slice(start), ...arr.slice(0, start)];
   };
 
-  const rotatedVendors = useMemo(() => rotateArray(vendors, dayKey), [vendors, dayKey]);
+  const rotatedVendors = useMemo(
+    () => rotateArray(vendors, dayKey),
+    [vendors, dayKey]
+  );
   const rotatedCommunities = useMemo(
     () => rotateArray(all_communities, dayKey),
     [all_communities, dayKey]
@@ -113,7 +118,9 @@ export default function SocialList() {
 
   // Build display lists: exclude already-followed vendors and joined communities, then cap at 4
   const vendorsSource = isSearchActive ? searchVendors : rotatedVendors;
-  const communitiesSource = isSearchActive ? searchCommunities : rotatedCommunities;
+  const communitiesSource = isSearchActive
+    ? searchCommunities
+    : rotatedCommunities;
 
   const displayVendors = useMemo(() => {
     const arr = Array.isArray(vendorsSource) ? vendorsSource : [];
@@ -157,7 +164,7 @@ export default function SocialList() {
         "search_res",
         debouncedSearch,
       ]);
-      const previousMe = queryClient.getQueryData(["vendor", user?.token]);
+      // const previousMe = queryClient.getQueryData(["vendor", user?.token]);
 
       // Optimistically update vendors list
       queryClient.setQueryData(
@@ -177,19 +184,16 @@ export default function SocialList() {
       );
 
       // Optimistically update current vendor's following list
-      queryClient.setQueryData(
-        ["vendor", user?.token],
-        (oldMe: any) => {
-          if (!oldMe) return oldMe;
-          const prevFollowing: string[] = Array.isArray(oldMe.following)
-            ? oldMe.following
-            : [];
-          const nextFollowing = isFollowing
-            ? prevFollowing.filter((id) => id !== vendorId)
-            : [...prevFollowing, vendorId];
-          return { ...oldMe, following: nextFollowing };
-        }
-      );
+      queryClient.setQueryData(["vendor", user?.token], (oldMe: any) => {
+        if (!oldMe) return oldMe;
+        const prevFollowing: string[] = Array.isArray(oldMe.following)
+          ? oldMe.following
+          : [];
+        const nextFollowing = isFollowing
+          ? prevFollowing.filter((id) => id !== vendorId)
+          : [...prevFollowing, vendorId];
+        return { ...oldMe, following: nextFollowing };
+      });
 
       // Optimistically update search results if search is active
       if (debouncedSearch) {
@@ -202,7 +206,9 @@ export default function SocialList() {
               vendors: oldData.vendors.map((vendor: Vendor) => {
                 if (vendor._id === vendorId) {
                   const updatedFollowers = isFollowing
-                    ? vendor.followers.filter((id: string) => id !== currentUserId)
+                    ? vendor.followers.filter(
+                        (id: string) => id !== currentUserId
+                      )
                     : [...vendor.followers, currentUserId];
                   return { ...vendor, followers: updatedFollowers };
                 }
@@ -391,9 +397,13 @@ export default function SocialList() {
         {isSearching ? (
           <div className="mb-2 text-xs text-gray-500">Searching…</div>
         ) : isSearchActive ? (
-          <div className="mb-2 text-xs text-gray-500">Showing results for "{debouncedSearch}"</div>
+          <div className="mb-2 text-xs text-gray-500">
+            Showing results for "{debouncedSearch}"
+          </div>
         ) : (
-          <div className="mb-2 text-xs text-gray-500">Discover new vendors and communities daily</div>
+          <div className="mb-2 text-xs text-gray-500">
+            Discover new vendors and communities daily
+          </div>
         )}
       </div>
 
@@ -412,7 +422,10 @@ export default function SocialList() {
           {isLoadingVendors ? (
             <div className="grid grid-cols-1 gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border rounded-lg animate-pulse"
+                >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-gray-200 rounded-full" />
                     <div>
@@ -451,7 +464,10 @@ export default function SocialList() {
                         <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center shrink-0">
                           {vendor?.avatar || vendor?.businessLogo ? (
                             <img
-                              src={(vendor?.avatar || vendor?.businessLogo) as string}
+                              src={
+                                (vendor?.avatar ||
+                                  vendor?.businessLogo) as string
+                              }
                               alt={vendor?.storeName || "vendor"}
                               className="object-cover w-full h-full"
                             />
@@ -533,7 +549,10 @@ export default function SocialList() {
           {isLoadingCommunities ? (
             <div className="grid grid-cols-1 gap-3">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border rounded-lg animate-pulse">
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border rounded-lg animate-pulse"
+                >
                   <div className="flex items-center space-x-3">
                     <div>
                       <div className="h-3 mb-2 bg-gray-200 rounded w-28" />
