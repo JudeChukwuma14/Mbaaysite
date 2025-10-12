@@ -1,5 +1,3 @@
-"use client";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
@@ -212,7 +210,6 @@ const getBankLogo = (bankName: string): string => {
     return bankLogos[bankName];
   }
 
-  console.log("Bank", bankLogos[bankName]);
 
   // Try partial matches for common variations
   const normalizedBankName = bankName.toLowerCase().trim();
@@ -268,13 +265,13 @@ export default function EditVendorProfile() {
   const [isSearchingAccount, setIsSearchingAccount] = useState(false);
   const [foundAccountName, setFoundAccountName] = useState("");
   const [foundBankName, setFoundBankName] = useState("");
+  const [hasTriedVerify, setHasTriedVerify] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.vendor);
-  console.log(user);
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
@@ -285,7 +282,6 @@ export default function EditVendorProfile() {
       return get_single_vendor(user.token);
     },
   });
-  console.log("Vendoor", vendors);
   localStorage.setItem("vendorAvatar", vendors?.avatar || "");
   localStorage.setItem("businessLogo", vendors?.businessLogo || "");
 
@@ -316,7 +312,6 @@ export default function EditVendorProfile() {
         if (storedBannerImage) {
           setBannerImage(storedBannerImage);
         }
-        console.log(profileImage, bannerImage);
 
         setImagesLoaded(true);
       } catch (error) {
@@ -380,7 +375,6 @@ export default function EditVendorProfile() {
       }));
     }
   }, [vendors]);
-  console.log("Pro", profile);
   // Enhanced useEffect to listen for Mbaay policy upload events
   useEffect(() => {
     const handleMbaayPolicyUpload = (event: CustomEvent) => {
@@ -758,9 +752,10 @@ export default function EditVendorProfile() {
       return;
     }
 
-    const paystackKey = "sk_live_8e60afeb1befc22f297e02606b679decd84dbeb4";
+    const paystackKey = import.meta.env.VITE_PAYSTACK_KEY;
 
     setIsSearchingAccount(true);
+    setHasTriedVerify(true);
     setFoundAccountName("");
     setFoundBankName("");
 
@@ -1027,8 +1022,6 @@ export default function EditVendorProfile() {
 
   // Get the current bank logo for display
   const currentBankLogo = getBankLogo(profile.bankName);
-  console.log("Bank", currentBankLogo);
-  console.log("Bank", profile.bankName);
 
   return (
     <motion.div
@@ -1705,6 +1698,7 @@ export default function EditVendorProfile() {
                             if (value !== accountNumber) {
                               setFoundAccountName("");
                               setFoundBankName("");
+                              setHasTriedVerify(false);
                             }
                           }}
                           placeholder="Enter 10-digit account number"
@@ -1729,12 +1723,13 @@ export default function EditVendorProfile() {
                             // Clear previous results when bank changes
                             setFoundAccountName("");
                             setFoundBankName("");
+                            setHasTriedVerify(false);
                           }}
                           className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                         >
                           <option value="">Choose your bank</option>
                           {bankCodes.map((bank) => (
-                            <option key={bank.code} value={bank.code}>
+                            <option key={`${bank.code}-${bank.name}`} value={bank.code}>
                               {bank.name} ({bank.type})
                             </option>
                           ))}
@@ -1843,7 +1838,8 @@ export default function EditVendorProfile() {
                       )}
 
                       {/* Error state for failed verification */}
-                      {accountNumber.length === 10 &&
+                      {hasTriedVerify &&
+                        accountNumber.length === 10 &&
                         !foundAccountName &&
                         !isSearchingAccount && (
                           <motion.div
