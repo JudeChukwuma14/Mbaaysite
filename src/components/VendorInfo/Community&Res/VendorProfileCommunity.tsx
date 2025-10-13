@@ -1,16 +1,14 @@
-"use client";
-
 import type React from "react";
 import { useEffect, useState } from "react";
-import { useParams, Link, Navigate } from "react-router-dom";
-import NewArrival from "../../Cards/NewArrival";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { getAllVendor } from "@/utils/vendorApi";
 import Spinner from "../../Common/Spinner";
+import { useSelector } from "react-redux";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { follow_vendor, unfollow_vendor } from "@/utils/communityApi";
 import {
   FaRegSadTear,
-  FaShoppingCart,
   FaArrowLeft,
-  FaArrowRight,
   FaCheckCircle,
   FaClock,
   FaPhone,
@@ -61,15 +59,15 @@ interface Vendor {
   [key: string]: any;
 }
 
-const PRODUCTS_PER_PAGE = 20;
-
 const VendorProfileCommunity: React.FC = () => {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const user = useSelector((state: any) => state.vendor);
+  const queryClient = useQueryClient();
+  const getUserId = () => user?.vendor?._id || user?.vendor?.id;
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -110,29 +108,49 @@ const VendorProfileCommunity: React.FC = () => {
     fetchVendorData();
   }, [id]);
 
+  const isFollowing = vendor?.followers?.includes(getUserId());
+  const followMutation = useMutation({
+    mutationFn: async (currentlyFollowing: boolean) => {
+      if (!vendor) return;
+      return currentlyFollowing
+        ? unfollow_vendor(user.token, vendor._id)
+        : follow_vendor(user.token, vendor._id);
+    },
+    onMutate: async (currentlyFollowing: boolean) => {
+      setVendor((prev) => {
+        if (!prev) return prev;
+        const updatedFollowers = currentlyFollowing
+          ? prev.followers.filter((id: string) => id !== getUserId())
+          : [...prev.followers, getUserId()];
+        return { ...prev, followers: updatedFollowers };
+      });
+    },
+    onError: () => {
+      // Revert optimistic update by toggling back
+      setVendor((prev) => {
+        if (!prev) return prev;
+        const currentlyFollowing = prev.followers.includes(getUserId());
+        const revertedFollowers = currentlyFollowing
+          ? prev.followers.filter((id: string) => id !== getUserId())
+          : [...prev.followers, getUserId()];
+        return { ...prev, followers: revertedFollowers };
+      });
+    },
+    onSettled: () => {
+      // Keep global caches consistent
+      queryClient.invalidateQueries({ queryKey: ["vendors"] });
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+    },
+  });
+
   const handleFollowToggle = () => {
-    setIsFollowing(!isFollowing);
-    // TODO: Implement actual follow API call here
+    if (!vendor) return;
+    followMutation.mutate(!!isFollowing);
   };
 
   // Pagination logic
   const totalProducts = vendor?.products.length || 0;
-  const totalPages = Math.ceil(totalProducts / PRODUCTS_PER_PAGE);
-  const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-  const currentProducts =
-    vendor?.products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE) || [];
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
 
   if (!id) {
     return <Navigate to="/shop" replace />;
@@ -150,13 +168,6 @@ const VendorProfileCommunity: React.FC = () => {
           <p className="max-w-md mx-auto mb-6 text-gray-500">
             {error || "Vendor not found"}
           </p>
-          <Link
-            to="/more-vendor"
-            className="flex items-center gap-2 px-6 py-2 mx-auto font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 w-fit"
-          >
-            <FaShoppingCart />
-            Continue Shopping
-          </Link>
         </div>
       </div>
     );
@@ -227,14 +238,33 @@ const VendorProfileCommunity: React.FC = () => {
                 </div>
                 <Button
                   onClick={handleFollowToggle}
+                  disabled={followMutation.isPending}
                   className={`${
                     isFollowing
                       ? "bg-gray-600 hover:bg-gray-700"
                       : "bg-orange-500 hover:bg-orange-600"
-                  } text-white`}
+                  } text-white ${
+                    followMutation.isPending
+                      ? "opacity-80 cursor-not-allowed"
+                      : ""
+                  }`}
                 >
-                  {isFollowing ? "Following" : "Follow"}
+                  {followMutation.isPending
+                    ? "Updating..."
+                    : isFollowing
+                    ? "Following"
+                    : "Follow"}
                 </Button>
+
+                {/* Back Button */}
+                <button
+                  onClick={() => navigate(-1)}
+                  className="absolute flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-md cursor-pointer top-4 left-4 bg-black/40 hover:bg-black/60"
+                  aria-label="Go back"
+                >
+                  <FaArrowLeft />
+                  Back
+                </button>
               </div>
             </div>
           </div>
@@ -258,6 +288,14 @@ const VendorProfileCommunity: React.FC = () => {
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Followers
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-2xl font-bold">
+                      {vendor.following.length}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Following
                     </div>
                   </div>
                 </div>
@@ -373,75 +411,6 @@ const VendorProfileCommunity: React.FC = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Products Section */}
-        <div>
-          <h2 className="mb-6 text-2xl font-bold">Products</h2>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {currentProducts.length > 0 ? (
-              currentProducts.map((product) => (
-                <NewArrival
-                  key={product._id}
-                  product={{
-                    ...product,
-                    id: product._id,
-                    poster: product.images[0] || "/placeholder.svg",
-                  }}
-                />
-              ))
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center col-span-full">
-                <FaRegSadTear className="mb-4 text-5xl text-gray-300" />
-                <h2 className="mb-2 text-2xl font-semibold text-gray-400">
-                  No Products
-                </h2>
-                <p className="max-w-md mb-6 text-gray-500">
-                  This vendor has no products available at the moment.
-                </p>
-                <Link
-                  to="/more-vendor"
-                  className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
-                >
-                  <FaShoppingCart />
-                  Continue Shopping
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* Pagination Controls */}
-          {totalProducts > PRODUCTS_PER_PAGE && (
-            <div className="flex items-center justify-center gap-4 mt-8">
-              <button
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-                className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                  currentPage === 1
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-orange-500 hover:bg-orange-600"
-                }`}
-              >
-                <FaArrowLeft />
-                Previous
-              </button>
-              <span className="text-foreground">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={handleNextPage}
-                disabled={currentPage === totalPages}
-                className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                  currentPage === totalPages
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-orange-500 hover:bg-orange-600"
-                }`}
-              >
-                Next
-                <FaArrowRight />
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </div>

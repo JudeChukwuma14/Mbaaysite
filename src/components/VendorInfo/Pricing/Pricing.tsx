@@ -380,7 +380,7 @@ export default function UpgradePage() {
 
         {/* Pricing Cards */}
         <div className="max-w-7xl mx-auto px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
             {plans.map((plan, index) => {
               const price = plan.pricing[billingCycle];
               const monthlyEquivalent =
@@ -394,7 +394,7 @@ export default function UpgradePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  className={`relative rounded-2xl border bg-card p-6`}
+                  className={`relative rounded-2xl border bg-card p-8 hover:shadow-lg transition-transform duration-200 hover:-translate-y-1 lg:col-span-2 ${index === 3 ? "lg:col-start-2" : ""}`}
                 >
                   {/* Badge
                   {plan.popular && (
@@ -412,13 +412,13 @@ export default function UpgradePage() {
 
                   {/* Plan Header */}
                   <div className="mb-6">
-                    <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-3">{plan.name}</h3>
+                    <p className="text-base text-muted-foreground mb-5">{plan.description}</p>
 
                     <div className="mb-4">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-bold">₦{price.toLocaleString()}</span>
-                        <span className="text-muted-foreground">
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-4xl md:text-5xl font-bold">₦{price.toLocaleString()}</span>
+                        <span className="text-base text-muted-foreground">
                           /
                           {billingCycle === "HalfYearly"
                             ? "6mo"
@@ -430,14 +430,14 @@ export default function UpgradePage() {
                         </span>
                       </div>
                       {billingCycle !== "Monthly" && (
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           ₦{Math.round(monthlyEquivalent).toLocaleString()}/month equivalent
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Users className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-base text-muted-foreground mb-4">
+                      <Users className="w-5 h-5" />
                       {plan.categories === 13 ? "All categories" : `${plan.categories} categor${plan.categories === 1 ? "y" : "ies"}`}
                     </div>
                   </div>
@@ -447,9 +447,9 @@ export default function UpgradePage() {
                     {plan.features.map((feature, featureIndex) => (
                       <div key={featureIndex} className="flex items-start gap-3">
                         <div className={`mt-0.5 ${feature.included ? "text-primary" : "text-muted-foreground"}`}>
-                          <Check className="w-4 h-4" />
+                          <Check className="w-5 h-5" />
                         </div>
-                        <span className={`text-sm ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                        <span className={`text-base ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}>
                           {feature.name}
                         </span>
                       </div>
@@ -462,8 +462,8 @@ export default function UpgradePage() {
                   </div>
 
                   {plan.name === "Premium" && (
-                    <p className="text-xs text-center text-muted-foreground mt-3">
-                      <Shield className="w-3 h-3 inline mr-1" />
+                    <p className="text-sm text-center text-muted-foreground mt-3">
+                      <Shield className="w-4 h-4 inline mr-1" />
                       30-day money-back guarantee
                     </p>
                   )}

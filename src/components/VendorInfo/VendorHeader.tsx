@@ -52,12 +52,56 @@ const VendorHeader: React.FC = () => {
   const notifications = notificationsData?.data.notifications;
   
 
-  // Mark All Read
+  // Mark All Read (optimistic)
   const markNotificationAsRead = useMutation({
     mutationFn: () => markVendorNotificationAsRead(user.vendor._id),
-    onSuccess: (data) => console.log("Mark Success:", data),
-    onError: (err: any) =>
-      console.error(err?.response?.data?.message || "Mark failed"),
+    onMutate: async () => {
+      await queryClient.cancelQueries({
+        queryKey: ["vendorNotification", user.vendor._id],
+      });
+      const prev = queryClient.getQueryData([
+        "vendorNotification",
+        user.vendor._id,
+      ]);
+      // Optimistically mark all as read
+      queryClient.setQueryData(
+        ["vendorNotification", user.vendor._id],
+        (old: any) => {
+          if (!old) return old;
+          try {
+            const cloned = JSON.parse(JSON.stringify(old));
+            const list = cloned?.data?.notifications;
+            if (Array.isArray(list)) {
+              cloned.data.notifications = list.map((n: any) => ({
+                ...n,
+                isRead: true,
+              }));
+            }
+            return cloned;
+          } catch {
+            return old;
+          }
+        }
+      );
+      return { prev };
+    },
+    onError: (err: any, _vars, ctx) => {
+      console.error(err?.response?.data?.message || "Mark failed");
+      if (ctx?.prev) {
+        queryClient.setQueryData(
+          ["vendorNotification", user.vendor._id],
+          ctx.prev
+        );
+      }
+    },
+    onSuccess: (data) => {
+      console.log("Mark Success:", data);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["vendorNotification", user.vendor._id],
+      });
+    },
   });
 
   const markSingleNotificationAsRead = useMutation({
@@ -81,7 +125,11 @@ const VendorHeader: React.FC = () => {
       console.error(err?.response?.data?.message || "Mark single failed"),
   });
 
-  const handleMarkAllNot = () => markNotificationAsRead.mutate();
+  const handleMarkAllNot = () => {
+    markNotificationAsRead.mutate();
+    // Close dropdown immediately for better UX
+    setShowNotifications(false);
+  };
 
   // --- Sound on new notifications ---
   const prevIdsRef = useRef<Set<string>>(new Set());

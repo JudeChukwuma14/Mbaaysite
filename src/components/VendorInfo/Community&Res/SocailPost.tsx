@@ -1,8 +1,6 @@
-"use client";
-
-import { useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, UserPlus, Check } from "lucide-react";
+import { Search, UserPlus, UserMinus, X } from "lucide-react";
 import {
   follow_vendor,
   unfollow_vendor,
@@ -12,9 +10,10 @@ import {
   join_community,
   search_vendor_community,
 } from "@/utils/communityApi";
+import { get_single_vendor } from "@/utils/vendorApi";
 import { useSelector } from "react-redux";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface Vendor {
   _id: string;
@@ -28,35 +27,116 @@ export default function SocialList() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const getUserId = () => user.vendor._id || user.vendor.id;
+  // Constants
+  const VISIBLE_COUNT = 4;
 
-  const { data: vendors = [], isLoading } = useQuery<Vendor[]>({
+  // Debounce helper (use named generic function to avoid TSX generic parsing issues)
+  function useDebouncedValue<T>(value: T, delay = 120): T {
+    const [debounced, setDebounced] = useState(value);
+    useEffect(() => {
+      const t = setTimeout(() => setDebounced(value), delay);
+      return () => clearTimeout(t);
+    }, [value, delay]);
+    return debounced as T;
+  }
+
+  const debouncedSearch = useDebouncedValue(searchQuery, 120);
+
+  // Get the currently logged-in vendor using the same endpoint as KYC
+  const { data: currentVendor } = useQuery({
+    queryKey: ["vendor", user?.token],
+    queryFn: () => get_single_vendor(user?.token || ""),
+    enabled: !!user?.token,
+  });
+
+  // Prefer Redux vendor id first to avoid early-empty id during initial vendor fetch
+  const currentUserId: string =
+    user?.vendor?._id ?? user?.vendor?.id ?? (currentVendor as any)?._id ?? "";
+
+  const { data: vendors = [], isLoading: isLoadingVendors } = useQuery({
     queryKey: ["vendors"],
     queryFn: () => get_vendors_community(user.token),
+    enabled: !!user?.token,
   });
-  console.log("All", vendors);
 
-  const { data: all_communities = [] } = useQuery({
-    queryKey: ["all_comm"],
-    queryFn: () => get_all_communities(),
-  });
+  const { data: all_communities = [], isLoading: isLoadingCommunities } =
+    useQuery({
+      queryKey: ["all_comm"],
+      queryFn: () => get_all_communities(),
+    });
 
   const { data: searchResults, isFetching: isSearching } = useQuery({
-    queryKey: ["search_res", searchQuery],
-    queryFn: () => search_vendor_community(user?.token, searchQuery),
-    enabled: !!searchQuery,
+    queryKey: ["search_res", debouncedSearch],
+    queryFn: () => search_vendor_community(user?.token, debouncedSearch),
+    enabled: (debouncedSearch?.trim()?.length ?? 0) >= 2,
   });
 
-  const searchVendors = searchResults?.vendors || [];
-  const searchCommunities = searchResults?.communities || [];
+  const localFilteredVendors = useMemo(() => {
+    const q = debouncedSearch?.trim().toLowerCase();
+    if (!q) return [] as any[];
+    return vendors.filter((v: any) =>
+      (v?.storeName || "").toLowerCase().includes(q)
+    );
+  }, [vendors, debouncedSearch]);
 
-  const isSearchActive = !!searchQuery;
-  const displayVendors = isSearchActive ? searchVendors : vendors?.slice(0, 3);
-  const displayCommunities = isSearchActive
+  const localFilteredCommunities = useMemo(() => {
+    const q = debouncedSearch?.trim().toLowerCase();
+    if (!q) return [] as any[];
+    return (all_communities as any[]).filter((c: any) =>
+      (c?.name || "").toLowerCase().includes(q)
+    );
+  }, [all_communities, debouncedSearch]);
+
+  const searchVendors = (searchResults?.vendors ?? localFilteredVendors) || [];
+  const searchCommunities =
+    (searchResults?.communities ?? localFilteredCommunities) || [];
+
+  const isSearchActive = (debouncedSearch?.trim()?.length ?? 0) >= 1;
+  // Daily rotation to make lists feel fresh every day
+  const dayKey = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const rotateArray = <T,>(arr: T[], seedStr: string): T[] => {
+    if (!arr?.length) return [];
+    let hash = 0;
+    for (let i = 0; i < seedStr.length; i++) {
+      hash = (hash << 5) - hash + seedStr.charCodeAt(i);
+      hash |= 0;
+    }
+    const start = Math.abs(hash) % arr.length;
+    return [...arr.slice(start), ...arr.slice(0, start)];
+  };
+
+  const rotatedVendors = useMemo(
+    () => rotateArray(vendors, dayKey),
+    [vendors, dayKey]
+  );
+  const rotatedCommunities = useMemo(
+    () => rotateArray(all_communities, dayKey),
+    [all_communities, dayKey]
+  );
+
+  // Build display lists: exclude already-followed vendors and joined communities, then cap at 4
+  const vendorsSource = isSearchActive ? searchVendors : rotatedVendors;
+  const communitiesSource = isSearchActive
     ? searchCommunities
-    : all_communities?.slice(0, 3);
+    : rotatedCommunities;
+
+  const displayVendors = useMemo(() => {
+    const arr = Array.isArray(vendorsSource) ? vendorsSource : [];
+    const filtered = currentUserId
+      ? arr.filter((v: any) => !v?.followers?.includes(currentUserId))
+      : arr;
+    return filtered.slice(0, VISIBLE_COUNT);
+  }, [vendorsSource, currentUserId]);
+
+  const displayCommunities = useMemo(() => {
+    const arr = Array.isArray(communitiesSource) ? communitiesSource : [];
+    const filtered = currentUserId
+      ? arr.filter((c: any) => !c?.members?.includes(currentUserId))
+      : arr;
+    return filtered.slice(0, VISIBLE_COUNT);
+  }, [communitiesSource, currentUserId]);
 
   // Enhanced follow mutation with optimistic updates
   const followMutation = useMutation({
@@ -78,12 +158,13 @@ export default function SocialList() {
       await queryClient.cancelQueries({ queryKey: ["vendors"] });
       await queryClient.cancelQueries({ queryKey: ["search_res"] });
 
-      // Snapshot the previous value
+      // Snapshot the previous values
       const previousVendors = queryClient.getQueryData(["vendors"]);
       const previousSearchResults = queryClient.getQueryData([
         "search_res",
-        searchQuery,
+        debouncedSearch,
       ]);
+      // const previousMe = queryClient.getQueryData(["vendor", user?.token]);
 
       // Optimistically update vendors list
       queryClient.setQueryData(
@@ -93,8 +174,8 @@ export default function SocialList() {
           return oldVendors.map((vendor) => {
             if (vendor._id === vendorId) {
               const updatedFollowers = isFollowing
-                ? vendor.followers.filter((id) => id !== getUserId())
-                : [...vendor.followers, getUserId()];
+                ? vendor.followers.filter((id) => id !== currentUserId)
+                : [...vendor.followers, currentUserId];
               return { ...vendor, followers: updatedFollowers };
             }
             return vendor;
@@ -102,10 +183,22 @@ export default function SocialList() {
         }
       );
 
+      // Optimistically update current vendor's following list
+      queryClient.setQueryData(["vendor", user?.token], (oldMe: any) => {
+        if (!oldMe) return oldMe;
+        const prevFollowing: string[] = Array.isArray(oldMe.following)
+          ? oldMe.following
+          : [];
+        const nextFollowing = isFollowing
+          ? prevFollowing.filter((id) => id !== vendorId)
+          : [...prevFollowing, vendorId];
+        return { ...oldMe, following: nextFollowing };
+      });
+
       // Optimistically update search results if search is active
-      if (searchQuery) {
+      if (debouncedSearch) {
         queryClient.setQueryData(
-          ["search_res", searchQuery],
+          ["search_res", debouncedSearch],
           (oldData: any) => {
             if (!oldData?.vendors) return oldData;
             return {
@@ -114,9 +207,9 @@ export default function SocialList() {
                 if (vendor._id === vendorId) {
                   const updatedFollowers = isFollowing
                     ? vendor.followers.filter(
-                        (id: string) => id !== getUserId()
+                        (id: string) => id !== currentUserId
                       )
-                    : [...vendor.followers, getUserId()];
+                    : [...vendor.followers, currentUserId];
                   return { ...vendor, followers: updatedFollowers };
                 }
                 return vendor;
@@ -135,7 +228,7 @@ export default function SocialList() {
       }
       if (context?.previousSearchResults) {
         queryClient.setQueryData(
-          ["search_res", searchQuery],
+          ["search_res", debouncedSearch],
           context.previousSearchResults
         );
       }
@@ -146,6 +239,7 @@ export default function SocialList() {
       queryClient.refetchQueries({ queryKey: ["vendors"] });
       queryClient.refetchQueries({ queryKey: ["search_res"] });
       queryClient.refetchQueries({ queryKey: ["vendor"] });
+      queryClient.refetchQueries({ queryKey: ["vendor", user?.token] });
       queryClient.refetchQueries({ queryKey: ["communities"] });
     },
   });
@@ -174,7 +268,7 @@ export default function SocialList() {
       const previousCommunities = queryClient.getQueryData(["all_comm"]);
       const previousSearchResults = queryClient.getQueryData([
         "search_res",
-        searchQuery,
+        debouncedSearch,
       ]);
 
       // Optimistically update communities list
@@ -185,8 +279,8 @@ export default function SocialList() {
           return oldCommunities.map((community) => {
             if (community._id === communityId) {
               const updatedMembers = isMember
-                ? community.members.filter((id: string) => id !== getUserId())
-                : [...community.members, getUserId()];
+                ? community.members.filter((id: string) => id !== currentUserId)
+                : [...community.members, currentUserId];
               return { ...community, members: updatedMembers };
             }
             return community;
@@ -195,9 +289,9 @@ export default function SocialList() {
       );
 
       // Optimistically update search results if search is active
-      if (searchQuery) {
+      if (debouncedSearch) {
         queryClient.setQueryData(
-          ["search_res", searchQuery],
+          ["search_res", debouncedSearch],
           (oldData: any) => {
             if (!oldData?.communities) return oldData;
             return {
@@ -206,9 +300,9 @@ export default function SocialList() {
                 if (community._id === communityId) {
                   const updatedMembers = isMember
                     ? community.members.filter(
-                        (id: string) => id !== getUserId()
+                        (id: string) => id !== currentUserId
                       )
-                    : [...community.members, getUserId()];
+                    : [...community.members, currentUserId];
                   return { ...community, members: updatedMembers };
                 }
                 return community;
@@ -227,7 +321,7 @@ export default function SocialList() {
       }
       if (context?.previousSearchResults) {
         queryClient.setQueryData(
-          ["search_res", searchQuery],
+          ["search_res", debouncedSearch],
           context.previousSearchResults
         );
       }
@@ -246,10 +340,14 @@ export default function SocialList() {
 
   const handleFollowToggle = async (vendorId: string) => {
     try {
+      if (!currentUserId) return; // wait until we have a stable user id
       const vendor = displayVendors.find((v: any) => v._id === vendorId);
       if (!vendor) return;
 
-      const isFollowing = vendor.followers.includes(getUserId());
+      const isFollowing = Boolean(
+        vendor?.followers?.includes(currentUserId) ||
+          (currentVendor as any)?.following?.includes?.(vendorId)
+      );
 
       followMutation.mutate({ vendorId, isFollowing });
     } catch (error) {
@@ -259,59 +357,94 @@ export default function SocialList() {
 
   const handleCommunityToggle = async (communityId: string) => {
     try {
+      if (!currentUserId) return; // wait until we have a stable user id
       const community = displayCommunities.find(
         (v: any) => v._id === communityId
       );
       if (!community) return;
 
-      const isMember = community.members.includes(getUserId());
+      const isMember = community.members.includes(currentUserId);
 
       communityMutation.mutate({ communityId, isMember });
     } catch (error) {
-      console.error("Join/Leave failed:", error);
+      console.log("Join/Leave failed:", error);
     }
   };
 
   return (
-    <div className="flex flex-col h-screen max-w-md mx-auto bg-white">
+    <div className="flex flex-col w-full h-screen max-w-md mx-auto overflow-x-hidden bg-white">
       {/* Search Bar */}
       <div className="p-4 bg-white">
-        <div className="relative mb-4">
+        <div className="relative mb-2">
           <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
           <input
             type="text"
-            placeholder="Search People or Group"
+            placeholder="Search vendors or communities"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full py-2 pl-10 pr-4 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
+            className="w-full py-2 pl-10 pr-10 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
+          {searchQuery && (
+            <button
+              aria-label="Clear search"
+              onClick={() => setSearchQuery("")}
+              className="absolute p-1 -translate-y-1/2 rounded right-2 top-1/2 hover:bg-gray-200"
+            >
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          )}
         </div>
+        {isSearching ? (
+          <div className="mb-2 text-xs text-gray-500">Searching…</div>
+        ) : isSearchActive ? (
+          <div className="mb-2 text-xs text-gray-500">
+            Showing results for "{debouncedSearch}"
+          </div>
+        ) : (
+          <div className="mb-2 text-xs text-gray-500">
+            Discover new vendors and communities daily
+          </div>
+        )}
       </div>
 
-      {/* Search Loading Indicator */}
-      {isSearching && (
-        <div className="text-center text-sm text-gray-500 mb-3">
-          Searching...
-        </div>
-      )}
+      {/* Search Loading Indicator handled above */}
 
       {/* Vendors & Communities List */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 px-4 pb-4 space-y-6 overflow-y-auto transition-shadow duration-300"
+        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-y-auto transition-shadow duration-300"
       >
         {/* Vendors Section */}
         <div>
           <h2 className="sticky top-0 py-2 mb-3 text-xs font-semibold text-gray-500 bg-white">
             VENDORS
           </h2>
-          {isLoading ? (
-            <p>Loading vendors...</p>
+          {isLoadingVendors ? (
+            <div className="grid grid-cols-1 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border rounded-lg animate-pulse"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full" />
+                    <div>
+                      <div className="h-3 mb-2 bg-gray-200 rounded w-28" />
+                      <div className="w-16 h-3 bg-gray-100 rounded" />
+                    </div>
+                  </div>
+                  <div className="w-20 h-6 bg-gray-200 rounded-full" />
+                </div>
+              ))}
+            </div>
           ) : displayVendors.length === 0 ? (
             <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
             displayVendors.map((vendor: any) => {
-              const isFollowing = vendor.followers.includes(getUserId());
+              const isFollowing = Boolean(
+                vendor?.followers?.includes(currentUserId) ||
+                  (currentVendor as any)?.following?.includes?.(vendor?._id)
+              );
               const isFollowPending = followMutation.isPending;
 
               return (
@@ -322,52 +455,66 @@ export default function SocialList() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between"
-                      onClick={() =>
-                        navigate(`community-vendor/:${vendor._id}`)
-                      }
+                      className="flex items-center justify-between w-full gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
-                      <div className="flex items-center space-x-3 mb-[10px]">
-                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
-                          <p>{vendor?.storeName?.charAt(0)}</p>
+                      <Link
+                        to={`/app/community-details/${vendor._id}`}
+                        className="flex items-center flex-1 min-w-0 space-x-3 overflow-hidden"
+                      >
+                        <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center shrink-0">
+                          {vendor?.avatar || vendor?.businessLogo ? (
+                            <img
+                              src={
+                                (vendor?.avatar ||
+                                  vendor?.businessLogo) as string
+                              }
+                              alt={vendor?.storeName || "vendor"}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <p>{vendor?.storeName?.charAt(0)}</p>
+                          )}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">
+                        <div className="min-w-0">
+                          <p className="max-w-full text-sm font-medium break-words truncate">
                             {vendor.storeName}
                           </p>
-                          {vendor?.craftCategories[0] && (
-                            <p className="text-xs text-gray-500">
+                          {vendor?.craftCategories?.[0] && (
+                            <p className="max-w-full text-xs text-gray-500 break-words truncate">
                               {vendor.craftCategories[0]}
                             </p>
                           )}
                         </div>
-                      </div>
+                      </Link>
 
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleFollowToggle(vendor._id)}
-                        disabled={isFollowPending}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] transition-all duration-200 ${
+                        disabled={isFollowPending || !currentUserId}
+                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 shrink-0 whitespace-nowrap ${
                           isFollowing
-                            ? "bg-gray-100 text-gray-700"
+                            ? "bg-red-500 text-white"
                             : "bg-blue-500 text-white"
                         } ${
-                          isFollowPending ? "opacity-70 cursor-not-allowed" : ""
+                          isFollowPending || !currentUserId
+                            ? "opacity-70 cursor-not-allowed"
+                            : ""
                         }`}
                       >
                         <AnimatePresence mode="wait">
                           {isFollowing ? (
                             <motion.div
-                              key="following"
+                              key="unfollow"
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               exit={{ opacity: 0, scale: 0.8 }}
                               className="flex items-center space-x-1"
                             >
-                              <Check className="w-3 h-3" />
+                              <UserMinus className="w-3 h-3" />
                               <span>
-                                {isFollowPending ? "Updating..." : "Following"}
+                                {isFollowPending ? "Updating..." : "Unfollow"}
                               </span>
                             </motion.div>
                           ) : (
@@ -399,13 +546,27 @@ export default function SocialList() {
           <h2 className="sticky top-0 py-2 mb-3 text-xs font-semibold text-gray-500 bg-white">
             COMMUNITIES
           </h2>
-          {isLoading ? (
-            <p>Loading communities...</p>
+          {isLoadingCommunities ? (
+            <div className="grid grid-cols-1 gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 border rounded-lg animate-pulse"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div>
+                      <div className="h-3 mb-2 bg-gray-200 rounded w-28" />
+                    </div>
+                  </div>
+                  <div className="w-16 h-6 bg-gray-200 rounded-full" />
+                </div>
+              ))}
+            </div>
           ) : displayCommunities.length === 0 ? (
             <p className="text-sm text-gray-500">No communities found.</p>
           ) : (
             displayCommunities.map((community: any) => {
-              const isMember = community.members.includes(getUserId());
+              const isMember = community.members.includes(currentUserId);
               const isCommunityPending = communityMutation.isPending;
 
               return (
@@ -416,10 +577,10 @@ export default function SocialList() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -20 }}
-                      className="flex items-center justify-between"
+                      className="flex items-center justify-between gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
-                      <div className="flex items-center space-x-3 mb-[10px]">
-                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center">
+                      <div className="flex items-center flex-1 min-w-0 space-x-3">
+                        <div className="bg-orange-500 w-[40px] h-[40px] rounded-full text-white flex items-center justify-center overflow-hidden">
                           {community?.community_Images ? (
                             <img
                               src={
@@ -427,25 +588,25 @@ export default function SocialList() {
                                 "/placeholder.svg"
                               }
                               alt="community"
-                              className="object-cover w-full h-full rounded-full"
+                              className="object-cover w-full h-full"
                             />
                           ) : (
                             <p>{community?.name?.charAt(0)}</p>
                           )}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">
+                        <div className="min-w-0 overflow-hidden">
+                          <p className="max-w-full text-sm font-medium break-words truncate">
                             {community.name}
                           </p>
                         </div>
                       </div>
 
                       <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={() => handleCommunityToggle(community._id)}
                         disabled={isCommunityPending}
-                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium ml-[15px] transition-all duration-200 ${
+                        className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 shrink-0 whitespace-nowrap ${
                           isMember
                             ? "bg-gray-100 text-gray-700"
                             : "bg-blue-500 text-white"

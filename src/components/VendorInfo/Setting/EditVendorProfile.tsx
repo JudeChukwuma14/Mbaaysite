@@ -1,5 +1,3 @@
-"use client";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { Camera, ChevronDown, Edit, X, Search } from "lucide-react";
 import { MdVerified } from "react-icons/md";
@@ -17,7 +15,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { IoIosContact } from "react-icons/io";
+
+// Default banner image (MBAAY logo)
+const defaultBanner = "https://www.mbaay.com/assets/MBLogo-spwX6zWd.png";
 
 interface VendorProfile {
   companyName: string;
@@ -208,6 +210,7 @@ const getBankLogo = (bankName: string): string => {
     return bankLogos[bankName];
   }
 
+
   // Try partial matches for common variations
   const normalizedBankName = bankName.toLowerCase().trim();
 
@@ -242,6 +245,12 @@ export default function EditVendorProfile() {
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [selectedBankCode, setSelectedBankCode] = useState("");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const paymentRef = useRef<HTMLDivElement | null>(null);
+  const [flashPayment, setFlashPayment] = useState(false);
+  const returnPolicyRef = useRef<HTMLDivElement | null>(null);
+  const [flashReturnPolicy, setFlashReturnPolicy] = useState(false);
 
   // Form states for popups
   const [newPassword, setNewPassword] = useState("");
@@ -256,13 +265,13 @@ export default function EditVendorProfile() {
   const [isSearchingAccount, setIsSearchingAccount] = useState(false);
   const [foundAccountName, setFoundAccountName] = useState("");
   const [foundBankName, setFoundBankName] = useState("");
+  const [hasTriedVerify, setHasTriedVerify] = useState(false);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const editButtonRef = useRef<HTMLButtonElement>(null);
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   const user = useSelector((state: RootState) => state.vendor);
-  console.log(user);
 
   const { data: vendors } = useQuery({
     queryKey: ["vendor"],
@@ -273,7 +282,6 @@ export default function EditVendorProfile() {
       return get_single_vendor(user.token);
     },
   });
-  // console.log("Vendoor", vendors?.avatar);
   localStorage.setItem("vendorAvatar", vendors?.avatar || "");
   localStorage.setItem("businessLogo", vendors?.businessLogo || "");
 
@@ -304,7 +312,6 @@ export default function EditVendorProfile() {
         if (storedBannerImage) {
           setBannerImage(storedBannerImage);
         }
-        console.log(profileImage, bannerImage);
 
         setImagesLoaded(true);
       } catch (error) {
@@ -313,6 +320,48 @@ export default function EditVendorProfile() {
     }
   }, [imagesLoaded]);
 
+  // Auto-open/scroll when navigated with ?open=account or ?open=return-policy
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(location.search);
+      const openParam = params.get("open");
+      if (openParam === "account") {
+        setActivePopup("account");
+        // Next frame to ensure popup is rendered
+        setTimeout(() => {
+          paymentRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          setFlashPayment(true);
+          setTimeout(() => setFlashPayment(false), 1600);
+        }, 50);
+        // Clean the URL by removing the query param
+        navigate(
+          { pathname: location.pathname, hash: location.hash },
+          { replace: true }
+        );
+      } else if (openParam === "return-policy") {
+        // Scroll and flash the return policy uploader section
+        setTimeout(() => {
+          returnPolicyRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+          setFlashReturnPolicy(true);
+          setTimeout(() => setFlashReturnPolicy(false), 1600);
+        }, 50);
+        // Clean the URL by removing the query param
+        navigate(
+          { pathname: location.pathname, hash: location.hash },
+          { replace: true }
+        );
+      }
+    } catch (e) {
+      // ignore parsing errors
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (vendors) {
       setProfile((prev) => ({
@@ -320,13 +369,12 @@ export default function EditVendorProfile() {
         companyName: vendors.storeName || prev.companyName,
         email: vendors.email || prev.email,
         phone: vendors.storePhone || prev.phone,
-        accountName: vendors.accountName || prev.accountName,
-        accountNumber: vendors.accountNumber || prev.accountNumber,
-        bankName: vendors.bankName || prev.bankName,
+        accountName: vendors.bankAccount?.accountName || prev.accountName,
+        accountNumber: vendors.bankAccount?.accountNumber || prev.accountNumber,
+        bankName: vendors.bankAccount?.bankName || prev.bankName,
       }));
     }
   }, [vendors]);
-
   // Enhanced useEffect to listen for Mbaay policy upload events
   useEffect(() => {
     const handleMbaayPolicyUpload = (event: CustomEvent) => {
@@ -707,6 +755,7 @@ export default function EditVendorProfile() {
     const paystackKey = import.meta.env.VITE_PAYSTACK_KEY;
 
     setIsSearchingAccount(true);
+    setHasTriedVerify(true);
     setFoundAccountName("");
     setFoundBankName("");
 
@@ -1007,7 +1056,13 @@ export default function EditVendorProfile() {
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-r from-orange-500 to-black" />
+                <div className="flex items-center justify-center w-full h-full bg-white">
+                  <img
+                    src={defaultBanner}
+                    alt="Default Banner"
+                    className="object-contain max-h-full p-4"
+                  />
+                </div>
               )}
               <motion.input
                 type="file"
@@ -1043,7 +1098,7 @@ export default function EditVendorProfile() {
                       />
                     ) : (
                       <div className="flex items-center justify-center w-full h-full">
-                        <Camera className="w-8 h-8 text-gray-400" />
+                        <IoIosContact className="w-12 h-12 text-gray-400" />
                       </div>
                     )}
                   </div>
@@ -1196,7 +1251,7 @@ export default function EditVendorProfile() {
             <div className="grid gap-4">
               <div>
                 <label className="block mb-1 text-sm text-gray-500">
-                  Company Name
+                  Store Name
                 </label>
                 <motion.input
                   type="text"
@@ -1396,7 +1451,7 @@ export default function EditVendorProfile() {
                   <div className="flex items-center w-full gap-2 p-2 border rounded-lg cursor-not-allowed bg-gray-50">
                     {vendors?.bankAccount?.bankName && (
                       <img
-                        src={currentBankLogo || "/placeholder.svg"}
+                        src={currentBankLogo}
                         alt={profile.bankName}
                         className="object-contain w-6 h-6"
                         onError={(e) => {
@@ -1432,14 +1487,21 @@ export default function EditVendorProfile() {
             </div>
           </motion.div>
 
-          <ReturnPolicyUploader
-            returnPolicy={returnPolicy}
-            returnPolicyName={returnPolicyName}
-            setReturnPolicy={setReturnPolicy}
-            setReturnPolicyName={setReturnPolicyName}
-            returnPolicyText={returnPolicyText}
-            setReturnPolicyText={setReturnPolicyText}
-          />
+          <div
+            ref={returnPolicyRef}
+            className={`transition-colors duration-500 ${
+              flashReturnPolicy ? "bg-orange-50 rounded-lg p-2" : ""
+            }`}
+          >
+            <ReturnPolicyUploader
+              returnPolicy={returnPolicy}
+              returnPolicyName={returnPolicyName}
+              setReturnPolicy={setReturnPolicy}
+              setReturnPolicyName={setReturnPolicyName}
+              returnPolicyText={returnPolicyText}
+              setReturnPolicyText={setReturnPolicyText}
+            />
+          </div>
 
           {/* Action Buttons */}
           <motion.div
@@ -1601,7 +1663,12 @@ export default function EditVendorProfile() {
                 {/* Enhanced Account Change Popup */}
                 {activePopup === "account" && (
                   <>
-                    <div className="flex items-center justify-between mb-4">
+                    <div
+                      ref={paymentRef}
+                      className={`flex items-center justify-between mb-4 transition-colors duration-500 ${
+                        flashPayment ? "bg-orange-50 rounded-lg p-2" : ""
+                      }`}
+                    >
                       <h2 className="text-xl font-semibold">
                         {hasAccountDetails
                           ? "Update Account Details"
@@ -1631,6 +1698,7 @@ export default function EditVendorProfile() {
                             if (value !== accountNumber) {
                               setFoundAccountName("");
                               setFoundBankName("");
+                              setHasTriedVerify(false);
                             }
                           }}
                           placeholder="Enter 10-digit account number"
@@ -1655,12 +1723,13 @@ export default function EditVendorProfile() {
                             // Clear previous results when bank changes
                             setFoundAccountName("");
                             setFoundBankName("");
+                            setHasTriedVerify(false);
                           }}
                           className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                         >
                           <option value="">Choose your bank</option>
                           {bankCodes.map((bank) => (
-                            <option key={bank.code} value={bank.code}>
+                            <option key={`${bank.code}-${bank.name}`} value={bank.code}>
                               {bank.name} ({bank.type})
                             </option>
                           ))}
@@ -1769,7 +1838,8 @@ export default function EditVendorProfile() {
                       )}
 
                       {/* Error state for failed verification */}
-                      {accountNumber.length === 10 &&
+                      {hasTriedVerify &&
+                        accountNumber.length === 10 &&
                         !foundAccountName &&
                         !isSearchingAccount && (
                           <motion.div

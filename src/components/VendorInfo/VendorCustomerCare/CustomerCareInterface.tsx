@@ -8,11 +8,6 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/redux/store";
 import {
-  setChatId as setUserChatId,
-  setMessages as setUserMessages,
-  addMessage as addUserMessage,
-} from "@/redux/slices/userSlice";
-import {
   setChatId as setVendorChatId,
   setMessages as setVendorMessages,
   addMessage as addVendorMessage,
@@ -61,18 +56,12 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const navigate = useNavigate();
 
   const dispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.user.user);
   const vendor = useSelector((state: RootState) => state.vendor.vendor);
-  const token = useSelector(
-    (state: RootState) => state.user.token || state.vendor.token
-  );
-  const senderId = user?._id || vendor?._id;
-  const isVendor = !!vendor;
-  const chatId = useSelector((state: RootState) =>
-    isVendor ? state.vendor.chatId : state.user.chatId
-  );
-  const messages = useSelector((state: RootState) =>
-    isVendor ? state.vendor.messages || [] : state.user.messages || []
+  const token = useSelector((state: RootState) => state.vendor.token);
+  const senderId = vendor?._id;
+  const chatId = useSelector((state: RootState) => state.vendor.chatId);
+  const messages = useSelector(
+    (state: RootState) => state.vendor.messages || []
   );
 
   // Request notification permission
@@ -175,7 +164,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
     socketRef.current.on("customerCareChatStarted", (chat) => {
       console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
-      dispatch(isVendor ? setVendorChatId(chat._id) : setUserChatId(chat._id));
+      dispatch(setVendorChatId(chat._id));
       localStorage.setItem(`chatId-${senderId}`, chat._id);
       socketRef.current?.emit("joinChat", chat._id);
       fetchMessages(chat._id);
@@ -188,10 +177,10 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         id: msg._id,
         content: msg.content,
         sender: isSentByCurrentUser
-          ? "user"
+          ? "agent"
           : msg.sender === "bot"
           ? "bot"
-          : "agent",
+          : "user",
         timestamp: new Date(msg.createdAt).toISOString(),
         tempId: msg.tempId,
         isOptimistic: false,
@@ -202,7 +191,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           m.id === msg._id ||
           (msg.tempId && m.tempId === msg.tempId) ||
           (isSentByCurrentUser &&
-            m.sender === "user" &&
+            m.sender === "agent" &&
             m.content === msg.content &&
             Math.abs(
               new Date(m.timestamp).getTime() -
@@ -219,43 +208,25 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           JSON.stringify(existingMessage, null, 2)
         );
         dispatch(
-          isVendor
-            ? setVendorMessages(
-                messages.map((m) =>
-                  m.id === existingMessage.id ||
-                  (msg.tempId && m.tempId === msg.tempId) ||
-                  (isSentByCurrentUser &&
-                    m.sender === "user" &&
-                    m.content === msg.content &&
-                    Math.abs(
-                      new Date(m.timestamp).getTime() -
-                        new Date(msg.createdAt).getTime()
-                    ) < 2000)
-                    ? { ...newMessage }
-                    : m
-                )
-              )
-            : setUserMessages(
-                messages.map((m) =>
-                  m.id === existingMessage.id ||
-                  (msg.tempId && m.tempId === msg.tempId) ||
-                  (isSentByCurrentUser &&
-                    m.sender === "user" &&
-                    m.content === msg.content &&
-                    Math.abs(
-                      new Date(m.timestamp).getTime() -
-                        new Date(msg.createdAt).getTime()
-                    ) < 2000)
-                    ? { ...newMessage }
-                    : m
-                )
-              )
+          setVendorMessages(
+            messages.map((m) =>
+              m.id === existingMessage.id ||
+              (msg.tempId && m.tempId === msg.tempId) ||
+              (isSentByCurrentUser &&
+                m.sender === "agent" &&
+                m.content === msg.content &&
+                Math.abs(
+                  new Date(m.timestamp).getTime() -
+                    new Date(msg.createdAt).getTime()
+                ) < 2000)
+                ? { ...newMessage }
+                : m
+            )
+          )
         );
       } else {
         console.log("DEBUG: Adding new message, id:", msg._id);
-        dispatch(
-          isVendor ? addVendorMessage(newMessage) : addUserMessage(newMessage)
-        );
+        dispatch(addVendorMessage(newMessage));
         if (!isSentByCurrentUser) {
           triggerNotification(newMessage);
           fetchNotifications();
@@ -280,7 +251,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       socketRef.current?.emit("leaveChat", chatId);
       socketRef.current?.disconnect();
     };
-  }, [isOpen, senderId, token, dispatch, isVendor, chatId, messages]);
+  }, [isOpen, senderId, token, dispatch, chatId]);
 
   // Reset auto-response flag
   useEffect(() => {
@@ -296,9 +267,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
 
     const storedChatId = localStorage.getItem(`chatId-${senderId}`);
     if (storedChatId && !chatId) {
-      dispatch(
-        isVendor ? setVendorChatId(storedChatId) : setUserChatId(storedChatId)
-      );
+      dispatch(setVendorChatId(storedChatId));
       await fetchMessages(storedChatId);
       socketRef.current?.emit("joinChat", storedChatId);
       return;
@@ -329,9 +298,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           JSON.stringify(response.data, null, 2)
         );
         const newChatId = response.data.chatId || response.data.chat?._id;
-        dispatch(
-          isVendor ? setVendorChatId(newChatId) : setUserChatId(newChatId)
-        );
+        dispatch(setVendorChatId(newChatId));
         localStorage.setItem(`chatId-${senderId}`, newChatId);
         socketRef.current?.emit("joinChat", newChatId);
         await fetchMessages(newChatId);
@@ -375,19 +342,15 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           content: msg.content,
           sender:
             msg.sender?._id === senderId
-              ? "user"
+              ? "agent"
               : msg.sender === "bot"
               ? "bot"
-              : "agent",
+              : "user",
           timestamp: new Date(msg.createdAt).toISOString(),
           tempId: msg.tempId,
         })
       );
-      dispatch(
-        isVendor
-          ? setVendorMessages(fetchedMessages)
-          : setUserMessages(fetchedMessages)
-      );
+      dispatch(setVendorMessages(fetchedMessages));
     } catch (err: any) {
       console.error("Fetch messages error:", err.response?.data || err.message);
       setError(
@@ -416,7 +379,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       !hasAutoResponse.current &&
       !messages.some(
         (m) =>
-          m.sender === "user" ||
+          m.sender === "agent" ||
           (m.content === AUTO_RESPONSE_MESSAGE && m.sender === "bot")
       )
     ) {
@@ -426,9 +389,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         sender: "bot",
         timestamp: new Date().toISOString(),
       };
-      dispatch(
-        isVendor ? addVendorMessage(autoResponse) : addUserMessage(autoResponse)
-      );
+      dispatch(addVendorMessage(autoResponse));
       hasAutoResponse.current = true;
     }
 
@@ -475,7 +436,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   return (
     <Card
       className={cn(
-        "fixed bottom-20 right-6 z-40 w-80 h-96",
+        "fixed bottom-20 right-6 z-40 w-80 h-96 mb-24",
         "sm:w-96 sm:h-[400px]",
         "lg:w-96 lg:h-[460px]",
         "shadow-2xl border-0",
@@ -557,13 +518,13 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
               key={message.id}
               className={cn(
                 "flex",
-                message.sender === "user" ? "justify-end" : "justify-start"
+                message.sender === "agent" ? "justify-end" : "justify-start"
               )}
             >
               <div
                 className={cn(
                   "max-w-[80%] rounded-lg p-3 text-sm",
-                  message.sender === "user"
+                  message.sender === "agent"
                     ? "bg-orange-500 text-white"
                     : "bg-gray-100 text-gray-800",
                   message.isOptimistic ? "opacity-70" : ""
@@ -576,12 +537,12 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
                   {message.sender === "user" && (
                     <User className="h-4 w-4 mt-0.5 flex-shrink-0 order-2" />
                   )}
-                  <div className={message.sender === "user" ? "order-1" : ""}>
+                  <div className={message.sender === "agent" ? "order-1" : ""}>
                     <p>{message.content}</p>
                     <p
                       className={cn(
                         "mt-1 text-xs opacity-70",
-                        message.sender === "user"
+                        message.sender === "agent"
                           ? "text-orange-100"
                           : "text-gray-500"
                       )}
