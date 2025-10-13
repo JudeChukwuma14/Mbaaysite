@@ -24,6 +24,9 @@ import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isInfoLoading, setIsInfoLoading] = useState(false);
+  const [infoMode, setInfoMode] = useState<"following" | "followers" | "posts">("following");
   // const [ setShowEmojiPicker] = useState<
   //   Record<string, boolean>
   // >({});
@@ -53,12 +56,12 @@ export default function SocialFeed() {
     localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
   }, [likedPosts]);
 
-  const { data: vendors } = useQuery({
+  const { data: vendors, isLoading: isLoadingVendor } = useQuery({
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
 
-  const { data: communities = [] } = useQuery({
+  const { data: communities = [], isLoading: isLoadingCommunities } = useQuery({
     queryKey: ["communities"],
     queryFn: () => get_communities(user?.token),
     enabled: !!user?.token,
@@ -79,6 +82,13 @@ export default function SocialFeed() {
     });
 
   const queryClient = useQueryClient();
+  const openInfoModal = (mode: "following" | "followers" | "posts") => {
+    setInfoMode(mode);
+    setIsInfoOpen(true);
+    setIsInfoLoading(true);
+    // small delay to show loading effect even if data is ready
+    setTimeout(() => setIsInfoLoading(false), 350);
+  };
 
   const handleLikeToggle = (postId: string, isLiked: boolean) => {
     if (isLiked) {
@@ -912,55 +922,88 @@ export default function SocialFeed() {
             animate={{ opacity: 1, y: 0 }}
             className="p-4 bg-white shadow-sm"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-4">
-                {!vendors?.avatar ? (
-                  <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                    {vendors?.storeName?.charAt(0)?.toUpperCase()}
+            {isLoadingVendor ? (
+              <div className="animate-pulse">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-[50px] h-[50px] rounded-full bg-gray-200" />
+                    <div>
+                      <div className="h-4 w-32 bg-gray-200 rounded" />
+                    </div>
                   </div>
-                ) : (
-                  <img
-                    src={vendors?.avatar || "/placeholder.svg"}
-                    alt="Vendor"
-                    className="w-10 h-10 rounded-full"
-                  />
-                )}
-                <div>
-                  <h2 className="font-semibold">{vendors?.storeName}</h2>
                 </div>
+                <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
+                  {[0,1,2].map((i) => (
+                    <div key={i} className="text-center">
+                      <div className="h-5 w-8 mx-auto bg-gray-200 rounded" />
+                      <div className="h-3 w-12 mx-auto mt-1 bg-gray-100 rounded" />
+                    </div>
+                  ))}
+                </div>
+                <div className="h-9 w-full bg-gray-200 rounded" />
               </div>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-4">
+                    {!vendors?.avatar ? (
+                      <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                        {vendors?.storeName?.charAt(0)?.toUpperCase()}
+                      </div>
+                    ) : (
+                      <img
+                        src={vendors?.avatar || "/placeholder.svg"}
+                        alt="Vendor"
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <h2 className="font-semibold">{vendors?.storeName}</h2>
+                    </div>
+                  </div>
+                </div>
 
-            <div className="flex justify-between mb-4 text-sm">
-              <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.communityPosts?.length || 0}
+                <div className="flex justify-between mb-4 text-sm">
+                  <div className="text-center">
+                    <button type="button" onClick={() => openInfoModal("posts")} className="font-bold hover:text-orange-600">
+                      {vendors?.communityPosts?.length || 0}
+                    </button>
+                    <div className="text-gray-600">Posts</div>
+                  </div>
+                  <div className="text-center">
+                    <button type="button" onClick={() => openInfoModal("followers")} className="font-bold hover:text-orange-600">
+                      {vendors?.followers?.length || 0}
+                    </button>
+                    <div className="text-gray-600">Followers</div>
+                  </div>
+                  <div className="text-center">
+                    <button type="button" onClick={() => openInfoModal("following")} className="font-bold hover:text-orange-600">
+                      {(() => {
+                        const raw = (vendors as any)?.following;
+                        if (!Array.isArray(raw)) return 0;
+                        const ids = raw
+                          .map((f: any) => (typeof f === "string" ? f : f?._id))
+                          .filter(Boolean);
+                        return ids.length;
+                      })()}
+                    </button>
+                    <div className="text-gray-600">Following</div>
+                  </div>
                 </div>
-                <div className="text-gray-600">Posts</div>
-              </div>
-              <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.followers?.length || 0}
-                </div>
-                <div className="text-gray-600">Followers</div>
-              </div>
-              <div className="text-center">
-                <div className="font-bold">
-                  {vendors?.following?.length || 0}
-                </div>
-                <div className="text-gray-600">Following</div>
-              </div>
-            </div>
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setIsModalOpen(true)}
-              className="w-full py-2 font-medium text-white bg-orange-500 rounded-md"
-            >
-              Create Post
-            </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setIsModalOpen(true)}
+                  className="w-full py-2 font-medium text-white bg-orange-500 rounded-md"
+                >
+                  Create Post
+                </motion.button>
+              </>
+            )}
           </motion.div>
+
+          
 
           <div className="p-4 mt-4 bg-white shadow-sm">
             <h3 className="mb-3 text-sm font-semibold">RECOMMENDATION</h3>
@@ -971,8 +1014,16 @@ export default function SocialFeed() {
               className="space-y-3"
             >
               {isLoadingMutuals ? (
-                <div className="flex justify-center items-center py-4">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
+                <div className="space-y-3 animate-pulse">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-8 h-8 rounded-full bg-gray-200" />
+                        <div className="h-3 w-28 bg-gray-200 rounded" />
+                      </div>
+                      <div className="h-3 w-16 bg-gray-100 rounded" />
+                    </div>
+                  ))}
                 </div>
               ) : mutualRecommendations && mutualRecommendations.length > 0 ? (
                 mutualRecommendations
@@ -1018,8 +1069,12 @@ export default function SocialFeed() {
                     </motion.div>
                   ))
               ) : (
-                <div className="text-center text-gray-500">
-                  No mutual recommendations found.
+                <div className="text-center text-gray-500 border border-dashed rounded-lg p-6">
+                  <div className="mx-auto mb-2 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                  </div>
+                  <div className="text-sm font-medium text-gray-700">No recommendations yet</div>
+                  <div className="text-xs mt-1">Follow more creators and communities to get suggestions here.</div>
                 </div>
               )}
             </motion.div>
@@ -1027,45 +1082,67 @@ export default function SocialFeed() {
 
           <div className="p-4 mt-4 bg-white shadow-sm">
             <h3 className="mb-3 text-sm font-semibold">MY COMMUNITIES</h3>
-            {communities?.slice(0, 4)?.map((community: any) => (
-              <motion.div
-                key={community.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="flex flex-wrap gap-2 mb-[20px]"
-              >
-                <div className="flex flex-col items-center justify-between gap-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="mb-1 text-sm font-semibold text-orange-800">
-                      {community.name}
-                    </h4>
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      whileHover={{ scale: 1.05 }}
-                      className={`px-3 py-2 rounded-full ${
-                        community.admin === user?.vendor?._id
-                          ? "bg-orange-200 text-orange-800"
-                          : "bg-blue-200 text-blue-800"
-                      } text-sm ml-4 cursor-pointer`}
-                    >
-                      {community.admin === user?.vendor?._id
-                        ? "Owner"
-                        : "Member"}
-                    </motion.span>
+            {isLoadingCommunities ? (
+              <div className="space-y-3 animate-pulse">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <div className="h-4 w-40 bg-gray-200 rounded" />
+                    <div className="h-6 w-20 bg-gray-100 rounded-full" />
                   </div>
-                </div>
-              </motion.div>
-            ))}
-            {communities.length > 4 && (
-              <button
-                onClick={() => {
-                  console.log("See More Clicked");
-                }}
-                className="mt-2 font-semibold text-orange-600 cursor-pointer"
-              >
-                See More
-              </button>
+                ))}
+              </div>
+            ) : (
+              <>
+                {communities.length === 0 ? (
+                  <div className="text-center text-gray-500 border border-dashed rounded-lg p-6">
+                    <div className="mx-auto mb-2 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h3l2-2h0l2 2h3a2 2 0 012 2v12a2 2 0 01-2 2z"/></svg>
+                    </div>
+                    <div className="text-sm font-medium text-gray-700">No communities yet</div>
+                    <div className="text-xs mt-1">Join or create a community to see it here.</div>
+                  </div>
+                ) : (
+                communities?.slice(0, 4)?.map((community: any) => (
+                  <motion.div
+                    key={community.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex flex-wrap gap-2 mb-[20px]"
+                  >
+                    <div className="flex flex-col items-center justify-between gap-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="mb-1 text-sm font-semibold text-orange-800">
+                          {community.name}
+                        </h4>
+                        <motion.span
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          whileHover={{ scale: 1.05 }}
+                          className={`px-3 py-2 rounded-full ${
+                            community.admin === user?.vendor?._id
+                              ? "bg-orange-200 text-orange-800"
+                              : "bg-blue-200 text-blue-800"
+                          } text-sm ml-4 cursor-pointer`}
+                        >
+                          {community.admin === user?.vendor?._id
+                            ? "Owner"
+                            : "Member"}
+                        </motion.span>
+                      </div>
+                    </div>
+                  </motion.div>
+                )))}
+                {communities.length > 4 && (
+                  <button
+                    onClick={() => {
+                      console.log("See More Clicked");
+                    }}
+                    className="mt-2 font-semibold text-orange-600 cursor-pointer"
+                  >
+                    See More
+                  </button>
+                )}
+              </>
             )}
           </div>
 
@@ -1073,6 +1150,269 @@ export default function SocialFeed() {
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
           />
+
+          {/* Info Modal */}
+          <AnimatePresence>
+            {isInfoOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                onClick={() => setIsInfoOpen(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full max-w-md p-4 bg-white rounded-lg shadow-lg"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-semibold">
+                      {infoMode === "following" && (
+                        <>Following ({(() => {
+                          const raw = (vendors as any)?.following;
+                          if (!Array.isArray(raw)) return 0;
+                          const ids = raw.map((f: any) => (typeof f === "string" ? f : f?._id)).filter(Boolean);
+                          return ids.length;
+                        })()})</>
+                      )}
+                      {infoMode === "followers" && (
+                        <>Followers ({(() => {
+                          const raw = (vendors as any)?.followers;
+                          if (!Array.isArray(raw)) return 0;
+                          const ids = raw.map((f: any) => (typeof f === "string" ? f : f?._id)).filter(Boolean);
+                          return ids.length;
+                        })()})</>
+                      )}
+                      {infoMode === "posts" && (
+                        <>Posts ({Array.isArray((vendors as any)?.communityPosts) ? (vendors as any).communityPosts.length : 0})</>
+                      )}
+                    </h3>
+                    <button onClick={() => setIsInfoOpen(false)} className="p-1 rounded hover:bg-gray-100">
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                  {isInfoLoading ? (
+                    <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                      {[...Array(4)].map((_, i) => (
+                        <div key={i} className="border border-gray-100 rounded-lg p-3 animate-pulse">
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="w-9 h-9 rounded-full bg-gray-200" />
+                            <div className="flex-1 min-w-0">
+                              <div className="h-3 w-32 bg-gray-200 rounded mb-1" />
+                              <div className="h-2 w-20 bg-gray-200 rounded" />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="h-3 bg-gray-100 rounded" />
+                            <div className="h-3 bg-gray-100 rounded" />
+                            <div className="col-span-2 h-3 bg-gray-100 rounded" />
+                            <div className="h-3 bg-gray-100 rounded" />
+                            <div className="h-3 bg-gray-100 rounded" />
+                            <div className="col-span-2 flex gap-2">
+                              <div className="w-16 h-10 bg-gray-100 rounded" />
+                              <div className="w-16 h-10 bg-gray-100 rounded" />
+                              <div className="flex-1 h-3 bg-gray-100 rounded self-center" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                      {infoMode === "following" && (() => {
+                        const raw = (vendors as any)?.following;
+                        if (!Array.isArray(raw) || raw.length === 0) {
+                          return <div className="text-sm text-gray-600">No following yet.</div>;
+                        }
+                        const list = raw.map((f: any) => (typeof f === "string" ? { _id: f } : f));
+                        return list.map((v: any) => (
+                          <div
+                            key={v?._id}
+                            className="border border-gray-100 rounded-lg p-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
+                                {v?.avatar || v?.businessLogo ? (
+                                  <img
+                                    src={(v?.avatar || v?.businessLogo) as string}
+                                    alt={v?.storeName || "vendor"}
+                                    className="object-cover w-full h-full"
+                                  />
+                                ) : (
+                                  <span className="text-sm font-semibold">{v?.storeName?.charAt(0) || "V"}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-semibold truncate">{v?.storeName || "Unknown Vendor"}</div>
+                                <div className="text-xs text-gray-500 truncate">{v?.craftCategories?.[0] || "-"}</div>
+                              </div>
+                            </div>
+                            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <div className="text-gray-500">Verification</div>
+                                <div className="font-medium">{v?.verificationStatus || "Unverified"}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Subscription</div>
+                                <div className="font-medium">
+                                  {v?.subscription?.currentPlan || "-"}
+                                  {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
+                                </div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-gray-500">Payout Account</div>
+                                <div className="font-medium">
+                                  {(v?.bankAccount as any)?.account_name || "-"}
+                                  {((v?.bankAccount as any)?.account_number) && (
+                                    <span className="ml-1 text-gray-600">
+                                      {String((v?.bankAccount as any)?.account_number).replace(/(\d{3})\d+(\d{2})/, "$1******$2")} • {(v?.bankAccount as any)?.bankName || ""}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Phone</div>
+                                <div className="font-medium">{v?.storePhone || "-"}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Communities</div>
+                                <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-gray-500">KYC</div>
+                                <div className="flex items-center gap-2">
+                                  {(v?.kycDocuments as any)?.front && (
+                                    <a href={(v.kycDocuments as any).front} target="_blank" rel="noreferrer" className="block w-16 h-10 overflow-hidden rounded border">
+                                      <img src={(v.kycDocuments as any).front} alt="Front" className="object-cover w-full h-full" />
+                                    </a>
+                                  )}
+                                  {(v?.kycDocuments as any)?.back && (
+                                    <a href={(v.kycDocuments as any).back} target="_blank" rel="noreferrer" className="block w-16 h-10 overflow-hidden rounded border">
+                                      <img src={(v.kycDocuments as any).back} alt="Back" className="object-cover w-full h-full" />
+                                    </a>
+                                  )}
+                                  <div className="text-gray-600">
+                                    {(v?.kycDocuments as any)?.documentType || "-"}
+                                    {((v?.kycDocuments as any)?.country) ? ` • ${(v?.kycDocuments as any)?.country}` : ""}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+
+                      {infoMode === "followers" && (() => {
+                        const raw = (vendors as any)?.followers;
+                        if (!Array.isArray(raw) || raw.length === 0) {
+                          return <div className="text-sm text-gray-600">No followers yet.</div>;
+                        }
+                        const list = raw.map((f: any) => (typeof f === "string" ? { _id: f } : f));
+                        return list.map((v: any) => (
+                          <div
+                            key={v?._id}
+                            className="border border-gray-100 rounded-lg p-3"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
+                                {v?.avatar || v?.businessLogo ? (
+                                  <img
+                                    src={(v?.avatar || v?.businessLogo) as string}
+                                    alt={v?.storeName || "vendor"}
+                                    className="object-cover w-full h-full"
+                                  />
+                                ) : (
+                                  <span className="text-sm font-semibold">{v?.storeName?.charAt(0) || "V"}</span>
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-sm font-semibold truncate">{v?.storeName || "Unknown Vendor"}</div>
+                                <div className="text-xs text-gray-500 truncate">{v?.craftCategories?.[0] || "-"}</div>
+                              </div>
+                            </div>
+                            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                              <div>
+                                <div className="text-gray-500">Verification</div>
+                                <div className="font-medium">{v?.verificationStatus || "Unverified"}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Subscription</div>
+                                <div className="font-medium">
+                                  {v?.subscription?.currentPlan || "-"}
+                                  {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
+                                </div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-gray-500">Payout Account</div>
+                                <div className="font-medium">
+                                  {(v?.bankAccount as any)?.account_name || "-"}
+                                  {((v?.bankAccount as any)?.account_number) && (
+                                    <span className="ml-1 text-gray-600">
+                                      {String((v?.bankAccount as any)?.account_number).replace(/(\d{3})\d+(\d{2})/, "$1******$2")} • {(v?.bankAccount as any)?.bankName || ""}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Phone</div>
+                                <div className="font-medium">{v?.storePhone || "-"}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-500">Communities</div>
+                                <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-gray-500">KYC</div>
+                                <div className="flex items-center gap-2">
+                                  {(v?.kycDocuments as any)?.front && (
+                                    <a href={(v.kycDocuments as any).front} target="_blank" rel="noreferrer" className="block w-16 h-10 overflow-hidden rounded border">
+                                      <img src={(v.kycDocuments as any).front} alt="Front" className="object-cover w-full h-full" />
+                                    </a>
+                                  )}
+                                  {(v?.kycDocuments as any)?.back && (
+                                    <a href={(v.kycDocuments as any).back} target="_blank" rel="noreferrer" className="block w-16 h-10 overflow-hidden rounded border">
+                                      <img src={(v.kycDocuments as any).back} alt="Back" className="object-cover w-full h-full" />
+                                    </a>
+                                  )}
+                                  <div className="text-gray-600">
+                                    {(v?.kycDocuments as any)?.documentType || "-"}
+                                    {((v?.kycDocuments as any)?.country) ? ` • ${(v?.kycDocuments as any)?.country}` : ""}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+
+                      {infoMode === "posts" && (() => {
+                        const posts = (vendors as any)?.communityPosts;
+                        if (!Array.isArray(posts) || posts.length === 0) {
+                          return <div className="text-sm text-gray-600">No posts yet.</div>;
+                        }
+                        return (
+                          <div className="space-y-2 text-sm">
+                            {posts.slice(0, 20).map((p: any, idx: number) => (
+                              <div key={p?._id || p?.id || p || idx} className="p-2 border border-gray-100 rounded">
+                                <div className="font-medium">Post ID: {String(p?._id || p)}</div>
+                              </div>
+                            ))}
+                            {posts.length > 20 && (
+                              <div className="text-xs text-gray-500">and {posts.length - 20} more...</div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
