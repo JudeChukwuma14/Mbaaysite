@@ -965,30 +965,42 @@ export default function SocialFeed() {
 
                 <div className="flex justify-between mb-4 text-sm">
                   <div className="text-center">
-                    <button type="button" onClick={() => openInfoModal("posts")} className="font-bold hover:text-orange-600">
+                    <button  className="font-bold cursor-default">
                       {vendors?.communityPosts?.length || 0}
                     </button>
                     <div className="text-gray-600">Posts</div>
                   </div>
-                  <div className="text-center">
-                    <button type="button" onClick={() => openInfoModal("followers")} className="font-bold hover:text-orange-600">
-                      {vendors?.followers?.length || 0}
-                    </button>
-                    <div className="text-gray-600">Followers</div>
-                  </div>
-                  <div className="text-center">
-                    <button type="button" onClick={() => openInfoModal("following")} className="font-bold hover:text-orange-600">
-                      {(() => {
-                        const raw = (vendors as any)?.following;
-                        if (!Array.isArray(raw)) return 0;
-                        const ids = raw
-                          .map((f: any) => (typeof f === "string" ? f : f?._id))
-                          .filter(Boolean);
-                        return ids.length;
-                      })()}
-                    </button>
-                    <div className="text-gray-600">Following</div>
-                  </div>
+                  <div
+  className="text-center cursor-pointer select-none hover:text-orange-600"
+  role="button"
+  tabIndex={0}
+  onClick={() => openInfoModal("followers")}
+  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openInfoModal("followers")}
+>
+  <div className="font-bold hover:text-orange-600">
+    {vendors?.followers?.length || 0}
+  </div>
+  <div className="text-gray-600">Followers</div>
+</div>
+                  <div
+  className="text-center cursor-pointer select-none hover:text-orange-600"
+  role="button"
+  tabIndex={0}
+  onClick={() => openInfoModal("following")}
+  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openInfoModal("following")}
+>
+  <div className="font-bold ">
+    {(() => {
+      const raw = (vendors as any)?.following;
+      if (!Array.isArray(raw)) return 0;
+      const ids = raw
+        .map((f: any) => (typeof f === "string" ? f : f?._id))
+        .filter(Boolean);
+      return ids.length;
+    })()}
+  </div>
+  <div className="text-gray-600">Following</div>
+</div>
                 </div>
 
                 <motion.button
@@ -1263,7 +1275,7 @@ export default function SocialFeed() {
                                   {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
                                 </div>
                               </div>
-                              <div className="col-span-2">
+                              {/* <div className="col-span-2">
                                 <div className="text-gray-500">Payout Account</div>
                                 <div className="font-medium">
                                   {(v?.bankAccount as any)?.account_name || "-"}
@@ -1273,7 +1285,7 @@ export default function SocialFeed() {
                                     </span>
                                   )}
                                 </div>
-                              </div>
+                              </div> */}
                               <div>
                                 <div className="text-gray-500">Phone</div>
                                 <div className="font-medium">{v?.storePhone || "-"}</div>
@@ -1282,7 +1294,7 @@ export default function SocialFeed() {
                                 <div className="text-gray-500">Communities</div>
                                 <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
                               </div>
-                              <div className="col-span-2">
+                              {/* <div className="col-span-2">
                                 <div className="text-gray-500">KYC</div>
                                 <div className="flex items-center gap-2">
                                   {(v?.kycDocuments as any)?.front && (
@@ -1300,7 +1312,7 @@ export default function SocialFeed() {
                                     {((v?.kycDocuments as any)?.country) ? ` • ${(v?.kycDocuments as any)?.country}` : ""}
                                   </div>
                                 </div>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         ));
@@ -1346,7 +1358,7 @@ export default function SocialFeed() {
                                   {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
                                 </div>
                               </div>
-                              <div className="col-span-2">
+                              {/* <div className="col-span-2">
                                 <div className="text-gray-500">Payout Account</div>
                                 <div className="font-medium">
                                   {(v?.bankAccount as any)?.account_name || "-"}
@@ -1356,7 +1368,7 @@ export default function SocialFeed() {
                                     </span>
                                   )}
                                 </div>
-                              </div>
+                              </div> */}
                               <div>
                                 <div className="text-gray-500">Phone</div>
                                 <div className="font-medium">{v?.storePhone || "-"}</div>
@@ -1365,7 +1377,7 @@ export default function SocialFeed() {
                                 <div className="text-gray-500">Communities</div>
                                 <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
                               </div>
-                              <div className="col-span-2">
+                              {/* <div className="col-span-2">
                                 <div className="text-gray-500">KYC</div>
                                 <div className="flex items-center gap-2">
                                   {(v?.kycDocuments as any)?.front && (
@@ -1383,13 +1395,13 @@ export default function SocialFeed() {
                                     {((v?.kycDocuments as any)?.country) ? ` • ${(v?.kycDocuments as any)?.country}` : ""}
                                   </div>
                                 </div>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         ));
                       })()}
 
-                      {infoMode === "posts" && (() => {
+                      {/* {infoMode === "posts" && (() => {
                         const posts = (vendors as any)?.communityPosts;
                         if (!Array.isArray(posts) || posts.length === 0) {
                           return <div className="text-sm text-gray-600">No posts yet.</div>;
@@ -1406,7 +1418,7 @@ export default function SocialFeed() {
                             )}
                           </div>
                         );
-                      })()}
+                      })()} */}
                     </div>
                   )}
                 </motion.div>
