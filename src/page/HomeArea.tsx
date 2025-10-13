@@ -148,9 +148,7 @@ const HomeArea: React.FC = () => {
         const result = await getAuctionProduct();
         console.log(result);
         // result should be an array of auction products
-        setAuctionProducts(
-          Array.isArray(result) ? result : result.data || []
-        );
+        setAuctionProducts(Array.isArray(result) ? result : result.data || []);
       } catch (err) {
         console.error("Error fetching auctions:", err);
       } finally {
@@ -278,14 +276,8 @@ const HomeArea: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 md:text-3xl">
             Latest Vendors
           </h2>
-          <Link
-            to="/more-vendor"
-            className="px-4 py-2 text-sm font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
-          >
-            View All
-          </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 mb:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading
             ? Array.from({ length: 5 }).map((_, i) => (
                 <VendorSkeleton key={i} />
@@ -308,6 +300,15 @@ const HomeArea: React.FC = () => {
                   </Link>
                 );
               })}
+        </div>
+
+        <div className="flex justify-center mt-10">
+          <Link
+            to="/more-vendor"
+            className="px-6 py-3 font-medium text-white transition-colors duration-300 bg-orange-500 rounded-md hover:bg-orange-600"
+          >
+            View All Vendors
+          </Link>
         </div>
       </section>
 

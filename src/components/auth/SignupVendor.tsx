@@ -18,9 +18,11 @@ import {
   Mail,
   Phone,
   Store,
-  Tag,
+  Tag
 } from "lucide-react";
 import { VendorGoogleButton } from "./VendorGoogleButton";
+import PolicyModal from "../Reuseable/PolicyModal";
+
 
 interface FormData {
   storeName: string;
@@ -56,6 +58,8 @@ const Registration: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [acceptedPolicy, setAcceptedPolicy] = useState<boolean>(false);
+  const [showPolicyModal, setShowPolicyModal] = useState<boolean>(false);
 
   const {
     register,
@@ -64,9 +68,19 @@ const Registration: React.FC = () => {
     formState: { errors },
     watch,
     reset,
-  } = useForm<FormData>();
+    setError,
+    clearErrors,
+  } = useForm<FormData & { acceptPolicy: boolean }>();
 
-  const onSubmit: SubmitHandler<FormData> = async (data) => {
+  const onSubmit: SubmitHandler<FormData & { acceptPolicy: boolean }> = async (data) => {
+    if (!acceptedPolicy) {
+      setError("acceptPolicy", { 
+        type: "manual", 
+        message: "You must accept the terms and conditions" 
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       const formData = { ...data };
@@ -88,6 +102,12 @@ const Registration: React.FC = () => {
     }
   };
 
+  const handleAcceptPolicy = () => {
+    setAcceptedPolicy(true);
+    clearErrors("acceptPolicy");
+    setShowPolicyModal(false);
+  };
+
   const bg = {
     backgroundImage: `url(${background})`,
   };
@@ -95,6 +115,12 @@ const Registration: React.FC = () => {
   return (
     <div className="w-full h-screen">
       <ToastContainer />
+      <PolicyModal 
+        isOpen={showPolicyModal}
+        onClose={() => setShowPolicyModal(false)}
+        onAccept={handleAcceptPolicy}
+      />
+      
       <div className="flex flex-col md:flex-row">
         <Sliding />
         <motion.div
@@ -331,11 +357,46 @@ const Registration: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Policy Acceptance Checkbox */}
+                <div className="mb-6">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex items-center h-5 mt-0.5">
+                      <input
+                        type="checkbox"
+                        id="acceptPolicy"
+                        checked={acceptedPolicy}
+                        onChange={(e) => {
+                          setAcceptedPolicy(e.target.checked);
+                          if (e.target.checked) {
+                            clearErrors("acceptPolicy");
+                          }
+                        }}
+                        className="w-4 h-4 text-orange-500 border-gray-300 rounded focus:ring-orange-500"
+                      />
+                    </div>
+                    <label htmlFor="acceptPolicy" className="text-sm text-gray-700">
+                      I agree to the{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowPolicyModal(true)}
+                        className="text-orange-500 hover:underline focus:outline-none font-medium"
+                      >
+                        Terms and Conditions, Privacy Policy, and Vendor Agreement
+                      </button>
+                    </label>
+                  </div>
+                  {errors.acceptPolicy && (
+                    <p className="mt-1 text-sm text-red-500">
+                      {errors.acceptPolicy.message}
+                    </p>
+                  )}
+                </div>
+
                 {/* Submit Button */}
                 <button
                   type="submit"
                   className="w-full h-12 px-4 py-2 text-base font-semibold text-white transition-colors duration-200 bg-orange-500 rounded-md shadow-sm hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isLoading}
+                  disabled={isLoading || !acceptedPolicy}
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center">
@@ -343,13 +404,13 @@ const Registration: React.FC = () => {
                       Creating Account...
                     </div>
                   ) : (
-                    "Create Account"
+                    "Create Vendor Account"
                   )}
                 </button>
               </form>
 
               {/* Google Button goes OUTSIDE the form */}
-              <div className="relative my-4 ">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-gray-300" />
                 </div>

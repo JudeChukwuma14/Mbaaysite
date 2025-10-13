@@ -1,47 +1,41 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { getAllVendor } from "@/utils/UserChat";
-import { toast } from "react-toastify";
+"use client"
+
+import type React from "react"
+import { useEffect, useState } from "react"
+import { Plus, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { getAllVendor } from "@/utils/UserChat"
+import { toast } from "react-toastify"
 
 interface Chat {
-  _id: string;
-  name: string;
-  lastMessage: string;
-  time: string;
-  unread: number;
-  avatar?: string;
-  online: boolean;
-  pinned: boolean;
-  isGroup?: boolean;
+  _id: string
+  name: string
+  lastMessage: string
+  time: string
+  unread: number
+  avatar?: string
+  online: boolean
+  pinned: boolean
+  isGroup?: boolean
 }
 
 interface Vendor {
-  _id: string;
-  storeName: string;
-  avatar?: string;
+  _id: string
+  storeName: string
+  avatar?: string
 }
 
 interface ChatListProps {
-  chats: Chat[];
-  selectedChat: string | null;
-  onSelectChat: (chatId: string) => void;
-  onPinChat: (chatId: string) => void;
-  onDeleteChat: (chatId: string) => void;
-  onNewChat: (
-    receiverId: string,
-    vendorDetails: { storeName: string; avatar?: string }
-  ) => void;
-  pendingChats?: string[]; // Add this prop
+  chats: Chat[]
+  selectedChat: string | null
+  onSelectChat: (chatId: string) => void
+  onPinChat: (chatId: string) => void
+  onDeleteChat: (chatId: string) => void
+  onNewChat: (receiverId: string, vendorDetails: { storeName: string; avatar?: string }) => void
+  pendingChats?: string[] // Add this prop
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -51,63 +45,53 @@ const ChatList: React.FC<ChatListProps> = ({
   onNewChat,
   pendingChats = [],
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isNewChatOpen, setIsNewChatOpen] = useState(false);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [vendorSearch, setVendorSearch] = useState("");
-  const [isLoadingVendors, setIsLoadingVendors] = useState(false);
-  const [vendorError, setVendorError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("")
+  const [isNewChatOpen, setIsNewChatOpen] = useState(false)
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [vendorSearch, setVendorSearch] = useState("")
+  const [isLoadingVendors, setIsLoadingVendors] = useState(false)
+  const [vendorError, setVendorError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchVendors = async () => {
-      setIsLoadingVendors(true);
-      setVendorError(null);
+      setIsLoadingVendors(true)
+      setVendorError(null)
       try {
-        const response = await getAllVendor();
-        setVendors(response.vendors || []);
+        const response = await getAllVendor()
+        setVendors(response.vendors || [])
       } catch (error: any) {
-        const errorMsg =
-          error.response?.data?.message || "Failed to load vendors.";
-        console.error(
-          "DEBUG: Error fetching vendors:",
-          JSON.stringify(error, null, 2)
-        );
-        setVendorError(errorMsg);
-        toast.error(errorMsg);
+        const errorMsg = error.response?.data?.message || "Failed to load vendors."
+        console.error("DEBUG: Error fetching vendors:", JSON.stringify(error, null, 2))
+        setVendorError(errorMsg)
+        toast.error(errorMsg)
       } finally {
-        setIsLoadingVendors(false);
+        setIsLoadingVendors(false)
       }
-    };
-    if (isNewChatOpen) {
-      fetchVendors();
     }
-  }, [isNewChatOpen]);
+    if (isNewChatOpen) {
+      fetchVendors()
+    }
+  }, [isNewChatOpen])
 
   const filteredVendors = vendors.filter((vendor) =>
-    vendor.storeName.toLowerCase().includes(vendorSearch.toLowerCase())
-  );
+    vendor.storeName.toLowerCase().includes(vendorSearch.toLowerCase()),
+  )
 
   // Add duplicate filtering to prevent the key error
-  const activeChats = chats.filter(
-    (chat) => chat.lastMessage || !pendingChats.includes(chat._id)
-  );
+  const activeChats = chats.filter((chat) => chat.lastMessage || !pendingChats.includes(chat._id))
 
   const filteredChats = activeChats
-    .filter((chat) =>
-      chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .filter(
-      (chat, index, self) => index === self.findIndex((c) => c._id === chat._id)
-    );
+    .filter((chat) => chat.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter((chat, index, self) => index === self.findIndex((c) => c._id === chat._id))
 
   const handleStartNewChat = (vendor: Vendor) => {
     onNewChat(vendor._id, {
       storeName: vendor.storeName,
       avatar: vendor.avatar,
-    });
-    setVendorSearch("");
-    setIsNewChatOpen(false);
-  };
+    })
+    setVendorSearch("")
+    setIsNewChatOpen(false)
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -138,9 +122,7 @@ const ChatList: React.FC<ChatListProps> = ({
                 ) : (
                   <div className="overflow-y-auto max-h-40">
                     {filteredVendors.length === 0 && vendorSearch ? (
-                      <div className="text-muted-foreground">
-                        No vendors found
-                      </div>
+                      <div className="text-muted-foreground">No vendors found</div>
                     ) : (
                       filteredVendors.map((vendor) => (
                         <div
@@ -149,11 +131,7 @@ const ChatList: React.FC<ChatListProps> = ({
                           onClick={() => handleStartNewChat(vendor)}
                         >
                           {vendor.avatar ? (
-                            <img
-                              src={vendor.avatar}
-                              alt={vendor.storeName}
-                              className="w-8 h-8 rounded-full"
-                            />
+                            <img src={vendor.avatar} alt={vendor.storeName} className="w-8 h-8 rounded-full" />
                           ) : (
                             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted">
                               {vendor.storeName[0]}
@@ -182,28 +160,20 @@ const ChatList: React.FC<ChatListProps> = ({
       <ScrollArea className="flex-1">
         <div className="p-4">
           {filteredChats.length === 0 ? (
-            <div className="text-center text-muted-foreground">
-              No chats available. Start a new chat!
-            </div>
+            <div className="text-center text-muted-foreground">No chats available. Start a new chat!</div>
           ) : (
             filteredChats.map((chat) => (
               <div
                 key={chat._id}
                 className={`p-3 rounded-lg cursor-pointer chat-item ${
-                  selectedChat === chat._id
-                    ? "bg-orange-500 text-white"
-                    : "hover:bg-orange-600"
+                  selectedChat === chat._id ? "bg-orange-500 text-white" : "hover:bg-orange-600"
                 }`}
                 onClick={() => onSelectChat(chat._id)}
               >
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center justify-center w-10 h-10 text-orange-500 bg-white rounded-full ring-1 ring-orange-500">
                     {chat.avatar ? (
-                      <img
-                        src={chat.avatar}
-                        alt={chat.name}
-                        className="w-full h-full rounded-full"
-                      />
+                      <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-full" />
                     ) : (
                       <span className="font-semibold">{chat.name[0]}</span>
                     )}
@@ -211,18 +181,12 @@ const ChatList: React.FC<ChatListProps> = ({
                   <div className="flex-1">
                     <div className="flex justify-between">
                       <h3 className="font-semibold">{chat.name}</h3>
-                      <span className="text-xs text-muted-foreground">
-                        {chat.time}
-                      </span>
+                      <span className="text-xs text-muted-foreground">{chat.time}</span>
                     </div>
-                    <p className="text-sm truncate text-muted-foreground max-w-[180px]">
-                      {chat.lastMessage}
-                    </p>
+                    <p className="text-sm truncate text-muted-foreground max-w-[180px]">{chat.lastMessage}</p>
                   </div>
                   {chat.unread > 0 && (
-                    <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">
-                      {chat.unread}
-                    </span>
+                    <span className="px-2 py-1 text-xs text-white bg-orange-500 rounded-full">{chat.unread}</span>
                   )}
                 </div>
               </div>
@@ -231,7 +195,7 @@ const ChatList: React.FC<ChatListProps> = ({
         </div>
       </ScrollArea>
     </div>
-  );
-};
+  )
+}
 
-export default ChatList;
+export default ChatList

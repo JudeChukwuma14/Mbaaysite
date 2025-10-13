@@ -11,6 +11,9 @@ const VendorCard: React.FC<VendorCardProps> = ({
   name,
   craft,
 }) => {
+
+  const truncatedCraft = craft.length > 10 ? `${craft.substring(0, 10)}...` : craft;
+  const truncatedName = name.length > 10 ? `${name.substring(0, 10)}...` : name;
   return (
     <div className="max-w-sm overflow-hidden transition-all duration-300 bg-white border border-gray-100 shadow-md group rounded-xl hover:shadow-xl">
       {/* Header with Background */}
@@ -28,12 +31,12 @@ const VendorCard: React.FC<VendorCardProps> = ({
           <img
             src={avatar}
             alt={name}
-            className="object-cover w-20 h-20 mx-auto border-4 border-white rounded-full shadow-lg"
+            className="object-cover w-16 h-16 mb:w-20 mb:h-20 mx-auto border-4 border-white rounded-full shadow-lg"
           />
         </div>
 
-        <h3 className="mb-1 text-lg font-bold text-gray-900">{name}</h3>
-        <p className="mb-3 text-sm font-medium text-orange-500">{craft}</p>
+        <h3 className="mb-1 text-lg font-bold text-gray-900">{truncatedName}</h3>
+        <p className="mb-3 text-sm font-medium text-orange-500">{truncatedCraft}</p>
         {/* Action Button */}
        
         <button className="w-full px-4 py-2 font-medium text-white transition-colors bg-orange-500 rounded-lg hover:bg-orange-600">

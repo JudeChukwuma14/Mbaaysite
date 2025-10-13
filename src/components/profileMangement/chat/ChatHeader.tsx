@@ -1,44 +1,41 @@
-import React from "react";
-import { ArrowLeft, MoreVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+"use client"
+
+import type React from "react"
+import { ArrowLeft, MoreVertical } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 interface Chat {
-  _id: string;
-  name: string;
-  online: boolean;
-  avatar?: string;
+  _id: string
+  name: string
+  online: boolean
+  avatar?: string
 }
 
 interface ChatHeaderProps {
-  chat: Chat;
-  onBack?: () => void;
+  chat: Chat
+  onBack?: () => void
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
   const getInitials = (name: string) => {
-    console.log("DEBUG: Generating initials for name:", name);
+    console.log("DEBUG: Generating initials for name:", name)
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
       .slice(0, 2)
-      .toUpperCase();
-  };
+      .toUpperCase()
+  }
 
-  console.log("DEBUG: ChatHeader rendering with chat:", JSON.stringify(chat, null, 2));
+  console.log("DEBUG: ChatHeader rendering with chat:", JSON.stringify(chat, null, 2))
 
   const handleBackClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent default behavior (e.g., form submission or page reload)
-    e.stopPropagation(); // Stop event propagation
-    console.log("DEBUG: Back button clicked, triggering onBack");
-    onBack?.();
-  };
+    e.preventDefault() // Prevent default behavior (e.g., form submission or page reload)
+    e.stopPropagation() // Stop event propagation
+    console.log("DEBUG: Back button clicked, triggering onBack")
+    onBack?.()
+  }
 
   return (
     <div className="flex items-center justify-between p-4 border-b bg-card">
@@ -56,11 +53,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
         <div className="relative">
           <div className="w-10 h-10 bg-orange-500 rounded-[50%] flex items-center justify-center text-white font-semibold text-sm">
             {chat.avatar ? (
-              <img
-                src={chat.avatar}
-                alt={chat.name}
-                className="w-full h-full rounded-[50%] object-cover"
-              />
+              <img src={chat.avatar} alt={chat.name} className="w-full h-full rounded-[50%] object-cover" />
             ) : (
               getInitials(chat.name)
             )}
@@ -96,7 +89,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat, onBack }) => {
         </DropdownMenu>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ChatHeader;
+export default ChatHeader
