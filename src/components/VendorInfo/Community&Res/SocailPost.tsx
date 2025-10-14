@@ -27,6 +27,12 @@ export default function SocialList() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
+  const [pendingFollowId, setPendingFollowId] = useState<string | null>(null);
+  const [pendingFollowAction, setPendingFollowAction] = useState<
+    "follow" | "unfollow" | null
+  >(null);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchWrapRef = useRef<HTMLDivElement>(null);
   // const navigate = useNavigate();
 
   // Constants
@@ -116,6 +122,35 @@ export default function SocialList() {
     [all_communities, dayKey]
   );
 
+  // Dropdown data sources: all on focus, filtered when typing
+  const dropdownVendors = (debouncedSearch?.trim()?.length ?? 0) >= 1
+    ? searchVendors
+    : vendors;
+  const dropdownCommunities = (debouncedSearch?.trim()?.length ?? 0) >= 1
+    ? searchCommunities
+    : all_communities;
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    const handleMouseDown = (e: MouseEvent) => {
+      if (
+        searchWrapRef.current &&
+        !searchWrapRef.current.contains(e.target as Node)
+      ) {
+        setShowSearchDropdown(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShowSearchDropdown(false);
+    };
+    document.addEventListener("mousedown", handleMouseDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleMouseDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   // Build display lists: exclude already-followed vendors and joined communities, then cap at 4
   const vendorsSource = isSearchActive ? searchVendors : rotatedVendors;
   const communitiesSource = isSearchActive
@@ -124,11 +159,9 @@ export default function SocialList() {
 
   const displayVendors = useMemo(() => {
     const arr = Array.isArray(vendorsSource) ? vendorsSource : [];
-    const filtered = currentUserId
-      ? arr.filter((v: any) => !v?.followers?.includes(currentUserId))
-      : arr;
-    return filtered.slice(0, VISIBLE_COUNT);
-  }, [vendorsSource, currentUserId]);
+    // Do NOT exclude already-followed vendors to avoid disappearing cards during optimistic updates
+    return arr.slice(0, VISIBLE_COUNT);
+  }, [vendorsSource]);
 
   const displayCommunities = useMemo(() => {
     const arr = Array.isArray(communitiesSource) ? communitiesSource : [];
@@ -154,6 +187,9 @@ export default function SocialList() {
       }
     },
     onMutate: async ({ vendorId, isFollowing }) => {
+      // Track which vendor is pending to make loading state per-item
+      setPendingFollowId(vendorId);
+      setPendingFollowAction(isFollowing ? "unfollow" : "follow");
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["vendors"] });
       await queryClient.cancelQueries({ queryKey: ["search_res"] });
@@ -183,15 +219,31 @@ export default function SocialList() {
         }
       );
 
-      // Optimistically update current vendor's following list
+      // Optimistically update current vendor's following list while preserving shape (strings vs objects)
       queryClient.setQueryData(["vendor", user?.token], (oldMe: any) => {
         if (!oldMe) return oldMe;
-        const prevFollowing: string[] = Array.isArray(oldMe.following)
+        const prevFollowing: any[] = Array.isArray(oldMe.following)
           ? oldMe.following
           : [];
-        const nextFollowing = isFollowing
-          ? prevFollowing.filter((id) => id !== vendorId)
-          : [...prevFollowing, vendorId];
+        const isObjectArray = prevFollowing.some((f) => typeof f !== "string");
+
+        const filtered = prevFollowing.filter((f: any) => {
+          const id = typeof f === "string" ? f : f?._id;
+          return id !== vendorId;
+        });
+
+        let nextFollowing: any[];
+        if (isFollowing) {
+          // We were following; now unfollow (already filtered above)
+          nextFollowing = filtered;
+        } else {
+          // We were not following; now follow by adding in the same shape
+          nextFollowing = [
+            ...prevFollowing,
+            isObjectArray ? { _id: vendorId } : vendorId,
+          ];
+        }
+
         return { ...oldMe, following: nextFollowing };
       });
 
@@ -235,6 +287,9 @@ export default function SocialList() {
       console.error("Follow/Unfollow failed:", err);
     },
     onSettled: () => {
+      // Clear pending id regardless of outcome
+      setPendingFollowId(null);
+      setPendingFollowAction(null);
       // Refetch to ensure we have the latest data
       queryClient.refetchQueries({ queryKey: ["vendors"] });
       queryClient.refetchQueries({ queryKey: ["search_res"] });
@@ -344,9 +399,15 @@ export default function SocialList() {
       const vendor = displayVendors.find((v: any) => v._id === vendorId);
       if (!vendor) return;
 
+      const followingRaw = (currentVendor as any)?.following;
+      const followingIds: string[] = Array.isArray(followingRaw)
+        ? followingRaw
+            .map((f: any) => (typeof f === "string" ? f : f?._id))
+            .filter(Boolean)
+        : [];
       const isFollowing = Boolean(
         vendor?.followers?.includes(currentUserId) ||
-          (currentVendor as any)?.following?.includes?.(vendorId)
+          followingIds.includes(vendorId)
       );
 
       followMutation.mutate({ vendorId, isFollowing });
@@ -375,13 +436,14 @@ export default function SocialList() {
     <div className="flex flex-col w-full h-screen max-w-md mx-auto overflow-x-hidden bg-white">
       {/* Search Bar */}
       <div className="p-4 bg-white">
-        <div className="relative mb-2">
+        <div ref={searchWrapRef} className="relative mb-2">
           <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
           <input
             type="text"
             placeholder="Search vendors or communities"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => setShowSearchDropdown(true)}
             className="w-full py-2 pl-10 pr-10 text-sm bg-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-200"
           />
           {searchQuery && (
@@ -392,6 +454,145 @@ export default function SocialList() {
             >
               <X className="w-4 h-4 text-gray-500" />
             </button>
+          )}
+          {showSearchDropdown && (
+            <div className="absolute left-0 right-0 z-20 w-full mt-2 overflow-hidden bg-white border rounded-lg shadow-lg max-h-96">
+              <div className="p-3 text-xs font-semibold text-gray-500">VENDORS</div>
+              {Array.isArray(dropdownVendors) && dropdownVendors.length > 0 ? (
+                <div className="max-h-40 overflow-y-auto">
+                  {dropdownVendors.map((v: any) => {
+                    const followingRaw = (currentVendor as any)?.following;
+                    const followingIds: string[] = Array.isArray(followingRaw)
+                      ? followingRaw
+                          .map((f: any) => (typeof f === "string" ? f : f?._id))
+                          .filter(Boolean)
+                      : [];
+                    const isFollowing = Boolean(
+                      v?.followers?.includes(currentUserId) ||
+                        followingIds.includes(v?._id)
+                    );
+                    const isFollowPending =
+                      followMutation.isPending && pendingFollowId === v._id;
+                    return (
+                      <div
+                        key={v._id}
+                        className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50"
+                      >
+                        <Link
+                          to={`/app/community-details/${v._id}`}
+                          className="flex items-center gap-3 min-w-0 flex-1"
+                          onClick={() => setShowSearchDropdown(false)}
+                        >
+                          <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
+                            {v?.avatar || v?.businessLogo ? (
+                              <img
+                                src={(v?.avatar || v?.businessLogo) as string}
+                                alt={v?.storeName || "vendor"}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              <span className="text-sm font-medium">{v?.storeName?.charAt(0)}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">{v?.storeName}</div>
+                            {v?.craftCategories?.[0] && (
+                              <div className="text-xs text-gray-500 truncate">{v.craftCategories[0]}</div>
+                            )}
+                          </div>
+                        </Link>
+                        <motion.button
+                          type="button"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleFollowToggle(v._id)}
+                          disabled={isFollowPending || !currentUserId}
+                          className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 shrink-0 whitespace-nowrap ${
+                            isFollowing ? "bg-red-500 text-white" : "bg-blue-500 text-white"
+                          } ${
+                            isFollowPending || !currentUserId
+                              ? "opacity-70 cursor-not-allowed"
+                              : ""
+                          }`}
+                        >
+                          {isFollowPending ? (
+                            <>
+                              {pendingFollowAction === "unfollow" ? (
+                                <UserMinus className="w-3 h-3" />
+                              ) : (
+                                <UserPlus className="w-3 h-3" />
+                              )}
+                              <span>
+                                {pendingFollowAction === "unfollow"
+                                  ? "Unfollowing..."
+                                  : "Following..."}
+                              </span>
+                            </>
+                          ) : isFollowing ? (
+                            <>
+                              <UserMinus className="w-3 h-3" />
+                              <span>Unfollow</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus className="w-3 h-3" />
+                              <span>Follow</span>
+                            </>
+                          )}
+                        </motion.button>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-3 pb-2 text-xs text-gray-500">No vendors found.</div>
+              )}
+              <div className="p-3 text-xs font-semibold text-gray-500 border-t">COMMUNITIES</div>
+              {Array.isArray(dropdownCommunities) && dropdownCommunities.length > 0 ? (
+                <div className="max-h-40 overflow-y-auto">
+                  {dropdownCommunities.map((c: any) => {
+                    const isMember = Array.isArray(c?.members)
+                      ? c.members.includes(currentUserId)
+                      : false;
+                    return (
+                      <div key={c._id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50">
+                        <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
+                          {c?.community_Images ? (
+                            <img
+                              src={c?.community_Images}
+                              alt="community"
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <span className="text-sm font-medium">{c?.name?.charAt(0)}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-medium truncate">{c?.name}</div>
+                        </div>
+                        <div className="ml-auto">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => {
+                              // do not auto-close dropdown; just toggle membership
+                              handleCommunityToggle(c._id);
+                            }}
+                            className={`px-2 py-1 text-xs rounded-full ${
+                              isMember ? "bg-gray-100 text-gray-700" : "bg-blue-500 text-white"
+                            }`}
+                          >
+                            {isMember ? "Joined" : "Join"}
+                          </motion.button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="px-3 pb-3 text-xs text-gray-500">No communities found.</div>
+              )}
+            </div>
           )}
         </div>
         {isSearching ? (
@@ -441,11 +642,18 @@ export default function SocialList() {
             <p className="text-sm text-gray-500">No vendors found.</p>
           ) : (
             displayVendors.map((vendor: any) => {
+              const followingRaw = (currentVendor as any)?.following;
+              const followingIds: string[] = Array.isArray(followingRaw)
+                ? followingRaw
+                    .map((f: any) => (typeof f === "string" ? f : f?._id))
+                    .filter(Boolean)
+                : [];
               const isFollowing = Boolean(
                 vendor?.followers?.includes(currentUserId) ||
-                  (currentVendor as any)?.following?.includes?.(vendor?._id)
+                  followingIds.includes(vendor?._id)
               );
-              const isFollowPending = followMutation.isPending;
+              const isFollowPending =
+                followMutation.isPending && pendingFollowId === vendor._id;
 
               return (
                 <motion.div key={vendor._id} layout className="space-y-4">
@@ -503,35 +711,52 @@ export default function SocialList() {
                             : ""
                         }`}
                       >
-                        <AnimatePresence mode="wait">
-                          {isFollowing ? (
-                            <motion.div
-                              key="unfollow"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center space-x-1"
-                            >
+                        {isFollowPending ? (
+                          <motion.div
+                            key="pending"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="flex items-center space-x-1"
+                          >
+                            {pendingFollowAction === "unfollow" ? (
                               <UserMinus className="w-3 h-3" />
-                              <span>
-                                {isFollowPending ? "Updating..." : "Unfollow"}
-                              </span>
-                            </motion.div>
-                          ) : (
-                            <motion.div
-                              key="follow"
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.8 }}
-                              className="flex items-center space-x-1"
-                            >
+                            ) : (
                               <UserPlus className="w-3 h-3" />
-                              <span>
-                                {isFollowPending ? "Following..." : "Follow"}
-                              </span>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                            )}
+                            <span>
+                              {pendingFollowAction === "unfollow"
+                                ? "Unfollowing..."
+                                : "Following..."}
+                            </span>
+                          </motion.div>
+                        ) : (
+                          <AnimatePresence mode="wait">
+                            {isFollowing ? (
+                              <motion.div
+                                key="unfollow"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center space-x-1"
+                              >
+                                <UserMinus className="w-3 h-3" />
+                                <span>Unfollow</span>
+                              </motion.div>
+                            ) : (
+                              <motion.div
+                                key="follow"
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex items-center space-x-1"
+                              >
+                                <UserPlus className="w-3 h-3" />
+                                <span>Follow</span>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        )}
                       </motion.button>
                     </motion.div>
                   </AnimatePresence>
