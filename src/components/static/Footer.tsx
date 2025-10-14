@@ -1,123 +1,129 @@
-import React from "react";
-import { FaFacebookF, FaTwitter, FaInstagram, FaLinkedinIn } from "react-icons/fa";
+import React, { useState } from "react";
+import { FaFacebookF,  FaInstagram, FaLinkedinIn, FaArrowRight } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import Paypal from "@/assets/image/PayPal.png";
 import MasterCard from "@/assets/image/Mastercard.png";
 import Stripe from "@/assets/image/Stripe.png";
 import Visa from "@/assets/image/Visa.png";
-// import ApplePay from "@/assets/image/random-productPay.png";
-import Google from "@/assets/image/GooglePlay.png";
-import AppStore from "@/assets/image/AppStore.png";
 import logo from "@/assets/image/mbbaylogo.png";
 
-const Footer:React.FC = () => {
-  return (
-    <footer className="py-10 text-white bg-black">
-      <div className="container px-6 mx-auto">
-        <div className="mb-8">
-            <img src={logo} alt="/" />
-        </div>
+const Footer: React.FC = () => {
+  const [email, setEmail] = useState("");
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-5 md:text-left">
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      console.log("Subscribed with email:", email);
+      setEmail("");
+    }
+  };
+
+  const links = {
+    support: ["Privacy Policy", "Terms of Use", "FAQ", "Contact"],
+    account: ["My Account", "Login / Register", "Cart", "Wishlist", "Shop"]
+  };
+
+  const socialLinks = [
+    { icon: FaFacebookF, url: "#", label: "Facebook" },
+    { icon: FaXTwitter, url: "https://x.com/@mbaay_com", label: "Twitter" },
+    { icon: FaInstagram, url: "https://www.instagram.com/mbaay_com?igsh=anRpaGpjNjN2aThn ", label: "Instagram" },
+    { icon: FaLinkedinIn, url: "#", label: "LinkedIn" }
+  ];
+
+  return (
+    <footer className="bg-black text-white">
+      <div className="container px-6 mx-auto py-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          {/* Brand & Social */}
+          <div className="lg:col-span-1">
+            <img src={logo} alt="Mbaay" className="h-12 mb-4 brightness-0 invert" />
+            <p className="text-gray-400 text-sm mb-4">
+              Your trusted destination for quality products and exceptional service.
+            </p>
+            <div className="flex space-x-3">
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.url}
+                  className="p-2 bg-gray-800 rounded hover:bg-gray-700 transition-colors"
+                  aria-label={social.label}
+                >
+                  <social.icon className="text-sm" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Links */}
           <div>
-            <h2 className="mb-4 text-xl font-semibold">Subscribe</h2>
-            <p className="mb-4 text-sm">Get 10% off your first order</p>
-            <div className="flex justify-center md:justify-start">
+            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              {links.support.map((link, index) => (
+                <li key={index}>
+                  <a href="#" className="hover:text-orange-500 transition-colors">
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Account */}
+          <div>
+            <h3 className="font-semibold mb-4">Account</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              {links.account.map((link, index) => (
+                <li key={index}>
+                  <a href="#" className="hover:text-orange-500 transition-colors">
+                    {link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h3 className="font-semibold mb-4">Newsletter</h3>
+            <p className="text-gray-400 text-sm mb-3">Get 10% off your first order</p>
+            <form onSubmit={handleSubscribe} className="flex">
               <input
                 type="email"
-                placeholder="Enter your email"
-                className="w-3/4 p-2 text-white bg-gray-800 rounded-l md:w-auto"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your email"
+                className="flex-1 px-3 py-2 bg-gray-800 text-sm rounded-l focus:outline-none focus:ring-1 focus:ring-orange-500"
+                required
               />
-              <button className="p-2 bg-orange-500 rounded-r">
-                &gt;
+              <button
+                type="submit"
+                className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-r transition-colors"
+              >
+                <FaArrowRight className="text-sm" />
               </button>
-            </div>
-          </div>
-
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Support</h2>
-            <p className="text-sm">111 Bijoy Sarani, Dhaka,</p>
-            <p className="text-sm">DH 1515, Bangladesh.</p>
-            <p className="mt-4 text-sm">mbaay.com@gmail.com</p>
-            <p className="text-sm">+88015-88888-9999</p>
-          </div>
-
-
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Account</h2>
-            <ul className="space-y-2 text-sm">
-              <li>My Account</li>
-              <li>Login / Register</li>
-              <li>Cart</li>
-              <li>Wishlist</li>
-              <li>Shop</li>
-            </ul>
-          </div>
-
-
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Quick Link</h2>
-            <ul className="space-y-2 text-sm">
-              <li>Privacy Policy</li>
-              <li>Terms Of Use</li>
-              <li>FAQ</li>
-              <li>Contact</li>
-            </ul>
-          </div>
-
-
-          <div>
-            <h2 className="mb-4 text-xl font-semibold">Download App</h2>
-            <p className="mb-4 text-sm">Save $3 with App New User Only</p>
-            <div className="flex justify-center mb-4 space-x-2 md:justify-start">
-              <img
-                src={Google}
-                alt="Google Play"
-                className="h-10"
-              />
-              <img
-                src={AppStore}
-                alt="App Store"
-                className="h-10"
-              />
-            </div>
-            <div className="flex justify-center space-x-4 text-lg md:justify-start">
-              <FaFacebookF />
-              <FaTwitter />
-              <FaInstagram />
-              <FaLinkedinIn />
-            </div>
+            </form>
           </div>
         </div>
 
-        <div className="mt-8 border-t border-gray-700"></div>   
-        <div className="flex flex-col items-center justify-between px-6 mt-6 space-y-4 text-sm md:flex-row md:space-y-0">
-          <p>© 2024 Mbaay. All Rights Reserved</p>
-          <div className="flex space-x-4">
-            <img
-              src={Paypal}
-              alt="PayPal"
-              className="h-6"
-            />
-            <img
-              src={MasterCard}
-              alt="MasterCard"
-              className="h-6"
-            />
-            <img
-              src={Stripe}
-              alt="Stripe"
-              className="h-6"
-            />
-            <img
-              src={Visa}
-              alt="Visa"
-              className="h-6"
-            />
-            {/* <img
-              src={ApplePay}
-              alt="Apple Pay"
-              className="h-6"
-            /> */}
+        {/* Bottom Section */}
+        <div className="border-t border-gray-800 pt-6">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            {/* Copyright */}
+            <p className="text-gray-400 text-sm">
+              © {new Date().getFullYear()} Mbaay. All rights reserved.
+            </p>
+
+            {/* Payment Methods */}
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-400 text-sm">We accept:</span>
+              <div className="flex space-x-2">
+                <img src={Paypal} alt="PayPal" className="h-5" />
+                <img src={MasterCard} alt="MasterCard" className="h-5" />
+                <img src={Visa} alt="Visa" className="h-5" />
+                <img src={Stripe} alt="Stripe" className="h-5" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
