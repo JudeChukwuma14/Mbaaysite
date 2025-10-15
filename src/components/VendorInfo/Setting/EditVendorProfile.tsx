@@ -12,7 +12,7 @@ import {
   useUploadAvatar,
   useUploadBusinessLogo,
 } from "../../../utils/editvendorApi";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -210,7 +210,6 @@ const getBankLogo = (bankName: string): string => {
     return bankLogos[bankName];
   }
 
-
   // Try partial matches for common variations
   const normalizedBankName = bankName.toLowerCase().trim();
 
@@ -289,6 +288,7 @@ export default function EditVendorProfile() {
   const uploadAvatarMutation = useUploadAvatar();
   const uploadBusinessLogoMutation = useUploadBusinessLogo();
   const createRecipientCodeMutation = useCreateRecipientCode();
+  const queryClient = useQueryClient();
 
   const [profile, setProfile] = useState<VendorProfile>({
     companyName: "",
@@ -499,6 +499,18 @@ export default function EditVendorProfile() {
     }
   }, [showEditDropdown]);
 
+  useEffect(() => {
+    if (uploadAvatarMutation.isSuccess || uploadBusinessLogoMutation.isSuccess) {
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+    }
+  }, [uploadAvatarMutation.isSuccess, uploadBusinessLogoMutation.isSuccess, queryClient]);
+
+  useEffect(() => {
+    if (createRecipientCodeMutation.isSuccess) {
+      queryClient.invalidateQueries({ queryKey: ["vendor"] });
+    }
+  }, [createRecipientCodeMutation.isSuccess, queryClient]);
+
   const saveImageToLocalStorage = (imageData: string, storageKey: string) => {
     if (typeof window !== "undefined") {
       try {
@@ -707,6 +719,7 @@ export default function EditVendorProfile() {
         formData.append("returnPolicy", returnPolicy);
         upload_return_policy(user.token, formData).then((res) => {
           console.log(res);
+          queryClient.invalidateQueries({ queryKey: ["vendor"] });
         });
       }
 
@@ -718,6 +731,8 @@ export default function EditVendorProfile() {
 
       // Clear any existing errors
       setErrors({});
+      
+      await queryClient.invalidateQueries({ queryKey: ["vendor"] });
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile. Please try again.");
@@ -1729,7 +1744,10 @@ export default function EditVendorProfile() {
                         >
                           <option value="">Choose your bank</option>
                           {bankCodes.map((bank) => (
-                            <option key={`${bank.code}-${bank.name}`} value={bank.code}>
+                            <option
+                              key={`${bank.code}-${bank.name}`}
+                              value={bank.code}
+                            >
                               {bank.name} ({bank.type})
                             </option>
                           ))}
