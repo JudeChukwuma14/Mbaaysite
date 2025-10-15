@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { useUnreadChatCount } from "@/hook/userVendorQueries";
 import { logoutVendor } from "@/redux/slices/vendorSlice";
-import Logo from "@/assets/image/mbbaylogo.png";
+import Logo from "@/assets/image/MBLogo.png";
 import { Link } from "react-router-dom";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { IoIosPricetag } from "react-icons/io";
@@ -97,7 +97,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode }) => {
       <div>
         <div className="mb-8 text-2xl font-bold text-orange-500">
           <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
-            <img src={Logo} alt="MbaayLogo" className="w-14" />
+            <img src={Logo} alt="MbaayLogo" className=" w-20" />
           </Link>
         </div>
         <nav className="space-y-1">
