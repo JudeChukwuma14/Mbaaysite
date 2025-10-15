@@ -99,7 +99,7 @@ export default function ProfilePage() {
               <img
                 src={posts?.data?.businessLogo}
                 alt="Profile"
-                className="w-12 h-12 border-2 border-white rounded-lg"
+                className="w-full h-full border-2 border-white rounded-lg"
               />
             ) : (
               <img

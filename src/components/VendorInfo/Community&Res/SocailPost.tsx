@@ -72,6 +72,7 @@ export default function SocialList() {
       queryKey: ["all_comm"],
       queryFn: () => get_all_communities(),
     });
+    console.log("Comm", all_communities)
 
   const { data: searchResults, isFetching: isSearching } = useQuery({
     queryKey: ["search_res", debouncedSearch],
@@ -165,11 +166,9 @@ export default function SocialList() {
 
   const displayCommunities = useMemo(() => {
     const arr = Array.isArray(communitiesSource) ? communitiesSource : [];
-    const filtered = currentUserId
-      ? arr.filter((c: any) => !c?.members?.includes(currentUserId))
-      : arr;
-    return filtered.slice(0, VISIBLE_COUNT);
-  }, [communitiesSource, currentUserId]);
+    // Show both joined and unjoined to allow leaving directly
+    return arr.slice(0, VISIBLE_COUNT);
+  }, [communitiesSource]);
 
   // Enhanced follow mutation with optimistic updates
   const followMutation = useMutation({
@@ -390,6 +389,8 @@ export default function SocialList() {
       queryClient.invalidateQueries({ queryKey: ["search_res"] });
       queryClient.invalidateQueries({ queryKey: ["vendor"] });
       queryClient.invalidateQueries({ queryKey: ["communities"] });
+      // Also refresh the main posts feed so new community posts show immediately
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
     },
   });
 
@@ -554,6 +555,7 @@ export default function SocialList() {
                     const isMember = Array.isArray(c?.members)
                       ? c.members.includes(currentUserId)
                       : false;
+                    const isOwner = c?.admin?._id === user?.vendor?._id;
                     return (
                       <div key={c._id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50">
                         <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
@@ -576,13 +578,18 @@ export default function SocialList() {
                             whileTap={{ scale: 0.98 }}
                             onClick={() => {
                               // do not auto-close dropdown; just toggle membership
-                              handleCommunityToggle(c._id);
+                              if (!isOwner) handleCommunityToggle(c._id);
                             }}
+                            disabled={isOwner}
                             className={`px-2 py-1 text-xs rounded-full ${
-                              isMember ? "bg-gray-100 text-gray-700" : "bg-blue-500 text-white"
+                              isOwner
+                                ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                                : isMember
+                                ? "bg-red-500 text-white"
+                                : "bg-blue-500 text-white"
                             }`}
                           >
-                            {isMember ? "Joined" : "Join"}
+                            {isOwner ? "Owner" : isMember ? "Leave" : "Join"}
                           </motion.button>
                         </div>
                       </div>
@@ -791,6 +798,7 @@ export default function SocialList() {
             <p className="text-sm text-gray-500">No communities found.</p>
           ) : (
             displayCommunities.map((community: any) => {
+               const isOwner = community?.admin?._id === user?.vendor?._id;
               const isMember = community.members.includes(currentUserId);
               const isCommunityPending = communityMutation.isPending;
 
@@ -830,10 +838,12 @@ export default function SocialList() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleCommunityToggle(community._id)}
-                        disabled={isCommunityPending}
+                        disabled={isCommunityPending || isOwner}
                         className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 shrink-0 whitespace-nowrap ${
-                          isMember
-                            ? "bg-gray-100 text-gray-700"
+                           isOwner
+                                ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                                : isMember
+                            ? "bg-red-500 text-white"
                             : "bg-blue-500 text-white"
                         } ${
                           isCommunityPending
@@ -843,15 +853,16 @@ export default function SocialList() {
                       >
                         <AnimatePresence mode="wait">
                           <motion.span
-                            key={isMember ? "joined" : "join"}
+                            key={isOwner ? "Owner" : isMember ? "Leave" : "Join"}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                           >
                             {isCommunityPending
-                              ? "Updating..."
+                              ? "Updating...":
+                              isOwner ? "Owner" 
                               : isMember
-                              ? "Joined"
+                              ? "Leave"
                               : "Join"}
                           </motion.span>
                         </AnimatePresence>

@@ -51,6 +51,7 @@ export default function SocialFeed() {
     const savedLikes = localStorage.getItem("likedPosts");
     return savedLikes ? JSON.parse(savedLikes) : {};
   });
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
@@ -71,6 +72,13 @@ export default function SocialFeed() {
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
   });
+  // Keep post feed in sync when communities change (e.g., user joins/leaves)
+  useEffect(() => {
+    if (!isLoadingCommunities) {
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
+    }
+  }, [communities, isLoadingCommunities, queryClient]);
+  console.log("Commt" ,comm_posts);
 
   // New useQuery for mutual recommendations
   const { data: mutualRecommendations = [], isLoading: isLoadingMutuals } =
@@ -81,7 +89,6 @@ export default function SocialFeed() {
       staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
-  const queryClient = useQueryClient();
   const openInfoModal = (mode: "following" | "followers" | "posts") => {
     setInfoMode(mode);
     setIsInfoOpen(true);
@@ -124,8 +131,13 @@ export default function SocialFeed() {
 
       return { previousPosts };
     },
-    onError: (_, __, context) => {
+    onError: (error, __, context) => {
+      console.error("Error posting reply:", error);
       queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      toast.error("Failed to post reply. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
@@ -171,6 +183,35 @@ export default function SocialFeed() {
       commentId: string;
       text: string;
     }) => comment_on_comment(user?.token, postId, commentId, { text }),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
+      const previousPosts: any = queryClient.getQueryData(["comm_posts"]);
+      queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
+        if (!Array.isArray(oldPosts)) return oldPosts;
+        return oldPosts.map((post: any) => {
+          if (post._id !== variables.postId) return post;
+          const updatedComments = (post.comments || []).map((c: any) => {
+            if (c._id !== variables.commentId) return c;
+            const optimisticReply = {
+              _id: `optimistic-reply-${Date.now()}`,
+              text: variables.text,
+              commenter: { avatar: vendors?.avatar },
+              comment_poster: vendors?.storeName || "You",
+              timestamp: new Date().toISOString(),
+            };
+            return {
+              ...c,
+              replies: [...(c.replies || []), optimisticReply],
+            };
+          });
+          return { ...post, comments: updatedComments };
+        });
+      });
+      return { previousPosts };
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+    },
     onSuccess: async (_, variables) => {
       // Clear the reply input
       setReplyText((prev) => ({
@@ -195,13 +236,6 @@ export default function SocialFeed() {
         autoClose: 3000,
       });
     },
-    onError: (error) => {
-      console.error("Error posting reply:", error);
-      toast.error("Failed to post reply. Please try again.", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-    },
   });
 
   const commentOnPostMutation = useMutation({
@@ -210,6 +244,37 @@ export default function SocialFeed() {
         text,
         userType: "vendors",
       }),
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["comm_posts"] });
+      const previousPosts: any = queryClient.getQueryData(["comm_posts"]);
+      queryClient.setQueryData(["comm_posts"], (oldPosts: any) => {
+        if (!Array.isArray(oldPosts)) return oldPosts;
+        return oldPosts.map((post: any) => {
+          if (post._id !== variables.postId) return post;
+          const optimisticComment = {
+            _id: `optimistic-comment-${Date.now()}`,
+            text: variables.text,
+            commenter: { avatar: vendors?.avatar },
+            comment_poster: vendors?.storeName || "You",
+            timestamp: new Date().toISOString(),
+            replies: [],
+          };
+          return {
+            ...post,
+            comments: [...(post.comments || []), optimisticComment],
+          };
+        });
+      });
+      return { previousPosts };
+    },
+    onError: (error, __, context) => {
+      queryClient.setQueryData(["comm_posts"], context?.previousPosts);
+      console.error("Error posting comment:", error);
+      toast.error("Failed to post comment. Please try again.", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    },
     onSuccess: async () => {
       // Background refresh using refetchQueries instead of invalidateQueries
       await Promise.all([
@@ -223,13 +288,6 @@ export default function SocialFeed() {
       toast.success("Comment created successfully", {
         position: "top-right",
         autoClose: 3000,
-      });
-    },
-    onError: (error) => {
-      console.error("Error posting comment:", error);
-      toast.error("Failed to post comment. Please try again.", {
-        position: "top-right",
-        autoClose: 4000,
       });
     },
   });
@@ -513,7 +571,7 @@ export default function SocialFeed() {
 
               return (
                 <motion.div
-                  key={post?.id}
+                  key={post?._id}
                   className="p-4 bg-white rounded-lg shadow"
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -620,16 +678,16 @@ export default function SocialFeed() {
                         exit={{ opacity: 0, y: -20 }}
                       >
                         <div className="flex items-start gap-2">
-                          {!comment?.commenter?.avatar ? (
+                          {!post?.poster?.avatar ? (
                             <div className="w-[40px] h-[40px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                              {comment?.comment_poster
+                              {post?.poster?.storeName
                                 ?.charAt(0)
                                 ?.toUpperCase() || "U"}
                             </div>
                           ) : (
                             <img
                               src={
-                                comment?.commenter?.avatar || "/placeholder.svg"
+                                post?.poster?.avatar || "/placeholder.svg"
                               }
                               alt="Commenter"
                               className="w-10 h-10 rounded-full"
