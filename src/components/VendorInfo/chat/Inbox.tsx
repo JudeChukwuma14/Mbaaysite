@@ -1825,11 +1825,10 @@ export default function ChatInterface() {
         });
         setActiveChat(result._id);
       } catch (error) {
-        showFeedback("Failed to start new chat");
         console.error("Error creating new chat:", error);
       }
     },
-    [user.token, showFeedback]
+    [user.token]
   );
 
   // Video player handlers
