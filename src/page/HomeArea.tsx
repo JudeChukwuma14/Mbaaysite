@@ -1,15 +1,15 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import Slider from "@/components/Slider";
 import NewCard from "@/components/Cards/NewCard";
 import VendorCard from "@/components/VendorCard";
-import AuctionCard from "@/components/AuctionPage/AuctionCard";
+// import AuctionCard from "@/components/AuctionPage/AuctionCard";
 import FlashSaleCountdown from "@/components/FlashSales/FlashSale";
 import ProductSlider from "@/components/FlashSales/FlashSalesSlide";
 import NewArrival from "@/components/Cards/NewArrival";
 import { flashSale } from "@/components/mockdata/data";
-import { getAllProduct, getAuctionProduct } from "@/utils/productApi";
+import { getAllProduct } from "@/utils/productApi";
 import { getAllVendor } from "@/utils/vendorApi";
 import sev1 from "../assets/image/Services.png";
 import sev2 from "../assets/image/Services-1.png";
@@ -21,7 +21,8 @@ const CategoriesSection = lazy(
 
 import BestSellingCard from "@/components/Cards/BestSellingCard";
 import CategoriesSectionSkeleton from "@/components/skeletons/CategoriesSectionSkeleton";
-import AuctionCardSkeleton from "@/components/AuctionPage/AuctionCardSkeleton";
+// import AuctionCardSkeleton from "@/components/AuctionPage/AuctionCardSkeleton";
+
 
 interface Product {
   _id: string;
@@ -58,8 +59,8 @@ const HomeArea: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [getVender, setGetVendor] = useState<VendorProfile[]>([]);
-  const [auctionProducts, setAuctionProducts] = useState<any[]>([]);
-  const [auctionLoading, setAuctionLoading] = useState<boolean>(true);
+  // const [auctionProducts, setAuctionProducts] = useState<any[]>([]);
+  // const [auctionLoading, setAuctionLoading] = useState<boolean>(true);
 
   const createInitialAvatar = (name: string) => {
     const firstLetter = name.trim().charAt(0).toUpperCase();
@@ -141,22 +142,22 @@ const HomeArea: React.FC = () => {
     getVendor();
   }, []);
 
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      setAuctionLoading(true);
-      try {
-        const result = await getAuctionProduct();
-        console.log(result);
-        // result should be an array of auction products
-        setAuctionProducts(Array.isArray(result) ? result : result.data || []);
-      } catch (err) {
-        console.error("Error fetching auctions:", err);
-      } finally {
-        setAuctionLoading(false);
-      }
-    };
-    fetchAuctions();
-  }, []);
+  // useEffect(() => {
+  //   const fetchAuctions = async () => {
+  //     setAuctionLoading(true);
+  //     try {
+  //       const result = await getAuctionProduct();
+  //       console.log(result);
+  //       // result should be an array of auction products
+  //       setAuctionProducts(Array.isArray(result) ? result : result.data || []);
+  //     } catch (err) {
+  //       console.error("Error fetching auctions:", err);
+  //     } finally {
+  //       setAuctionLoading(false);
+  //     }
+  //   };
+  //   fetchAuctions();
+  // }, []);
 
   if (error) {
     return (
@@ -362,7 +363,7 @@ const HomeArea: React.FC = () => {
       {/* Second Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">
-          <NewCard />
+            <NewCard />
         </div>
       </section>
 
@@ -389,7 +390,7 @@ const HomeArea: React.FC = () => {
       </section>
 
       {/* Auction */}
-      <section className="container px-4 mx-auto mb-16 md:px-8">
+      {/* <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="flex items-center mb-3">
           <div className="w-1 h-6 mr-3 bg-orange-500 rounded-full"></div>
           <span className="font-medium text-orange-500">Bid Now</span>
@@ -436,7 +437,7 @@ const HomeArea: React.FC = () => {
             View All Auctions
           </NavLink>
         </div>
-      </section>
+      </section> */}
 
       {/* Services */}
       <section className="px-4 py-16 bg-white md:px-8">

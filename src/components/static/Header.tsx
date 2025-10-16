@@ -11,7 +11,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState } from "@/redux/store";
 import Logo from "../../assets/image/MBLogo.png";
-import { getAuctionProduct, searchProducts } from "@/utils/productApi";
+import { searchProducts } from "@/utils/productApi";
 import { useTranslation } from "react-i18next";
 import i18next from "@/utils/i18n";
 import { setSettings } from "@/redux/slices/settingsSlice";
@@ -36,7 +36,7 @@ const Header: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
-  const [hasLiveAuction, setHasLiveAuction] = useState(false);
+  // const [hasLiveAuction, setHasLiveAuction] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const countryDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -100,22 +100,22 @@ const Header: React.FC = () => {
   const toggleMenu = () => setMenuOpen(!menuOpen);
   const toggleSearch = () => setSearchOpen(!searchOpen);
 
-  useEffect(() => {
-    const fetchAuctions = async () => {
-      try {
-        const result = await getAuctionProduct();
-        const auctions = Array.isArray(result) ? result : result.data || [];
-        const now = new Date();
-        const live = auctions.some(
-          (auction: any) => new Date(auction.auctionEndDate) > now
-        );
-        setHasLiveAuction(live);
-      } catch (error) {
-        setHasLiveAuction(false);
-      }
-    };
-    fetchAuctions();
-  }, []);
+  // useEffect(() => {
+  //   const fetchAuctions = async () => {
+  //     try {
+  //       const result = await getAuctionProduct();
+  //       const auctions = Array.isArray(result) ? result : result.data || [];
+  //       const now = new Date();
+  //       const live = auctions.some(
+  //         (auction: any) => new Date(auction.auctionEndDate) > now
+  //       );
+  //       setHasLiveAuction(live);
+  //     } catch (error) {
+  //       setHasLiveAuction(false);
+  //     }
+  //   };
+  //   fetchAuctions();
+  // }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -265,7 +265,7 @@ const Header: React.FC = () => {
               Community
             </Link>
           )}
-          <Link
+          {/* <Link
             to="/auctionlist"
             className="relative text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500 flex items-center"
           >
@@ -275,7 +275,7 @@ const Header: React.FC = () => {
                 LIVE
               </span>
             )}
-          </Link>
+          </Link> */}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -497,7 +497,7 @@ const Header: React.FC = () => {
                 Community
               </Link>
             )}
-            <Link
+            {/* <Link
               to="/auctionlist"
               className="flex items-center px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
               onClick={toggleMenu}
@@ -508,7 +508,7 @@ const Header: React.FC = () => {
                   LIVE
                 </span>
               )}
-            </Link>
+            </Link> */}
             <Link
               to="/dashboard/wishlist"
               className="flex items-center gap-2 px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500 md:hidden"

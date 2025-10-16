@@ -11,7 +11,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   LogOutIcon,
-  NotebookIcon,
   Wallet,
   MessagesSquare,
 } from "lucide-react";
@@ -44,11 +43,6 @@ const sidebarLayout: SidebarItem[] = [
     urlLink: "/dashboard/checkout",
   },
   {
-    icons: <NotebookIcon size={20} />,
-    label: "Addresses",
-    urlLink: "/dashboard/addresses",
-  },
-  {
     icons: <MessagesSquare size={20} />,
     label: "Messages",
     urlLink: "/dashboard/messages",
@@ -58,7 +52,7 @@ const sidebarLayout: SidebarItem[] = [
     label: "Order",
     children: [
       { title: "Order List", link: "/dashboard/orderlist" },
-      // { title: "Order Detail", link: "/dashboard/orderdetail" },
+  
       { title: "Cancellation Order", link: "/dashboard/canclellation" },
       { title: "Review", link: "/dashboard/review" },
     ],
