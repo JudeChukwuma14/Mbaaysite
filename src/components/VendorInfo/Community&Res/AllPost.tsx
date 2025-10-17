@@ -678,16 +678,16 @@ export default function SocialFeed() {
                         exit={{ opacity: 0, y: -20 }}
                       >
                         <div className="flex items-start gap-2">
-                          {!post?.poster?.avatar ? (
+                          {!comment?.user?.avatar ? (
                             <div className="w-[40px] h-[40px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                              {post?.poster?.storeName
+                              {comment?.user?.storeName
                                 ?.charAt(0)
                                 ?.toUpperCase() || "U"}
                             </div>
                           ) : (
                             <img
                               src={
-                                post?.poster?.avatar || "/placeholder.svg"
+                                comment?.user?.avatar || "/placeholder.svg"
                               }
                               alt="Commenter"
                               className="w-10 h-10 rounded-full"

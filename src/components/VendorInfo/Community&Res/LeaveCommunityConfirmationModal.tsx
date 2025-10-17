@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface LeaveConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
 export default function LeaveConfirmationModal({
@@ -16,11 +17,26 @@ export default function LeaveConfirmationModal({
   onConfirm,
 }: LeaveConfirmationModalProps) {
   const { communityid } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: one_community } = useQuery({
     queryKey: ["one_community"],
     queryFn: () => get_one_community(communityid),
   });
+
+  const handleConfirmClick = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      await onConfirm();
+    } catch (e: any) {
+      const message = e?.message || "Failed to leave community";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -57,18 +73,25 @@ export default function LeaveConfirmationModal({
                   <p className="ml-2">community?</p>
                 </div>
               </div>
+              {error && (
+                <div className="mt-3 text-sm text-red-600">{error}</div>
+              )}
               <div className="flex justify-end gap-4 mt-4">
                 <button
                   onClick={onClose}
+                  disabled={loading}
                   className="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-200 rounded-lg hover:bg-gray-300"
                 >
                   No
                 </button>
                 <button
-                  onClick={onConfirm}
-                  className="px-6 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
+                  onClick={handleConfirmClick}
+                  disabled={loading}
+                  className={`px-6 py-2 text-sm font-medium text-white transition-colors rounded-lg ${
+                    loading ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
-                  Yes
+                  {loading ? "Leaving..." : "Yes"}
                 </button>
               </div>
             </div>

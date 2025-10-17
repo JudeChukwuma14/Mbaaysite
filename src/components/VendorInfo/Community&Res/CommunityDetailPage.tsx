@@ -1,12 +1,12 @@
 import { motion } from "framer-motion";
-import { PenSquare, MessageSquare, FileText, Users } from "lucide-react";
+import { PenSquare, MessageSquare, FileText, Users, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { RiCommunityLine } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete, MdOutlineRateReview } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
-import { get_one_community } from "@/utils/communityApi";
-import { useParams } from "react-router-dom";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { get_one_community, leave_community } from "@/utils/communityApi";
+import { useNavigate, useParams } from "react-router-dom";
 import CreatePostcommModal from "./CreatePostcommModal";
 import { useSelector } from "react-redux";
 import moment from "moment";
@@ -25,6 +25,7 @@ export default function ProfilePage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
   const [isReportModelOpen, setIsReportModelOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleEditSave = (
     name: string,
@@ -40,11 +41,23 @@ export default function ProfilePage() {
     // You'll need to implement the API call to delete the community here
   };
 
+  const handleLeaveCommunity = async () => {
+    try {
+      await leave_community(user?.token || null, communityid);
+      setIsLeaveModalOpen(false);
+      navigate("/app/my-community");
+      queryClient.invalidateQueries({ queryKey: ["one_community", communityid] });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const { communityid } = useParams();
   const user = useSelector((state: any) => state.vendor);
+  const queryClient = useQueryClient();
 
   const { data: one_community, isLoading } = useQuery({
-    queryKey: ["one_community"],
+    queryKey: ["one_community", communityid],
     queryFn: () => get_one_community(communityid),
   });
 
@@ -86,6 +99,14 @@ export default function ProfilePage() {
         <>
           {/* Banner with Logo */}
           <div className="relative h-32 overflow-hidden bg-black border rounded-xl">
+            <button
+              type="button"
+              aria-label="Go back"
+              onClick={() => navigate(-1)}
+              className="absolute top-3 left-3 p-2 bg-white/80 hover:bg-white rounded-full shadow"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
             <img
               src={one_community?.community_Images}
               alt="banner"
@@ -295,6 +316,9 @@ export default function ProfilePage() {
             <CreatePostcommModal
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ["one_community", communityid] });
+              }}
             />
             <ReportModel
               isOpen={isReportModelOpen}
@@ -323,11 +347,10 @@ export default function ProfilePage() {
             <LeaveConfirmationModal
               isOpen={isLeaveModalOpen}
               onClose={() => setIsLeaveModalOpen(false)}
-              onConfirm={handleDelete}
+              onConfirm={handleLeaveCommunity}
             />
           </div>
         </>
       )}
     </div>
-  );
-}
+  )}

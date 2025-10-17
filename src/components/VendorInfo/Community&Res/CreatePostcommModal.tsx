@@ -18,6 +18,7 @@ import { RootState } from "@/redux/store";
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 interface TaggedUser {
@@ -39,6 +40,7 @@ interface Suggestion {
 export default function CreatePostcommModal({
   isOpen,
   onClose,
+  onSuccess,
 }: CreatePostModalProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -169,6 +171,7 @@ export default function CreatePostcommModal({
       setTaggedUsers((prev) => [...prev, newTag]);
     setTagInput("");
     setShowSuggestions(false);
+    setShowTagInput(false);
   };
 
   const removeTag = (id: string) =>
@@ -216,9 +219,9 @@ export default function CreatePostcommModal({
         formData.append("posts_Images", image);
       });
 
-      taggedUsers.forEach((user) => {
-        formData.append("tags", user._id);
-      });
+      // API expects tags as a JSON array (per error message)
+      const tagIds = taggedUsers.map((u) => u._id);
+      formData.append("tags", JSON.stringify(tagIds));
 
       const token = user?.token || null;
       await createPost(formData, token);
@@ -228,12 +231,13 @@ export default function CreatePostcommModal({
         autoClose: 4000,
       });
 
-      window.location.reload();
+      // window.location.reload();
 
       setContent("");
       setImages([]);
       setImagesPreviews([]);
       setTaggedUsers([]);
+      if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       toast.error("Failed to post. Please try again.", {
