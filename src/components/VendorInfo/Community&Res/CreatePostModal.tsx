@@ -298,7 +298,7 @@ export default function CreatePostModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[5%] md:left-[35%] md:max-w-lg w-full md:-translate-x-[50%] bg-white rounded-xl shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh] md:max-h-[85vh]"
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[5%] md:left-[35%] md:max-w-lg w-full md:-translate-x-[50%] bg-white rounded-xl shadow-xl overflow-hidden overflow-x-hidden z-50 flex flex-col max-h-[80vh] md:max-h-[85vh]"
           >
             <div className="p-4 border-b">
               <motion.button
@@ -329,8 +329,8 @@ export default function CreatePostModal({
                     />
                   )}
                   <div>
-                    <h3 className="font-semibold">{posts?.data?.storeName}</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="font-semibold break-words">{posts?.data?.storeName}</h3>
+                    <p className="text-sm text-gray-600 break-words">
                       {posts?.data?.craftCategories?.[0]}
                     </p>
                   </div>

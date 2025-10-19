@@ -75,7 +75,7 @@ export default function SubscriptionFailed() {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-red-50 to-white">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-red-50 to-white overflow-x-hidden max-w-full">
       <div className="w-full max-w-md overflow-hidden bg-white shadow-xl rounded-2xl">
         {/* Header */}
         <div className="p-6 text-center bg-red-500">
@@ -119,7 +119,7 @@ export default function SubscriptionFailed() {
                 <div className="mb-1 text-sm font-medium text-red-800">
                   {errorCode}
                 </div>
-                <div className="text-sm text-red-600">{errorMessage}</div>
+                <div className="text-sm text-red-600 break-words">{errorMessage}</div>
               </div>
             </div>
           </motion.div>

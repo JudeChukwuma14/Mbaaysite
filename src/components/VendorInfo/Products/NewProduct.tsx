@@ -642,7 +642,7 @@ const NewProduct = () => {
 
   return (
     <motion.div
-      className="min-h-screen p-6 space-y-6 bg-gray-100"
+      className="min-h-screen p-4 sm:p-6 space-y-6 bg-gray-100 overflow-x-hidden max-w-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -652,8 +652,8 @@ const NewProduct = () => {
         showBankAccountPopup={showBankAccountPopup}
         setShowBankAccountPopup={setShowBankAccountPopup}
       />
-      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow flex-wrap gap-3">
+        <div className="flex items-center gap-4 flex-wrap">
           <h1 className="text-2xl font-bold">New Product</h1>
 
           {/* Category Dropdown - only show if vendor has multiple categories */}

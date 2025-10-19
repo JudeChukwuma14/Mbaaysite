@@ -39,17 +39,17 @@ const Reviews = () => {
   ];
 
   return (
-    <div className="min-h-screen p-6 font-sans bg-white">
+    <div className="min-h-screen p-6 font-sans bg-white overflow-x-hidden max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <h2 className="text-2xl font-bold">Reviews</h2>
-        <select className="px-3 py-1 text-sm border rounded-md">
+        <select className="px-3 py-1 text-sm border rounded-md w-full sm:w-auto">
           <option>March 2024 – February 2025</option>
         </select>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         <div className="p-4 text-center shadow-sm bg-gray-50 rounded-xl">
           <p className="text-sm text-gray-500">Total Reviews</p>
           <p className="text-3xl font-bold">{stats.totalReviews}</p>
@@ -100,7 +100,7 @@ const Reviews = () => {
         {reviews.map((review) => (
           <div
             key={review.id}
-            className="flex gap-4 p-4 shadow-sm bg-gray-50 rounded-xl"
+            className="flex flex-col sm:flex-row gap-4 p-4 shadow-sm bg-gray-50 rounded-xl"
           >
             {/* Avatar */}
             <img
@@ -111,7 +111,7 @@ const Reviews = () => {
 
             {/* Content */}
             <div className="flex-1">
-              <p className="font-semibold">{review.name}</p>
+              <p className="font-semibold break-words">{review.name}</p>
               <p className="text-sm text-gray-500">
                 Total purchases: {review.purchases}
               </p>
@@ -134,9 +134,9 @@ const Reviews = () => {
                 <span className="text-xs text-gray-400">{review.date}</span>
               </div>
 
-              <p className="mt-2 text-sm text-gray-600">{review.text}</p>
+              <p className="mt-2 text-sm text-gray-600 break-words">{review.text}</p>
 
-              <div className="flex items-center gap-4 mt-3">
+              <div className="flex items-center gap-4 mt-3 flex-wrap">
                 <button className="px-3 py-1 text-sm border rounded hover:bg-gray-100">
                   Public Comment
                 </button>
@@ -159,14 +159,14 @@ const Reviews = () => {
                 </button>
               </div>
               {activeReply === review.id && (
-                <div className="flex gap-3 p-3 mt-4 bg-gray-100 rounded-lg">
+                <div className="flex flex-col sm:flex-row gap-3 p-3 mt-4 bg-gray-100 rounded-lg">
                   <img
                     src={review.avatar}
                     alt={review.name}
                     className="object-cover w-10 h-10 rounded-full"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
                       <p className="text-sm">
                         Replying to{" "}
                         <span className="font-semibold">{review.name}</span>
@@ -174,7 +174,7 @@ const Reviews = () => {
                       <select
                         value={replyType}
                         onChange={(e) => setReplyType(e.target.value)}
-                        className="px-2 py-1 text-sm bg-white border rounded"
+                        className="px-2 py-1 text-sm bg-white border rounded w-full sm:w-auto"
                       >
                         <option>Private</option>
                         <option>Public</option>

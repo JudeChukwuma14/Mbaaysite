@@ -112,9 +112,9 @@ const AllProduct: React.FC = () => {
   };
 
   return (
-    <main className="p-5">
+    <main className="p-4 sm:p-5 overflow-x-hidden max-w-full">
       <motion.div
-        className="flex justify-between items-center mb-5"
+        className="flex justify-between items-center mb-5 flex-wrap gap-3"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -127,19 +127,19 @@ const AllProduct: React.FC = () => {
         </NavLink>
       </motion.div>
 
-      <div className="grid grid-cols-3 gap-5 mb-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-5">
         <motion.div
-          className="col-span-2 bg-white p-5 rounded-lg shadow"
+          className="md:col-span-2 bg-white p-5 rounded-lg shadow"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          style={{ maxWidth: "400px", maxHeight: "400px" }} // Reduced size
+          style={{ maxWidth: "100%", maxHeight: "400px" }} // Responsive size
         >
           <Doughnut data={chartData} options={{ maintainAspectRatio: true }} />
         </motion.div>
       </div>
 
-      <div className="flex items-center gap-3 mb-5">
+      <div className="flex items-center gap-3 mb-5 flex-wrap">
         <motion.select
           className="border p-2 rounded outline-orange-500 border-orange-500"
           value={category}
@@ -170,62 +170,104 @@ const AllProduct: React.FC = () => {
         <input
           type="text"
           placeholder="Search Product..."
-          className="border p-2 flex-1 rounded border-orange-500 outline-orange-500"
+          className="border p-2 flex-1 min-w-[200px] rounded border-orange-500 outline-orange-500"
         />
       </div>
 
-      <motion.table
-        className="w-full bg-white rounded-lg shadow overflow-hidden"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="text-left p-3">Product Name</th>
-            <th className="text-left p-3">Category</th>
-            <th className="text-left p-3">Sub-Category</th>
-            <th className="text-left p-3">Amount</th>
-            <th className="text-left p-3">Stock</th>
-            <th className="text-left p-3">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedProducts?.map((product: Product, index: number) => (
-            <motion.tr
-              key={product._id}
-              className="hover:bg-gray-50 cursor-pointer"
-              onClick={() => handleProductClick(product, product._id)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-            >
-              <td className="p-3">{product.name}</td>
-              <td className="p-3">{product.category}</td>
-              <td className="p-3">{product.sub_category}</td>
-              <td className="p-3">{product.price}</td>
-              <td
-                className={`p-3 ${
-                  product.inventory <= 0
-                    ? "text-red-500"
-                    : product.inventory < 10
-                    ? "text-amber-500"
-                    : "text-green-500"
-                }`}
-              >
-                {product.inventory <= 0
-                  ? "Out of Stock"
-                  : product.inventory < 10
-                  ? "Low Stock"
-                  : "In Stock"}
-              </td>
-              <td className="p-3">{product.createdAt.split("T")[0]}</td>
-            </motion.tr>
-          ))}
-        </tbody>
-      </motion.table>
+      {/* Mobile list */}
+      <div className="md:hidden space-y-3">
+        {paginatedProducts?.map((product: Product, index: number) => (
+          <motion.div
+            key={product._id}
+            className="p-4 bg-white rounded-lg shadow border border-gray-100"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 + index * 0.05 }}
+            onClick={() => handleProductClick(product, product._id)}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <div className="font-semibold truncate" title={product.name}>{product.name}</div>
+              <div className="text-sm text-gray-500">{product.createdAt.split("T")[0]}</div>
+            </div>
+            <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+              <div>
+                <div className="text-xs text-gray-500">Category</div>
+                <div className="truncate" title={product.category}>{product.category}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Sub-Category</div>
+                <div className="truncate" title={product.sub_category}>{product.sub_category}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Amount</div>
+                <div>{product.price}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Stock</div>
+                <div className={`${product.inventory <= 0 ? "text-red-500" : product.inventory < 10 ? "text-amber-500" : "text-green-500"}`}>
+                  {product.inventory <= 0 ? "Out of Stock" : product.inventory < 10 ? "Low Stock" : "In Stock"}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
-      <div className="flex justify-between items-center mt-4">
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
+        <motion.table
+          className="w-full bg-white rounded-lg shadow overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="text-left p-3">Product Name</th>
+              <th className="text-left p-3">Category</th>
+              <th className="text-left p-3">Sub-Category</th>
+              <th className="text-left p-3">Amount</th>
+              <th className="text-left p-3">Stock</th>
+              <th className="text-left p-3">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedProducts?.map((product: Product, index: number) => (
+              <motion.tr
+                key={product._id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleProductClick(product, product._id)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 + index * 0.1 }}
+              >
+                <td className="p-3">{product.name}</td>
+                <td className="p-3">{product.category}</td>
+                <td className="p-3">{product.sub_category}</td>
+                <td className="p-3">{product.price}</td>
+                <td
+                  className={`p-3 ${
+                    product.inventory <= 0
+                      ? "text-red-500"
+                      : product.inventory < 10
+                      ? "text-amber-500"
+                      : "text-green-500"
+                  }`}
+                >
+                  {product.inventory <= 0
+                    ? "Out of Stock"
+                    : product.inventory < 10
+                    ? "Low Stock"
+                    : "In Stock"}
+                </td>
+                <td className="p-3">{product.createdAt.split("T")[0]}</td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </motion.table>
+      </div>
+
+      <div className="flex justify-between items-center mt-4 flex-wrap gap-3">
         <button
           onClick={handlePrev}
           disabled={currentPage === 1}

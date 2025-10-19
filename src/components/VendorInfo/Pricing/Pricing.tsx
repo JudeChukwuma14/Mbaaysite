@@ -315,7 +315,7 @@ export default function UpgradePage() {
   const upgradeInfo = getUpgradeInfo();
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background overflow-x-hidden max-w-full">
       <ToastContainer />
       <main className="flex-1">
         {/* Header */}
@@ -446,10 +446,10 @@ export default function UpgradePage() {
                   <div className="space-y-3 mb-6">
                     {plan.features.map((feature, featureIndex) => (
                       <div key={featureIndex} className="flex items-start gap-3">
-                        <div className={`mt-0.5 ${feature.included ? "text-primary" : "text-muted-foreground"}`}>
+                        <div className={`${feature.included ? "text-primary" : "text-muted-foreground"} mt-0.5`}>
                           <Check className="w-5 h-5" />
                         </div>
-                        <span className={`text-base ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}>
+                        <span className={`text-base break-words ${feature.included ? "text-foreground" : "text-muted-foreground line-through"}`}>
                           {feature.name}
                         </span>
                       </div>

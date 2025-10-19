@@ -62,7 +62,7 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="max-w-4xl min-h-screen mx-auto bg-white">
+    <div className="max-w-4xl min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
       {isLoading ? (
         <div className="px-6 pt-6">
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -118,7 +118,7 @@ export default function ProfilePage() {
           <div className="px-6 pt-8">
             <div className="space-y-1">
               {/*main Holder For Community Name and Created By*/}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-3">
                 {/* Community Name and Created By*/}
                 <div className="flex items-center gap-2">
                   <h2>Community</h2>
@@ -127,13 +127,13 @@ export default function ProfilePage() {
                 {/*  Created By*/}
                 <div className="flex items-center gap-2">
                   <h2>Created by:</h2>
-                  <span>{one_community?.admin?.storeName}</span>
+                  <span className="break-words">{one_community?.admin?.storeName}</span>
                 </div>
               </div>
-              <div className="flex items-center">
-                <h2 className="text-xl font-semibold">{one_community?.name}</h2>
+              <div className="flex items-center flex-wrap gap-3">
+                <h2 className="text-xl font-semibold break-words">{one_community?.name}</h2>
                 {one_community?.admin._id === user.vendor._id ? (
-                  <div className="flex items-center justify-between gap-3 ml-7">
+                  <div className="flex items-center justify-between gap-3">
                     <CiEdit
                       size={20}
                       className="text-blue-600 cursor-pointer"
@@ -148,12 +148,12 @@ export default function ProfilePage() {
                 ) : null}
               </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
-                <span className="w-[600px]">{one_community?.description}</span>
+                <span className="break-words">{one_community?.description}</span>
               </div>
             </div>
 
             {/* Stats */}
-            <div className="flex gap-3 mt-4">
+            <div className="flex gap-3 mt-4 flex-wrap">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex-1 p-2 bg-white border shadow-sm rounded-xl"
@@ -185,7 +185,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3 mt-4">
+            <div className="flex items-center gap-3 mt-4 flex-wrap">
               <button className="px-6 py-2 text-sm font-medium rounded-full bg-gray-50">
                 Posts
               </button>
@@ -200,12 +200,12 @@ export default function ProfilePage() {
                   Create Post
                 </motion.button>
               ) : (
-                <div className="flex gap-[20px]">
+                <div className="flex gap-3 flex-wrap">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setIsLeaveModalOpen(true)}
-                    className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[red] text-white py-2  text-sm"
+                    className="min-w-[160px] px-4 h-[44px] flex items-center justify-center gap-2 bg-[red] text-white py-2 text-sm rounded-full"
                   >
                     <IoIosLogOut size={20} />
                     Leave Community
@@ -214,7 +214,7 @@ export default function ProfilePage() {
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setIsReportModelOpen(true)}
-                    className="w-[200px] h-[50px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2  text-sm"
+                    className="min-w-[160px] px-4 h-[44px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 text-sm rounded-full"
                   >
                     <VscReport size={20} />
                     Report Community
@@ -224,7 +224,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Posts Grid */}
-            <div className="grid grid-cols-2 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               {one_community?.communityPosts?.map((props: any) => (
                 <motion.div
                   key={props?.id}
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="p-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
                       <div className="flex items-center gap-1">
                         <FileText className="w-4 h-4" />
                         {props?.createdTime.split("T")[0]}
@@ -278,10 +278,10 @@ export default function ProfilePage() {
                         {moment(props?.createdTime).fromNow()}
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-2 break-words">
                       {props?.content}
                     </p>
-                    <div className="flex items-center gap-4 mt-3">
+                    <div className="flex items-center gap-4 mt-3 flex-wrap">
                       <div className="flex items-center gap-1">
                         <motion.button
                           whileHover={{ scale: 1.1 }}

@@ -241,7 +241,7 @@ const OrderDetailsPage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen p-5 bg-gray-100">
+      <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-3">
             <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
@@ -257,7 +257,7 @@ const OrderDetailsPage = () => {
   // Error state
   if (isError || !order) {
     return (
-      <main className="min-h-screen p-5 bg-gray-100">
+      <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <AlertCircle className="w-16 h-16 text-red-500" />
           <div className="text-center">
@@ -300,9 +300,9 @@ const OrderDetailsPage = () => {
   );
 
   return (
-    <main className="min-h-screen p-5 bg-gray-100">
+    <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div className="flex items-center gap-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -314,7 +314,7 @@ const OrderDetailsPage = () => {
           </motion.button>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
-            <p className="text-gray-600">Order #{order._id}</p>
+            <p className="text-gray-600 break-all">Order #{order._id}</p>
           </div>
         </div>
       </div>
@@ -323,7 +323,7 @@ const OrderDetailsPage = () => {
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+        className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
         {/* Map and Delivery Status */}
         <div className="relative p-5 bg-white rounded-lg shadow lg:col-span-2">
@@ -462,7 +462,7 @@ const OrderDetailsPage = () => {
                     <h4 className="font-bold text-gray-800">
                       {order.product?.name || "Unknown Product"}
                     </h4>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 break-all">
                       Product ID: {order.product?._id || "N/A"}
                     </p>
                   </div>

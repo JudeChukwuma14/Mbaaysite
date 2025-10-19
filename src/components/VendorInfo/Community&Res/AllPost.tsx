@@ -532,14 +532,16 @@ export default function SocialFeed() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto grid grid-cols-1 md:grid-cols-[280px_1fr_280px] gap-6 p-4 h-screen">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6 p-4 min-h-screen">
         {/* Left Sidebar */}
-        <SocialList />
+        <div className="order-3 lg:order-1">
+          <SocialList />
+        </div>
 
         {/* Main Content */}
         <motion.div
-          className="space-y-6 overflow-y-auto max-h-[calc(100vh-2rem)]"
+          className="order-2 lg:order-2 space-y-6 overflow-visible lg:overflow-y-auto lg:max-h-[calc(100vh-2rem)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -577,7 +579,7 @@ export default function SocialFeed() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                     <div className="flex gap-3">
                       {!post?.community ? (
                         <>
@@ -609,17 +611,17 @@ export default function SocialFeed() {
                         {!post?.community ? (
                           <>
                             {post?.posterType === "vendors" ? (
-                              <h3 className="font-semibold">
+                              <h3 className="font-semibold break-words">
                                 {post?.poster?.storeName}
                               </h3>
                             ) : (
-                              <h3 className="font-semibold">
+                              <h3 className="font-semibold break-words">
                                 {post?.poster?.name || post?.poster?.storeName}
                               </h3>
                             )}
                           </>
                         ) : (
-                          <h3 className="font-semibold">
+                          <h3 className="font-semibold break-words">
                             {post?.community?.name}
                           </h3>
                         )}
@@ -639,7 +641,7 @@ export default function SocialFeed() {
                     ></motion.button>
                   </div>
 
-                  <p className="mb-4 text-sm">{post?.content}</p>
+                  <p className="mb-4 text-sm break-words">{post?.content}</p>
 
                   {/* Display Tags */}
                   {post?.tags &&
@@ -650,7 +652,7 @@ export default function SocialFeed() {
                   {post?.posts_Images?.length > 0 &&
                     renderImages(post.posts_Images)}
 
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm text-gray-500 flex-wrap">
                     <motion.button
                       onClick={() => handleLikeToggle(post._id, isLiked)}
                       className="flex items-center gap-1 hover:text-red-500"
@@ -697,8 +699,8 @@ export default function SocialFeed() {
                             <p className="text-sm font-medium">
                               {comment?.comment_poster}
                             </p>
-                            <p className="text-sm">{comment?.text}</p>
-                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
+                            <p className="text-sm break-words">{comment?.text}</p>
+                            <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 flex-wrap">
                               <span>
                                 {moment(comment?.timestamp).fromNow()}
                               </span>
@@ -974,8 +976,9 @@ export default function SocialFeed() {
         </motion.div>
 
         {/* Right Sidebar */}
-        <div className="max-w-md min-h-screen mx-auto bg-gray-100">
-          <motion.div
+        <div className="order-1 lg:order-3 w-full lg:max-w-md lg:min-h-screen mx-auto bg-gray-100"
+        >
+  <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-4 bg-white shadow-sm"

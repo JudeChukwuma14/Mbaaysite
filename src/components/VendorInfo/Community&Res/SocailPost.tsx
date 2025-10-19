@@ -453,7 +453,7 @@ export default function SocialList() {
   };
 
   return (
-    <div className="flex flex-col w-full h-screen max-w-md mx-auto overflow-x-hidden bg-white">
+    <div className="flex flex-col w-full h-auto md:h-screen max-w-md mx-auto overflow-x-hidden bg-white max-w-full">
       {/* Search Bar */}
       <div className="p-4 bg-white">
         <div ref={searchWrapRef} className="relative mb-2">
@@ -503,7 +503,7 @@ export default function SocialList() {
                           className="flex items-center gap-3 min-w-0 flex-1"
                           onClick={() => setShowSearchDropdown(false)}
                         >
-                          <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
+                          <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center shrink-0">
                             {v?.avatar || v?.businessLogo ? (
                               <img
                                 src={(v?.avatar || v?.businessLogo) as string}
@@ -619,7 +619,7 @@ export default function SocialList() {
       {/* Vendors & Communities List */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-y-auto transition-shadow duration-300"
+        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-visible md:overflow-y-auto transition-shadow duration-300"
       >
         {/* Vendors Section */}
         <div>
@@ -672,7 +672,7 @@ export default function SocialList() {
                       className="flex items-center justify-between w-full gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
                       <Link
-                        to={`/app/community-details/${vendor._id}`}
+                        to={`/app/vendor-details/${vendor._id}`}
                         className="flex items-center flex-1 min-w-0 space-x-3 overflow-hidden"
                       >
                         <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center shrink-0">
@@ -730,7 +730,7 @@ export default function SocialList() {
                             ) : (
                               <UserPlus className="w-3 h-3" />
                             )}
-                            <span>
+                            <span className="whitespace-normal">
                               {pendingFollowAction === "unfollow"
                                 ? "Unfollowing..."
                                 : "Following..."}
@@ -802,7 +802,8 @@ export default function SocialList() {
               const isCommunityPending = communityMutation.isPending && pendingCommunityId === community._id;
 
               return (
-                <motion.div key={community._id} layout className="space-y-4">
+              <Link to={`/app/comunity-detail/${community._id}`}>
+                    <motion.div key={community._id} layout className="space-y-4">
                   <AnimatePresence>
                     <motion.div
                       layout
@@ -870,6 +871,7 @@ export default function SocialList() {
                     </motion.div>
                   </AnimatePresence>
                 </motion.div>
+              </Link>
               );
             })
           )}

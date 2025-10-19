@@ -31,7 +31,7 @@ export default function InvoicePreview() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 overflow-x-hidden max-w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -47,18 +47,18 @@ export default function InvoicePreview() {
         >
           <h2 className="text-xl font-semibold mb-6">Invoice Information</h2>
 
-          <div className="flex items-center gap-4 mb-6">
+          <div className="flex items-center gap-4 mb-6 flex-wrap">
             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold">
               {invoiceData.client.avatar}
             </div>
             <div>
               <p className="font-medium">{invoiceData.client.name}</p>
-              <p className="text-sm text-gray-500">{invoiceData.client.email}</p>
+              <p className="text-sm text-gray-500 break-all">{invoiceData.client.email}</p>
             </div>
-            <span className="ml-auto text-purple-600 text-sm font-medium">Client</span>
+            <span className="md:ml-auto text-purple-600 text-sm font-medium">Client</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Invoice ID</label>
               <motion.input type="text" value={invoiceData.id} readOnly className="w-full p-2 border rounded-md bg-gray-50  outline-orange-500" />
@@ -92,7 +92,7 @@ export default function InvoicePreview() {
               </div>
             </div>
             {invoiceData.items.map((item, index) => (
-              <div key={index} className="flex items-center justify-between py-2">
+              <div key={index} className="flex items-center justify-between py-2 flex-wrap gap-3">
                 <div className="flex items-center gap-2">
                   <img
                     src={item.image || "/placeholder.svg"}
@@ -101,7 +101,7 @@ export default function InvoicePreview() {
                   />
                   <span>{item.name}</span>
                 </div>
-                <div className="flex gap-8">
+                <div className="flex gap-6 sm:gap-8 items-center">
                   <motion.input
                     type="number"
                     value={item.quantity}
@@ -142,10 +142,10 @@ export default function InvoicePreview() {
         >
           <h2 className="text-xl font-semibold mb-6">Preview</h2>
 
-          <div className="border rounded-lg p-6">
+          <div className="border rounded-lg p-6 overflow-x-hidden">
             <h3 className="text-xl font-bold mb-6">{invoiceData.id}</h3>
 
-            <div className="grid grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
               <div>
                 <p className="text-sm text-gray-500">Due Date</p>
                 <p className="font-medium">{invoiceData.dueDate}</p>
@@ -159,11 +159,11 @@ export default function InvoicePreview() {
             <div className="mb-8">
               <p className="text-sm text-gray-500">Billed to</p>
               <p className="font-medium">{invoiceData.client.name}</p>
-              <p className="text-sm text-gray-600">{invoiceData.client.email}</p>
+              <p className="text-sm text-gray-600 break-all">{invoiceData.client.email}</p>
             </div>
 
             <div className="mb-8">
-              <div className="grid grid-cols-4 font-medium text-sm text-gray-500 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 font-medium text-sm text-gray-500 mb-4">
                 <span>DESCRIPTION</span>
                 <span className="text-center">QTY</span>
                 <span className="text-right">UNIT PRICE</span>
@@ -171,7 +171,7 @@ export default function InvoicePreview() {
               </div>
 
               {invoiceData.items.map((item, index) => (
-                <div key={index} className="grid grid-cols-4 items-center py-2">
+                <div key={index} className="grid grid-cols-2 sm:grid-cols-4 items-center py-2 gap-y-2">
                   <div className="flex items-center gap-2">
                     <img
                       src={item.image || "/placeholder.svg"}

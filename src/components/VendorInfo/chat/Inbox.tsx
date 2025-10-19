@@ -1218,6 +1218,7 @@ export default function ChatInterface() {
     files: null,
     startIndex: 0,
   });
+  const [showShared, setShowShared] = useState(false);
   const [pinDurationDialog, setPinDurationDialog] =
     useState<PinDurationDialogState>({
       isOpen: false,
@@ -1816,6 +1817,22 @@ export default function ChatInterface() {
     []
   );
 
+  // Aggregate shared files from current chat messages
+  const sharedFiles = useMemo(() => {
+    const items: { files: FileAttachment[]; index: number }[] = [];
+    try {
+      const list = Array.isArray(activeMessages) ? activeMessages : [] as any[];
+      list.forEach((m: any) => {
+        if (Array.isArray(m?.files) && m.files.length > 0) {
+          m.files.forEach((_f: FileAttachment, idx: number) => {
+            items.push({ files: m.files as FileAttachment[], index: idx });
+          });
+        }
+      });
+    } catch {}
+    return items;
+  }, [activeMessages]);
+
   const handleStartNewChat = useCallback(
     async (data: UserOrVendor) => {
       try {
@@ -1940,7 +1957,7 @@ export default function ChatInterface() {
   console.log(user.vendor);
   // Render
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-full bg-gray-50 overflow-x-hidden max-w-full">
       <ChatListSidebar
         chats={chats}
         activeChat={activeChat}
@@ -1948,15 +1965,27 @@ export default function ChatInterface() {
         token={user.token}
         onNewChatCreated={handleStartNewChat}
         typingMap={typingMap}
+        showOnMobile={!activeChat}
       />
 
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div
+        className={`${!activeChat ? "hidden md:flex" : "flex"} flex-col flex-1 overflow-hidden`}
+      >
         {activeChatDetails ? (
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center flex-shrink-0 gap-4 p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50"
+            className="flex items-center flex-shrink-0 gap-4 p-3 sm:p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50 flex-wrap"
           >
+            {/* Mobile back button */}
+            <button
+              type="button"
+              onClick={() => setActiveChat("")}
+              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100"
+              aria-label="Back to chats"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </button>
             {hasAvatar ? (
               <img
                 src={activeChatDetails?.avatar}
@@ -1977,7 +2006,7 @@ export default function ChatInterface() {
             )}
             <div className="flex-1">
               <div className="flex-1">
-                <h2 className="text-lg font-semibold">
+                <h2 className="text-lg font-semibold truncate" title={activeChatDetails.name}>
                   {activeChatDetails.name}
                 </h2>
                 {otherParticipantId && isTyping(otherParticipantId) && (
@@ -2011,10 +2040,40 @@ export default function ChatInterface() {
 
         {feedbackMessage && <Toast message={feedbackMessage} />}
 
+        {/* Shared Files (collapsible) */}
+        {activeChatDetails && sharedFiles.length > 0 && (
+          <div className="flex flex-col p-3 border-b bg-white/70">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Shared Files
+                <span className="ml-2 text-xs text-gray-500">({sharedFiles.length})</span>
+              </h3>
+              <button
+                type="button"
+                className="text-sm text-orange-600 hover:text-orange-700"
+                onClick={() => setShowShared((s) => !s)}
+              >
+                {showShared ? "Hide" : "Show"}
+              </button>
+            </div>
+            {showShared && (
+              <div className="grid grid-cols-2 gap-3 mt-3 sm:grid-cols-3 lg:grid-cols-4">
+                {sharedFiles.map(({ files, index }, i) => (
+                  <FilePreview
+                    key={`${i}-${files[index]?.url}`}
+                    file={files[index]}
+                    onClick={() => handleOpenMediaGallery(files, index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeChatDetails && (
           <div
             key={activeChat}
-            className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            className="flex-1 p-3 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
           >
             <AnimatePresence>
               {activeMessages.length === 0 ? (

@@ -133,7 +133,7 @@ export default function SubscriptionSuccess() {
 
   /* ---- UI ---- */
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-orange-50 to-white">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gradient-to-b from-orange-50 to-white overflow-x-hidden max-w-full">
       <div
         ref={receiptRef}
         className="w-full max-w-md overflow-hidden bg-white shadow-xl rounded-2xl"
@@ -178,7 +178,7 @@ export default function SubscriptionSuccess() {
                 <Copy className="w-3 h-3 mr-1" /> {copied ? "Copied!" : "Copy"}
               </button>
             </div>
-            <div className="text-lg font-semibold text-gray-800">
+            <div className="text-lg font-semibold text-gray-800 break-all">
               {reference}
             </div>
           </div>

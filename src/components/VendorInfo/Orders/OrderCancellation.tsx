@@ -63,7 +63,7 @@ const CancellationForm: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl p-6 mx-auto">
+    <div className="w-full max-w-4xl p-4 sm:p-6 mx-auto overflow-x-hidden">
       <h2 className="mb-6 text-2xl font-semibold text-center">
         Cancellation / Postponement Form
       </h2>
@@ -78,7 +78,7 @@ const CancellationForm: React.FC = () => {
               {...register("orderId", { required: "Order ID is required" })}
               type="text"
               placeholder="Order ID"
-              className="w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
             />
             {errors.orderId && (
               <p className="mt-1 text-sm text-red-600">
@@ -100,7 +100,7 @@ const CancellationForm: React.FC = () => {
               })}
               type="email"
               placeholder="example@gmail.com"
-              className="w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
             />
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">
@@ -198,7 +198,7 @@ const CancellationForm: React.FC = () => {
               })}
               type="text"
               placeholder="Postal Code"
-              className="w-full h-[48px] p-3 border  focus:outline-none focus:ring focus:ring-orange-400"
+              className="w-full h-[48px] p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
             />
             {errors.postalCode && (
               <p className="mt-1 text-sm text-red-600">
@@ -220,7 +220,7 @@ const CancellationForm: React.FC = () => {
             {...register("streetAddress", { required: "Address is required" })}
             type="text"
             placeholder="Street Address"
-            className="w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
           />
           {errors.streetAddress && (
             <p className="mt-1 text-sm text-red-600">
@@ -231,7 +231,7 @@ const CancellationForm: React.FC = () => {
             {...register("streetAddress2")}
             type="text"
             placeholder="Street Address 2"
-            className="w-full p-3 mt-4 border focus:outline-none focus:ring focus:ring-orange-400"
+            className="w-full p-3 mt-4 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
           />
         </div>
 
@@ -243,7 +243,7 @@ const CancellationForm: React.FC = () => {
             </label>
             <select
               {...register("country", { required: "Country is required" })}
-              className="block w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+              className="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
               onChange={(e) => {
                 setValue("country", e.target.value);
                 setValue("state", "");
@@ -269,7 +269,7 @@ const CancellationForm: React.FC = () => {
             </label>
             <select
               {...register("state", { required: "State is required" })}
-              className="block w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+              className="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
               disabled={!selectedCountry}
               onChange={(e) => {
                 setValue("state", e.target.value);
@@ -295,7 +295,7 @@ const CancellationForm: React.FC = () => {
             </label>
             <select
               {...register("city", { required: "City is required" })}
-              className="block w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+              className="block w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
               disabled={!selectedState}
             >
               <option value="">Select City</option>
@@ -316,8 +316,8 @@ const CancellationForm: React.FC = () => {
           <legend className="mb-4 text-sm font-medium">
             Do you want to cancel or postpone your order?
           </legend>
-          <div className="flex flex-col items-center space-x-4 md:flex-row">
-            <label className="flex items-center mb-2 md:mb-0">
+          <div className="flex flex-col md:flex-row md:items-center gap-3">
+            <label className="flex items-center">
               <input
                 type="radio"
                 value="cancel"
@@ -394,7 +394,7 @@ const CancellationForm: React.FC = () => {
           <textarea
             {...register("reason", { required: "Reason is required" })}
             placeholder="Please specify your reason..."
-            className="w-full p-3 border focus:outline-none focus:ring focus:ring-orange-400"
+            className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring focus:ring-orange-400"
             rows={4}
           />
           {errors.reason && (
@@ -428,7 +428,7 @@ const CancellationForm: React.FC = () => {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full p-3 font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring focus:ring-orange-400"
+          className="w-full p-3 font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring focus:ring-orange-400 rounded-md"
         >
           Submit
         </button>
