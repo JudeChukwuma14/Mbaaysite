@@ -19,6 +19,12 @@ interface PricingTiers {
     HalfYearly: number;
     Yearly: number;
   };
+  "Starter plus": {
+    Monthly: number;
+    Quarterly: number;
+    HalfYearly: number;
+    Yearly: number;
+  };
   Shelf: {
     Monthly: number;
     Quarterly: number;
@@ -79,6 +85,12 @@ export default function Upgrade() {
       HalfYearly: 15300,
       Yearly: 30000,
     },
+    'Starter plus': {
+      Monthly: 3000,
+      Quarterly: 8100,
+      HalfYearly: 15300,
+      Yearly: 30000,
+    },
     Shelf: {
       Monthly: 5000,
       Quarterly: 13500,
@@ -116,6 +128,8 @@ export default function Upgrade() {
       if (!plan || !billing) {
         throw new Error("Please select a billing cycle");
       }
+      console.log("plan", plan)
+      console.log("billing", billing) 
 
       // Ensure the billing cycle is in the correct format for the API
       const apiBillingCycle = billing as ApiBillingCycle;
@@ -139,6 +153,7 @@ export default function Upgrade() {
       }
     },
     onError: (err: any) => {
+      console.log("err", err)
       // Check if it's the specific billing cycle error
       if (err.message.includes("Invalid billing cycle")) {
         toast.error("Please select a valid billing cycle");
@@ -152,7 +167,7 @@ export default function Upgrade() {
   useEffect(() => {
     if (!plan || !pricing[plan]) {
       toast.error("Please select a plan first");
-      navigate("/pricing");
+      navigate("/app/pricing");
     }
   }, [plan, navigate]);
 
