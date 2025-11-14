@@ -10,7 +10,7 @@ export const VendorGoogleButton = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showGoogleButton, setShowGoogleButton] = useState<boolean>(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const handleGoogleLogin = (e: React.MouseEvent) => {
@@ -54,17 +54,19 @@ export const VendorGoogleButton = () => {
                 const { data } = response;
 
                 if (data.token) {
-                  // Existing vendor - log them in
-                  dispatch(setVendor({ vendor: data.vendor, token: data.token }));
-                  localStorage.setItem("authToken", data.token);
-                  localStorage.setItem("accountType", "vendor");
-                  localStorage.setItem(
-                    "vendorData",
-                    JSON.stringify(data.vendor)
-                  );
-                  
-                  // Check if vendor is approved before navigating to dashboard
-                  if (data.vendor.verificationStatus === "Approved") {
+                  const vendor = data.vendor;
+
+                  if (vendor.verificationStatus === "Approved") {
+                    dispatch(
+                      setVendor({ vendor: data.vendor, token: data.token })
+                    );
+                    localStorage.setItem("authToken", data.token);
+                    localStorage.setItem("accountType", "vendor");
+                    localStorage.setItem(
+                      "vendorData",
+                      JSON.stringify(data.vendor)
+                    );
+
                     toast.success(data.message || "Vendor login successful");
                     navigate("/app");
                   } else {
@@ -82,10 +84,12 @@ export const VendorGoogleButton = () => {
                   navigate("/complete-signup");
                 }
               } catch (err: any) {
-                // Handle the case where email is already registered with password
-                if (err.response?.status === 409 || 
-                    err.response?.data?.message?.includes("already exists") ||
-                    err.response?.data?.message?.includes("already registered")) {
+                // Email already registered with password
+                if (
+                  err.response?.status === 409 ||
+                  err.response?.data?.message?.includes("already exists") ||
+                  err.response?.data?.message?.includes("already registered")
+                ) {
                   toast.error(
                     "This email is already registered with a password. Please sign in with email and password instead.",
                     {
@@ -96,7 +100,8 @@ export const VendorGoogleButton = () => {
                   navigate("/login-vendor");
                 } else {
                   toast.error(
-                    err.response?.data?.message || "Error verifying Google login",
+                    err.response?.data?.message ||
+                      "Error verifying Google login",
                     {
                       position: "top-right",
                       autoClose: 3000,
