@@ -62,7 +62,7 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="max-w-4xl min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
+    <div className="min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
       {isLoading ? (
         <div className="px-6 pt-6">
           <Skeleton className="h-32 w-full rounded-xl" />
