@@ -140,6 +140,7 @@ const CompleteSignup: React.FC = () => {
       setIsLoading(false);
     }
   };
+
   if (!tempToken) {
     return (
       <div className="flex items-center justify-center min-h-screen px-4 bg-gray-50">
@@ -179,7 +180,7 @@ const CompleteSignup: React.FC = () => {
             </label>
             <input
               type="text"
-              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-orange-500 focus:outline-none"
               {...register("storeName", { required: "Store name is required" })}
             />
             {errors.storeName && (
@@ -203,7 +204,7 @@ const CompleteSignup: React.FC = () => {
                   country="ng"
                   value={field.value}
                   onChange={field.onChange}
-                  inputClass="w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none text-sm"
+                  inputClass="w-full h-10 px-3 border border-gray-300 rounded-md focus:border-orange-500 focus:outline-none text-sm"
                   containerClass="phone-input-container"
                   buttonClass="phone-input-button"
                 />
