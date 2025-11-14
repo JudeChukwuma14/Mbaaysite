@@ -198,9 +198,9 @@ const Dashboard = () => {
   };
 
   return (
-    <main className="flex-1 p-5 overflow-auto">
+    <main className="flex-1 p-4 sm:p-5 overflow-visible lg:overflow-auto overflow-x-hidden max-w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       {/* Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {[
           {
             title: "Money Earned",
@@ -236,21 +236,21 @@ const Dashboard = () => {
         ].map((card, index) => (
           <motion.div
             key={index}
-            className="flex items-center justify-between p-5 bg-white rounded-xl shadow-sm ring-1 ring-gray-100"
+            className="flex items-center justify-between p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 overflow-hidden transform-gpu"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
             <div>
-              <h3 className="text-sm text-gray-500">{card.title}</h3>
+              <h3 className="text-sm text-gray-500 dark:text-gray-400">{card.title}</h3>
               {card.loading ? (
                 <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-800">{card.value}</p>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">{card.value}</p>
               )}
             </div>
             {card.icon && (
               <motion.button onClick={card.onClick}>
-                <card.icon className="w-6 h-6 text-gray-600" />
+                <card.icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
               </motion.button>
             )}
           </motion.div>
@@ -260,7 +260,7 @@ const Dashboard = () => {
       {/* Chart and Notifications */}
       <div className="w-full gap-4">
         <motion.div
-          className="col-span-2 p-5 bg-white rounded-xl shadow-sm ring-1 ring-gray-100"
+          className="col-span-2 p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 max-w-full"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -281,7 +281,7 @@ const Dashboard = () => {
               </button>
             ))}
           </div> */}
-          <div className="h-64">
+          <div className="h-56 sm:h-64 md:h-72">
             <Line data={chartData} options={chartOptions} />
           </div>
         </motion.div>
@@ -309,12 +309,12 @@ const Dashboard = () => {
 
       {/* Orders Table */}
       <motion.div
-        className="p-5 mt-5 bg-white rounded-lg shadow"
+        className="p-4 sm:p-5 mt-5 bg-white dark:bg-gray-800 rounded-lg shadow"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="font-bold">Recent Orders</h2>
           <NavLink
             to="/app/orders"
@@ -330,7 +330,7 @@ const Dashboard = () => {
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-              <span className="text-gray-600">Loading orders...</span>
+              <span className="text-gray-600 dark:text-gray-300">Loading orders...</span>
             </div>
           </div>
         )}
@@ -354,17 +354,60 @@ const Dashboard = () => {
             {orders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <ShoppingCart className="w-12 h-12 mb-2 text-gray-400" />
-                <p className="text-gray-500">No orders found</p>
-                <p className="text-sm text-gray-400">
+                <p className="text-gray-500 dark:text-gray-300">No orders found</p>
+                <p className="text-sm text-gray-400 dark:text-gray-400">
                   Orders will appear here when customers place them
                 </p>
               </div>
             ) : (
               <>
-                <div className="overflow-x-auto">
+                {/* Mobile order list */}
+                <div className="md:hidden space-y-3">
+                  {orders.map((order: any, index: any) => (
+                    <motion.div
+                      key={order._id}
+                      className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Order</div>
+                        <NavLink
+                          to={`/app/order-details/${order._id}`}
+                          className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
+                        >
+                          View
+                        </NavLink>
+                      </div>
+                      <div className="mt-1 font-mono text-sm break-all">{order?._id}</div>
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Customer</div>
+                          <div className="font-medium">{order.buyerInfo.first_name}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Date</div>
+                          <div className="text-gray-600 dark:text-gray-300">{formatDate(order.createdAt)}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Amount</div>
+                          <div className="font-semibold">{formatCurrency(order.totalPrice)}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Status</div>
+                          <div className="font-medium">{order.status}</div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Desktop table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left">
                     <thead>
-                      <tr className="border-b">
+                      <tr className="border-b dark:border-gray-700">
                         <th className="py-2">Order ID</th>
                         <th>Customer</th>
                         <th>Date</th>
@@ -378,13 +421,13 @@ const Dashboard = () => {
                       {orders.map((order: any, index: any) => (
                         <motion.tr
                           key={order._id}
-                          className="border-b hover:bg-gray-50"
+                          className="border-b dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
                           <td className="py-3">
-                            <span className="font-mono text-sm">
+                            <span className="font-mono text-sm break-all">
                               {order?._id}
                             </span>
                           </td>
@@ -398,7 +441,7 @@ const Dashboard = () => {
                               </div> */}
                             </div>
                           </td>
-                          <td className="py-3 text-sm text-gray-600">
+                          <td className="py-3 text-sm text-gray-600 dark:text-gray-300">
                             {formatDate(order.createdAt)}
                           </td>
                           <td className="py-3">
@@ -458,7 +501,7 @@ const Dashboard = () => {
                   >
                     Prev
                   </button>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     Page {currentPage} of {totalPages}
                   </span>
                   <button

@@ -48,11 +48,11 @@ const CommunitySection: React.FC = () => {
   );
 
   return (
-    <div className="p-5 mt-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-5">
+    <div className="p-5 mt-4 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-x-hidden max-w-full">
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
         <div>
           <h3 className="text-base font-semibold tracking-wide text-gray-900">Communities</h3>
-          <p className="mt-1 text-xs text-gray-500">Discover and manage the communities you belong to.</p>
+          <p className="mt-1 text-xs text-gray-500 break-words">Discover and manage the communities you belong to.</p>
         </div>
         <motion.select
           name="communityFilter"
@@ -61,7 +61,7 @@ const CommunitySection: React.FC = () => {
             setFilter(e.target.value as "all" | "owner" | "member");
             setCurrentPage(1); // Reset page when filter changes
           }}
-          className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+          className="px-2.5 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white w-full sm:w-auto"
         >
           <option value="all">All</option>
           <option value="owner">Owner</option>
@@ -71,7 +71,7 @@ const CommunitySection: React.FC = () => {
 
       {/* Loading state */}
       {isLoading && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="p-4 rounded-lg border border-gray-100 bg-gray-50 animate-pulse">
               <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
@@ -106,7 +106,7 @@ const CommunitySection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="relative grid grid-cols-2 gap-3"
+          className="relative grid grid-cols-1 sm:grid-cols-2 gap-3"
         >
           {paginatedCommunities.map((community: Community) => (
             <Link
@@ -119,7 +119,7 @@ const CommunitySection: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 className="relative p-3 rounded-lg bg-gradient-to-br from-orange-50 to-white border border-orange-100 hover:shadow-md transition-shadow"
               >
-                <h4 className="mb-1 text-sm font-semibold text-gray-900">
+                <h4 className="mb-1 text-sm font-semibold text-gray-900 break-words">
                   {community.name}
                 </h4>
                 <p className="text-xs text-gray-600">
@@ -149,7 +149,7 @@ const CommunitySection: React.FC = () => {
 
       {/* Pagination Controls */}
       {!isLoading && totalPages > 1 && (
-        <div className="flex items-center justify-between mt-5">
+        <div className="flex items-center justify-between mt-5 flex-wrap gap-2">
           <motion.button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}

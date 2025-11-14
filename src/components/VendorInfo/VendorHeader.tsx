@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useState, useEffect, useRef } from "react";
-import { Sun, Moon, Bell, X, Check, CheckCheck } from "lucide-react";
+import { Sun, Moon, Bell, X, Check, CheckCheck, Menu } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { useSelector } from "react-redux";
@@ -14,7 +14,7 @@ import {
   markVendorNotificationAsRead,
 } from "@/utils/vendorApi";
 
-const VendorHeader: React.FC = () => {
+const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSidebar }) => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -250,10 +250,19 @@ const VendorHeader: React.FC = () => {
         darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"
       }`}
     >
-      <h1 className="text-xl font-semibold">
-        {getGreeting()},{" "}
-        <span className="text-orange-500">{vendors?.storeName}</span>
-      </h1>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onToggleSidebar}
+          aria-label="Open Menu"
+          className="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl font-semibold">
+          {getGreeting()}, {" "}
+          <span className="text-orange-500">{vendors?.storeName}</span>
+        </h1>
+      </div>
       <div className="flex items-center gap-4">
         {/* Light/Dark Mode Button */}
         <button onClick={toggleDarkMode} aria-label="Toggle Dark Mode">

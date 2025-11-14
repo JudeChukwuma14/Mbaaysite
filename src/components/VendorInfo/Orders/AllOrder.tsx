@@ -157,7 +157,7 @@ const AllOrdersPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="p-5">
+      <main className="p-4 sm:p-5 overflow-x-hidden max-w-full">
         {/* Header skeleton */}
         <div className="mb-6">
           <div className="h-7 w-40 bg-gray-200 rounded mb-2 animate-pulse" />
@@ -194,7 +194,7 @@ const AllOrdersPage: React.FC = () => {
 
   if (isError) {
     return (
-      <main className="p-5 flex flex-col justify-center items-center min-h-[400px]">
+      <main className="p-4 sm:p-5 flex flex-col justify-center items-center min-h-[400px] overflow-x-hidden max-w-full">
         <AlertCircle className="w-12 h-12 mb-4 text-red-500" />
         <h3 className="mb-2 text-lg font-semibold">Failed to load orders</h3>
         <p className="mb-4 text-gray-600">
@@ -215,7 +215,7 @@ const AllOrdersPage: React.FC = () => {
   }
 
   return (
-    <main className="p-5">
+    <main className="p-4 sm:p-5 overflow-x-hidden max-w-full">
       {/* Header */}
       <div className="mb-6">
         <h1 className="mb-2 text-2xl font-bold">Orders</h1>
@@ -305,6 +305,49 @@ const AllOrdersPage: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Mobile stacked list */}
+            <div className="md:hidden space-y-3 p-4">
+              {filteredOrders.map((order, index) => (
+                <motion.div
+                  key={order._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: index * 0.05 }}
+                  className="p-4 rounded-lg border border-gray-200 bg-white"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="text-xs text-gray-500">Order</div>
+                    <Link to={`/app/order-details/${order._id}`} className="text-xs text-blue-600 hover:underline">View</Link>
+                  </div>
+                  <div className="mt-1 font-mono text-sm break-all">#{order._id}</div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <div className="text-xs text-gray-500">Date</div>
+                      <div>{formatDate(order.createdAt)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Customer</div>
+                      <div>{order.buyerInfo.first_name} {order.buyerInfo.last_name}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Item</div>
+                      <div className="truncate" title={order.product.name}>{order.product.name}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Amount</div>
+                      <div className="font-semibold">{formatAmount(order.totalPrice)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Status</div>
+                      <div className={`font-medium ${getStatusColor(order.status)}`}>{order.status}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left">
               <thead className="text-gray-700 bg-gray-100">
                 <tr>
@@ -326,7 +369,7 @@ const AllOrdersPage: React.FC = () => {
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                     className="border-b hover:bg-gray-50"
                   >
-                    <td className="px-4 py-3 font-mono text-sm">
+                    <td className="px-4 py-3 font-mono text-sm break-all">
                       #{order._id}
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -362,9 +405,10 @@ const AllOrdersPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between p-4 bg-gray-100">
+            <div className="flex items-center justify-between p-4 bg-gray-100 flex-wrap gap-3">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

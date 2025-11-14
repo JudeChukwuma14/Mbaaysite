@@ -8,7 +8,7 @@ export interface CraftCategoriesResponse {
 
 export interface UpgradePlanPayload {
   token: string;
-  newPlan: "Shelf" | "Counter" | "Shop" | "Premium";
+  newPlan: "Starter plus" | "Shelf" | "Counter" | "Shop" | "Premium";
   newCategories: string[];
   billingCycle: "Monthly" | "Quarterly" | "HalfYearly" | "Yearly";
 }
@@ -23,9 +23,10 @@ export const upgradePlan = async (payload: UpgradePlanPayload) => {
         Authorization: `Bearer ${token}`,
       },
     });
-
+   console.log("up", response)
     return response.data;
   } catch (error: any) {
+    console.log("error", error)
     throw new Error(error.response?.data?.message || "Failed to upgrade plan");
   }
 };

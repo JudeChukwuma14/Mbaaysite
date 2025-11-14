@@ -216,7 +216,7 @@ const VendorProfileCommunity: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden max-w-full">
       {/* Hero Banner */}
       <div className="relative w-full h-48 bg-white sm:h-56 md:h-64 lg:h-80">
         <div className="absolute inset-0">
@@ -258,7 +258,7 @@ const VendorProfileCommunity: React.FC = () => {
             <div className="flex flex-col flex-1">
               <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-wider text-white sm:text-3xl md:text-4xl">
+                  <h1 className="text-2xl font-bold tracking-wider text-white sm:text-3xl md:text-4xl break-words">
                     {vendor.storeName}
                   </h1>
                   <div className="flex flex-wrap items-center gap-2 mt-2">

@@ -74,7 +74,7 @@ const CustomersPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-4 md:p-6 bg-gray-50">
+    <div className="min-h-screen p-4 md:p-6 bg-gray-50 overflow-x-hidden max-w-full">
       {/* Loading or Error Guard */}
       {isLoading && (
         <div className="flex items-center justify-center h-96">
@@ -237,8 +237,7 @@ const CustomersPage: React.FC = () => {
                             <span>{c.name}</span>
                           </td>
                           <td className="px-4 py-3 text-sm">{c.phone}</td>
-                          <td className="px-4 py-3 text-sm">
-                            {" "}
+                          <td className="px-4 py-3 text-sm break-all">
                             {c.customer?.email}
                           </td>
                           <td className="px-4 py-3 text-sm">{c.location}</td>
@@ -263,7 +262,7 @@ const CustomersPage: React.FC = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <motion.div
-              className="flex items-center justify-between mt-4"
+              className="flex items-center justify-between mt-4 flex-wrap gap-2"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}

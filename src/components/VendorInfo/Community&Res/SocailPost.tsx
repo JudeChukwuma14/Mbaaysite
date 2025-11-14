@@ -31,6 +31,9 @@ export default function SocialList() {
   const [pendingFollowAction, setPendingFollowAction] = useState<
     "follow" | "unfollow" | null
   >(null);
+  const [pendingCommunityId, setPendingCommunityId] = useState<string | null>(
+    null
+  );
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const searchWrapRef = useRef<HTMLDivElement>(null);
   // const navigate = useNavigate();
@@ -72,6 +75,7 @@ export default function SocialList() {
       queryKey: ["all_comm"],
       queryFn: () => get_all_communities(),
     });
+    console.log("Comm", all_communities)
 
   const { data: searchResults, isFetching: isSearching } = useQuery({
     queryKey: ["search_res", debouncedSearch],
@@ -95,9 +99,19 @@ export default function SocialList() {
     );
   }, [all_communities, debouncedSearch]);
 
-  const searchVendors = (searchResults?.vendors ?? localFilteredVendors) || [];
+  // Normalize search results in case API nests payload differently
+  const sr: any = searchResults as any;
+  const apiVendors =
+    sr?.vendors ?? sr?.data?.vendors ?? sr?.result?.vendors ?? [];
+  const apiCommunities =
+    sr?.communities ??
+    sr?.data?.communities ??
+    sr?.result?.communities ??
+    sr?.totalCommunities?.communities ?? [];
+
+  const searchVendors = (apiVendors?.length ? apiVendors : localFilteredVendors) || [];
   const searchCommunities =
-    (searchResults?.communities ?? localFilteredCommunities) || [];
+    (apiCommunities?.length ? apiCommunities : localFilteredCommunities) || [];
 
   const isSearchActive = (debouncedSearch?.trim()?.length ?? 0) >= 1;
   // Daily rotation to make lists feel fresh every day
@@ -165,11 +179,9 @@ export default function SocialList() {
 
   const displayCommunities = useMemo(() => {
     const arr = Array.isArray(communitiesSource) ? communitiesSource : [];
-    const filtered = currentUserId
-      ? arr.filter((c: any) => !c?.members?.includes(currentUserId))
-      : arr;
-    return filtered.slice(0, VISIBLE_COUNT);
-  }, [communitiesSource, currentUserId]);
+    // Show both joined and unjoined to allow leaving directly
+    return arr.slice(0, VISIBLE_COUNT);
+  }, [communitiesSource]);
 
   // Enhanced follow mutation with optimistic updates
   const followMutation = useMutation({
@@ -315,6 +327,8 @@ export default function SocialList() {
       }
     },
     onMutate: async ({ communityId, isMember }) => {
+      // Track which community is pending to make loading state per-item
+      setPendingCommunityId(communityId);
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["all_comm"] });
       await queryClient.cancelQueries({ queryKey: ["search_res"] });
@@ -385,11 +399,15 @@ export default function SocialList() {
     },
 
     onSettled: () => {
+      // Clear pending id regardless of outcome
+      setPendingCommunityId(null);
       // Refetch to ensure we have the latest data
       queryClient.invalidateQueries({ queryKey: ["all_comm"] });
       queryClient.invalidateQueries({ queryKey: ["search_res"] });
       queryClient.invalidateQueries({ queryKey: ["vendor"] });
       queryClient.invalidateQueries({ queryKey: ["communities"] });
+      // Also refresh the main posts feed so new community posts show immediately
+      queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
     },
   });
 
@@ -418,6 +436,8 @@ export default function SocialList() {
 
   const handleCommunityToggle = async (communityId: string) => {
     try {
+      // prevent duplicate click on the same item while pending
+      if (pendingCommunityId === communityId) return;
       if (!currentUserId) return; // wait until we have a stable user id
       const community = displayCommunities.find(
         (v: any) => v._id === communityId
@@ -433,7 +453,7 @@ export default function SocialList() {
   };
 
   return (
-    <div className="flex flex-col w-full h-screen max-w-md mx-auto overflow-x-hidden bg-white">
+    <div className="flex flex-col w-full h-auto md:h-screen max-w-md mx-auto overflow-x-hidden bg-white max-w-full">
       {/* Search Bar */}
       <div className="p-4 bg-white">
         <div ref={searchWrapRef} className="relative mb-2">
@@ -479,11 +499,11 @@ export default function SocialList() {
                         className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50"
                       >
                         <Link
-                          to={`/app/community-details/${v._id}`}
+                          to={`/app/vendor-details/${v._id}`}
                           className="flex items-center gap-3 min-w-0 flex-1"
                           onClick={() => setShowSearchDropdown(false)}
                         >
-                          <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
+                          <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center shrink-0">
                             {v?.avatar || v?.businessLogo ? (
                               <img
                                 src={(v?.avatar || v?.businessLogo) as string}
@@ -545,49 +565,35 @@ export default function SocialList() {
                   })}
                 </div>
               ) : (
-                <div className="px-3 pb-2 text-xs text-gray-500">No vendors found.</div>
+                <div className="px-3 pb-3 text-xs text-gray-500">No vendors found.</div>
               )}
-              <div className="p-3 text-xs font-semibold text-gray-500 border-t">COMMUNITIES</div>
+
+              <div className="p-3 text-xs font-semibold text-gray-500">COMMUNITIES</div>
               {Array.isArray(dropdownCommunities) && dropdownCommunities.length > 0 ? (
                 <div className="max-h-40 overflow-y-auto">
-                  {dropdownCommunities.map((c: any) => {
-                    const isMember = Array.isArray(c?.members)
-                      ? c.members.includes(currentUserId)
-                      : false;
-                    return (
-                      <div key={c._id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50">
-                        <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
-                          {c?.community_Images ? (
-                            <img
-                              src={c?.community_Images}
-                              alt="community"
-                              className="object-cover w-full h-full"
-                            />
-                          ) : (
-                            <span className="text-sm font-medium">{c?.name?.charAt(0)}</span>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{c?.name}</div>
-                        </div>
-                        <div className="ml-auto">
-                          <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            onClick={() => {
-                              // do not auto-close dropdown; just toggle membership
-                              handleCommunityToggle(c._id);
-                            }}
-                            className={`px-2 py-1 text-xs rounded-full ${
-                              isMember ? "bg-gray-100 text-gray-700" : "bg-blue-500 text-white"
-                            }`}
-                          >
-                            {isMember ? "Joined" : "Join"}
-                          </motion.button>
-                        </div>
+                  {dropdownCommunities.map((c: any) => (
+                    <Link
+                      key={c._id}
+                      to={`/app/comunity-detail/${c._id}`}
+                      className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50"
+                      onClick={() => setShowSearchDropdown(false)}
+                    >
+                      <div className="w-8 h-8 overflow-hidden bg-orange-500 rounded-full text-white flex items-center justify-center">
+                        {c?.community_Images ? (
+                          <img
+                            src={c?.community_Images as string}
+                            alt={c?.name || "community"}
+                            className="object-cover w-full h-full"
+                          />
+                        ) : (
+                          <span className="text-sm font-medium">{c?.name?.charAt(0)}</span>
+                        )}
                       </div>
-                    );
-                  })}
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{c?.name}</div>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               ) : (
                 <div className="px-3 pb-3 text-xs text-gray-500">No communities found.</div>
@@ -613,7 +619,7 @@ export default function SocialList() {
       {/* Vendors & Communities List */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-y-auto transition-shadow duration-300"
+        className="flex-1 px-4 pb-6 space-y-8 overflow-x-hidden overflow-visible md:overflow-y-auto transition-shadow duration-300"
       >
         {/* Vendors Section */}
         <div>
@@ -666,7 +672,7 @@ export default function SocialList() {
                       className="flex items-center justify-between w-full gap-3 p-3 overflow-hidden transition border rounded-lg hover:shadow-sm"
                     >
                       <Link
-                        to={`/app/community-details/${vendor._id}`}
+                        to={`/app/vendor-details/${vendor._id}`}
                         className="flex items-center flex-1 min-w-0 space-x-3 overflow-hidden"
                       >
                         <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center shrink-0">
@@ -724,7 +730,7 @@ export default function SocialList() {
                             ) : (
                               <UserPlus className="w-3 h-3" />
                             )}
-                            <span>
+                            <span className="whitespace-normal">
                               {pendingFollowAction === "unfollow"
                                 ? "Unfollowing..."
                                 : "Following..."}
@@ -791,11 +797,13 @@ export default function SocialList() {
             <p className="text-sm text-gray-500">No communities found.</p>
           ) : (
             displayCommunities.map((community: any) => {
+               const isOwner = community?.admin?._id === user?.vendor?._id;
               const isMember = community.members.includes(currentUserId);
-              const isCommunityPending = communityMutation.isPending;
+              const isCommunityPending = communityMutation.isPending && pendingCommunityId === community._id;
 
               return (
-                <motion.div key={community._id} layout className="space-y-4">
+              <Link to={`/app/comunity-detail/${community._id}`}>
+                    <motion.div key={community._id} layout className="space-y-4">
                   <AnimatePresence>
                     <motion.div
                       layout
@@ -830,10 +838,12 @@ export default function SocialList() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => handleCommunityToggle(community._id)}
-                        disabled={isCommunityPending}
+                        disabled={isCommunityPending || isOwner}
                         className={`flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-medium transition-all duration-200 shrink-0 whitespace-nowrap ${
-                          isMember
-                            ? "bg-gray-100 text-gray-700"
+                           isOwner
+                                ? "bg-gray-200 text-gray-700 cursor-not-allowed"
+                                : isMember
+                            ? "bg-red-500 text-white"
                             : "bg-blue-500 text-white"
                         } ${
                           isCommunityPending
@@ -843,15 +853,17 @@ export default function SocialList() {
                       >
                         <AnimatePresence mode="wait">
                           <motion.span
-                            key={isMember ? "joined" : "join"}
+                            key={isOwner ? "Owner" : isMember ? "Leave" : "Join"}
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                           >
                             {isCommunityPending
                               ? "Updating..."
+                              : isOwner
+                              ? "Owner"
                               : isMember
-                              ? "Joined"
+                              ? "Leave"
                               : "Join"}
                           </motion.span>
                         </AnimatePresence>
@@ -859,6 +871,7 @@ export default function SocialList() {
                     </motion.div>
                   </AnimatePresence>
                 </motion.div>
+              </Link>
               );
             })
           )}

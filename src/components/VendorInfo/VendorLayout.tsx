@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import DashboardSidebar from "./DashboardSidebar";
 import VendorHeader from "./VendorHeader";
 import { Outlet } from "react-router-dom";
@@ -13,6 +13,7 @@ const VendorLayout: React.FC = () => {
   const { darkMode } = useDarkMode(); // Use context instead of local state
 
   const queryClient = new QueryClient();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -20,15 +21,15 @@ const VendorLayout: React.FC = () => {
         <div className="flex h-screen">
           {/* Sidebar */}
           {/* <DashboardPaymentHandler /> */}
-          <DashboardSidebar darkMode={darkMode} />
+          <DashboardSidebar darkMode={darkMode} isOpen={isSidebarOpen} />
 
           {/* Main Content */}
           <div className="flex flex-col flex-1">
             {/* Header */}
-            <VendorHeader />{" "}
+            <VendorHeader onToggleSidebar={() => setIsSidebarOpen((v) => !v)} />{" "}
             {/* No need to pass darkMode here, since it can use the context */}
             {/* Scrollable Outlet */}
-            <main className="flex-1 p-4 overflow-y-auto ">
+            <main className="flex-1 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
               <Outlet />
 
               <span className="text-lg font-bold text-white">
@@ -37,6 +38,12 @@ const VendorLayout: React.FC = () => {
             </main>
           </div>
         </div>
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/40 md:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
       </div>
       <ReactQueryDevtools initialIsOpen={true} />
     </QueryClientProvider>

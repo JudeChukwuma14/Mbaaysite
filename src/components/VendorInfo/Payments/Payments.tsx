@@ -85,8 +85,8 @@ const PaymentsPage = () => {
   /* ---------- render ---------- */
   if (isLoading)
     return (
-      <main className="p-5">
-        <div className="grid grid-cols-3 gap-10 mb-5">
+      <main className="p-5 overflow-x-hidden max-w-full">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-5">
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
@@ -130,7 +130,7 @@ const PaymentsPage = () => {
     );
 
   return (
-    <main className="p-5">
+    <main className="p-5 overflow-x-hidden max-w-full">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
         <motion.div
@@ -174,8 +174,8 @@ const PaymentsPage = () => {
       </div>
 
       {/* Filter */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="space-x-2">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {(["All status", "Paid", "Unpaid"] as const).map((status) => (
             <button
               key={status}
@@ -196,7 +196,7 @@ const PaymentsPage = () => {
         <input
           type="text"
           placeholder="Search Product..."
-          className="w-64 px-3 py-2 border rounded-lg outline-orange-500"
+          className="w-full sm:w-64 px-3 py-2 border rounded-lg outline-orange-500"
         />
       </div>
 
@@ -238,7 +238,7 @@ const PaymentsPage = () => {
                   >
                     <td className="px-2 py-2">{inv.id}</td>
                     <td>{inv.customerName}</td>
-                    <td>{inv.email}</td>
+                    <td className="break-all">{inv.email}</td>
                     <td>{inv.date}</td>
                     <td>${inv.amount.toLocaleString()}</td>
                     <td>
@@ -259,7 +259,7 @@ const PaymentsPage = () => {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4 text-sm">
+          <div className="flex items-center justify-between mt-4 text-sm flex-wrap gap-2">
             <button
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={currentPage === 1}

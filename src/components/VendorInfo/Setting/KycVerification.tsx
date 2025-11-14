@@ -367,7 +367,7 @@ const KYCVerification: React.FC = () => {
   // Rejected State - normal form (after timer or if timer was done)
   if (kycStatus === "Rejected") {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50 overflow-x-hidden max-w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -411,7 +411,7 @@ const KYCVerification: React.FC = () => {
 
   // Default/Pending State - Initial KYC Form
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50 overflow-x-hidden max-w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -493,7 +493,7 @@ const KYCForm: React.FC<KYCFormProps> = ({
         <div>
           <label
             htmlFor="country"
-            className="block mb-1 text-sm font-medium text-gray-700"
+            className="block mb-1 text-sm font-medium text-gray-700 break-words"
           >
             Your Country *
           </label>
@@ -517,7 +517,7 @@ const KYCForm: React.FC<KYCFormProps> = ({
         <div>
           <label
             htmlFor="documentType"
-            className="block mb-1 text-sm font-medium text-gray-700"
+            className="block mb-1 text-sm font-medium text-gray-700 break-words"
           >
             Document Type *
           </label>
@@ -579,7 +579,7 @@ const KYCForm: React.FC<KYCFormProps> = ({
             />
           </div>
           {frontFile && (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 break-all">
               Selected: {frontFile.name}
             </p>
           )}
@@ -624,7 +624,7 @@ const KYCForm: React.FC<KYCFormProps> = ({
             />
           </div>
           {backFile && (
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 break-all">
               Selected: {backFile.name}
             </p>
           )}
@@ -641,7 +641,7 @@ const KYCForm: React.FC<KYCFormProps> = ({
           className="mt-1"
           required
         />
-        <label htmlFor="terms" className="text-sm text-gray-600">
+        <label htmlFor="terms" className="text-sm text-gray-600 break-words">
           I confirm that I uploaded valid government-issued ID. This ID includes
           my picture, signature, name, date of birth and address *
         </label>

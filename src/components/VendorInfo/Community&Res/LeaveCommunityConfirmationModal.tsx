@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface LeaveConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void>;
 }
 
 export default function LeaveConfirmationModal({
@@ -16,11 +17,26 @@ export default function LeaveConfirmationModal({
   onConfirm,
 }: LeaveConfirmationModalProps) {
   const { communityid } = useParams();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { data: one_community } = useQuery({
     queryKey: ["one_community"],
     queryFn: () => get_one_community(communityid),
   });
+
+  const handleConfirmClick = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      await onConfirm();
+    } catch (e: any) {
+      const message = e?.message || "Failed to leave community";
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -38,9 +54,9 @@ export default function LeaveConfirmationModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed left-1/3 top-1/3 -translate-x-1/2 -translate-y-1/2 min-w-[530px] max-w-md z-50"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 w-full max-w-md z-50"
           >
-            <div className="p-6 bg-white rounded-lg shadow-xl">
+            <div className="p-6 bg-white rounded-lg shadow-xl overflow-x-hidden">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Leave group?</h2>
                 <motion.button
@@ -53,22 +69,29 @@ export default function LeaveConfirmationModal({
               <div className="flex items-center justify-center">
                 <span className="mr-3">Do you want to leave</span>
                 <div className="flex items-center justify-center">
-                  <h1 className="font-extrabold ">{one_community?.name}</h1>
+                  <h1 className="font-extrabold break-words">{one_community?.name}</h1>
                   <p className="ml-2">community?</p>
                 </div>
               </div>
-              <div className="flex justify-end gap-4 mt-4">
+              {error && (
+                <div className="mt-3 text-sm text-red-600">{error}</div>
+              )}
+              <div className="flex justify-end gap-4 mt-4 flex-wrap">
                 <button
                   onClick={onClose}
+                  disabled={loading}
                   className="px-4 py-2 text-sm font-medium text-gray-700 transition-colors bg-gray-200 rounded-lg hover:bg-gray-300"
                 >
                   No
                 </button>
                 <button
-                  onClick={onConfirm}
-                  className="px-6 py-2 text-sm font-medium text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700"
+                  onClick={handleConfirmClick}
+                  disabled={loading}
+                  className={`px-6 py-2 text-sm font-medium text-white transition-colors rounded-lg ${
+                    loading ? "bg-red-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"
+                  }`}
                 >
-                  Yes
+                  {loading ? "Leaving..." : "Yes"}
                 </button>
               </div>
             </div>

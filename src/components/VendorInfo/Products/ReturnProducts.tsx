@@ -115,9 +115,9 @@ const ReturnProducts = () => {
     console.log(`[v0] Updating return ${returnId} to status: ${newStatus}`);
   };
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden max-w-full p-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Return Management
@@ -224,10 +224,10 @@ const ReturnProducts = () => {
               return (
                 <div
                   key={request.id}
-                  className="p-4 transition-colors border rounded-lg hover:bg-gray-50"
+                  className="p-4 transition-colors border rounded-lg hover:bg-gray-50 overflow-x-hidden"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex gap-4">
+                  <div className="flex items-start justify-between flex-wrap">
+                    <div className="flex gap-4 flex-1">
                       <img
                         src={
                           request.productImage ||
@@ -238,7 +238,7 @@ const ReturnProducts = () => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">
+                          <h3 className="font-semibold text-gray-900 break-all">
                             {request.id}
                           </h3>
                           <Badge
@@ -253,7 +253,7 @@ const ReturnProducts = () => {
                               request.status.slice(1)}
                           </Badge>
                         </div>
-                        <p className="mb-1 text-sm text-gray-600">
+                        <p className="mb-1 text-sm text-gray-600 break-all">
                           <span className="font-medium">
                             {request.customerName}
                           </span>{" "}

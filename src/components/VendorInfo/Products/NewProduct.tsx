@@ -3,7 +3,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useSelector } from "react-redux";
 import { useQuery } from "@tanstack/react-query";
 import { get_single_vendor } from "@/utils/vendorApi";
-import { uploadVendorProduct } from "@/utils/VendorProductApi";
+import {
+  getVendorProducts,
+  uploadVendorProduct,
+} from "@/utils/VendorProductApi";
 import CategorySelector from "./CategorySelector";
 import CategorySpecificUI from "./categorySpecificUi";
 import DescriptionSection from "./descriptionSection";
@@ -14,8 +17,10 @@ import BankAccountPopup from "./BankAccountPopup";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ChevronDown } from "lucide-react";
+import Swal from "sweetalert2";
 
 import CurrencyInput from "./CurrencyInput";
+import { useNavigate } from "react-router-dom";
 
 const NewProduct = () => {
   const user = useSelector((state: any) => state.vendor);
@@ -23,7 +28,7 @@ const NewProduct = () => {
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
-  // console.debug("Vendor data", vendors);
+  console.log("Vendor data", vendors);
 
   const subCategories: Record<string, string[]> = {
     "Beauty and Wellness": ["Skincare", "Haircare", "Makeup", "Fragrance"],
@@ -69,7 +74,7 @@ const NewProduct = () => {
 
   const defaultCategory = "";
   const defaultSubCategory = subCategories[defaultCategory]?.[0];
-
+  const navigate = useNavigate();
   const [productName, setProductName] = useState("");
   const [value, setValue] = useState("");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([
@@ -499,6 +504,28 @@ const NewProduct = () => {
       setShowReturnPolicyPopup(true);
       return;
     }
+    const user = useSelector((state: any) => state.vendor);
+    const { data: products } = useQuery({
+      queryKey: ["products"],
+      queryFn: () => getVendorProducts(user.token),
+    });
+    if (products?.length === 5) {
+      const vendorPlan = vendors?.subscription?.currentPlan;
+      if (vendorPlan === "Starter") {
+        const vendorCategories = vendors?.craftCategories || [];
+        Swal.fire(
+          "Sorry use plan ${vendorPlan} limits you to 5 product upload kindly upgrade to Starter Puls"
+        ).then(() => {
+          navigate("/app/upgrade", {
+            state: {
+              plan: "Starter plus",
+              selectedCategories: vendorCategories,
+              maxCategories: 1,
+            },
+          });
+        });
+      }
+    }
 
     setIsLoading(true);
 
@@ -642,7 +669,7 @@ const NewProduct = () => {
 
   return (
     <motion.div
-      className="min-h-screen p-6 space-y-6 bg-gray-100"
+      className="min-h-screen p-4 sm:p-6 space-y-6 bg-gray-100 overflow-x-hidden max-w-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -652,8 +679,8 @@ const NewProduct = () => {
         showBankAccountPopup={showBankAccountPopup}
         setShowBankAccountPopup={setShowBankAccountPopup}
       />
-      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow">
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow flex-wrap gap-3">
+        <div className="flex items-center gap-4 flex-wrap">
           <h1 className="text-2xl font-bold">New Product</h1>
 
           {/* Category Dropdown - only show if vendor has multiple categories */}
@@ -743,12 +770,18 @@ const NewProduct = () => {
                   initial={{ opacity: 0, y: -8, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.98 }}
-                  transition={{ type: "tween", duration: 0.15, ease: "easeOut" }}
+                  transition={{
+                    type: "tween",
+                    duration: 0.15,
+                    ease: "easeOut",
+                  }}
                 >
                   <div className="p-1">
                     <button
                       className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                        listingType === "sales" ? "bg-blue-50 text-blue-600" : ""
+                        listingType === "sales"
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
                       }`}
                       onClick={() => {
                         setListingType("sales");
@@ -761,7 +794,9 @@ const NewProduct = () => {
                     </button>
                     <button
                       className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
-                        listingType === "auction" ? "bg-blue-50 text-blue-600" : ""
+                        listingType === "auction"
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
                       }`}
                       onClick={() => {
                         setListingType("auction");

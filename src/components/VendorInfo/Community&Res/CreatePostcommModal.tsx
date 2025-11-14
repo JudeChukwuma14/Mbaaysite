@@ -18,6 +18,7 @@ import { RootState } from "@/redux/store";
 interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
 interface TaggedUser {
@@ -39,6 +40,7 @@ interface Suggestion {
 export default function CreatePostcommModal({
   isOpen,
   onClose,
+  onSuccess,
 }: CreatePostModalProps) {
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -169,6 +171,7 @@ export default function CreatePostcommModal({
       setTaggedUsers((prev) => [...prev, newTag]);
     setTagInput("");
     setShowSuggestions(false);
+    setShowTagInput(false);
   };
 
   const removeTag = (id: string) =>
@@ -216,9 +219,9 @@ export default function CreatePostcommModal({
         formData.append("posts_Images", image);
       });
 
-      taggedUsers.forEach((user) => {
-        formData.append("tags", user._id);
-      });
+      // API expects tags as a JSON array (per error message)
+      const tagIds = taggedUsers.map((u) => u._id);
+      formData.append("tags", JSON.stringify(tagIds));
 
       const token = user?.token || null;
       await createPost(formData, token);
@@ -228,12 +231,13 @@ export default function CreatePostcommModal({
         autoClose: 4000,
       });
 
-      window.location.reload();
+      // window.location.reload();
 
       setContent("");
       setImages([]);
       setImagesPreviews([]);
       setTaggedUsers([]);
+      if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       toast.error("Failed to post. Please try again.", {
@@ -260,7 +264,7 @@ export default function CreatePostcommModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[5%] md:left-[35%] md:max-w-lg w-full md:-translate-x-[50%] bg-white rounded-xl shadow-xl overflow-hidden z-50 flex flex-col"
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[5%] md:left-[35%] md:max-w-lg w-full md:-translate-x-[50%] bg-white rounded-xl shadow-xl overflow-hidden overflow-x-hidden z-50 flex flex-col"
           >
             <div className="p-4 border-b">
               <motion.button
@@ -282,7 +286,7 @@ export default function CreatePostcommModal({
                     className="w-12 h-12 rounded-full"
                   />
                   <div>
-                    <h3 className="font-semibold">{one_community?.name}</h3>
+                    <h3 className="font-semibold break-words">{one_community?.name}</h3>
                     <p className="text-sm text-gray-600">COMMUNITY</p>
                   </div>
                 </div>

@@ -75,6 +75,7 @@ interface ChatListSidebarProps {
   token: any;
   onNewChatCreated: (newChat: Chat) => void;
   typingMap: Record<string, boolean>;
+  showOnMobile?: boolean;
 }
 
 // Utility functions
@@ -387,6 +388,7 @@ export function ChatListSidebar({
   setActiveChat,
   onNewChatCreated,
   typingMap,
+  showOnMobile = false,
 }: ChatListSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -675,7 +677,7 @@ export function ChatListSidebar({
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="flex flex-col bg-white border-r w-80"
+        className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
       >
         <div className="flex-shrink-0 p-4 border-b">
           <div className="flex items-center justify-between mb-4">
@@ -699,7 +701,7 @@ export function ChatListSidebar({
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className="flex flex-col items-center justify-center p-4 text-center text-red-500 bg-white border-r w-80"
+        className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col items-center justify-center p-4 text-center text-red-500 bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
       >
         <div className="p-4 rounded-lg bg-red-50">
           <p className="font-semibold">Error loading chats</p>
@@ -719,7 +721,7 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className="flex flex-col bg-white w-80 h-full"
+      className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col bg-white dark:bg-gray-800 w-full md:w-80 h-full border-r dark:border-gray-700`}
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">

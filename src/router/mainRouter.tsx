@@ -1166,7 +1166,7 @@ const routesConfig: RouteObject[] = [
             element: withSuspense(EditVendorProfile),
           },
           {
-            path: "community-details/:id",
+            path: "vendor-details/:id",
             element: withSuspense(VendorProfileCommunity),
           },
           { path: "kyc-verification", element: withSuspense(KycVerification) },

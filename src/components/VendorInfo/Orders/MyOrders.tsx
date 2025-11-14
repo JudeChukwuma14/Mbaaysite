@@ -126,7 +126,7 @@ export default function OrderList() {
   }
 
   return (
-    <div className="min-h-screen p-4 bg-gray-50">
+    <div className="min-h-screen p-4 bg-gray-50 overflow-x-hidden max-w-full">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8">
           <h1 className="mb-2 text-3xl font-bold text-gray-900">Your Orders</h1>
@@ -137,12 +137,12 @@ export default function OrderList() {
           {orders.map((order) => (
             <Card
               key={order.id}
-              className="bg-white border border-gray-200 shadow-sm hover:shadow-md"
+              className="bg-white border border-gray-200 shadow-sm hover:shadow-md overflow-hidden"
             >
               <CardHeader className="pb-4">
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-semibold text-gray-900">
+                    <span className="text-lg font-semibold text-gray-900 break-all">
                       #{order.orderId}
                     </span>
                     <Badge
@@ -166,7 +166,7 @@ export default function OrderList() {
               </CardHeader>
 
               <CardContent className="pt-0">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-4">
                     <h3 className="flex items-center gap-2 font-semibold text-gray-900">
                       <User className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function OrderList() {
                       <p className="font-medium text-gray-900">
                         {order.buyer.fullName}
                       </p>
-                      <div className="flex items-center gap-2 text-gray-600">
+                      <div className="flex items-center gap-2 text-gray-600 break-all">
                         <Mail className="w-3 h-3" />
                         {order.buyer.email}
                       </div>
@@ -190,7 +190,7 @@ export default function OrderList() {
                         <MapPin className="w-4 h-4" />
                         Shipping Address
                       </h4>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 break-words">
                         <p>{order.shippingAddress.street}</p>
                         <p>
                           {order.shippingAddress.city},{" "}
@@ -213,7 +213,7 @@ export default function OrderList() {
                         alt={order.product.name}
                         width={80}
                         height={80}
-                        className="object-cover border border-gray-200 rounded-lg"
+                        className="object-cover border border-gray-200 rounded-lg w-20 h-20"
                       />
                       <div className="flex-1 space-y-2">
                         <h4 className="font-medium text-gray-900">
