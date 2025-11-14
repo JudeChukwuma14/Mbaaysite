@@ -800,6 +800,7 @@ const PaymentCallback = lazy(
 import RestrictVendorRoute from "./RestrictVendorRoute";
 import CompleteSignup from "@/components/auth/CompleteSignup";
 import PendingApproval from "@/components/auth/PendingApproval";
+import ArtProfile from "@/components/AllCategory/Art/ArtProfile";
 
 const AuctionList = lazy(() => import("@/components/AuctionPage/AuctionList"));
 const withSuspense = (Component: React.ComponentType) => (
@@ -864,6 +865,7 @@ const routesConfig: RouteObject[] = [
         path: "/traditional-artifacts",
         element: withSuspense(ReligiousCulturalArt),
       },
+      {path:"/art-profile/:id", element:withSuspense(ArtProfile)},
 
       // BeautyWellness Subcategory Page
       { path: "/skincare", element: withSuspense(Skincare) },

@@ -23,7 +23,6 @@ import BestSellingCard from "@/components/Cards/BestSellingCard";
 import CategoriesSectionSkeleton from "@/components/skeletons/CategoriesSectionSkeleton";
 // import AuctionCardSkeleton from "@/components/AuctionPage/AuctionCardSkeleton";
 
-
 interface Product {
   _id: string;
   id: string;
@@ -287,8 +286,18 @@ const HomeArea: React.FC = () => {
                 const avatarUrl = profile.avatar
                   ? profile.avatar
                   : createInitialAvatar(profile.storeName || "V");
+
+                const isArtVendor =
+                  profile.craftCategories?.includes("Art & Sculptures");
                 return (
-                  <Link to={`/veiws-profile/${profile._id}`} key={profile._id}>
+                  <Link
+                    to={
+                      isArtVendor
+                        ? `/art-profile/${profile._id}`
+                        : `/veiws-profile/${profile._id}`
+                    }
+                    key={profile._id}
+                  >
                     <VendorCard
                       name={profile.storeName}
                       craft={profile.craftCategories[0]}
@@ -363,7 +372,7 @@ const HomeArea: React.FC = () => {
       {/* Second Banner */}
       <section className="container px-4 mx-auto mb-16 md:px-8">
         <div className="overflow-hidden bg-white shadow-sm rounded-xl">
-            <NewCard />
+          <NewCard />
         </div>
       </section>
 
