@@ -38,7 +38,7 @@ export default function DeleteConfirmationModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 w-full max-w-md z-50"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 w-full max-w-md z-50 bg-white rounded-lg shadow-xl"
           >
             <div className="p-6 bg-white rounded-lg shadow-xl overflow-x-hidden">
               <div className="flex items-center justify-between mb-4">
@@ -53,7 +53,9 @@ export default function DeleteConfirmationModal({
               <div className="flex items-center justify-center">
                 <span className="mr-3">Are you sure you want to delete</span>
                 <div className="flex items-center justify-center">
-                  <h1 className="font-extrabold break-words">{one_community?.name}</h1>
+                  <h1 className="font-extrabold break-words">
+                    {one_community?.name}
+                  </h1>
                   <p className="ml-2">community?</p>
                 </div>
               </div>

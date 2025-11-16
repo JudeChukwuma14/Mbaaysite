@@ -85,7 +85,7 @@ export default function Upgrade() {
       HalfYearly: 15300,
       Yearly: 30000,
     },
-    'Starter plus': {
+    "Starter plus": {
       Monthly: 3000,
       Quarterly: 8100,
       HalfYearly: 15300,
@@ -128,8 +128,8 @@ export default function Upgrade() {
       if (!plan || !billing) {
         throw new Error("Please select a billing cycle");
       }
-      console.log("plan", plan)
-      console.log("billing", billing) 
+      console.log("plan", plan);
+      console.log("billing", billing);
 
       // Ensure the billing cycle is in the correct format for the API
       const apiBillingCycle = billing as ApiBillingCycle;
@@ -153,7 +153,7 @@ export default function Upgrade() {
       }
     },
     onError: (err: any) => {
-      console.log("err", err)
+      console.log("err", err);
       // Check if it's the specific billing cycle error
       if (err.message.includes("Invalid billing cycle")) {
         toast.error("Please select a valid billing cycle");
@@ -216,13 +216,13 @@ export default function Upgrade() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-10">
+      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
         {/* Back */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate("/app/pricing")}
-            className="flex items-center gap-2 text-muted-foreground"
+            className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Pricing
@@ -230,15 +230,15 @@ export default function Upgrade() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-3xl sm:text-4xl font-bold"
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold px-2"
           >
             Upgrade to {plan}
           </motion.h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-muted-foreground mt-2 text-sm sm:text-base px-4">
             Choose your billing cycle and confirm your upgrade
           </p>
         </div>
@@ -251,11 +251,16 @@ export default function Upgrade() {
           {/* Selected Categories Summary */}
           {selectedCategories.length > 0 && (
             <div className="p-4 mb-6 rounded-lg bg-primary/5">
-              <h3 className="mb-2 font-medium text-primary">Selected Categories</h3>
+              <h3 className="mb-2 font-medium text-primary">
+                Selected Categories
+              </h3>
               <div className="text-sm">
                 {selectedCategories.slice(0, 3).join(", ")}
                 {selectedCategories.length > 3 && (
-                  <span className="font-medium"> and {selectedCategories.length - 3} more</span>
+                  <span className="font-medium">
+                    {" "}
+                    and {selectedCategories.length - 3} more
+                  </span>
                 )}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
@@ -266,19 +271,28 @@ export default function Upgrade() {
 
           {/* Billing Toggle */}
           <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg">
-              {(["Monthly", "Quarterly", "HalfYearly", "Yearly"] as DisplayBillingCycle[]).map((cycle) => (
+            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto max-w-full">
+              {(
+                [
+                  "Monthly",
+                  "Quarterly",
+                  "HalfYearly",
+                  "Yearly",
+                ] as DisplayBillingCycle[]
+              ).map((cycle) => (
                 <button
                   key={cycle}
                   onClick={() => setBilling(cycle)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                    billing === cycle ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap flex-shrink-0 ${
+                    billing === cycle
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {cycle === "HalfYearly" ? "6 Months" : cycle}
                   {cycle !== "Monthly" && (
-                    <span className="ml-1 text-xs text-primary">-
-                      {discount[cycle.toLowerCase() as keyof DiscountRates]}%
+                    <span className="ml-1 text-xs text-primary">
+                      -{discount[cycle.toLowerCase() as keyof DiscountRates]}%
                     </span>
                   )}
                 </button>
@@ -289,13 +303,16 @@ export default function Upgrade() {
           {/* Price */}
           <div className="rounded-lg bg-muted/40 p-4 mb-6">
             <div className="text-center">
-              <div className="text-3xl font-bold">₦{amount.toLocaleString()}</div>
+              <div className="text-3xl font-bold">
+                ₦{amount.toLocaleString()}
+              </div>
               <div className="text-sm text-muted-foreground">
                 per {billingLabel}
                 {billing !== "Monthly" && (
                   <div className="mt-1">
                     <span className="font-medium text-green-600">
-                      Save {savingsPercentage}% (₦{savingsAmount.toLocaleString()})
+                      Save {savingsPercentage}% (₦
+                      {savingsAmount.toLocaleString()})
                     </span>
                   </div>
                 )}
@@ -304,7 +321,12 @@ export default function Upgrade() {
                 <div className="mt-2 text-xs text-muted-foreground">
                   Equivalent to ₦
                   {Math.round(
-                    amount / (billing === "Quarterly" ? 3 : billing === "HalfYearly" ? 6 : 12)
+                    amount /
+                      (billing === "Quarterly"
+                        ? 3
+                        : billing === "HalfYearly"
+                        ? 6
+                        : 12)
                   ).toLocaleString()}
                   /month
                 </div>
@@ -334,26 +356,36 @@ export default function Upgrade() {
               <div className="flex items-start gap-2 text-sm">
                 <Check className="w-4 h-4 text-primary mt-0.5" />
                 <span>
-                  Access to {selectedCategories.length} categor{selectedCategories.length === 1 ? "y" : "ies"}
+                  Access to {selectedCategories.length} categor
+                  {selectedCategories.length === 1 ? "y" : "ies"}
                 </span>
               </div>
             )}
           </div>
 
           {/* Action */}
-          <Button onClick={() => mutate()} disabled={isPending} className="w-full" size="lg">
+          <Button
+            onClick={() => mutate()}
+            disabled={isPending}
+            className="w-full"
+            size="lg"
+          >
             {isPending ? "Processing..." : `Upgrade to ${plan}`}
           </Button>
 
           <p className="mt-4 text-xs text-center text-muted-foreground">
-            Your subscription renews automatically at the end of each billing period until canceled. You can manage your
-            plan in Account Settings.
+            Your subscription renews automatically at the end of each billing
+            period until canceled. You can manage your plan in Account Settings.
           </p>
         </motion.div>
 
         {/* Error message for missing billing selection */}
         {!billing && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex items-center gap-2 p-3 mt-4 text-red-700 rounded-lg bg-red-50">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-2 p-3 mt-4 text-red-700 rounded-lg bg-red-50"
+          >
             <AlertCircle className="w-4 h-4" />
             <span className="text-sm">Please select a billing cycle</span>
           </motion.div>

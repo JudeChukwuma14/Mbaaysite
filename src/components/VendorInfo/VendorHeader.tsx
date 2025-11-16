@@ -14,7 +14,9 @@ import {
   markVendorNotificationAsRead,
 } from "@/utils/vendorApi";
 
-const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSidebar }) => {
+const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
+  onToggleSidebar,
+}) => {
   const { darkMode, toggleDarkMode } = useDarkMode();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -50,7 +52,6 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
     refetchInterval: 15000,
   });
   const notifications = notificationsData?.data.notifications;
-  
 
   // Mark All Read (optimistic)
   const markNotificationAsRead = useMutation({
@@ -140,7 +141,8 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
   useEffect(() => {
     const onFirstInteraction = async () => {
       if (userPrimedRef.current) return;
-      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        (window as any).AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       try {
         const ctx: AudioContext = audioCtxRef.current || new AudioCtx();
@@ -161,12 +163,15 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
 
   const playBeep = async () => {
     try {
-      const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        (window as any).AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       // Reuse a primed context if available
       const ctx: AudioContext = audioCtxRef.current || new AudioCtx();
       if (ctx.state === "suspended") {
-        try { await ctx.resume(); } catch {}
+        try {
+          await ctx.resume();
+        } catch {}
       }
       const o = ctx.createOscillator();
       const g = ctx.createGain();
@@ -188,7 +193,9 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
 
   useEffect(() => {
     const list = (notifications as any[]) || [];
-    const current = new Set<string>(list.map((n: any) => String(n._id || n.id)));
+    const current = new Set<string>(
+      list.map((n: any) => String(n._id || n.id))
+    );
     if (prevIdsRef.current.size === 0) {
       prevIdsRef.current = current;
       return;
@@ -243,7 +250,6 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
     }
   };
 
-
   return (
     <header
       className={`p-4 flex justify-between items-center shadow-md transition-colors ${
@@ -259,7 +265,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
           <Menu className="w-6 h-6" />
         </button>
         <h1 className="text-xl font-semibold">
-          {getGreeting()}, {" "}
+          {getGreeting()},{" "}
           <span className="text-orange-500">{vendors?.storeName}</span>
         </h1>
       </div>
@@ -292,7 +298,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
           <AnimatePresence>
             {showNotifications && (
               <motion.div
-                className={`absolute right-0 mt-2 w-96 shadow-xl rounded-xl overflow-hidden border z-50 ${
+                className={`fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 mt-2 md:mt-2 w-auto md:w-80 lg:w-96 shadow-xl rounded-xl overflow-hidden border z-50 max-h-[80vh] md:max-h-96 ${
                   darkMode
                     ? "bg-gray-800 text-white border-gray-700"
                     : "bg-white text-gray-900 border-gray-200"
@@ -337,23 +343,28 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
                           darkMode
                             ? "border-gray-700 hover:bg-gray-750"
                             : "border-gray-100 hover:bg-gray-50"
-                          } ${
+                        } ${
                           !notification.isRead
                             ? "bg-blue-50 dark:bg-blue-900/20"
                             : ""
-                          }`}
+                        }`}
                       >
                         {/* Avatar / Initials from sender */}
                         {notification?.sender?.avatar ? (
                           <img
-                            src={notification.sender.avatar || "/placeholder.svg"}
+                            src={
+                              notification.sender.avatar || "/placeholder.svg"
+                            }
                             alt="Avatar"
                             className="flex-shrink-0 w-10 h-10 rounded-full"
                           />
                         ) : (
                           <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 font-bold text-white rounded-full bg-gradient-to-br from-orange-400 to-orange-600">
-                            {(notification?.sender?.storeName?.[0] || notification?.sender?.name?.[0] || "N")
-                              .toUpperCase()}
+                            {(
+                              notification?.sender?.storeName?.[0] ||
+                              notification?.sender?.name?.[0] ||
+                              "N"
+                            ).toUpperCase()}
                           </div>
                         )}
 
@@ -362,12 +373,24 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(notification.type)}`}>
+                                <span
+                                  className={`text-[10px] px-2 py-0.5 rounded-full ${typeBadgeClasses(
+                                    notification.type
+                                  )}`}
+                                >
                                   {notification.type || "Notification"}
                                 </span>
                                 {notification?.sender && (
-                                  <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                                    {notification.sender.storeName || notification.sender.name || notification.sender.email}
+                                  <span
+                                    className={`text-xs ${
+                                      darkMode
+                                        ? "text-gray-400"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    {notification.sender.storeName ||
+                                      notification.sender.name ||
+                                      notification.sender.email}
                                   </span>
                                 )}
                               </div>
@@ -423,7 +446,6 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
                               </button>
                             )}
                           </div>
-
                         </div>
                       </div>
                     ))
@@ -445,7 +467,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({ onToggleSide
                   )}
                 </div>
 
-                {notifications?.length > 0 && unreadCount > 0 && (
+                {notifications?.length > 0 && unreadCount > 1 && (
                   <div
                     className={`p-4 border-t ${
                       darkMode

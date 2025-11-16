@@ -27,6 +27,16 @@ interface Message {
   sender: string;
   timestamp: string;
   isVendor: boolean;
+  files?: any[];
+  replyTo?: string;
+  isPinned?: boolean;
+  isEdited?: boolean;
+  deletedFor?: "none" | "me" | "everyone";
+  isOptimistic?: boolean;
+  isMe?: boolean;
+  tempId?: string;
+  status: "pending" | "delivered" | "read" | "failed";
+  clientKey?: string;
 }
 
 interface Chat {
@@ -38,6 +48,10 @@ interface Chat {
   isVendor: any;
   isOnline: boolean;
   messages: Message[];
+  pinnedMessages: {
+    messageId: string;
+    unpinTimestamp: number;
+  }[];
 }
 
 interface Contact {
@@ -148,35 +162,36 @@ const ContactItem = memo(
     contact: Contact;
     onSelect: (contact: Contact) => void;
   }) => (
-    <DropdownMenuItem onSelect={() => onSelect(contact)}>
-      <div className="flex items-center w-full gap-3">
-        <div className="relative">
-          {contact.avatar ? (
-            <img
-              src={contact.avatar}
-              alt={contact.name}
-              className="object-cover w-8 h-8 rounded-full"
-              loading="lazy"
-            />
-          ) : (
-            <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
-              {getInitials(getContactName(contact))}
-            </div>
-          )}
-          <div
-            className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
-              contact.isVendor ? "bg-orange-500" : "bg-blue-500"
-            }`}
+    <button
+      onClick={() => onSelect(contact)}
+      className="w-full p-3 flex items-center gap-3 hover:bg-gray-50 transition-colors duration-200 border-b last:border-b-0"
+    >
+      <div className="relative">
+        {contact.avatar ? (
+          <img
+            src={contact.avatar}
+            alt={contact.name}
+            className="object-cover w-8 h-8 rounded-full"
+            loading="lazy"
           />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-medium truncate">{getContactName(contact)}</p>
-          <p className="text-xs text-gray-500 truncate">
-            {contact.storeName ? "Vendor" : "User"}
-          </p>
-        </div>
+        ) : (
+          <div className="flex items-center justify-center w-8 h-8 text-gray-500 bg-gray-200 rounded-full">
+            {getInitials(getContactName(contact))}
+          </div>
+        )}
+        <div
+          className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ${
+            contact.isVendor ? "bg-orange-500" : "bg-blue-500"
+          }`}
+        />
       </div>
-    </DropdownMenuItem>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="font-medium truncate">{getContactName(contact)}</p>
+        <p className="text-xs text-gray-500 truncate">
+          {contact.storeName ? "Vendor" : "User"}
+        </p>
+      </div>
+    </button>
   )
 );
 
@@ -391,7 +406,7 @@ export function ChatListSidebar({
   showOnMobile = false,
 }: ChatListSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isNewChatMode, setIsNewChatMode] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const user = useSelector((state: any) => state.vendor);
@@ -434,12 +449,13 @@ export function ChatListSidebar({
           isVendor: contact.isVendor,
           isOnline: true,
           messages: [],
+          pinnedMessages: [],
         };
 
         onNewChatCreated(newChat);
         setActiveChat(result.chatId);
         setSearchQuery("");
-        setIsDropdownOpen(false);
+        setIsNewChatMode(false); // Switch back to chat list
         refetchChats();
       } catch (error) {
         // Error handling is managed by the mutation
@@ -453,6 +469,11 @@ export function ChatListSidebar({
       refetchChats,
     ]
   );
+
+  const toggleNewChatMode = useCallback(() => {
+    setIsNewChatMode((prev) => !prev);
+    setSearchQuery(""); // Clear search when toggling
+  }, []);
 
   // Helper function to get the other participant in the chat
   const getOtherParticipant = useCallback(
@@ -530,6 +551,7 @@ export function ChatListSidebar({
           isVendor: participant?.model || false,
           isOnline: participant?.isOnline || false,
           messages: chatMessages,
+          pinnedMessages: [],
         };
       }) || []
     );
@@ -677,7 +699,9 @@ export function ChatListSidebar({
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
+        className={`${
+          showOnMobile ? "flex" : "hidden md:flex"
+        } flex-col bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
       >
         <div className="flex-shrink-0 p-4 border-b">
           <div className="flex items-center justify-between mb-4">
@@ -701,7 +725,9 @@ export function ChatListSidebar({
       <motion.div
         initial={{ x: -300, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
-        className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col items-center justify-center p-4 text-center text-red-500 bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
+        className={`${
+          showOnMobile ? "flex" : "hidden md:flex"
+        } flex-col items-center justify-center p-4 text-center text-red-500 bg-white dark:bg-gray-800 border-r dark:border-gray-700 w-full md:w-80`}
       >
         <div className="p-4 rounded-lg bg-red-50">
           <p className="font-semibold">Error loading chats</p>
@@ -721,60 +747,73 @@ export function ChatListSidebar({
     <motion.div
       initial={{ x: -300, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
-      className={`${showOnMobile ? "flex" : "hidden md:flex"} flex-col bg-white dark:bg-gray-800 w-full md:w-80 h-full border-r dark:border-gray-700`}
+      className={`${
+        showOnMobile ? "flex" : "hidden md:flex"
+      } flex-col bg-white dark:bg-gray-800 w-full md:w-80 h-full border-r dark:border-gray-700`}
     >
       {/* Header */}
       <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-orange-50 to-white">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <MessageCircle className="w-6 h-6 text-orange-500" />
+            {isNewChatMode ? (
+              <Users className="w-6 h-6 text-orange-500" />
+            ) : (
+              <MessageCircle className="w-6 h-6 text-orange-500" />
+            )}
             <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-              Chats
-              {unreadCount > 0 && (
+              {isNewChatMode ? "New Chat" : "Chats"}
+              {!isNewChatMode && unreadCount > 0 && (
                 <span className="inline-flex items-center justify-center min-w-5 h-5 px-2 text-xs text-white bg-red-500 rounded-full">
                   {unreadCount}
                 </span>
               )}
             </h1>
           </div>
-          <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <motion.button
-                className="p-2 transition-colors rounded-full hover:bg-orange-100 cursor-pointer"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {!isDropdownOpen ? (
-                  <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
-                ) : (
-                  <X className="w-5 h-5 text-orange-500 cursor-pointer" />
-                )}
-              </motion.button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[320px] p-2 mr-60 shadow-xl border-0 h-[calc(100vh-100px)]">
-              <DropdownMenuItem className="font-semibold text-orange-600">
-                <Users className="w-4 h-4 mr-2" />
-                New Chat
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <div className="relative mb-2">
-                <Input
-                  type="text"
-                  placeholder="Search users/vendors..."
-                  className="w-full py-2 pl-8 pr-2 text-sm border-0 rounded-md bg-gray-50 focus:ring-2 focus:ring-orange-500"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  ref={searchInputRef}
-                />
-                <Search className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-2 top-1/2" />
-              </div>
+          <motion.button
+            onClick={toggleNewChatMode}
+            className="p-2 transition-colors rounded-full hover:bg-orange-100 cursor-pointer"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isNewChatMode ? (
+              <X className="w-5 h-5 text-orange-500 cursor-pointer" />
+            ) : (
+              <Plus className="w-5 h-5 text-orange-500 cursor-pointer" />
+            )}
+          </motion.button>
+        </div>
+        <div className="relative">
+          <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
+          <input
+            type="text"
+            placeholder={
+              isNewChatMode ? "Search users/vendors..." : "Search chats..."
+            }
+            className="w-full py-2 pl-10 pr-4 text-sm transition-all duration-200 border-0 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
 
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+        <AnimatePresence mode="wait">
+          {isNewChatMode ? (
+            // New Chat Mode - Contact Search
+            <motion.div
+              key="new-chat"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="h-full"
+            >
               {isSearchLoading ? (
                 <div className="flex items-center justify-center p-4">
                   <Spinner className="w-5 h-5 text-orange-500" />
                 </div>
               ) : searchResults.length > 0 ? (
-                <div className="overflow-y-auto max-h-full">
+                <div className="p-2">
                   {searchResults.map((contact: Contact) => (
                     <ContactItem
                       key={contact._id}
@@ -784,61 +823,65 @@ export function ChatListSidebar({
                   ))}
                 </div>
               ) : searchQuery.trim() !== "" ? (
-                <DropdownMenuItem disabled className="text-gray-500">
-                  No results found
-                </DropdownMenuItem>
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
+                  <Users className="w-16 h-16 mb-4 text-gray-300" />
+                  <p className="text-lg font-semibold text-gray-400">
+                    No results found
+                  </p>
+                  <p className="mt-2 text-sm text-gray-400">
+                    Try searching for a different user or vendor
+                  </p>
+                </div>
               ) : (
-                <DropdownMenuItem disabled className="text-gray-500">
-                  Start typing to search
-                </DropdownMenuItem>
+                <div className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500">
+                  <Users className="w-16 h-16 mb-4 text-gray-300" />
+                  <p className="text-lg font-semibold text-gray-400">
+                    Search for users
+                  </p>
+                  <p className="mt-2 text-sm text-gray-400">
+                    Start typing to find and chat with users or vendors
+                  </p>
+                </div>
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="relative">
-          <Search className="absolute w-5 h-5 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
-          <input
-            type="text"
-            placeholder="Search chats..."
-            className="w-full py-2 pl-10 pr-4 text-sm transition-all duration-200 border-0 rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
-
-      {/* Chat List */}
-      <div
-        ref={listContainerRef}
-        className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-      >
-        <AnimatePresence mode="wait">
-          {filteredChats.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500"
-            >
-              <MessageCircle className="w-16 h-16 mb-4 text-gray-300" />
-              <p className="text-lg font-semibold text-gray-400">
-                No chats yet
-              </p>
-              <p className="mt-2 text-sm text-gray-400">
-                Start a new chat by clicking the + button
-              </p>
             </motion.div>
           ) : (
-            filteredChats.map((chat: Chat) => (
-              <ChatItem
-                key={chat._id}
-                chat={chat}
-                isActive={activeChat === chat._id}
-                onSelect={handleChatSelect}
-                typingMap={{ ...typingMap, ...sidebarTypingMap }}
-                itemRef={(el) => (itemRefs.current[chat._id] = el)}
-                unread={Number(perChatUnread[chat._id] || 0)}
-              />
-            ))
+            // Chat List Mode
+            <motion.div
+              key="chat-list"
+              ref={listContainerRef}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="h-full"
+            >
+              {filteredChats.length === 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-col items-center justify-center h-full p-4 text-center text-gray-500"
+                >
+                  <MessageCircle className="w-16 h-16 mb-4 text-gray-300" />
+                  <p className="text-lg font-semibold text-gray-400">
+                    No chats yet
+                  </p>
+                  <p className="mt-2 text-sm text-gray-400">
+                    Start a new chat by clicking the + button
+                  </p>
+                </motion.div>
+              ) : (
+                filteredChats.map((chat: Chat) => (
+                  <ChatItem
+                    key={chat._id}
+                    chat={chat}
+                    isActive={activeChat === chat._id}
+                    onSelect={handleChatSelect}
+                    typingMap={{ ...typingMap, ...sidebarTypingMap }}
+                    itemRef={(el) => (itemRefs.current[chat._id] = el)}
+                    unread={Number(perChatUnread[chat._id] || 0)}
+                  />
+                ))
+              )}
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

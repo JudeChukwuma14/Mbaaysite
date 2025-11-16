@@ -255,12 +255,12 @@ export default function ReturnPolicyUploader({
     return (
       <div className="flex items-center justify-between bg-gray-100 p-3 rounded mt-2">
         <ToastContainer />
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{fileIcon}</span>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <span className="text-xl flex-shrink-0">{fileIcon}</span>
           <span className="text-sm truncate">{fileName}</span>
         </div>
         <motion.button
-          className="text-red-500 hover:text-red-700"
+          className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2"
           onClick={removeReturnPolicy}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -273,7 +273,7 @@ export default function ReturnPolicyUploader({
 
   return (
     <motion.div
-      className="bg-white p-5 rounded-lg shadow space-y-4"
+      className="bg-white p-4 sm:p-5 rounded-lg shadow space-y-4"
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.8 }}

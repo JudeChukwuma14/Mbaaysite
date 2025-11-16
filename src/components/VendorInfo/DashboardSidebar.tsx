@@ -30,7 +30,10 @@ interface DashboardSidebarProps {
   isOpen?: boolean;
 }
 
-const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = false }) => {
+const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
+  darkMode,
+  isOpen = false,
+}) => {
   interface RootState {
     vendor: {
       token: string;
@@ -91,7 +94,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = 
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 w-64 p-5 h-full flex flex-col justify-between overflow-y-auto transition-transform duration-300 md:static md:h-screen md:translate-x-0 md:z-auto transition-colors ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 p-5 h-full flex flex-col justify-between overflow-y-auto transition-transform duration-300 md:static md:h-screen md:translate-x-0 md:z-auto ${
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       } ${
         darkMode ? "bg-gray-900 text-gray-100" : "bg-[#F5F8FA] text-gray-900"
@@ -99,15 +102,18 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = 
     >
       <div>
         <div className="mb-8 text-2xl font-bold text-orange-500">
-          <Link to="/" className="inline-block transition-transform hover:scale-105 active:scale-95">
+          <Link
+            to="/"
+            className="inline-block transition-transform hover:scale-105 active:scale-95"
+          >
             <img src={Logo} alt="MbaayLogo" className=" w-20" />
           </Link>
         </div>
         <nav className="space-y-1">
-          <NavItem 
-            title="Dashboard" 
-            to="/app" 
-            Icon={Home} 
+          <NavItem
+            title="Dashboard"
+            to="/app"
+            Icon={Home}
             onLinkClick={handleLinkClick}
           />
           <NavItem
@@ -126,17 +132,17 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = 
             onToggle={() => handleDropdownToggle("Products")}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="Customers" 
-            to="customers" 
-            Icon={Users} 
+          <NavItem
+            title="Customers"
+            to="customers"
+            Icon={Users}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="Inbox" 
-            to="inbox" 
-            Icon={Inbox} 
-            badgeCount={inboxUnreadTotal} 
+          <NavItem
+            title="Inbox"
+            to="inbox"
+            Icon={Inbox}
+            badgeCount={inboxUnreadTotal}
             onLinkClick={handleLinkClick}
           />
           <NavItem
@@ -153,22 +159,22 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = 
             Icon={RiProfileLine}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="Kyc" 
-            to="kyc-verification" 
-            Icon={MdVerifiedUser} 
+          <NavItem
+            title="Kyc"
+            to="kyc-verification"
+            Icon={MdVerifiedUser}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="Reviews" 
-            to="reviews" 
-            Icon={MdOutlineReviews} 
+          <NavItem
+            title="Reviews"
+            to="reviews"
+            Icon={MdOutlineReviews}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="Upgrade plan" 
-            to="pricing" 
-            Icon={IoIosPricetag} 
+          <NavItem
+            title="Upgrade plan"
+            to="pricing"
+            Icon={IoIosPricetag}
             onLinkClick={handleLinkClick}
           />
           <NavItem
@@ -179,21 +185,21 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ darkMode, isOpen = 
             onToggle={() => handleDropdownToggle("Community")}
             onLinkClick={handleLinkClick}
           />
-          <NavItem 
-            title="LogOut" 
-            onClick={handle_logOut} 
-            Icon={LogOutIcon} 
+          <NavItem
+            title="LogOut"
+            onClick={handle_logOut}
+            Icon={LogOutIcon}
             onLinkClick={handleLinkClick}
           />
         </nav>
       </div>
-      <motion.div 
+      <motion.div
         className="flex items-center gap-3 p-3 bg-gray-200 rounded-lg dark:bg-gray-700 cursor-pointer transition-all duration-200 hover:bg-gray-300 dark:hover:bg-gray-600 active:scale-95"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
         {!vendors?.avatar ? (
-          <motion.div 
+          <motion.div
             className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center font-semibold text-lg"
             whileHover={{ scale: 1.1 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
@@ -297,8 +303,8 @@ const NavItem: React.FC<NavItemProps> = ({
           end={isRoot}
           className={({ isActive }) =>
             `p-3 flex items-center justify-between gap-3 cursor-pointer rounded-lg transition-all duration-200 border-2 ${
-              isActive 
-                ? "bg-orange-500 text-white border-orange-500 shadow-lg" 
+              isActive
+                ? "bg-orange-500 text-white border-orange-500 shadow-lg"
                 : "hover:bg-orange-50 hover:border-orange-200 border-transparent hover:shadow-md"
             } ${isPressed ? "scale-95" : ""}`
           }
@@ -319,7 +325,7 @@ const NavItem: React.FC<NavItemProps> = ({
             <span className="font-medium">{title}</span>
           </div>
           {typeof badgeCount === "number" && badgeCount > 0 && (
-            <motion.span 
+            <motion.span
               className="inline-flex items-center justify-center min-w-6 h-6 px-1 text-xs font-bold text-white bg-red-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -336,7 +342,10 @@ const NavItem: React.FC<NavItemProps> = ({
   // For collapsible groups, mark header active if any sub-link matches current path
   const isAnySubActive = (subItems || []).some((item) => {
     const slug = item.toLowerCase().replace(/ /g, "-");
-    return location.pathname.endsWith(`/${slug}`) || location.pathname.includes(`/${slug}`);
+    return (
+      location.pathname.endsWith(`/${slug}`) ||
+      location.pathname.includes(`/${slug}`)
+    );
   });
 
   return (
@@ -346,8 +355,8 @@ const NavItem: React.FC<NavItemProps> = ({
     >
       <motion.div
         className={`p-3 flex items-center justify-between gap-3 cursor-pointer rounded-lg transition-all duration-200 border-2 ${
-          isOpen || isAnySubActive 
-            ? "bg-orange-500 text-white border-orange-500 shadow-lg" 
+          isOpen || isAnySubActive
+            ? "bg-orange-500 text-white border-orange-500 shadow-lg"
             : "hover:bg-orange-50 hover:border-orange-200 border-transparent hover:shadow-md"
         } ${isPressed ? "scale-95" : ""}`}
         onClick={handleClick}
@@ -369,7 +378,7 @@ const NavItem: React.FC<NavItemProps> = ({
         </div>
         <div className="flex items-center gap-2">
           {typeof badgeCount === "number" && badgeCount > 0 && (
-            <motion.span 
+            <motion.span
               className="inline-flex items-center justify-center min-w-6 h-6 px-1 text-xs font-bold text-white bg-red-500 rounded-full"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -388,7 +397,7 @@ const NavItem: React.FC<NavItemProps> = ({
           )}
         </div>
       </motion.div>
-      
+
       <AnimatePresence>
         {subItems && isOpen && (
           <motion.div

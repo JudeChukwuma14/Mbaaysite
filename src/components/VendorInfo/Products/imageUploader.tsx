@@ -242,7 +242,7 @@ export default function ImageUploader({
       </div>
 
       <div className="border rounded-lg p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
           {/* Upload area - only show if not at max capacity */}
           {!isUploadDisabled && (
             <div

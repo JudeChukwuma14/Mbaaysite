@@ -44,36 +44,42 @@ export default function ProfilePage() {
     console.log("Sending message:", { name, description });
   };
   return (
-    <div className="max-w-4xl min-h-screen mx-auto bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+    <div className="max-w-4xl min-h-screen mx-auto bg-white p-3 sm:p-5 rounded-2xl border border-gray-100 shadow-sm">
       {posts.isLoading ? (
         <div className="animate-pulse">
           {/* Banner skeleton */}
           <div className="relative h-32 border rounded-xl bg-gray-50" />
-          <div className="px-6 pt-8">
+          <div className="px-4 sm:px-6 pt-8">
             {/* Profile info skeleton */}
             <div className="space-y-2">
-              <div className="h-5 w-40 bg-gray-200 rounded" />
-              <div className="h-4 w-56 bg-gray-200 rounded" />
+              <div className="h-5 w-32 sm:w-40 bg-gray-200 rounded" />
+              <div className="h-4 w-48 sm:w-56 bg-gray-200 rounded" />
             </div>
             {/* Stats skeleton */}
-            <div className="flex gap-3 mt-4">
+            <div className="grid grid-cols-2 sm:flex sm:gap-3 gap-2 mt-4">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex-1 p-3 bg-gray-50 border rounded-xl">
-                  <div className="h-4 w-14 bg-gray-200 rounded mb-2" />
-                  <div className="h-3 w-20 bg-gray-200 rounded" />
+                <div
+                  key={i}
+                  className="flex-1 p-2 sm:p-3 bg-gray-50 border rounded-xl"
+                >
+                  <div className="h-4 w-12 sm:w-14 bg-gray-200 rounded mb-2" />
+                  <div className="h-3 w-16 sm:w-20 bg-gray-200 rounded" />
                 </div>
               ))}
             </div>
             {/* Buttons skeleton */}
-            <div className="flex items-center gap-3 mt-4">
-              <div className="h-9 w-24 bg-gray-200 rounded-full" />
-              <div className="h-9 flex-1 bg-gray-200 rounded-full" />
-              <div className="h-9 w-40 bg-gray-200 rounded-full" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
+              <div className="h-9 w-24 bg-gray-200 rounded-full order-1 sm:order-1" />
+              <div className="h-9 flex-1 bg-gray-200 rounded-full order-2 sm:order-2" />
+              <div className="h-9 w-36 sm:w-40 bg-gray-200 rounded-full order-3 sm:order-3" />
             </div>
             {/* Posts skeleton */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-[50px]">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-12 sm:mt-[50px]">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-40 bg-gray-50 border rounded-xl" />
+                <div
+                  key={i}
+                  className="h-32 sm:h-40 bg-gray-50 border rounded-xl"
+                />
               ))}
             </div>
           </div>
@@ -124,7 +130,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-3 mt-4">
+            <div className="grid grid-cols-2 sm:flex sm:gap-3 gap-2 mt-4">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex-1 p-2 bg-white border shadow-sm rounded-xl"
@@ -184,15 +190,15 @@ export default function ProfilePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3 mt-4">
-              <button className="px-6 py-2 text-sm font-medium rounded-full bg-gray-50">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-4">
+              <button className="px-6 py-2 text-sm font-medium rounded-full bg-gray-50 order-1 sm:order-1">
                 Posts
               </button>
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsModalOpen(true)}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm order-2 sm:order-2"
               >
                 <PenSquare className="w-4 h-4" />
                 Create Post
@@ -201,7 +207,7 @@ export default function ProfilePage() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setIsCommunityModalOpen(true)}
-                className="flex items-center justify-center gap-2 bg-[#FF6B00] text-white px-6 py-2 rounded-full text-sm"
+                className="flex items-center justify-center gap-2 bg-[#FF6B00] text-white px-6 py-2 rounded-full text-sm order-3 sm:order-3"
               >
                 <Users className="w-4 h-4" />
                 Create Community
@@ -306,14 +312,36 @@ export default function ProfilePage() {
                   className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed rounded-xl bg-gray-50 md:col-span-2"
                 >
                   <div className="mb-3">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
-                      <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+                    <svg
+                      width="64"
+                      height="64"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        x="3"
+                        y="5"
+                        width="18"
+                        height="14"
+                        rx="3"
+                        className="fill-orange-50 stroke-orange-300"
+                        strokeWidth="1.5"
+                      />
+                      <path
+                        d="M7 12h6M7 9h10M7 15h10"
+                        className="stroke-orange-400"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
                     </svg>
                   </div>
-                  <h4 className="text-sm font-semibold text-gray-900">No community posts yet</h4>
+                  <h4 className="text-sm font-semibold text-gray-900">
+                    No community posts yet
+                  </h4>
                   <p className="mt-1 text-xs text-gray-600 max-w-sm">
-                    Share updates with your audience by creating your first post.
+                    Share updates with your audience by creating your first
+                    post.
                   </p>
                 </motion.div>
               )}

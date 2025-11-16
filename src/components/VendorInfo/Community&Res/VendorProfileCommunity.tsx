@@ -68,7 +68,9 @@ const VendorProfileCommunity: React.FC = () => {
   const user = useSelector((state: any) => state.vendor);
   const queryClient = useQueryClient();
   const getUserId = () => user?.vendor?._id || user?.vendor?.id;
-  const [pendingAction, setPendingAction] = useState<"follow" | "unfollow" | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    "follow" | "unfollow" | null
+  >(null);
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -234,10 +236,20 @@ const VendorProfileCommunity: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
         </div>
 
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="absolute flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-md cursor-pointer top-4 left-4 bg-black/40 hover:bg-black/60 z-10"
+          aria-label="Go back"
+        >
+          <FaArrowLeft />
+          Back
+        </button>
+
         <div className="container relative flex flex-col justify-end h-full px-4 pb-6 mx-auto">
-          <div className="flex items-end gap-4 -mt-16">
-            <div className="relative">
-              <div className="w-24 h-24 overflow-hidden bg-gray-200 border-4 border-white rounded-full sm:w-28 sm:h-28">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-16">
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 overflow-hidden bg-gray-200 border-4 border-white rounded-full">
                 {vendor.avatar || vendor.businessLogo ? (
                   <img
                     src={
@@ -248,69 +260,63 @@ const VendorProfileCommunity: React.FC = () => {
                   />
                 ) : (
                   <div className="flex items-center justify-center w-full h-full bg-gray-300">
-                    <span className="text-2xl font-bold text-gray-600">
+                    <span className="text-xl sm:text-2xl font-bold text-gray-600">
                       {vendor.storeName.charAt(0)}
                     </span>
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex flex-col flex-1">
-              <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="flex flex-col gap-3">
                 <div>
-                  <h1 className="text-2xl font-bold tracking-wider text-white sm:text-3xl md:text-4xl break-words">
+                  <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold tracking-wider text-white break-words">
                     {vendor.storeName}
                   </h1>
                   <div className="flex flex-wrap items-center gap-2 mt-2">
                     {vendor.verificationStatus === "Approved" && (
-                      <Badge className="bg-green-500 hover:bg-green-600">
+                      <Badge className="bg-green-500 hover:bg-green-600 text-xs">
                         <FaCheckCircle className="w-3 h-3 mr-1" />
                         Verified
                       </Badge>
                     )}
                     {vendor.subscription && (
-                      <Badge className="bg-orange-500 hover:bg-orange-600">
+                      <Badge className="bg-orange-500 hover:bg-orange-600 text-xs">
                         {vendor.subscription.currentPlan} Plan
                       </Badge>
                     )}
                     {vendor.storeType && (
-                      <Badge variant="secondary">{vendor.storeType}</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {vendor.storeType}
+                      </Badge>
                     )}
                   </div>
                 </div>
                 {vendor._id !== getUserId() && (
-                  <Button
-                    onClick={handleFollowToggle}
-                    disabled={followMutation.isPending}
-                    className={`${
-                      isFollowing
-                        ? "bg-gray-600 hover:bg-gray-700"
-                        : "bg-orange-500 hover:bg-orange-600"
-                    } text-white ${
-                      followMutation.isPending
-                        ? "opacity-80 cursor-not-allowed"
-                        : ""
-                    }`}
-                  >
-                    {followMutation.isPending
-                      ? pendingAction === "unfollow"
-                        ? "Unfollowing..."
-                        : "Following..."
-                      : isFollowing
-                      ? "Unfollow"
-                      : "Follow"}
-                  </Button>
+                  <div className="flex justify-start sm:justify-end">
+                    <Button
+                      onClick={handleFollowToggle}
+                      disabled={followMutation.isPending}
+                      className={`${
+                        isFollowing
+                          ? "bg-gray-600 hover:bg-gray-700"
+                          : "bg-orange-500 hover:bg-orange-600"
+                      } text-white ${
+                        followMutation.isPending
+                          ? "opacity-80 cursor-not-allowed"
+                          : ""
+                      } text-sm px-4 py-2`}
+                    >
+                      {followMutation.isPending
+                        ? pendingAction === "unfollow"
+                          ? "Unfollowing..."
+                          : "Following..."
+                        : isFollowing
+                        ? "Unfollow"
+                        : "Follow"}
+                    </Button>
+                  </div>
                 )}
-
-                {/* Back Button */}
-                <button
-                  onClick={() => navigate(-1)}
-                  className="absolute flex items-center gap-2 px-3 py-2 text-sm font-medium text-white transition rounded-md cursor-pointer top-4 left-4 bg-black/40 hover:bg-black/60"
-                  aria-label="Go back"
-                >
-                  <FaArrowLeft />
-                  Back
-                </button>
               </div>
             </div>
           </div>
@@ -321,23 +327,28 @@ const VendorProfileCommunity: React.FC = () => {
         <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
           {/* Stats Card */}
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <h3 className="mb-4 text-lg font-semibold">Stats</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10">
                     <FaUsers className="text-orange-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-xl sm:text-2xl font-bold">
                       {vendor.followers.length}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       Followers
                     </div>
                   </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/10">
+                    <FaUsers className="text-blue-500" />
+                  </div>
                   <div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-xl sm:text-2xl font-bold">
                       {vendor.following.length}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -346,22 +357,24 @@ const VendorProfileCommunity: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500/10">
-                    <FaBox className="text-blue-500" />
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/10">
+                    <FaBox className="text-purple-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{totalProducts}</div>
+                    <div className="text-xl sm:text-2xl font-bold">
+                      {totalProducts}
+                    </div>
                     <div className="text-sm text-muted-foreground">
                       Products
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-purple-500/10">
-                    <FaComments className="text-purple-500" />
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500/10">
+                    <FaComments className="text-indigo-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-xl sm:text-2xl font-bold">
                       {vendor.communityPosts?.length || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">Posts</div>
@@ -372,7 +385,7 @@ const VendorProfileCommunity: React.FC = () => {
                     <FaUsers className="text-green-500" />
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">
+                    <div className="text-xl sm:text-2xl font-bold">
                       {vendor.communities?.length || 0}
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -386,9 +399,9 @@ const VendorProfileCommunity: React.FC = () => {
 
           {/* About Card */}
           <Card className="lg:col-span-2">
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               <h3 className="mb-4 text-lg font-semibold">About</h3>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {vendor.craftCategories &&
                   vendor.craftCategories.length > 0 && (
                     <div>
