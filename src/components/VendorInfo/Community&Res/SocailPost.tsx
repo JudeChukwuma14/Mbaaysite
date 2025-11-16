@@ -453,7 +453,7 @@ export default function SocialList() {
   };
 
   return (
-    <div className="flex flex-col w-full h-auto md:h-screen max-w-md mx-auto overflow-x-hidden bg-white max-w-full">
+    <div className="flex flex-col w-full h-auto md:h-screen mx-auto overflow-x-hidden bg-white max-w-full">
       {/* Search Bar */}
       <div className="p-4 bg-white">
         <div ref={searchWrapRef} className="relative mb-2">

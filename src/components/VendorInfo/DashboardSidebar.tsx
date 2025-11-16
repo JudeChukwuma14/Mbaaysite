@@ -94,7 +94,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-40 w-64 p-5 h-full flex flex-col justify-between overflow-y-auto transition-transform duration-300 md:static md:h-screen md:translate-x-0 md:z-auto ${
+      className={`fixed inset-y-0 left-0 z-40 w-64 p-5 h-full flex flex-col justify-between overflow-y-auto  duration-300 md:static md:h-screen md:translate-x-0 md:z-auto transition-colors ${
         isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       } ${
         darkMode ? "bg-gray-900 text-gray-100" : "bg-[#F5F8FA] text-gray-900"

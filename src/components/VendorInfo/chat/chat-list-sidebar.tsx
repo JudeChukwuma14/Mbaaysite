@@ -1,14 +1,6 @@
 import { useState, useRef, useMemo, useCallback, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Plus, MessageCircle, Users, Clock, X } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import {
   useCreateOrGetChat,
@@ -407,7 +399,6 @@ export function ChatListSidebar({
 }: ChatListSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isNewChatMode, setIsNewChatMode] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const user = useSelector((state: any) => state.vendor);
   const { data: unreadData } = useUnreadChatCount(user?.vendor?._id);

@@ -90,24 +90,27 @@ const CompleteSignup: React.FC = () => {
 
       const result = response.data;
 
-      // Persist auth info
-      localStorage.setItem("authToken", result.token);
-      localStorage.setItem("accountType", "vendor");
-      localStorage.setItem("vendorData", JSON.stringify(result.vendor));
-      localStorage.removeItem("tempToken");
-      localStorage.removeItem("googleUser");
-
-      // Update Redux state
-      dispatch(setVendor({ vendor: result.vendor, token: result.token }));
-
-      // SIMPLIFIED: Check if vendor is approved
+      // Check approval status BEFORE storing auth data
       if (result.vendor.verificationStatus === "Approved") {
+        // Only store auth data and dispatch for approved vendors
+        localStorage.setItem("authToken", result.token);
+        localStorage.setItem("accountType", "vendor");
+        localStorage.setItem("vendorData", JSON.stringify(result.vendor));
+        dispatch(setVendor({ vendor: result.vendor, token: result.token }));
+
         toast.success("Vendor account created and approved!");
         navigate("/app");
       } else {
-        toast.success("Vendor account created successfully! Waiting for admin approval.");
+        // For pending approval, don't store any auth tokens
+        toast.success(
+          "Vendor account created successfully! Waiting for admin approval."
+        );
         navigate("/pending-approval");
       }
+
+      // Always clear temporary data after successful signup
+      localStorage.removeItem("tempToken");
+      localStorage.removeItem("googleUser");
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.message || "Error completing signup";
@@ -177,7 +180,7 @@ const CompleteSignup: React.FC = () => {
             </label>
             <input
               type="text"
-              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+              className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-orange-500 focus:outline-none"
               {...register("storeName", { required: "Store name is required" })}
             />
             {errors.storeName && (
@@ -201,7 +204,7 @@ const CompleteSignup: React.FC = () => {
                   country="ng"
                   value={field.value}
                   onChange={field.onChange}
-                  inputClass="w-full h-10 px-3 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none text-sm"
+                  inputClass="w-full h-10 px-3 border border-gray-300 rounded-md focus:border-orange-500 focus:outline-none text-sm"
                   containerClass="phone-input-container"
                   buttonClass="phone-input-button"
                 />
@@ -232,7 +235,7 @@ const CompleteSignup: React.FC = () => {
                       field.onChange(e);
                       setSelectedCategory(e.target.value);
                     }}
-                    className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                    className="w-full h-10 px-3 text-sm border border-gray-300 rounded-md focus:border-orange-500 focus:outline-none"
                   >
                     <option value="">Select your craft category</option>
                     {craftCategories.map((category) => (
@@ -243,7 +246,7 @@ const CompleteSignup: React.FC = () => {
                   </select>
                   {selectedCategory && (
                     <div className="mt-2">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                         {selectedCategory}
                       </span>
                     </div>
@@ -267,8 +270,7 @@ const CompleteSignup: React.FC = () => {
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
             ) : (
               "Complete Signup"
-            )
-            }
+            )}
           </button>
         </form>
       </div>
