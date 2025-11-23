@@ -1902,15 +1902,15 @@ export default function CategorySelector({
 
   // For upgraded vendors, show the new category selection UI
   return (
-    <div className="bg-white p-5 rounded-lg shadow w-full">
-      <h2 className="text-2xl font-bold mb-4">Category</h2>
-      <div className="border rounded-lg p-6 space-y-6">
+    <div className="bg-white p-4 sm:p-5 rounded-lg shadow w-full">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4">Category</h2>
+      <div className="border rounded-lg p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Main Category */}
         <div className="space-y-2">
           <label className="block text-sm font-medium">Product Category</label>
           <motion.input
             type="text"
-            className="w-full p-3 border rounded-lg bg-gray-100"
+            className="w-full p-3 border rounded-lg bg-gray-100 text-sm sm:text-base"
             value={currentCategory}
             readOnly
           />
@@ -1921,7 +1921,7 @@ export default function CategorySelector({
           <label className="block text-sm font-medium">{currentCategory}</label>
           <div className="relative">
             <motion.select
-              className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
               value={selectedSubCategory}
               onChange={(e) => setSelectedSubCategory(e.target.value)}
             >
@@ -1946,7 +1946,7 @@ export default function CategorySelector({
             </label>
             <div className="relative">
               <motion.select
-                className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full p-3 border rounded-lg appearance-none pr-10 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm sm:text-base"
                 value={selectedSubSubCategory}
                 onChange={(e) => setSelectedSubSubCategory(e.target.value)}
               >

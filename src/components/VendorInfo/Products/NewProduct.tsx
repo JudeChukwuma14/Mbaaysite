@@ -28,6 +28,12 @@ const NewProduct = () => {
     queryKey: ["vendor"],
     queryFn: () => get_single_vendor(user.token),
   });
+
+  const { data: products } = useQuery({
+    queryKey: ["products"],
+    queryFn: () => getVendorProducts(user.token),
+  });
+
   console.log("Vendor data", vendors);
 
   const subCategories: Record<string, string[]> = {
@@ -504,18 +510,17 @@ const NewProduct = () => {
       setShowReturnPolicyPopup(true);
       return;
     }
-    const user = useSelector((state: any) => state.vendor);
-    const { data: products } = useQuery({
-      queryKey: ["products"],
-      queryFn: () => getVendorProducts(user.token),
-    });
+
     if (products?.length === 5) {
       const vendorPlan = vendors?.subscription?.currentPlan;
       if (vendorPlan === "Starter") {
         const vendorCategories = vendors?.craftCategories || [];
-        Swal.fire(
-          "Sorry use plan ${vendorPlan} limits you to 5 product upload kindly upgrade to Starter Puls"
-        ).then(() => {
+        Swal.fire({
+          title: "Plan Limit Reached",
+          text: `Sorry, your ${vendorPlan} plan limits you to 5 product uploads. Kindly upgrade to Starter Plus.`,
+          icon: "warning",
+          confirmButtonText: "Upgrade Now",
+        }).then(() => {
           navigate("/app/upgrade", {
             state: {
               plan: "Starter plus",
@@ -679,23 +684,25 @@ const NewProduct = () => {
         showBankAccountPopup={showBankAccountPopup}
         setShowBankAccountPopup={setShowBankAccountPopup}
       />
-      <div className="flex items-center justify-between p-4 mb-6 bg-white rounded-lg shadow flex-wrap gap-3">
-        <div className="flex items-center gap-4 flex-wrap">
-          <h1 className="text-2xl font-bold">New Product</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 mb-6 bg-white rounded-lg shadow gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold">New Product</h1>
 
           {/* Category Dropdown - only show if vendor has multiple categories */}
           {vendors?.craftCategories && vendors.craftCategories?.length > 1 && (
             <div className="relative">
               <button
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto"
               >
-                <span>Categories ({vendors.craftCategories?.length})</span>
+                <span className="truncate">
+                  Categories ({vendors.craftCategories?.length})
+                </span>
                 <motion.div
                   animate={{ rotate: showCategoryDropdown ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="w-4 h-4" />
+                  <ChevronDown className="w-4 h-4 flex-shrink-0" />
                 </motion.div>
               </button>
 
@@ -1067,16 +1074,16 @@ const NewProduct = () => {
         )}
       </div>
 
-      <div className="flex justify-end p-4 space-x-4 bg-white rounded-lg shadow">
+      <div className="flex flex-col sm:flex-row justify-end p-4 space-y-3 sm:space-y-0 sm:space-x-4 bg-white rounded-lg shadow">
         <button
-          className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg"
+          className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg order-3 sm:order-1"
           onClick={handleDiscard}
           // disabled={isLoading}
         >
           Discard
         </button>
         <button
-          className="flex items-center justify-center px-4 py-2 text-white bg-red-500 rounded-lg"
+          className="flex items-center justify-center px-4 py-2 text-white bg-red-500 rounded-lg order-2"
           onClick={handleSaveDraft}
           disabled={isLoading}
         >
@@ -1109,7 +1116,7 @@ const NewProduct = () => {
           )}
         </button>
         <button
-          className="flex items-center justify-center px-4 py-2 text-white bg-green-500 rounded-lg"
+          className="flex items-center justify-center px-4 py-2 text-white bg-green-500 rounded-lg order-1 sm:order-3"
           onClick={handleAddProduct}
           disabled={isLoading}
         >

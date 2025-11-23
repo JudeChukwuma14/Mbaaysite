@@ -43,7 +43,6 @@ import {
 import { ChatListSidebar } from "./chat-list-sidebar";
 import {
   useChats,
-  useCreateOrGetChat,
   useDeleteMessage,
   useEditMessage,
   useMessages,
@@ -113,14 +112,14 @@ interface Chat {
   participants?: ChatParticipant[];
 }
 
-interface UserOrVendor {
-  _id: string;
-  name: string;
-  avatar: string;
-  isVendor: boolean;
-  userName?: string;
-  storeName?: string;
-}
+// interface UserOrVendor {
+//   _id: string;
+//   name: string;
+//   avatar: string;
+//   isVendor: boolean;
+//   userName?: string;
+//   storeName?: string;
+// }
 
 interface DeleteDialogState {
   isOpen: boolean;
@@ -943,8 +942,8 @@ const DeleteDialog = React.memo(
     onConfirm: () => void;
   }) =>
     isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="p-6 bg-white rounded-lg w-96">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="p-4 sm:p-6 bg-white rounded-lg w-full max-w-sm sm:max-w-md">
           <h3 className="mb-4 text-lg font-semibold">Delete message?</h3>
           <p className="mb-4 text-sm text-gray-600">
             This message will be permanently deleted.
@@ -998,8 +997,8 @@ const VideoPlayer = React.memo(
   }) =>
     isOpen &&
     videoUrl && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-        <div className="relative w-full max-w-4xl p-4 bg-white rounded-lg aspect-video">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-2 sm:p-4">
+        <div className="relative w-full max-w-full sm:max-w-4xl p-2 sm:p-4 bg-white rounded-lg aspect-video">
           <div className="absolute z-10 flex items-center gap-2 top-2 right-2">
             <motion.button
               onClick={() => onSave(videoUrl)}
@@ -1083,8 +1082,8 @@ const MediaGallery = React.memo(
   }) =>
     isOpen &&
     files && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90">
-        <div className="relative flex items-center justify-center w-full h-full max-w-5xl max-h-5xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-2 sm:p-4">
+        <div className="relative flex items-center justify-center w-full h-full max-w-full sm:max-w-5xl max-h-full sm:max-h-5xl">
           <motion.button
             onClick={onClose}
             className="absolute z-10 p-2 text-white bg-gray-800 rounded-full top-4 right-4 hover:bg-gray-700"
@@ -1155,8 +1154,8 @@ const PinDurationDialog = React.memo(
     onClose: () => void;
   }) =>
     isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="p-6 bg-white rounded-lg w-96">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+        <div className="p-4 sm:p-6 bg-white rounded-lg w-full max-w-sm sm:max-w-md">
           <h3 className="mb-4 text-lg font-semibold">
             Pin message for how long?
           </h3>
@@ -1277,7 +1276,7 @@ export default function ChatInterface() {
   }, [activeChat]);
 
   // API Queries
-  const createOrGetChatMutation = useCreateOrGetChat();
+  // const createOrGetChatMutation = useCreateOrGetChat();
   const sendMessageMutation = useSendMessage();
   const editMessageMutation = useEditMessage();
   const deleteMessageMutation = useDeleteMessage();
@@ -1821,7 +1820,9 @@ export default function ChatInterface() {
   const sharedFiles = useMemo(() => {
     const items: { files: FileAttachment[]; index: number }[] = [];
     try {
-      const list = Array.isArray(activeMessages) ? activeMessages : [] as any[];
+      const list = Array.isArray(activeMessages)
+        ? activeMessages
+        : ([] as any[]);
       list.forEach((m: any) => {
         if (Array.isArray(m?.files) && m.files.length > 0) {
           m.files.forEach((_f: FileAttachment, idx: number) => {
@@ -1833,20 +1834,12 @@ export default function ChatInterface() {
     return items;
   }, [activeMessages]);
 
-  const handleStartNewChat = useCallback(
-    async (data: UserOrVendor) => {
-      try {
-        const result = await createOrGetChatMutation.mutateAsync({
-          receiverId: data._id,
-          token: user.token,
-        });
-        setActiveChat(result._id);
-      } catch (error) {
-        console.error("Error creating new chat:", error);
-      }
-    },
-    [user.token]
-  );
+  const handleNewChatCreated = useCallback((newChat: Chat) => {
+    setChats((prev) => {
+      if (prev.find((c) => c._id === newChat._id)) return prev;
+      return [...prev, newChat];
+    });
+  }, []);
 
   // Video player handlers
   const handlePlayPause = useCallback(() => {
@@ -1963,13 +1956,15 @@ export default function ChatInterface() {
         activeChat={activeChat}
         setActiveChat={setActiveChat}
         token={user.token}
-        onNewChatCreated={handleStartNewChat}
+        onNewChatCreated={handleNewChatCreated}
         typingMap={typingMap}
         showOnMobile={!activeChat}
       />
 
       <div
-        className={`${!activeChat ? "hidden md:flex" : "flex"} flex-col flex-1 overflow-hidden`}
+        className={`${
+          !activeChat ? "hidden md:flex" : "flex"
+        } flex-col flex-1 overflow-hidden`}
       >
         {activeChatDetails ? (
           <motion.div
@@ -2006,7 +2001,10 @@ export default function ChatInterface() {
             )}
             <div className="flex-1">
               <div className="flex-1">
-                <h2 className="text-lg font-semibold truncate" title={activeChatDetails.name}>
+                <h2
+                  className="text-lg font-semibold truncate"
+                  title={activeChatDetails.name}
+                >
                   {activeChatDetails.name}
                 </h2>
                 {otherParticipantId && isTyping(otherParticipantId) && (
@@ -2046,7 +2044,9 @@ export default function ChatInterface() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-gray-700">
                 Shared Files
-                <span className="ml-2 text-xs text-gray-500">({sharedFiles.length})</span>
+                <span className="ml-2 text-xs text-gray-500">
+                  ({sharedFiles.length})
+                </span>
               </h3>
               <button
                 type="button"

@@ -367,21 +367,21 @@ const KYCVerification: React.FC = () => {
   // Rejected State - normal form (after timer or if timer was done)
   if (kycStatus === "Rejected") {
     return (
-      <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50 overflow-x-hidden max-w-full">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 bg-gray-50 overflow-x-hidden max-w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-3xl p-8 bg-white rounded-lg shadow-lg"
+          className="w-full max-w-3xl p-4 sm:p-8 bg-white rounded-lg shadow-lg"
         >
           <ToastContainer />
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
               <XCircle className="w-6 h-6 text-red-500" />
-              <h1 className="text-2xl font-bold text-red-600">
+              <h1 className="text-xl sm:text-2xl font-bold text-red-600">
                 Verification Required
               </h1>
             </div>
-            <p className="text-gray-600">
+            <p className="text-gray-600 text-sm sm:text-base">
               Your previous verification was rejected. Please upload new
               documents to complete verification.
             </p>
@@ -411,17 +411,17 @@ const KYCVerification: React.FC = () => {
 
   // Default/Pending State - Initial KYC Form
   return (
-    <div className="flex items-center justify-center min-h-screen p-6 bg-gray-50 overflow-x-hidden max-w-full">
+    <div className="flex items-center justify-center min-h-screen p-4 sm:p-6 bg-gray-50 overflow-x-hidden max-w-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl p-8 bg-white rounded-lg shadow-lg"
+        className="w-full max-w-3xl p-4 sm:p-8 bg-white rounded-lg shadow-lg"
       >
         <ToastContainer />
-        <h1 className="mb-2 text-2xl font-bold text-center">
+        <h1 className="mb-2 text-xl sm:text-2xl font-bold text-center">
           Upload a proof of your identity
         </h1>
-        <p className="mb-8 text-center text-gray-600">
+        <p className="mb-8 text-center text-gray-600 text-sm sm:text-base">
           Mbaay requires a valid government-issued ID (driver's license,
           passport, national ID)
         </p>
@@ -638,10 +638,13 @@ const KYCForm: React.FC<KYCFormProps> = ({
           id="terms"
           checked={agreed}
           onChange={(e) => setAgreed(e.target.checked)}
-          className="mt-1"
+          className="mt-1 flex-shrink-0"
           required
         />
-        <label htmlFor="terms" className="text-sm text-gray-600 break-words">
+        <label
+          htmlFor="terms"
+          className="text-sm text-gray-600 break-words leading-relaxed"
+        >
           I confirm that I uploaded valid government-issued ID. This ID includes
           my picture, signature, name, date of birth and address *
         </label>

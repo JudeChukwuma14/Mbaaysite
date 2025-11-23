@@ -138,7 +138,7 @@ export default function DescriptionSection({
 
   return (
     <motion.div
-      className="bg-white p-5 rounded-lg shadow space-y-4 h-[500px] flex flex-col"
+      className="bg-white p-4 sm:p-5 rounded-lg shadow space-y-4 min-h-[400px] sm:h-[500px] flex flex-col"
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.2 }}
@@ -147,16 +147,16 @@ export default function DescriptionSection({
       <input
         type="text"
         placeholder="Product Name"
-        className="w-full p-2 border rounded outline-orange-500 border-orange-500"
+        className="w-full p-3 border rounded outline-orange-500 border-orange-500 text-sm sm:text-base"
         value={productName}
         onChange={(e) => setProductName(e.target.value)}
       />
 
-      <div className="space-y-2 flex-1 flex flex-col">
-        <div className="flex justify-between items-center">
+      <div className="space-y-3 flex-1 flex flex-col">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
           <label className="text-sm text-gray-600">Product Description</label>
           <button
-            className="text-sm text-blue-600 hover:text-blue-800"
+            className="text-sm text-blue-600 hover:text-blue-800 self-start sm:self-auto"
             onClick={() => descriptionFileRef.current?.click()}
           >
             Upload .txt file
@@ -172,9 +172,11 @@ export default function DescriptionSection({
 
         {descriptionFileName && (
           <div className="flex items-center justify-between bg-gray-100 p-2 rounded">
-            <span className="text-sm truncate">{descriptionFileName}</span>
+            <span className="text-sm truncate flex-1 mr-2">
+              {descriptionFileName}
+            </span>
             <motion.button
-              className="text-red-500 hover:text-red-700"
+              className="text-red-500 hover:text-red-700 flex-shrink-0"
               onClick={removeDescriptionFile}
             >
               <IoMdClose />
@@ -187,13 +189,13 @@ export default function DescriptionSection({
           <motion.textarea
             id="product-description"
             placeholder="Enter your product description here..."
-            className="w-full flex-1 p-3 border rounded outline-orange-500 border-orange-500 resize-none min-h-[200px] font-sans text-sm leading-relaxed"
+            className="w-full flex-1 p-3 border rounded outline-orange-500 border-orange-500 resize-none min-h-[150px] sm:min-h-[200px] font-sans text-sm leading-relaxed"
             value={value}
             onChange={handleTextareaChange}
             onKeyDown={handleKeyDown}
-            style={{ minHeight: "200px" }}
+            style={{ minHeight: "150px" }}
           />
-          <div className="text-xs text-gray-500 mt-1 flex justify-between">
+          <div className="text-xs text-gray-500 mt-2 flex flex-col sm:flex-row sm:justify-between gap-1">
             <span>Characters: {value.length}</span>
             <span>
               Words: {value.trim() ? value.trim().split(/\s+/).length : 0}

@@ -87,13 +87,10 @@ export default function EditCommunityModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 w-full max-w-md z-50"
+            className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[10%] md:left-[35%] md:max-w-md w-full md:-translate-x-[50%] bg-white rounded-lg shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh] md:max-h-[85vh]"
           >
-            <form
-              onSubmit={step === 1 ? handleNextStep : handleSubmit}
-              className="bg-white rounded-lg shadow-xl overflow-x-hidden"
-            >
-              <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex flex-col h-full">
+              <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
                 <div className="flex items-center">
                   {step === 2 && (
                     <motion.button
@@ -118,7 +115,13 @@ export default function EditCommunityModal({
                   <X className="w-5 h-5" />
                 </motion.button>
               </div>
-              <div className="p-4 space-y-4">
+            </div>
+
+            <form
+              onSubmit={step === 1 ? handleNextStep : handleSubmit}
+              className="flex-1 min-h-0 flex flex-col"
+            >
+              <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                 {step === 1 ? (
                   <>
                     <div>
@@ -184,7 +187,8 @@ export default function EditCommunityModal({
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-end gap-2 p-4 border-t flex-wrap">
+
+              <div className="flex items-center justify-end gap-2 p-4 border-t flex-shrink-0 flex-wrap">
                 <button
                   type="button"
                   onClick={onClose}

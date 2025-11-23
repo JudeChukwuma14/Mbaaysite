@@ -339,22 +339,25 @@ export default function UpgradePage() {
         {/* Header */}
         <div className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent" />
-          <div className="relative max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8">
+          <div className="relative max-w-7xl mx-auto px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
             <div className="text-center">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6"
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4 sm:mb-6"
               >
                 <Zap className="w-4 h-4" />
-                Introducing Multi-Term Pricing
+                <span className="hidden sm:inline">
+                  Introducing Multi-Term Pricing
+                </span>
+                <span className="sm:hidden">Multi-Term Pricing</span>
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-4xl sm:text-5xl lg:text-6xl font-bold text-balance mb-6"
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-balance mb-4 sm:mb-6 px-2"
               >
                 Plans and Pricing
               </motion.h1>
@@ -363,7 +366,7 @@ export default function UpgradePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-xl text-muted-foreground text-balance max-w-2xl mx-auto mb-8"
+                className="text-lg sm:text-xl text-muted-foreground text-balance max-w-2xl mx-auto mb-6 sm:mb-8 px-4"
               >
                 Get started immediately for free. Upgrade for more categories,
                 features and collaboration.
@@ -374,7 +377,7 @@ export default function UpgradePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg"
+                className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto max-w-full"
               >
                 {(
                   ["Monthly", "Quarterly", "HalfYearly", "Yearly"] as const
@@ -382,7 +385,7 @@ export default function UpgradePage() {
                   <button
                     key={cycle}
                     onClick={() => setBillingCycle(cycle)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                    className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap ${
                       billingCycle === cycle
                         ? "bg-background text-foreground shadow-sm"
                         : "text-muted-foreground hover:text-foreground"
@@ -403,7 +406,7 @@ export default function UpgradePage() {
 
         {/* Pricing Cards */}
         <div className="max-w-7xl mx-auto px-4 pb-16 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 sm:gap-8">
             {plans.map((plan, index) => {
               const price = plan.pricing[billingCycle];
               const monthlyEquivalent =
@@ -422,7 +425,7 @@ export default function UpgradePage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index }}
-                  className={`relative rounded-2xl border bg-card p-8 hover:shadow-lg transition-transform duration-200 hover:-translate-y-1 lg:col-span-2 ${
+                  className={`relative rounded-2xl border bg-card p-4 sm:p-6 lg:p-8 hover:shadow-lg transition-transform duration-200 hover:-translate-y-1 lg:col-span-2 ${
                     index === 3 ? "lg:col-start-2" : ""
                   }`}
                 >
@@ -441,20 +444,20 @@ export default function UpgradePage() {
                   )} */}
 
                   {/* Plan Header */}
-                  <div className="mb-6">
-                    <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                  <div className="mb-4 sm:mb-6">
+                    <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2 sm:mb-3">
                       {plan.name}
                     </h3>
-                    <p className="text-base text-muted-foreground mb-5">
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-5">
                       {plan.description}
                     </p>
 
-                    <div className="mb-4">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-4xl md:text-5xl font-bold">
+                    <div className="mb-3 sm:mb-4">
+                      <div className="flex items-baseline gap-1 sm:gap-2">
+                        <span className="text-3xl sm:text-4xl lg:text-5xl font-bold">
                           ₦{price.toLocaleString()}
                         </span>
-                        <span className="text-base text-muted-foreground">
+                        <span className="text-sm sm:text-base text-muted-foreground">
                           /
                           {billingCycle === "HalfYearly"
                             ? "6mo"
@@ -466,15 +469,15 @@ export default function UpgradePage() {
                         </span>
                       </div>
                       {billingCycle !== "Monthly" && (
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                           ₦{Math.round(monthlyEquivalent).toLocaleString()}
                           /month equivalent
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2 text-base text-muted-foreground mb-4">
-                      <Users className="w-5 h-5" />
+                    <div className="flex items-center gap-2 text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
+                      <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                       {plan.categories === 13
                         ? "All categories"
                         : `${plan.categories} categor${
@@ -484,23 +487,23 @@ export default function UpgradePage() {
                   </div>
 
                   {/* Features */}
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                     {plan.features.map((feature, featureIndex) => (
                       <div
                         key={featureIndex}
-                        className="flex items-start gap-3"
+                        className="flex items-start gap-2 sm:gap-3"
                       >
                         <div
                           className={`${
                             feature.included
                               ? "text-primary"
                               : "text-muted-foreground"
-                          } mt-0.5`}
+                          } mt-0.5 flex-shrink-0`}
                         >
-                          <Check className="w-5 h-5" />
+                          <Check className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <span
-                          className={`text-base break-words ${
+                          className={`text-sm sm:text-base break-words leading-relaxed ${
                             feature.included
                               ? "text-foreground"
                               : "text-muted-foreground line-through"

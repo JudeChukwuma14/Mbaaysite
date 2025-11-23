@@ -1,5 +1,11 @@
 import { motion } from "framer-motion";
-import { PenSquare, MessageSquare, FileText, Users, ArrowLeft } from "lucide-react";
+import {
+  PenSquare,
+  MessageSquare,
+  FileText,
+  Users,
+  ArrowLeft,
+} from "lucide-react";
 import { useState } from "react";
 import { RiCommunityLine } from "react-icons/ri";
 import { CiEdit } from "react-icons/ci";
@@ -46,7 +52,9 @@ export default function ProfilePage() {
       await leave_community(user?.token || null, communityid);
       setIsLeaveModalOpen(false);
       navigate("/app/my-community");
-      queryClient.invalidateQueries({ queryKey: ["one_community", communityid] });
+      queryClient.invalidateQueries({
+        queryKey: ["one_community", communityid],
+      });
     } catch (e) {
       console.error(e);
     }
@@ -62,7 +70,7 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
+    <div className=" min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
       {isLoading ? (
         <div className="px-6 pt-6">
           <Skeleton className="h-32 w-full rounded-xl" />
@@ -115,32 +123,36 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Info */}
-          <div className="px-6 pt-8">
+          <div className="px-4 sm:px-6 pt-6 sm:pt-8">
             <div className="space-y-1">
               {/*main Holder For Community Name and Created By*/}
-              <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
                 {/* Community Name and Created By*/}
                 <div className="flex items-center gap-2">
-                  <h2>Community</h2>
-                  <RiCommunityLine size={25} />
+                  <h2 className="text-sm sm:text-base">Community</h2>
+                  <RiCommunityLine size={20} className="sm:w-6 sm:h-6" />
                 </div>
                 {/*  Created By*/}
                 <div className="flex items-center gap-2">
-                  <h2>Created by:</h2>
-                  <span className="break-words">{one_community?.admin?.storeName}</span>
+                  <h2 className="text-sm sm:text-base">Created by:</h2>
+                  <span className="break-words text-sm sm:text-base">
+                    {one_community?.admin?.storeName}
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center flex-wrap gap-3">
-                <h2 className="text-xl font-semibold break-words">{one_community?.name}</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                <h2 className="text-lg sm:text-xl font-semibold break-words">
+                  {one_community?.name}
+                </h2>
                 {one_community?.admin._id === user.vendor._id ? (
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
                     <CiEdit
-                      size={20}
+                      size={18}
                       className="text-blue-600 cursor-pointer"
                       onClick={() => setIsEditModalOpen(true)}
                     />
                     <MdDelete
-                      size={20}
+                      size={18}
                       className="text-red-600 cursor-pointer"
                       onClick={() => setIsDeleteModalOpen(true)}
                     />
@@ -148,7 +160,9 @@ export default function ProfilePage() {
                 ) : null}
               </div>
               <div className="flex items-center gap-1 text-sm text-gray-600">
-                <span className="break-words">{one_community?.description}</span>
+                <span className="break-words">
+                  {one_community?.description}
+                </span>
               </div>
             </div>
 
@@ -185,8 +199,8 @@ export default function ProfilePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3 mt-4 flex-wrap">
-              <button className="px-6 py-2 text-sm font-medium rounded-full bg-gray-50">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
+              <button className="px-4 sm:px-6 py-2 text-sm font-medium rounded-full bg-gray-50 order-2 sm:order-1">
                 Posts
               </button>
               {one_community?.admin._id === user.vendor._id ? (
@@ -194,29 +208,29 @@ export default function ProfilePage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsModalOpen(true)}
-                  className="flex-1 flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm"
+                  className="flex-1 flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 rounded-full text-sm order-1 sm:order-2"
                 >
                   <PenSquare className="w-4 h-4" />
                   Create Post
                 </motion.button>
               ) : (
-                <div className="flex gap-3 flex-wrap">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 order-1 sm:order-2">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setIsLeaveModalOpen(true)}
-                    className="min-w-[160px] px-4 h-[44px] flex items-center justify-center gap-2 bg-[red] text-white py-2 text-sm rounded-full"
+                    className="flex-1 min-h-[44px] flex items-center justify-center gap-2 bg-[red] text-white py-2 text-sm rounded-full"
                   >
-                    <IoIosLogOut size={20} />
+                    <IoIosLogOut size={18} className="sm:w-5 sm:h-5" />
                     Leave Community
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setIsReportModelOpen(true)}
-                    className="min-w-[160px] px-4 h-[44px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 text-sm rounded-full"
+                    className="flex-1 min-h-[44px] flex items-center justify-center gap-2 bg-[#FF6B00] text-white py-2 text-sm rounded-full"
                   >
-                    <VscReport size={20} />
+                    <VscReport size={18} className="sm:w-5 sm:h-5" />
                     Report Community
                   </motion.button>
                 </div>
@@ -224,23 +238,23 @@ export default function ProfilePage() {
             </div>
 
             {/* Posts Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
               {one_community?.communityPosts?.map((props: any) => (
                 <motion.div
                   key={props?.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="overflow-hidden bg-white border rounded-xl"
+                  className="overflow-hidden bg-white border rounded-xl shadow-sm"
                 >
                   {props.posts_Images?.length > 0 && (
                     <div
                       className={`grid gap-1 w-full ${
                         props.posts_Images.length === 1
-                          ? "grid-cols-1 h-60"
+                          ? "grid-cols-1 h-48 sm:h-60"
                           : props.posts_Images.length === 2
-                          ? "grid-cols-2 h-60"
-                          : "grid-cols-2 grid-rows-2 h-80"
+                          ? "grid-cols-2 h-48 sm:h-60"
+                          : "grid-cols-2 grid-rows-2 h-64 sm:h-80"
                       }`}
                     >
                       {props?.posts_Images
@@ -250,12 +264,12 @@ export default function ProfilePage() {
                             key={index}
                             className={`overflow-hidden ${
                               props.posts_Images.length === 1
-                                ? "rounded-lg"
+                                ? "rounded-t-xl"
                                 : props.posts_Images.length === 2
-                                ? "rounded-md"
+                                ? "rounded-tl-xl rounded-bl-xl"
                                 : index === 0
-                                ? "row-span-2 rounded-lg"
-                                : "rounded-md"
+                                ? "row-span-2 rounded-tl-xl rounded-bl-xl"
+                                : "rounded-tr-xl"
                             }`}
                           >
                             <img
@@ -267,10 +281,10 @@ export default function ProfilePage() {
                         ))}
                     </div>
                   )}
-                  <div className="p-3">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 flex-wrap">
+                  <div className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
                       <div className="flex items-center gap-1">
-                        <FileText className="w-4 h-4" />
+                        <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
                         {props?.createdTime.split("T")[0]}
                       </div>
                       <div className="flex items-center gap-1">
@@ -281,7 +295,7 @@ export default function ProfilePage() {
                     <p className="mt-2 text-sm text-gray-600 line-clamp-2 break-words">
                       {props?.content}
                     </p>
-                    <div className="flex items-center gap-4 mt-3 flex-wrap">
+                    <div className="flex items-center gap-3 sm:gap-4 mt-3 flex-wrap">
                       <div className="flex items-center gap-1">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
@@ -290,21 +304,18 @@ export default function ProfilePage() {
                         >
                           👍
                         </motion.button>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {props?.likes?.length || 0} Likes
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-500">
+                        <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {props?.comments?.length || 0} Comments
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MdOutlineRateReview className="w-4 h-4 text-gray-500" />
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {/* <ImBin   className="w-4 h-4 text-gray-500" /> */}
+                        <MdOutlineRateReview className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                       </div>
                     </div>
                   </div>
@@ -317,7 +328,9 @@ export default function ProfilePage() {
               isOpen={isModalOpen}
               onClose={() => setIsModalOpen(false)}
               onSuccess={() => {
-                queryClient.invalidateQueries({ queryKey: ["one_community", communityid] });
+                queryClient.invalidateQueries({
+                  queryKey: ["one_community", communityid],
+                });
               }}
             />
             <ReportModel
@@ -353,4 +366,5 @@ export default function ProfilePage() {
         </>
       )}
     </div>
-  )}
+  );
+}

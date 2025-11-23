@@ -291,13 +291,13 @@ export default function VideoUploader({
 
   return (
     <motion.div
-      className="bg-white p-5 rounded-lg shadow space-y-4"
+      className="bg-white p-4 sm:p-5 rounded-lg shadow space-y-4"
       initial={{ x: 50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.4 }}
     >
       <ToastContainer />
-      <div className="flex justify-between items-center space-x-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <h2 className="text-lg font-semibold">Product Video (Optional)</h2>
         <div
           className={`flex justify-between items-center ${
@@ -305,8 +305,12 @@ export default function VideoUploader({
           }`}
           onClick={() => !videoUrl && setShowYoutubeInput(true)} // Disable click when videoUrl exists
         >
-          <FaYoutube size={30} className="mr-1 text-red-600" />
-          <h4 className={videoUrl ? "text-gray-400" : "text-blue-600"}>
+          <FaYoutube size={24} className="mr-1 text-red-600" />
+          <h4
+            className={`text-sm sm:text-base ${
+              videoUrl ? "text-gray-400" : "text-blue-600"
+            }`}
+          >
             Add YouTube video
           </h4>
         </div>
@@ -432,26 +436,28 @@ export default function VideoUploader({
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <div className="flex space-x-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 placeholder="Paste YouTube URL here"
-                className="flex-1 p-2 border rounded outline-orange-500 border-orange-500"
+                className="flex-1 p-2 border rounded outline-orange-500 border-orange-500 text-sm sm:text-base"
                 value={youtubeUrl}
                 onChange={(e) => setYoutubeUrl(e.target.value)}
               />
-              <button
-                className="bg-blue-600 text-white px-3 py-1 rounded"
-                onClick={handleYoutubeSubmit}
-              >
-                Add
-              </button>
-              <button
-                className="bg-gray-300 text-gray-700 px-3 py-1 rounded"
-                onClick={() => setShowYoutubeInput(false)}
-              >
-                Cancel
-              </button>
+              <div className="flex gap-2">
+                <button
+                  className="bg-blue-600 text-white px-3 py-2 rounded text-sm sm:text-base flex-1 sm:flex-none"
+                  onClick={handleYoutubeSubmit}
+                >
+                  Add
+                </button>
+                <button
+                  className="bg-gray-300 text-gray-700 px-3 py-2 rounded text-sm sm:text-base flex-1 sm:flex-none"
+                  onClick={() => setShowYoutubeInput(false)}
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </motion.div>
         )}

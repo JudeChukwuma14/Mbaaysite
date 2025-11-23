@@ -26,7 +26,9 @@ export default function SocialFeed() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isInfoLoading, setIsInfoLoading] = useState(false);
-  const [infoMode, setInfoMode] = useState<"following" | "followers" | "posts">("following");
+  const [infoMode, setInfoMode] = useState<"following" | "followers" | "posts">(
+    "following"
+  );
   // const [ setShowEmojiPicker] = useState<
   //   Record<string, boolean>
   // >({});
@@ -78,7 +80,7 @@ export default function SocialFeed() {
       queryClient.invalidateQueries({ queryKey: ["comm_posts"] });
     }
   }, [communities, isLoadingCommunities, queryClient]);
-  console.log("Commt" ,comm_posts);
+  console.log("Commt", comm_posts);
 
   // New useQuery for mutual recommendations
   const { data: mutualRecommendations = [], isLoading: isLoadingMutuals } =
@@ -417,7 +419,7 @@ export default function SocialFeed() {
 
     if (imageCount === 1) {
       return (
-        <div className="w-full h-[300px] mb-4">
+        <div className="w-full h-[250px] sm:h-[300px] mb-4">
           <img
             src={images[0] || "/placeholder.svg"}
             alt="Post image"
@@ -430,9 +432,9 @@ export default function SocialFeed() {
 
     if (imageCount === 2) {
       return (
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-4">
           {images.map((image, index) => (
-            <div key={index} className="h-[200px]">
+            <div key={index} className="h-[150px] sm:h-[200px]">
               <img
                 src={image || "/placeholder.svg"}
                 alt={`Post image ${index + 1}`}
@@ -447,8 +449,8 @@ export default function SocialFeed() {
 
     if (imageCount === 3) {
       return (
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="h-[250px]">
+        <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-4">
+          <div className="h-[180px] sm:h-[250px]">
             <img
               src={images[0] || "/placeholder.svg"}
               alt="Post image 1"
@@ -456,9 +458,9 @@ export default function SocialFeed() {
               onClick={() => openImageGallery(images, 0)}
             />
           </div>
-          <div className="grid grid-rows-2 gap-2">
+          <div className="grid grid-rows-2 gap-1 sm:gap-2">
             {images.slice(1, 3).map((image, index) => (
-              <div key={index + 1} className="h-[120px]">
+              <div key={index + 1} className="h-[85px] sm:h-[120px]">
                 <img
                   src={image || "/placeholder.svg"}
                   alt={`Post image ${index + 2}`}
@@ -474,9 +476,9 @@ export default function SocialFeed() {
 
     if (imageCount === 4) {
       return (
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-4">
           {images.map((image, index) => (
-            <div key={index} className="h-[150px]">
+            <div key={index} className="h-[120px] sm:h-[150px]">
               <img
                 src={image || "/placeholder.svg"}
                 alt={`Post image ${index + 1}`}
@@ -492,12 +494,12 @@ export default function SocialFeed() {
     // For 5 or more images
     if (imageCount >= 5) {
       return (
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="grid grid-cols-2 gap-1 sm:gap-2 mb-4">
           {images.slice(0, 3).map((image, index) => (
             <div
               key={index}
-              className={`h-[150px] ${
-                index === 0 ? "row-span-2 h-[310px]" : ""
+              className={`h-[120px] sm:h-[150px] ${
+                index === 0 ? "row-span-2 h-[250px] sm:h-[310px]" : ""
               }`}
             >
               <img
@@ -508,7 +510,7 @@ export default function SocialFeed() {
               />
             </div>
           ))}
-          <div className="relative h-[150px]">
+          <div className="relative h-[120px] sm:h-[150px]">
             <img
               src={images[3] || "/placeholder.svg"}
               alt="Post image 4"
@@ -519,7 +521,7 @@ export default function SocialFeed() {
               className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg cursor-pointer"
               onClick={() => openImageGallery(images, 3)}
             >
-              <span className="text-white text-2xl font-bold">
+              <span className="text-white text-lg sm:text-2xl font-bold">
                 +{imageCount - 4}
               </span>
             </div>
@@ -532,8 +534,8 @@ export default function SocialFeed() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden max-w-full">
-      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-6 p-4 min-h-screen">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
+      <div className="container mx-auto grid grid-cols-1 lg:grid-cols-[280px_1fr_280px] gap-4 lg:gap-6 p-4 min-h-screen max-w-full">
         {/* Left Sidebar */}
         <div className="order-3 lg:order-1">
           <SocialList />
@@ -541,7 +543,7 @@ export default function SocialFeed() {
 
         {/* Main Content */}
         <motion.div
-          className="order-2 lg:order-2 space-y-6 overflow-visible lg:overflow-y-auto lg:max-h-[calc(100vh-2rem)]"
+          className="order-2 lg:order-2 space-y-4 lg:space-y-6 overflow-visible lg:overflow-y-auto lg:max-h-[calc(100vh-2rem)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -579,12 +581,12 @@ export default function SocialFeed() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
-                    <div className="flex gap-3">
+                  <div className="flex items-start justify-between gap-3 mb-4">
+                    <div className="flex gap-3 min-w-0 flex-1">
                       {!post?.community ? (
                         <>
                           {!post?.poster?.avatar ? (
-                            <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+                            <div className="w-10 h-10 sm:w-[50px] sm:h-[50px] rounded-full bg-orange-300 text-white flex items-center justify-center text-sm sm:text-base flex-shrink-0">
                               {post?.poster?.storeName
                                 ?.charAt(0)
                                 ?.toUpperCase() || "U"}
@@ -593,7 +595,7 @@ export default function SocialFeed() {
                             <img
                               src={post?.poster?.avatar || "/placeholder.svg"}
                               alt="Vendor"
-                              className="w-10 h-10 rounded-full"
+                              className="w-10 h-10 sm:w-[50px] sm:h-[50px] rounded-full flex-shrink-0"
                             />
                           )}
                         </>
@@ -604,28 +606,28 @@ export default function SocialFeed() {
                             "/placeholder.svg"
                           }
                           alt="Vendor"
-                          className="w-10 h-10 rounded-full"
+                          className="w-10 h-10 sm:w-[50px] sm:h-[50px] rounded-full flex-shrink-0"
                         />
                       )}
-                      <div>
+                      <div className="min-w-0 flex-1">
                         {!post?.community ? (
                           <>
                             {post?.posterType === "vendors" ? (
-                              <h3 className="font-semibold break-words">
+                              <h3 className="font-semibold break-words text-sm sm:text-base">
                                 {post?.poster?.storeName}
                               </h3>
                             ) : (
-                              <h3 className="font-semibold break-words">
+                              <h3 className="font-semibold break-words text-sm sm:text-base">
                                 {post?.poster?.name || post?.poster?.storeName}
                               </h3>
                             )}
                           </>
                         ) : (
-                          <h3 className="font-semibold break-words">
+                          <h3 className="font-semibold break-words text-sm sm:text-base">
                             {post?.community?.name}
                           </h3>
                         )}
-                        <p className="text-sm text-gray-500">
+                        <p className="text-xs sm:text-sm text-gray-500 truncate">
                           {post?.posterType === "vendors"
                             ? post?.poster?.craftCategories?.[0] || "Vendor"
                             : "COMMUNITY"}
@@ -635,7 +637,7 @@ export default function SocialFeed() {
                     </div>
 
                     <motion.button
-                      className="p-1 rounded-full hover:bg-gray-100"
+                      className="p-1 rounded-full hover:bg-gray-100 flex-shrink-0"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                     ></motion.button>
@@ -688,9 +690,7 @@ export default function SocialFeed() {
                             </div>
                           ) : (
                             <img
-                              src={
-                                comment?.user?.avatar || "/placeholder.svg"
-                              }
+                              src={comment?.user?.avatar || "/placeholder.svg"}
                               alt="Commenter"
                               className="w-10 h-10 rounded-full"
                             />
@@ -699,7 +699,9 @@ export default function SocialFeed() {
                             <p className="text-sm font-medium">
                               {comment?.comment_poster}
                             </p>
-                            <p className="text-sm break-words">{comment?.text}</p>
+                            <p className="text-sm break-words">
+                              {comment?.text}
+                            </p>
                             <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 flex-wrap">
                               <span>
                                 {moment(comment?.timestamp).fromNow()}
@@ -962,23 +964,44 @@ export default function SocialFeed() {
               className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed rounded-xl bg-gray-50"
             >
               <div className="mb-3">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
-                  <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="3"
+                    className="fill-orange-50 stroke-orange-300"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M7 12h6M7 9h10M7 15h10"
+                    className="stroke-orange-400"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </div>
-              <h4 className="text-sm font-semibold text-gray-900">No posts to show</h4>
+              <h4 className="text-sm font-semibold text-gray-900">
+                No posts to show
+              </h4>
               <p className="mt-1 text-xs text-gray-600 max-w-sm">
-                Follow communities and creators or create your first post to see updates here.
+                Follow communities and creators or create your first post to see
+                updates here.
               </p>
             </motion.div>
           )}
         </motion.div>
 
         {/* Right Sidebar */}
-        <div className="order-1 lg:order-3 w-full lg:max-w-md lg:min-h-screen mx-auto bg-gray-100"
-        >
-  <motion.div
+        <div className="order-1 lg:order-3 w-full lg:max-w-md lg:min-h-screen mx-auto bg-gray-100">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="p-4 bg-white shadow-sm"
@@ -994,7 +1017,7 @@ export default function SocialFeed() {
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-3 mb-4 text-sm">
-                  {[0,1,2].map((i) => (
+                  {[0, 1, 2].map((i) => (
                     <div key={i} className="text-center">
                       <div className="h-5 w-8 mx-auto bg-gray-200 rounded" />
                       <div className="h-3 w-12 mx-auto mt-1 bg-gray-100 rounded" />
@@ -1026,42 +1049,48 @@ export default function SocialFeed() {
 
                 <div className="flex justify-between mb-4 text-sm">
                   <div className="text-center">
-                    <button  className="font-bold cursor-default">
+                    <button className="font-bold cursor-default">
                       {vendors?.communityPosts?.length || 0}
                     </button>
                     <div className="text-gray-600">Posts</div>
                   </div>
                   <div
-  className="text-center cursor-pointer select-none hover:text-orange-600"
-  role="button"
-  tabIndex={0}
-  onClick={() => openInfoModal("followers")}
-  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openInfoModal("followers")}
->
-  <div className="font-bold hover:text-orange-600">
-    {vendors?.followers?.length || 0}
-  </div>
-  <div className="text-gray-600">Followers</div>
-</div>
+                    className="text-center cursor-pointer select-none hover:text-orange-600"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openInfoModal("followers")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      openInfoModal("followers")
+                    }
+                  >
+                    <div className="font-bold hover:text-orange-600">
+                      {vendors?.followers?.length || 0}
+                    </div>
+                    <div className="text-gray-600">Followers</div>
+                  </div>
                   <div
-  className="text-center cursor-pointer select-none hover:text-orange-600"
-  role="button"
-  tabIndex={0}
-  onClick={() => openInfoModal("following")}
-  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openInfoModal("following")}
->
-  <div className="font-bold ">
-    {(() => {
-      const raw = (vendors as any)?.following;
-      if (!Array.isArray(raw)) return 0;
-      const ids = raw
-        .map((f: any) => (typeof f === "string" ? f : f?._id))
-        .filter(Boolean);
-      return ids.length;
-    })()}
-  </div>
-  <div className="text-gray-600">Following</div>
-</div>
+                    className="text-center cursor-pointer select-none hover:text-orange-600"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openInfoModal("following")}
+                    onKeyDown={(e) =>
+                      (e.key === "Enter" || e.key === " ") &&
+                      openInfoModal("following")
+                    }
+                  >
+                    <div className="font-bold ">
+                      {(() => {
+                        const raw = (vendors as any)?.following;
+                        if (!Array.isArray(raw)) return 0;
+                        const ids = raw
+                          .map((f: any) => (typeof f === "string" ? f : f?._id))
+                          .filter(Boolean);
+                        return ids.length;
+                      })()}
+                    </div>
+                    <div className="text-gray-600">Following</div>
+                  </div>
                 </div>
 
                 <motion.button
@@ -1075,8 +1104,6 @@ export default function SocialFeed() {
               </>
             )}
           </motion.div>
-
-          
 
           <div className="p-4 mt-4 bg-white shadow-sm">
             <h3 className="mb-3 text-sm font-semibold">RECOMMENDATION</h3>
@@ -1144,10 +1171,27 @@ export default function SocialFeed() {
               ) : (
                 <div className="text-center text-gray-500 border border-dashed rounded-lg p-6">
                   <div className="mx-auto mb-2 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                    <svg
+                      className="w-5 h-5 text-orange-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
+                    </svg>
                   </div>
-                  <div className="text-sm font-medium text-gray-700">No recommendations yet</div>
-                  <div className="text-xs mt-1">Follow more creators and communities to get suggestions here.</div>
+                  <div className="text-sm font-medium text-gray-700">
+                    No recommendations yet
+                  </div>
+                  <div className="text-xs mt-1">
+                    Follow more creators and communities to get suggestions
+                    here.
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -1169,42 +1213,59 @@ export default function SocialFeed() {
                 {communities.length === 0 ? (
                   <div className="text-center text-gray-500 border border-dashed rounded-lg p-6">
                     <div className="mx-auto mb-2 w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h3l2-2h0l2 2h3a2 2 0 012 2v12a2 2 0 01-2 2z"/></svg>
+                      <svg
+                        className="w-5 h-5 text-orange-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M8 10h.01M12 10h.01M16 10h.01M9 16h6m2 5H7a2 2 0 01-2-2V7a2 2 0 012-2h3l2-2h0l2 2h3a2 2 0 012 2v12a2 2 0 01-2 2z"
+                        />
+                      </svg>
                     </div>
-                    <div className="text-sm font-medium text-gray-700">No communities yet</div>
-                    <div className="text-xs mt-1">Join or create a community to see it here.</div>
+                    <div className="text-sm font-medium text-gray-700">
+                      No communities yet
+                    </div>
+                    <div className="text-xs mt-1">
+                      Join or create a community to see it here.
+                    </div>
                   </div>
                 ) : (
-                communities?.slice(0, 4)?.map((community: any) => (
-                  <motion.div
-                    key={community.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="flex flex-wrap gap-2 mb-[20px]"
-                  >
-                    <div className="flex flex-col items-center justify-between gap-3">
-                      <div className="flex items-center justify-between">
-                        <h4 className="mb-1 text-sm font-semibold text-orange-800">
-                          {community.name}
-                        </h4>
-                        <motion.span
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={`px-3 py-2 rounded-full ${
-                            community.admin === user?.vendor?._id
-                              ? "bg-orange-200 text-orange-800"
-                              : "bg-blue-200 text-blue-800"
-                          } text-sm ml-4 cursor-pointer`}
-                        >
-                          {community.admin === user?.vendor?._id
-                            ? "Owner"
-                            : "Member"}
-                        </motion.span>
+                  communities?.slice(0, 4)?.map((community: any) => (
+                    <motion.div
+                      key={community.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex flex-wrap gap-2 mb-[20px]"
+                    >
+                      <div className="flex flex-col items-center justify-between gap-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="mb-1 text-sm font-semibold text-orange-800">
+                            {community.name}
+                          </h4>
+                          <motion.span
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            whileHover={{ scale: 1.05 }}
+                            className={`px-3 py-2 rounded-full ${
+                              community.admin === user?.vendor?._id
+                                ? "bg-orange-200 text-orange-800"
+                                : "bg-blue-200 text-blue-800"
+                            } text-sm ml-4 cursor-pointer`}
+                          >
+                            {community.admin === user?.vendor?._id
+                              ? "Owner"
+                              : "Member"}
+                          </motion.span>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )))}
+                    </motion.div>
+                  ))
+                )}
                 {communities.length > 4 && (
                   <button
                     onClick={() => {
@@ -1239,39 +1300,67 @@ export default function SocialFeed() {
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.95, opacity: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="w-full max-w-md p-4 bg-white rounded-lg shadow-lg"
+                  className="w-full max-w-md mx-4 sm:mx-auto p-4 bg-white rounded-lg shadow-lg max-h-[80vh] overflow-hidden flex flex-col"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-semibold">
                       {infoMode === "following" && (
-                        <>Following ({(() => {
-                          const raw = (vendors as any)?.following;
-                          if (!Array.isArray(raw)) return 0;
-                          const ids = raw.map((f: any) => (typeof f === "string" ? f : f?._id)).filter(Boolean);
-                          return ids.length;
-                        })()})</>
+                        <>
+                          Following (
+                          {(() => {
+                            const raw = (vendors as any)?.following;
+                            if (!Array.isArray(raw)) return 0;
+                            const ids = raw
+                              .map((f: any) =>
+                                typeof f === "string" ? f : f?._id
+                              )
+                              .filter(Boolean);
+                            return ids.length;
+                          })()}
+                          )
+                        </>
                       )}
                       {infoMode === "followers" && (
-                        <>Followers ({(() => {
-                          const raw = (vendors as any)?.followers;
-                          if (!Array.isArray(raw)) return 0;
-                          const ids = raw.map((f: any) => (typeof f === "string" ? f : f?._id)).filter(Boolean);
-                          return ids.length;
-                        })()})</>
+                        <>
+                          Followers (
+                          {(() => {
+                            const raw = (vendors as any)?.followers;
+                            if (!Array.isArray(raw)) return 0;
+                            const ids = raw
+                              .map((f: any) =>
+                                typeof f === "string" ? f : f?._id
+                              )
+                              .filter(Boolean);
+                            return ids.length;
+                          })()}
+                          )
+                        </>
                       )}
                       {infoMode === "posts" && (
-                        <>Posts ({Array.isArray((vendors as any)?.communityPosts) ? (vendors as any).communityPosts.length : 0})</>
+                        <>
+                          Posts (
+                          {Array.isArray((vendors as any)?.communityPosts)
+                            ? (vendors as any).communityPosts.length
+                            : 0}
+                          )
+                        </>
                       )}
                     </h3>
-                    <button onClick={() => setIsInfoOpen(false)} className="p-1 rounded hover:bg-gray-100">
+                    <button
+                      onClick={() => setIsInfoOpen(false)}
+                      className="p-1 rounded hover:bg-gray-100"
+                    >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                   {isInfoLoading ? (
-                    <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                    <div className="flex-1 space-y-3 overflow-y-auto">
                       {[...Array(4)].map((_, i) => (
-                        <div key={i} className="border border-gray-100 rounded-lg p-3 animate-pulse">
+                        <div
+                          key={i}
+                          className="border border-gray-100 rounded-lg p-3 animate-pulse"
+                        >
                           <div className="flex items-center gap-3 mb-2">
                             <div className="w-9 h-9 rounded-full bg-gray-200" />
                             <div className="flex-1 min-w-0">
@@ -1295,48 +1384,71 @@ export default function SocialFeed() {
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-                      {infoMode === "following" && (() => {
-                        const raw = (vendors as any)?.following;
-                        if (!Array.isArray(raw) || raw.length === 0) {
-                          return <div className="text-sm text-gray-600">No following yet.</div>;
-                        }
-                        const list = raw.map((f: any) => (typeof f === "string" ? { _id: f } : f));
-                        return list.map((v: any) => (
-                          <div
-                            key={v?._id}
-                            className="border border-gray-100 rounded-lg p-3"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
-                                {v?.avatar || v?.businessLogo ? (
-                                  <img
-                                    src={(v?.avatar || v?.businessLogo) as string}
-                                    alt={v?.storeName || "vendor"}
-                                    className="object-cover w-full h-full"
-                                  />
-                                ) : (
-                                  <span className="text-sm font-semibold">{v?.storeName?.charAt(0) || "V"}</span>
-                                )}
+                    <div className="flex-1 space-y-3 overflow-y-auto">
+                      {infoMode === "following" &&
+                        (() => {
+                          const raw = (vendors as any)?.following;
+                          if (!Array.isArray(raw) || raw.length === 0) {
+                            return (
+                              <div className="text-sm text-gray-600">
+                                No following yet.
                               </div>
-                              <div className="min-w-0">
-                                <div className="text-sm font-semibold truncate">{v?.storeName || "Unknown Vendor"}</div>
-                                <div className="text-xs text-gray-500 truncate">{v?.craftCategories?.[0] || "-"}</div>
-                              </div>
-                            </div>
-                            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <div className="text-gray-500">Verification</div>
-                                <div className="font-medium">{v?.verificationStatus || "Unverified"}</div>
-                              </div>
-                              <div>
-                                <div className="text-gray-500">Subscription</div>
-                                <div className="font-medium">
-                                  {v?.subscription?.currentPlan || "-"}
-                                  {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
+                            );
+                          }
+                          const list = raw.map((f: any) =>
+                            typeof f === "string" ? { _id: f } : f
+                          );
+                          return list.map((v: any) => (
+                            <div
+                              key={v?._id}
+                              className="border border-gray-100 rounded-lg p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
+                                  {v?.avatar || v?.businessLogo ? (
+                                    <img
+                                      src={
+                                        (v?.avatar || v?.businessLogo) as string
+                                      }
+                                      alt={v?.storeName || "vendor"}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <span className="text-sm font-semibold">
+                                      {v?.storeName?.charAt(0) || "V"}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold truncate">
+                                    {v?.storeName || "Unknown Vendor"}
+                                  </div>
+                                  <div className="text-xs text-gray-500 truncate">
+                                    {v?.craftCategories?.[0] || "-"}
+                                  </div>
                                 </div>
                               </div>
-                              {/* <div className="col-span-2">
+                              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <div className="text-gray-500">
+                                    Verification
+                                  </div>
+                                  <div className="font-medium">
+                                    {v?.verificationStatus || "Unverified"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-500">
+                                    Subscription
+                                  </div>
+                                  <div className="font-medium">
+                                    {v?.subscription?.currentPlan || "-"}
+                                    {v?.subscription?.billingCycle
+                                      ? ` • ${v.subscription.billingCycle}`
+                                      : ""}
+                                  </div>
+                                </div>
+                                {/* <div className="col-span-2">
                                 <div className="text-gray-500">Payout Account</div>
                                 <div className="font-medium">
                                   {(v?.bankAccount as any)?.account_name || "-"}
@@ -1347,15 +1459,23 @@ export default function SocialFeed() {
                                   )}
                                 </div>
                               </div> */}
-                              <div>
-                                <div className="text-gray-500">Phone</div>
-                                <div className="font-medium">{v?.storePhone || "-"}</div>
-                              </div>
-                              <div>
-                                <div className="text-gray-500">Communities</div>
-                                <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
-                              </div>
-                              {/* <div className="col-span-2">
+                                <div>
+                                  <div className="text-gray-500">Phone</div>
+                                  <div className="font-medium">
+                                    {v?.storePhone || "-"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-500">
+                                    Communities
+                                  </div>
+                                  <div className="font-medium">
+                                    {Array.isArray(v?.communities)
+                                      ? v.communities.length
+                                      : 0}
+                                  </div>
+                                </div>
+                                {/* <div className="col-span-2">
                                 <div className="text-gray-500">KYC</div>
                                 <div className="flex items-center gap-2">
                                   {(v?.kycDocuments as any)?.front && (
@@ -1374,52 +1494,75 @@ export default function SocialFeed() {
                                   </div>
                                 </div>
                               </div> */}
+                              </div>
                             </div>
-                          </div>
-                        ));
-                      })()}
+                          ));
+                        })()}
 
-                      {infoMode === "followers" && (() => {
-                        const raw = (vendors as any)?.followers;
-                        if (!Array.isArray(raw) || raw.length === 0) {
-                          return <div className="text-sm text-gray-600">No followers yet.</div>;
-                        }
-                        const list = raw.map((f: any) => (typeof f === "string" ? { _id: f } : f));
-                        return list.map((v: any) => (
-                          <div
-                            key={v?._id}
-                            className="border border-gray-100 rounded-lg p-3"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
-                                {v?.avatar || v?.businessLogo ? (
-                                  <img
-                                    src={(v?.avatar || v?.businessLogo) as string}
-                                    alt={v?.storeName || "vendor"}
-                                    className="object-cover w-full h-full"
-                                  />
-                                ) : (
-                                  <span className="text-sm font-semibold">{v?.storeName?.charAt(0) || "V"}</span>
-                                )}
+                      {infoMode === "followers" &&
+                        (() => {
+                          const raw = (vendors as any)?.followers;
+                          if (!Array.isArray(raw) || raw.length === 0) {
+                            return (
+                              <div className="text-sm text-gray-600">
+                                No followers yet.
                               </div>
-                              <div className="min-w-0">
-                                <div className="text-sm font-semibold truncate">{v?.storeName || "Unknown Vendor"}</div>
-                                <div className="text-xs text-gray-500 truncate">{v?.craftCategories?.[0] || "-"}</div>
-                              </div>
-                            </div>
-                            <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <div className="text-gray-500">Verification</div>
-                                <div className="font-medium">{v?.verificationStatus || "Unverified"}</div>
-                              </div>
-                              <div>
-                                <div className="text-gray-500">Subscription</div>
-                                <div className="font-medium">
-                                  {v?.subscription?.currentPlan || "-"}
-                                  {v?.subscription?.billingCycle ? ` • ${v.subscription.billingCycle}` : ""}
+                            );
+                          }
+                          const list = raw.map((f: any) =>
+                            typeof f === "string" ? { _id: f } : f
+                          );
+                          return list.map((v: any) => (
+                            <div
+                              key={v?._id}
+                              className="border border-gray-100 rounded-lg p-3"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full overflow-hidden bg-orange-500 text-white flex items-center justify-center">
+                                  {v?.avatar || v?.businessLogo ? (
+                                    <img
+                                      src={
+                                        (v?.avatar || v?.businessLogo) as string
+                                      }
+                                      alt={v?.storeName || "vendor"}
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <span className="text-sm font-semibold">
+                                      {v?.storeName?.charAt(0) || "V"}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold truncate">
+                                    {v?.storeName || "Unknown Vendor"}
+                                  </div>
+                                  <div className="text-xs text-gray-500 truncate">
+                                    {v?.craftCategories?.[0] || "-"}
+                                  </div>
                                 </div>
                               </div>
-                              {/* <div className="col-span-2">
+                              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <div className="text-gray-500">
+                                    Verification
+                                  </div>
+                                  <div className="font-medium">
+                                    {v?.verificationStatus || "Unverified"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-500">
+                                    Subscription
+                                  </div>
+                                  <div className="font-medium">
+                                    {v?.subscription?.currentPlan || "-"}
+                                    {v?.subscription?.billingCycle
+                                      ? ` • ${v.subscription.billingCycle}`
+                                      : ""}
+                                  </div>
+                                </div>
+                                {/* <div className="col-span-2">
                                 <div className="text-gray-500">Payout Account</div>
                                 <div className="font-medium">
                                   {(v?.bankAccount as any)?.account_name || "-"}
@@ -1430,15 +1573,23 @@ export default function SocialFeed() {
                                   )}
                                 </div>
                               </div> */}
-                              <div>
-                                <div className="text-gray-500">Phone</div>
-                                <div className="font-medium">{v?.storePhone || "-"}</div>
-                              </div>
-                              <div>
-                                <div className="text-gray-500">Communities</div>
-                                <div className="font-medium">{Array.isArray(v?.communities) ? v.communities.length : 0}</div>
-                              </div>
-                              {/* <div className="col-span-2">
+                                <div>
+                                  <div className="text-gray-500">Phone</div>
+                                  <div className="font-medium">
+                                    {v?.storePhone || "-"}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-gray-500">
+                                    Communities
+                                  </div>
+                                  <div className="font-medium">
+                                    {Array.isArray(v?.communities)
+                                      ? v.communities.length
+                                      : 0}
+                                  </div>
+                                </div>
+                                {/* <div className="col-span-2">
                                 <div className="text-gray-500">KYC</div>
                                 <div className="flex items-center gap-2">
                                   {(v?.kycDocuments as any)?.front && (
@@ -1457,10 +1608,10 @@ export default function SocialFeed() {
                                   </div>
                                 </div>
                               </div> */}
+                              </div>
                             </div>
-                          </div>
-                        ));
-                      })()}
+                          ));
+                        })()}
 
                       {/* {infoMode === "posts" && (() => {
                         const posts = (vendors as any)?.communityPosts;
@@ -1499,21 +1650,21 @@ export default function SocialFeed() {
             className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center"
             onClick={closeImageGallery}
           >
-            <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center p-4">
+            <div className="relative max-w-4xl max-h-full w-full h-full flex items-center justify-center p-2 sm:p-4">
               {/* Close Button */}
               <motion.button
-                className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
                 onClick={closeImageGallery}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
-                <X size={32} />
+                <X size={24} className="sm:w-8 sm:h-8" />
               </motion.button>
 
               {/* Previous Button */}
               {galleryImages.length > 1 && (
                 <motion.button
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                  className="absolute left-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     prevImage();
@@ -1521,14 +1672,14 @@ export default function SocialFeed() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <ChevronLeft size={48} />
+                  <ChevronLeft size={32} className="sm:w-12 sm:h-12" />
                 </motion.button>
               )}
 
               {/* Next Button */}
               {galleryImages.length > 1 && (
                 <motion.button
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2"
                   onClick={(e) => {
                     e.stopPropagation();
                     nextImage();
@@ -1536,7 +1687,7 @@ export default function SocialFeed() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <ChevronRight size={48} />
+                  <ChevronRight size={32} className="sm:w-12 sm:h-12" />
                 </motion.button>
               )}
 
@@ -1545,7 +1696,7 @@ export default function SocialFeed() {
                 key={currentImageIndex}
                 src={galleryImages[currentImageIndex] || "/placeholder.svg"}
                 alt={`Gallery image ${currentImageIndex + 1}`}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain rounded-lg"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
@@ -1555,7 +1706,7 @@ export default function SocialFeed() {
 
               {/* Image Counter */}
               {galleryImages.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full">
+                <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 text-white bg-black bg-opacity-50 px-3 py-1 rounded-full text-sm">
                   {currentImageIndex + 1} / {galleryImages.length}
                 </div>
               )}

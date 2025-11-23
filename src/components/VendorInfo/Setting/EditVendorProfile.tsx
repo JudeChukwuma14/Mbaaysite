@@ -500,10 +500,17 @@ export default function EditVendorProfile() {
   }, [showEditDropdown]);
 
   useEffect(() => {
-    if (uploadAvatarMutation.isSuccess || uploadBusinessLogoMutation.isSuccess) {
+    if (
+      uploadAvatarMutation.isSuccess ||
+      uploadBusinessLogoMutation.isSuccess
+    ) {
       queryClient.invalidateQueries({ queryKey: ["vendor"] });
     }
-  }, [uploadAvatarMutation.isSuccess, uploadBusinessLogoMutation.isSuccess, queryClient]);
+  }, [
+    uploadAvatarMutation.isSuccess,
+    uploadBusinessLogoMutation.isSuccess,
+    queryClient,
+  ]);
 
   useEffect(() => {
     if (createRecipientCodeMutation.isSuccess) {
@@ -731,7 +738,7 @@ export default function EditVendorProfile() {
 
       // Clear any existing errors
       setErrors({});
-      
+
       await queryClient.invalidateQueries({ queryKey: ["vendor"] });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -1040,15 +1047,15 @@ export default function EditVendorProfile() {
 
   return (
     <motion.div
-      className="min-h-screen p-6 bg-gray-50"
+      className="min-h-screen p-4 sm:p-6 bg-gray-50"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       <ToastContainer />
       <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Edit Vendor Profile</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
               Be Mbaay {user.vendor?.kycStatus}
@@ -1162,7 +1169,7 @@ export default function EditVendorProfile() {
           {/* Account Type and Rating */}
           <motion.div
             variants={itemVariants}
-            className="grid gap-6 md:grid-cols-2"
+            className="grid gap-4 sm:gap-6 sm:grid-cols-2"
           >
             <div className="p-6 bg-white rounded-lg shadow-sm">
               <h3 className="mb-2 text-sm text-gray-500">Account Type</h3>
@@ -1521,17 +1528,17 @@ export default function EditVendorProfile() {
           {/* Action Buttons */}
           <motion.div
             variants={itemVariants}
-            className="flex justify-end gap-4"
+            className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4"
           >
             <button
-              className="px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50"
+              className="px-4 sm:px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50 text-sm sm:text-base"
               onClick={clearImages}
             >
               Discard Changes
             </button>
 
             <button
-              className="px-6 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed"
+              className="px-4 sm:px-6 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >

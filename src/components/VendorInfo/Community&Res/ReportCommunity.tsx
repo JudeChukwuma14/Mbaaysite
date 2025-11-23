@@ -81,7 +81,7 @@ export default function ReportModel({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 z-50 w-full max-w-md"
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 md:inset-auto md:left-1/2 md:-translate-x-1/2 md:top-1/2 z-50 w-full max-w-md bg-white rounded-lg shadow-xl"
           >
             <form
               onSubmit={handleSubmit}
