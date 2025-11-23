@@ -11,21 +11,12 @@ interface Product {
   price: number;
   images: string[];
   category: string;
+  productType: "sales" | "auction" | "flashsale";
 }
 
 interface ProductApiResponse {
   products: Product[];
 }
-
-// interface NewArrivalProps {
-//   product: {
-//     id: string;
-//     name: string;
-//     price: number;
-//     poster: string;
-//     category: string;
-//   };
-// }
 
 // Skeleton card for loading state
 const ProductSkeleton = () => (
@@ -50,25 +41,28 @@ const RandomProductPage = () => {
   );
   const [showFilters, setShowFilters] = useState<boolean>(false);
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    setRetryLoading(true);
-    try {
-      const result: ProductApiResponse | Product[] = await getAllProduct();
-      const productsData = Array.isArray(result)
-        ? result
-        : result.products || [];
-      setProducts(productsData);
-      setError("");
-    } catch (err: unknown) {
-      console.error("Error fetching products:", err);
-      setError("Failed to fetch products. Please try again.");
-    } finally {
-      setLoading(false);
-      setRetryLoading(false);
-    }
-  };
+ const fetchProducts = async () => {
+  setLoading(true);
+  setRetryLoading(true);
+  try {
+    const result: ProductApiResponse | Product[] = await getAllProduct();
+    const allProducts = Array.isArray(result) ? result : result.products || [];
 
+    // FILTER ONLY SALES PRODUCTS
+    const salesProducts = allProducts.filter(
+      (product: any) => product.productType === "sales"
+    );
+
+    setProducts(salesProducts);
+    setError("");
+  } catch (err: unknown) {
+    console.error("Error fetching products:", err);
+    setError("Failed to fetch products. Please try again.");
+  } finally {
+    setLoading(false);
+    setRetryLoading(false);
+  }
+};
   useEffect(() => {
     fetchProducts();
   }, []);
