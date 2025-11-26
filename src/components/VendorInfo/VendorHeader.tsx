@@ -260,7 +260,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
         <button
           onClick={onToggleSidebar}
           aria-label="Open Menu"
-          className="md:hidden p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="p-2 rounded md:hidden hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <Menu className="w-6 h-6" />
         </button>

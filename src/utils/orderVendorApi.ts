@@ -258,3 +258,44 @@ export const exportOrders = async (
     throw error;
   }
 };
+
+// Cancel or postpone an order (vendor initiated)
+export const cancelOrPostponeOrder = async (
+  payload: {
+    orderId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    postalCode?: string | number;
+    address: string;
+    country: string;
+    state: string;
+    city: string;
+    isCancellation?: boolean;
+    isPostponement?: boolean;
+    cancellationReason?: string;
+    postponementFromDate?: string; // ISO date string
+    postponementToDate?: string; // ISO date string
+  },
+  token?: string
+) => {
+  try {
+    const response = await orderApi.post(
+      "/orders/cancel-or-postpone",
+      payload,
+      {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error cancelling/postponing order:", error);
+    throw error;
+  }
+};

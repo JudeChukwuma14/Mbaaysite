@@ -5,6 +5,7 @@ import {
   getOneOrder, // Add this import
   cancelOrder,
   exportOrders,
+  cancelOrPostponeOrder,
   type GetVendorOrdersParams,
 } from "@/utils/orderVendorApi";
 import { toast } from "react-toastify";
@@ -139,6 +140,63 @@ export const useExportOrders = () => {
     onError: (error) => {
       console.error("Error exporting orders:", error);
       toast.error(error.message || "Failed to export orders", {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    },
+  });
+};
+
+// Hook for cancelling or postponing an order (vendor initiated)
+export const useCancelOrPostponeOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (args: {
+      payload: {
+        orderId: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        postalCode?: string | number;
+        address: string;
+        country: string;
+        state: string;
+        city: string;
+        isCancellation?: boolean;
+        isPostponement?: boolean;
+        cancellationReason?: string;
+        postponementFromDate?: string;
+        postponementToDate?: string;
+      };
+      token?: string;
+    }) => cancelOrPostponeOrder(args.payload, args.token),
+    onSuccess: (_data, variables) => {
+      // Invalidate related queries so UI refreshes
+      queryClient.invalidateQueries({ queryKey: ["vendorOrders"] });
+      if (variables?.payload?.orderId) {
+        queryClient.invalidateQueries({
+          queryKey: ["orderDetails", variables.payload.orderId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["oneOrder", variables.payload.orderId],
+        });
+      }
+
+      const action = variables.payload.isCancellation
+        ? "cancelled"
+        : variables.payload.isPostponement
+        ? "postponed"
+        : "updated";
+      toast.success(`Order ${action} successfully!`, {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    },
+    onError: (error: any) => {
+      console.error("Error cancelling/postponing order:", error);
+      toast.error(error.message || "Failed to update order", {
         position: "top-right",
         autoClose: 4000,
       });

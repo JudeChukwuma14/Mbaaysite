@@ -78,7 +78,7 @@ const NewProduct = () => {
     ],
   };
 
-  const defaultCategory = "";
+  const defaultCategory = vendors?.craftCategories[0];
   const defaultSubCategory = subCategories[defaultCategory]?.[0];
   const navigate = useNavigate();
   const [productName, setProductName] = useState("");
@@ -118,7 +118,9 @@ const NewProduct = () => {
   const [vendorCountry, setVendorCountry] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [showListingTypeDropdown, setShowListingTypeDropdown] = useState(false);
-  const [listingType, setListingType] = useState<"sales" | "auction">("sales");
+  const [listingType, setListingType] = useState<
+    "sales" | "auction" | "flash sale"
+  >("sales");
   const [auctionDetails, setAuctionDetails] = useState<{
     startingPrice: string;
     reservePrice: string;
@@ -132,7 +134,15 @@ const NewProduct = () => {
     Inventory: 0,
     auctionstartTime: "",
   });
-  // console.debug("Auction details", auctionDetails);
+  const [flashSaleDetails, setFlashSaleDetails] = useState<{
+    flashSalePrice: string;
+    flashSaleStartDate: string;
+    flashSaleEndDate: string;
+  }>({
+    flashSalePrice: "",
+    flashSaleStartDate: "",
+    flashSaleEndDate: "",
+  });
 
   const returnPolicyRef = useRef<HTMLInputElement>(null);
 
@@ -268,12 +278,23 @@ const NewProduct = () => {
         if (draftData.sku) setSku(draftData.sku);
         if (draftData.price) setPrice(draftData.price);
         if (draftData.shippingprice) setShippingPrice(draftData.shippingprice);
+        if (draftData.listingType) setListingType(draftData.listingType);
+        if (draftData.auctionDetails)
+          setAuctionDetails(draftData.auctionDetails);
         if (draftData.vendorCountry) setVendorCountry(draftData.vendorCountry);
         if (draftData.youtubeUrl) setYoutubeUrl(draftData.youtubeUrl);
         if (draftData.youtubeEmbedUrl)
           setYoutubeEmbedUrl(draftData.youtubeEmbedUrl);
-        if (draftData.selectedCategories)
+        if (draftData.selectedCategories) {
           setSelectedCategories(draftData.selectedCategories);
+          // If draft didn't include an explicit activeCategory but has selectedCategories, use the first
+          if (
+            !draftData.activeCategory &&
+            draftData.selectedCategories.length
+          ) {
+            setActiveCategory(draftData.selectedCategories[0]);
+          }
+        }
 
         // Restore images from base64
         if (draftData.imagePreviewsWithBase64?.length > 0) {
@@ -288,6 +309,10 @@ const NewProduct = () => {
           );
           setImagePreviewUrls(urls);
         }
+
+        // Restore flashSaleDetails if present
+        if (draftData.flashSaleDetails)
+          setFlashSaleDetails(draftData.flashSaleDetails);
 
         // Restore video from base64 if present
         if (draftData.uploadedVideoInfo?.base64) {
@@ -419,6 +444,9 @@ const NewProduct = () => {
         uploadedVideoInfo: videoBase64,
         imagePreviewsWithBase64, // Save the base64 versions
         selectedCategories,
+        flashSaleDetails,
+        listingType,
+        auctionDetails,
 
         // Don't try to save File objects directly
       };
@@ -541,33 +569,72 @@ const NewProduct = () => {
         throw new Error("Please select a subcategory");
 
       /* ----------  inventory / quantity validation  ---------- */
-      const inventoryRaw =
-        listingType === "auction" ? auctionDetails.Inventory : Number(quantity);
-      if (!inventoryRaw || isNaN(inventoryRaw))
+      // Inventory/quantity is required for sales, auction and flash sale
+      let inventoryRaw: number;
+      if (listingType === "auction") {
+        inventoryRaw = Number(auctionDetails.Inventory);
+      } else {
+        inventoryRaw = Number(quantity);
+      }
+
+      if (isNaN(inventoryRaw))
         throw new Error("Please enter a valid inventory / quantity");
       if (inventoryRaw < 0) throw new Error("Inventory cannot be negative");
 
       /* ----------  price validation  ---------- */
       const toNumber = (v: string) => Number(v.replace(/[^0-9.]/g, "")) || 0;
       const numericPrice =
-        listingType === "sales"
-          ? toNumber(price)
-          : toNumber(auctionDetails.startingPrice);
+        listingType === "auction"
+          ? toNumber(auctionDetails.startingPrice)
+          : toNumber(price);
       if (isNaN(numericPrice)) throw new Error("Please enter a valid price");
 
       if (productImages.length === 0)
         throw new Error("Please upload at least one product image");
 
+      /* ----------  flash sale validation  ---------- */
+      if (listingType === "flash sale") {
+        // Ensure original price exists for flash sale validations
+        if (!price || isNaN(toNumber(price)) || toNumber(price) <= 0) {
+          throw new Error("Please enter a valid original price for flash sale");
+        }
+        if (!flashSaleDetails.flashSalePrice.trim())
+          throw new Error("Flash sale price is required");
+        if (!flashSaleDetails.flashSaleStartDate)
+          throw new Error("Flash sale start date is required");
+        if (!flashSaleDetails.flashSaleEndDate)
+          throw new Error("Flash sale end date is required");
+
+        const flashPrice = toNumber(flashSaleDetails.flashSalePrice);
+        const regularPrice = toNumber(price);
+        console.log(flashPrice >= regularPrice);
+        if (flashPrice >= regularPrice)
+          throw new Error("Flash sale price must be lower than regular price");
+
+        const startDate = new Date(flashSaleDetails.flashSaleStartDate);
+        const endDate = new Date(flashSaleDetails.flashSaleEndDate);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        if (startDate < now)
+          throw new Error("Flash sale start date must be in the future");
+        if (endDate < now)
+          throw new Error("Flash sale end date must be in the future");
+        if (endDate <= startDate)
+          throw new Error("Flash sale end date must be after start date");
+      }
+
       /* ----------  build FormData  ---------- */
       const formData = new FormData();
 
-      /* --- core fields (always sent) --- */
+      /* --- core fields (always sent where applicable) --- */
       formData.append("name", productName);
       formData.append("description", value);
       formData.append("category", activeCategory);
       formData.append("sub_category", subCategory);
       formData.append("sub_category2", subSubCategory);
-      formData.append("inventory", inventoryRaw.toString());
+      if (inventoryRaw !== undefined && inventoryRaw !== null) {
+        formData.append("inventory", String(inventoryRaw));
+      }
       formData.append("sku", sku);
 
       /* --- product type flag --- */
@@ -579,10 +646,9 @@ const NewProduct = () => {
         if (isNaN(shipFee))
           throw new Error("Please enter a valid shipping fee");
 
-        formData.append("price", numericPrice.toString());
+        formData.append("price", toNumber(price).toString());
         formData.append("shippingfee", shipFee.toString());
-      } else {
-        /* auction only */
+      } else if (listingType === "auction") {
         formData.append("startingPrice", numericPrice.toString());
         formData.append(
           "reservePrice",
@@ -593,7 +659,29 @@ const NewProduct = () => {
           "auctionStartDate",
           new Date(auctionDetails.auctionstartTime).toISOString()
         );
-        formData.append("shippingfee", "0"); // auctions don’t charge shipping
+        formData.append("shippingfee", "0");
+      } else if (listingType === "flash sale") {
+        // originalPrice is required by backend; use the regular price value here
+        formData.append("originalPrice", toNumber(price).toString());
+        formData.append("price", toNumber(price).toString());
+        // Flash sale does not require shipping price; set shipping fee to 0
+        formData.append("shippingfee", "0");
+        formData.append(
+          "flashSalePrice",
+          toNumber(flashSaleDetails.flashSalePrice).toString()
+        );
+        formData.append(
+          "flashSaleStartDate",
+          flashSaleDetails.flashSaleStartDate
+        );
+        formData.append("flashSaleEndDate", flashSaleDetails.flashSaleEndDate);
+        // Compute and append flashSaleDiscount (avoid NaN)
+        const rp = toNumber(price); // regular price
+        const fp = toNumber(flashSaleDetails.flashSalePrice);
+        if (!isNaN(rp) && rp > 0 && !isNaN(fp) && fp >= 0 && fp < rp) {
+          const discount = Math.round(((rp - fp) / rp) * 100);
+          formData.append("flashSaleDiscount", discount.toString());
+        }
       }
 
       /* --- media --- */
@@ -626,6 +714,7 @@ const NewProduct = () => {
       setIsLoading(false);
     }
   };
+  console.log(flashSaleDetails);
 
   const getCurrentTheme = () => {
     if (!activeCategory)
@@ -662,19 +751,36 @@ const NewProduct = () => {
   }, [showCategoryDropdown, showListingTypeDropdown]);
 
   useEffect(() => {
-    // Set initial category based on vendor's craftCategories
+    // Set initial category based on vendor's craftCategories — but do not override restored draft
+    const hasDraft = !!localStorage.getItem("productDraft");
+    // console.log("has", localStorage.getItem("productDraft"));
+    if (hasDraft) return; // If draft exists, do not override draft values with vendor defaults
+
     if (vendors?.craftCategories && vendors.craftCategories?.length > 0) {
       const firstCategory = vendors.craftCategories[0];
-      setActiveCategory(firstCategory);
-      const firstSubCategory = subCategories[firstCategory]?.[0] || "";
-      setSubCategory(firstSubCategory);
-      setSelectedCategories(vendors.craftCategories);
+      // Only set activeCategory if it is empty or not included in vendor categories
+      if (
+        !activeCategory ||
+        !vendors.craftCategories.includes(activeCategory)
+      ) {
+        setActiveCategory(firstCategory);
+        const firstSubCategory = subCategories[firstCategory]?.[0] || "";
+        setSubCategory(firstSubCategory);
+      }
+      // Only set selectedCategories if user hasn't restored a draft with categories
+      const noSelectedCategoriesSaved =
+        !selectedCategories ||
+        selectedCategories.length === 0 ||
+        selectedCategories.every((c) => !c || c === defaultCategory);
+      if (noSelectedCategoriesSaved) {
+        setSelectedCategories(vendors.craftCategories);
+      }
     }
   }, [vendors?.craftCategories]);
 
   return (
     <motion.div
-      className="min-h-screen p-4 sm:p-6 space-y-6 bg-gray-100 overflow-x-hidden max-w-full"
+      className="max-w-full min-h-screen p-4 space-y-6 overflow-x-hidden bg-gray-100 sm:p-6"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
@@ -684,16 +790,16 @@ const NewProduct = () => {
         showBankAccountPopup={showBankAccountPopup}
         setShowBankAccountPopup={setShowBankAccountPopup}
       />
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 mb-6 bg-white rounded-lg shadow gap-3">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold">New Product</h1>
+      <div className="flex flex-col justify-between gap-3 p-4 mb-6 bg-white rounded-lg shadow sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <h1 className="text-xl font-bold sm:text-2xl">New Product</h1>
 
           {/* Category Dropdown - only show if vendor has multiple categories */}
           {vendors?.craftCategories && vendors.craftCategories?.length > 1 && (
             <div className="relative">
               <button
                 onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 w-full sm:w-auto"
+                className="flex items-center w-full gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 sm:w-auto"
               >
                 <span className="truncate">
                   Categories ({vendors.craftCategories?.length})
@@ -702,7 +808,7 @@ const NewProduct = () => {
                   animate={{ rotate: showCategoryDropdown ? 180 : 0 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                  <ChevronDown className="flex-shrink-0 w-4 h-4" />
                 </motion.div>
               </button>
 
@@ -761,7 +867,13 @@ const NewProduct = () => {
               aria-haspopup="listbox"
               aria-expanded={showListingTypeDropdown}
             >
-              <span>{listingType === "sales" ? "Sales" : "Auction"}</span>
+              <span>
+                {listingType === "sales"
+                  ? "Regular"
+                  : listingType === "auction"
+                  ? "Auction"
+                  : "Flash Sale"}
+              </span>
               <motion.div
                 animate={{ rotate: showListingTypeDropdown ? 180 : 0 }}
                 transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
@@ -797,7 +909,7 @@ const NewProduct = () => {
                       role="option"
                       aria-selected={listingType === "sales"}
                     >
-                      Sales
+                      Regular
                     </button>
                     <button
                       className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
@@ -813,6 +925,21 @@ const NewProduct = () => {
                       aria-selected={listingType === "auction"}
                     >
                       Auction
+                    </button>
+                    <button
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-gray-100 text-sm ${
+                        listingType === "flash sale"
+                          ? "bg-blue-50 text-blue-600"
+                          : ""
+                      }`}
+                      onClick={() => {
+                        setListingType("flash sale");
+                        setShowListingTypeDropdown(false);
+                      }}
+                      role="option"
+                      aria-selected={listingType === "flash sale"}
+                    >
+                      Flash Sale
                     </button>
                   </div>
                 </motion.div>
@@ -923,7 +1050,9 @@ const NewProduct = () => {
         <h2 className="pb-2 mb-4 text-lg font-semibold border-b">
           {listingType === "sales"
             ? "Inventory and Pricing"
-            : "Auction Settings"}
+            : listingType === "auction"
+            ? "Auction Settings"
+            : "Flash Sale Settings"}
         </h2>
 
         {listingType === "sales" ? (
@@ -984,7 +1113,7 @@ const NewProduct = () => {
               />
             </div>
           </div>
-        ) : (
+        ) : listingType === "auction" ? (
           /* =====  AUCTION  ===== */
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
@@ -1071,19 +1200,103 @@ const NewProduct = () => {
               />
             </div>
           </div>
+        ) : (
+          /* =====  FLASH SALE  ===== */
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="space-y-4 md:col-span-2">
+              <h3 className="font-medium">Original Price</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Original Product Price
+                  </label>
+                  <CurrencyInput
+                    value={price}
+                    onChange={setPrice}
+                    country="Nigeria"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-1 text-sm text-gray-600">
+                    Inventory
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="Inventory"
+                    className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    min="0"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-medium">Flash Sale Details</h3>
+              <div>
+                <label className="block mb-1 text-sm text-gray-600">
+                  Flash Sale Price *
+                </label>
+                <CurrencyInput
+                  value={flashSaleDetails.flashSalePrice}
+                  onChange={(v) =>
+                    setFlashSaleDetails({
+                      ...flashSaleDetails,
+                      flashSalePrice: v,
+                    })
+                  }
+                  country="Nigeria"
+                />
+              </div>
+            </div>
+
+            <div className="mt-10">
+              <label className="block mb-1 text-sm text-gray-600">
+                Flash Sale Start Date *
+              </label>
+
+              <input
+                type="date"
+                onChange={(e) =>
+                  setFlashSaleDetails({
+                    ...flashSaleDetails,
+                    flashSaleStartDate: e.target.value,
+                  })
+                }
+                className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 text-sm text-gray-600">
+                Flash Sale End Date *
+              </label>
+
+              <input
+                type="date"
+                onChange={(e) =>
+                  setFlashSaleDetails({
+                    ...flashSaleDetails,
+                    flashSaleEndDate: e.target.value,
+                  })
+                }
+                className="w-full p-2 border border-orange-500 rounded outline-orange-500"
+              />
+            </div>
+          </div>
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-end p-4 space-y-3 sm:space-y-0 sm:space-x-4 bg-white rounded-lg shadow">
+      <div className="flex flex-col justify-end p-4 space-y-3 bg-white rounded-lg shadow sm:flex-row sm:space-y-0 sm:space-x-4">
         <button
-          className="px-4 py-2 text-red-500 border border-orange-500 rounded-lg order-3 sm:order-1"
+          className="order-3 px-4 py-2 text-red-500 border border-orange-500 rounded-lg sm:order-1"
           onClick={handleDiscard}
           // disabled={isLoading}
         >
           Discard
         </button>
         <button
-          className="flex items-center justify-center px-4 py-2 text-white bg-red-500 rounded-lg order-2"
+          className="flex items-center justify-center order-2 px-4 py-2 text-white bg-red-500 rounded-lg"
           onClick={handleSaveDraft}
           disabled={isLoading}
         >
@@ -1116,7 +1329,7 @@ const NewProduct = () => {
           )}
         </button>
         <button
-          className="flex items-center justify-center px-4 py-2 text-white bg-green-500 rounded-lg order-1 sm:order-3"
+          className="flex items-center justify-center order-1 px-4 py-2 text-white bg-green-500 rounded-lg sm:order-3"
           onClick={handleAddProduct}
           disabled={isLoading}
         >

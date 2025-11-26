@@ -12,6 +12,13 @@ import {
   useUploadAvatar,
   useUploadBusinessLogo,
 } from "../../../utils/editvendorApi";
+import {
+  useChangeVendorPassword,
+  useUpdateVendorLocation,
+  useInitiateVendorEmailChange,
+  useVerifyVendorEmail,
+  useUpdateStoreDetails,
+} from "@/hook/updateVendor";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useCreateRecipientCode } from "@/hook/useRecipientCode";
@@ -256,8 +263,12 @@ export default function EditVendorProfile() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
-  const [address, setAddress] = useState("");
+  const [address1, setAddress1] = useState("");
+  const [city, setCity] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState("");
+  const [pendingEmail, setPendingEmail] = useState("");
   const [storeName, setStoreName] = useState("");
   const [storeNumber, setStoreNumber] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -289,6 +300,25 @@ export default function EditVendorProfile() {
   const uploadBusinessLogoMutation = useUploadBusinessLogo();
   const createRecipientCodeMutation = useCreateRecipientCode();
   const queryClient = useQueryClient();
+
+  // New mutations for vendor updates
+  const changePasswordMutation = useChangeVendorPassword();
+  const updateLocationMutation = useUpdateVendorLocation();
+  const initiateEmailChangeMutation = useInitiateVendorEmailChange();
+  const verifyEmailMutation = useVerifyVendorEmail();
+  const updateStoreDetailsMutation = useUpdateStoreDetails();
+
+  // Global pending flag for a subtle editing/loading overlay
+  const anyPending =
+    isSubmitting ||
+    uploadAvatarMutation.isPending ||
+    uploadBusinessLogoMutation.isPending ||
+    createRecipientCodeMutation.isPending ||
+    changePasswordMutation.isPending ||
+    updateLocationMutation.isPending ||
+    initiateEmailChangeMutation.isPending ||
+    verifyEmailMutation.isPending ||
+    updateStoreDetailsMutation.isPending;
 
   const [profile, setProfile] = useState<VendorProfile>({
     companyName: "",
@@ -653,7 +683,8 @@ export default function EditVendorProfile() {
         setActivePopup("location");
         setCountry("");
         setState("");
-        setAddress("");
+        setAddress1("");
+        setCity("");
         break;
       case "account":
         setActivePopup("account");
@@ -849,99 +880,180 @@ export default function EditVendorProfile() {
 
   // Handle password change
   const handlePasswordChange = () => {
-    if (!newPassword) {
-      toast.error("Please enter a new password", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-      return;
-    }
+    (async () => {
+      if (!newPassword) {
+        toast.error("Please enter a new password", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
 
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-      return;
-    }
+      if (newPassword !== confirmPassword) {
+        toast.error("Passwords do not match", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
 
-    // Update the actual password
-    setActualPassword(newPassword);
+      try {
+        await changePasswordMutation.mutateAsync({
+          token: user.token || null,
+          newPassword,
+          confirmPassword,
+        });
 
-    // Simulate password change
-    toast.success("Password changed successfully", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    closePopup();
+        // update local state and close popup
+        setActualPassword(newPassword);
+        setNewPassword("");
+        setConfirmPassword("");
+        closePopup();
+      } catch (err) {
+        // error toast handled by mutation; still keep console
+        console.error("Password change failed:", err);
+      }
+    })();
   };
 
   // Handle location change
   const handleLocationChange = () => {
-    if (!country || !state || !address) {
-      toast.error("Please fill all location fields", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-      return;
-    }
+    (async () => {
+      if (!country || !state || !address1 || !city) {
+        toast.error("Please fill all location fields", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
 
-    // Simulate location change
-    toast.success("Location updated successfully", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    closePopup();
+      try {
+        await updateLocationMutation.mutateAsync({
+          token: user.token || null,
+          location: {
+            country,
+            state,
+            address1: address1,
+            city,
+          },
+        });
+
+        setCountry("");
+        setState("");
+        setAddress1("");
+        setCity("");
+        closePopup();
+      } catch (err) {
+        console.error("Location update failed:", err);
+      }
+    })();
   };
 
   // Handle email change
   const handleEmailChange = () => {
-    if (!newEmail) {
-      toast.error("Please enter a new email address", {
+    (async () => {
+      if (!newEmail) {
+        toast.error("Please enter a new email address", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
+
+      if (!/\S+@\S+\.\S+/.test(newEmail)) {
+        toast.error("Please enter a valid email address", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
+
+      try {
+        await initiateEmailChangeMutation.mutateAsync({
+          token: user.token || null,
+          email: newEmail,
+        });
+
+        // Open OTP modal to complete verification
+        setPendingEmail(newEmail);
+        setNewEmail("");
+        setShowOtpModal(true);
+        closePopup();
+      } catch (err) {
+        console.error("Initiate email change failed:", err);
+      }
+    })();
+  };
+
+  const handleVerifyEmail = async () => {
+    if (!otpCode || otpCode.trim().length === 0) {
+      toast.error("Please enter the OTP sent to your email", {
         position: "top-right",
         autoClose: 4000,
       });
       return;
     }
 
-    if (!/\S+@\S+\.\S+/.test(newEmail)) {
-      toast.error("Please enter a valid email address", {
-        position: "top-right",
-        autoClose: 4000,
+    try {
+      await verifyEmailMutation.mutateAsync({
+        token: user.token || null,
+        email: pendingEmail,
+        otp: otpCode,
       });
-      return;
-    }
 
-    // Simulate email change
-    setProfile({ ...profile, email: newEmail });
-    toast.success("Email updated successfully", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    closePopup();
+      // Update local profile email after successful verification
+      setProfile((prev) => ({ ...prev, email: pendingEmail }));
+      setPendingEmail("");
+      setOtpCode("");
+      setShowOtpModal(false);
+    } catch (err) {
+      console.error("Email verification failed:", err);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!pendingEmail) return;
+    try {
+      await initiateEmailChangeMutation.mutateAsync({
+        token: user.token || null,
+        email: pendingEmail,
+      });
+      toast.success("OTP resent to your email");
+    } catch (err) {
+      console.error("Resend OTP failed:", err);
+    }
   };
 
   // Handle store details change
   const handleStoreChange = () => {
-    if (!storeName || !storeNumber) {
-      toast.error("Please fill all store details", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-      return;
-    }
+    (async () => {
+      if (!storeName) {
+        toast.error("Please enter the store name", {
+          position: "top-right",
+          autoClose: 4000,
+        });
+        return;
+      }
 
-    // Simulate store details change
-    setProfile({
-      ...profile,
-      companyName: storeName,
-      phone: storeNumber,
-    });
-    toast.success("Store details updated successfully", {
-      position: "top-right",
-      autoClose: 3000,
-    });
-    closePopup();
+      try {
+        await updateStoreDetailsMutation.mutateAsync({
+          token: user.token || null,
+          details: { storeName, storePhone: storeNumber || undefined },
+        });
+
+        setProfile((prev) => ({
+          ...prev,
+          companyName: storeName,
+          phone: storeNumber || prev.phone,
+        }));
+
+        setStoreName("");
+        setStoreNumber("");
+        closePopup();
+      } catch (err) {
+        console.error("Update store details failed:", err);
+      }
+    })();
   };
 
   // Enhanced account change handler with recipient code creation
@@ -1052,10 +1164,19 @@ export default function EditVendorProfile() {
       initial="hidden"
       animate="visible"
     >
+      {/* Global editing/loading overlay */}
+      {anyPending && (
+        <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/30">
+          <div className="flex flex-col items-center gap-3 p-4 rounded-lg shadow-lg bg-white/90">
+            <div className="w-8 h-8 border-4 border-gray-200 rounded-full border-t-orange-500 animate-spin" />
+            <div className="text-sm font-medium">Saving changes…</div>
+          </div>
+        </div>
+      )}
       <ToastContainer />
       <div className="max-w-5xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold">Edit Vendor Profile</h1>
+        <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-xl font-bold sm:text-2xl">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
               Be Mbaay {user.vendor?.kycStatus}
@@ -1528,17 +1649,17 @@ export default function EditVendorProfile() {
           {/* Action Buttons */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4"
+            className="flex flex-col justify-end gap-3 sm:flex-row sm:gap-4"
           >
             <button
-              className="px-4 sm:px-6 py-2 border border-orange-500 rounded-lg hover:bg-orange-50 text-sm sm:text-base"
+              className="px-4 py-2 text-sm border border-orange-500 rounded-lg sm:px-6 hover:bg-orange-50 sm:text-base"
               onClick={clearImages}
             >
               Discard Changes
             </button>
 
             <button
-              className="px-4 sm:px-6 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed text-sm sm:text-base"
+              className="px-4 py-2 text-sm text-white bg-orange-500 rounded-lg sm:px-6 hover:bg-orange-600 disabled:bg-orange-300 disabled:cursor-not-allowed sm:text-base"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >
@@ -1604,14 +1725,22 @@ export default function EditVendorProfile() {
                         <button
                           className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
                           onClick={closePopup}
+                          disabled={changePasswordMutation.isPending}
                         >
                           Cancel
                         </button>
                         <button
-                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          className={`px-4 py-2 text-white rounded-lg ${
+                            changePasswordMutation.isPending
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-orange-500 hover:bg-orange-600"
+                          }`}
                           onClick={handlePasswordChange}
+                          disabled={changePasswordMutation.isPending}
                         >
-                          Change Password
+                          {changePasswordMutation.isPending
+                            ? "Changing..."
+                            : "Change Password"}
                         </button>
                       </div>
                     </div>
@@ -1655,27 +1784,46 @@ export default function EditVendorProfile() {
                       </div>
                       <div>
                         <label className="block mb-1 text-sm text-gray-500">
-                          Address
+                          Address Line 1
                         </label>
-                        <motion.textarea
-                          value={address}
-                          onChange={(e) => setAddress(e.target.value)}
+                        <motion.input
+                          type="text"
+                          value={address1}
+                          onChange={(e) => setAddress1(e.target.value)}
                           className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
-                          rows={3}
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-sm text-gray-500">
+                          City
+                        </label>
+                        <motion.input
+                          type="text"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-orange-500"
                         />
                       </div>
                       <div className="flex justify-end gap-2 mt-6">
                         <button
                           className="px-4 py-2 text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
                           onClick={closePopup}
+                          disabled={updateLocationMutation.isPending}
                         >
                           Cancel
                         </button>
                         <button
-                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          className={`px-4 py-2 text-white rounded-lg ${
+                            updateLocationMutation.isPending
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-orange-500 hover:bg-orange-600"
+                          }`}
                           onClick={handleLocationChange}
+                          disabled={updateLocationMutation.isPending}
                         >
-                          Update Location
+                          {updateLocationMutation.isPending
+                            ? "Updating..."
+                            : "Update Location"}
                         </button>
                       </div>
                     </div>
@@ -1950,14 +2098,22 @@ export default function EditVendorProfile() {
                         <button
                           className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
                           onClick={closePopup}
+                          disabled={initiateEmailChangeMutation.isPending}
                         >
                           Cancel
                         </button>
                         <button
-                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          className={`px-4 py-2 text-white rounded-lg ${
+                            initiateEmailChangeMutation.isPending
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-orange-500 hover:bg-orange-600"
+                          }`}
                           onClick={handleEmailChange}
+                          disabled={initiateEmailChangeMutation.isPending}
                         >
-                          Update Email
+                          {initiateEmailChangeMutation.isPending
+                            ? "Sending..."
+                            : "Send OTP"}
                         </button>
                       </div>
                     </div>
@@ -1992,7 +2148,7 @@ export default function EditVendorProfile() {
                       </div>
                       <div>
                         <label className="block mb-1 text-sm text-gray-500">
-                          Store Number
+                          Store Number (optional)
                         </label>
                         <motion.input
                           type="tel"
@@ -2003,21 +2159,106 @@ export default function EditVendorProfile() {
                       </div>
                       <div className="flex justify-end gap-2 mt-6">
                         <button
-                          className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                          className="px-4 py-2 text-gray-700 transition-colors border border-gray-300 rounded-lg hover:bg-gray-50"
                           onClick={closePopup}
+                          disabled={updateStoreDetailsMutation.isPending}
                         >
                           Cancel
                         </button>
                         <button
-                          className="px-4 py-2 text-white bg-orange-500 rounded-lg hover:bg-orange-600"
+                          className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                            updateStoreDetailsMutation.isPending
+                              ? "bg-gray-300 cursor-not-allowed"
+                              : "bg-orange-500 text-white hover:bg-orange-600"
+                          }`}
                           onClick={handleStoreChange}
+                          disabled={updateStoreDetailsMutation.isPending}
                         >
-                          Update Store
+                          {updateStoreDetailsMutation.isPending
+                            ? "Updating..."
+                            : "Update Store"}
                         </button>
                       </div>
                     </div>
                   </>
                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* OTP Verification Modal (renders independently of other popups) */}
+        {showOtpModal && (
+          <motion.div
+            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/60"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="w-full max-w-sm p-6 bg-white rounded-lg"
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Verify New Email</h3>
+                <button
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => {
+                    setShowOtpModal(false);
+                    setPendingEmail("");
+                    setOtpCode("");
+                  }}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="mb-3 text-sm text-gray-600">
+                Enter the OTP sent to <strong>{pendingEmail}</strong>
+              </p>
+
+              <div className="mb-4">
+                <input
+                  type="text"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="Enter OTP"
+                  className="w-full p-2 border rounded-lg"
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  className="text-sm text-gray-600 hover:underline"
+                  onClick={handleResendOtp}
+                  disabled={initiateEmailChangeMutation.isPending}
+                >
+                  Resend OTP
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg"
+                    onClick={() => setShowOtpModal(false)}
+                    disabled={verifyEmailMutation.isPending}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded-lg text-white ${
+                      verifyEmailMutation.isPending
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-orange-500 hover:bg-orange-600"
+                    }`}
+                    onClick={handleVerifyEmail}
+                    disabled={verifyEmailMutation.isPending}
+                  >
+                    {verifyEmailMutation.isPending
+                      ? "Verifying..."
+                      : "Verify Email"}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </motion.div>
