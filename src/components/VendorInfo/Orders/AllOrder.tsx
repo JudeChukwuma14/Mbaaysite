@@ -35,7 +35,7 @@ interface Order {
     fullAddress: string;
   };
   totalPrice: number;
-  status: "Processing" | "Delivered" | "Cancelled" | "Pending";
+  status: "Processing" | "Delivered" | "Return Requested" | "Pending";
   product: {
     _id: string;
     name: string;
@@ -146,7 +146,7 @@ const AllOrdersPage: React.FC = () => {
         return "text-yellow-400";
       case "Delivered":
         return "text-green-500";
-      case "Cancelled":
+      case "Return Requested":
         return "text-red-500";
       case "Pending":
         return "text-blue-500";
@@ -157,18 +157,18 @@ const AllOrdersPage: React.FC = () => {
 
   if (isLoading) {
     return (
-      <main className="p-4 sm:p-5 overflow-x-hidden max-w-full">
+      <main className="max-w-full p-4 overflow-x-hidden sm:p-5">
         {/* Header skeleton */}
         <div className="mb-6">
-          <div className="h-7 w-40 bg-gray-200 rounded mb-2 animate-pulse" />
-          <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+          <div className="w-40 mb-2 bg-gray-200 rounded h-7 animate-pulse" />
+          <div className="w-64 h-4 bg-gray-200 rounded animate-pulse" />
         </div>
 
         {/* Controls skeleton */}
         <div className="flex flex-wrap justify-between gap-3 mb-4">
-          <div className="h-10 w-full sm:w-1/3 bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-40 bg-gray-200 rounded animate-pulse" />
-          <div className="h-10 w-40 bg-gray-200 rounded animate-pulse" />
+          <div className="w-full h-10 bg-gray-200 rounded sm:w-1/3 animate-pulse" />
+          <div className="w-40 h-10 bg-gray-200 rounded animate-pulse" />
+          <div className="w-40 h-10 bg-gray-200 rounded animate-pulse" />
         </div>
 
         {/* Table skeleton */}
@@ -177,13 +177,13 @@ const AllOrdersPage: React.FC = () => {
           <div className="divide-y">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="grid grid-cols-7 gap-4 p-4 animate-pulse">
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
-                <div className="h-4 bg-gray-200 rounded col-span-1" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
+                <div className="h-4 col-span-1 bg-gray-200 rounded" />
               </div>
             ))}
           </div>
@@ -215,7 +215,7 @@ const AllOrdersPage: React.FC = () => {
   }
 
   return (
-    <main className="p-4 sm:p-5 overflow-x-hidden max-w-full">
+    <main className="max-w-full p-4 overflow-x-hidden sm:p-5">
       {/* Header */}
       <div className="mb-6">
         <h1 className="mb-2 text-2xl font-bold">Orders</h1>
@@ -229,7 +229,7 @@ const AllOrdersPage: React.FC = () => {
 
       {/* Status Tabs */}
       <div className="flex flex-wrap gap-4 mb-6">
-        {["All", "Pending", "Processing", "Delivered", "Cancelled"].map(
+        {["All", "Pending", "Processing", "Delivered", "Return Requested"].map(
           (tab) => (
             <motion.button
               key={tab}
@@ -284,20 +284,41 @@ const AllOrdersPage: React.FC = () => {
       <div className="overflow-hidden bg-white rounded-lg shadow-md">
         {filteredOrders.length === 0 ? (
           <div className="p-12">
-            <div className="flex flex-col items-center justify-center text-center border-2 border-dashed rounded-xl bg-gray-50 p-10">
+            <div className="flex flex-col items-center justify-center p-10 text-center border-2 border-dashed rounded-xl bg-gray-50">
               <div className="mb-3">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="5" width="18" height="14" rx="3" className="fill-orange-50 stroke-orange-300" strokeWidth="1.5" />
-                  <path d="M7 12h6M7 9h10M7 15h10" className="stroke-orange-400" strokeWidth="1.5" strokeLinecap="round" />
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <rect
+                    x="3"
+                    y="5"
+                    width="18"
+                    height="14"
+                    rx="3"
+                    className="fill-orange-50 stroke-orange-300"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M7 12h6M7 9h10M7 15h10"
+                    className="stroke-orange-400"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </div>
-              <h4 className="text-sm font-semibold text-gray-900">No matching orders</h4>
-              <p className="mt-1 text-xs text-gray-600 max-w-sm">
+              <h4 className="text-sm font-semibold text-gray-900">
+                No matching orders
+              </h4>
+              <p className="max-w-sm mt-1 text-xs text-gray-600">
                 Try adjusting your search or filters to find orders.
               </p>
               <button
                 onClick={clearFilters}
-                className="mt-4 px-4 py-2 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600"
+                className="px-4 py-2 mt-4 text-sm font-medium text-white bg-orange-500 rounded-full hover:bg-orange-600"
               >
                 Clear filters
               </button>
@@ -306,40 +327,59 @@ const AllOrdersPage: React.FC = () => {
         ) : (
           <>
             {/* Mobile stacked list */}
-            <div className="md:hidden space-y-3 p-4">
+            <div className="p-4 space-y-3 md:hidden">
               {filteredOrders.map((order, index) => (
                 <motion.div
                   key={order._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2, delay: index * 0.05 }}
-                  className="p-4 rounded-lg border border-gray-200 bg-white"
+                  className="p-4 bg-white border border-gray-200 rounded-lg"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="text-xs text-gray-500">Order</div>
-                    <Link to={`/app/order-details/${order._id}`} className="text-xs text-blue-600 hover:underline">View</Link>
+                    <Link
+                      to={`/app/order-details/${order._id}`}
+                      className="text-xs text-blue-600 hover:underline"
+                    >
+                      View
+                    </Link>
                   </div>
-                  <div className="mt-1 font-mono text-sm break-all">#{order._id}</div>
-                  <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                  <div className="mt-1 font-mono text-sm break-all">
+                    #{order._id}
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
                     <div>
                       <div className="text-xs text-gray-500">Date</div>
                       <div>{formatDate(order.createdAt)}</div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Customer</div>
-                      <div>{order.buyerInfo.first_name} {order.buyerInfo.last_name}</div>
+                      <div>
+                        {order.buyerInfo.first_name} {order.buyerInfo.last_name}
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Item</div>
-                      <div className="truncate" title={order.product.name}>{order.product.name}</div>
+                      <div className="truncate" title={order.product.name}>
+                        {order.product.name}
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Amount</div>
-                      <div className="font-semibold">{formatAmount(order.totalPrice)}</div>
+                      <div className="font-semibold">
+                        {formatAmount(order.totalPrice)}
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-gray-500">Status</div>
-                      <div className={`font-medium ${getStatusColor(order.status)}`}>{order.status}</div>
+                      <div
+                        className={`font-medium ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -347,68 +387,68 @@ const AllOrdersPage: React.FC = () => {
             </div>
 
             {/* Desktop table */}
-            <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="text-gray-700 bg-gray-100">
-                <tr>
-                  <th className="px-4 py-3">Order ID</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Customer</th>
-                  <th className="px-4 py-3">Item</th>
-                  <th className="px-4 py-3">Amount</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order, index) => (
-                  <motion.tr
-                    key={order._id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2, delay: index * 0.05 }}
-                    className="border-b hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-3 font-mono text-sm break-all">
-                      #{order._id}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {formatDate(order.createdAt)}
-                    </td>
-                    <td className="px-4 py-3">
-                      {order.buyerInfo.first_name} {order.buyerInfo.last_name}
-                    </td>
-                    <td className="px-4 py-3">{order.product.name}</td>
-
-                    <td className="px-4 py-3 font-semibold">
-                      {formatAmount(order.totalPrice)}
-                    </td>
-                    <td
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                        order.status
-                      )}`}
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full text-left">
+                <thead className="text-gray-700 bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-3">Order ID</th>
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Customer</th>
+                    <th className="px-4 py-3">Item</th>
+                    <th className="px-4 py-3">Amount</th>
+                    <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredOrders.map((order, index) => (
+                    <motion.tr
+                      key={order._id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: index * 0.05 }}
+                      className="border-b hover:bg-gray-50"
                     >
-                      {order.status}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Link to={`/app/order-details/${order._id}`}>
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className="text-blue-500 hover:underline"
-                        >
-                          View Details
-                        </motion.button>
-                      </Link>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+                      <td className="px-4 py-3 font-mono text-sm break-all">
+                        #{order._id}
+                      </td>
+                      <td className="px-4 py-3 text-sm">
+                        {formatDate(order.createdAt)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {order.buyerInfo.first_name} {order.buyerInfo.last_name}
+                      </td>
+                      <td className="px-4 py-3">{order.product.name}</td>
+
+                      <td className="px-4 py-3 font-semibold">
+                        {formatAmount(order.totalPrice)}
+                      </td>
+                      <td
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </td>
+                      <td className="px-4 py-3">
+                        <Link to={`/app/order-details/${order._id}`}>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="text-blue-500 hover:underline"
+                          >
+                            View Details
+                          </motion.button>
+                        </Link>
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between p-4 bg-gray-100 flex-wrap gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-gray-100">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
