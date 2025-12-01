@@ -205,3 +205,116 @@ export const mark_chat_as_read = async (chatId: string, userId: string) => {
     throw error;
   }
 };
+
+// --- Additional vendor endpoints requested ---
+export const changeVendorPassword = async (
+  token: string | null,
+  newPassword: string,
+  confirmPassword: string
+) => {
+  try {
+    const response = await api.patch(
+      "/change_password",
+      { newPassword, confirmPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // expected success message
+  } catch (error: any) {
+    console.error("changeVendorPassword error:", error);
+    throw error.response?.data?.message || "Failed to change password";
+  }
+};
+
+export const updateVendorLocation = async (
+  token: string | null,
+  location: {
+    country?: string;
+    state?: string;
+    city?: string;
+    address1?: string;
+    address2?: string;
+    postalCode?: string;
+    [key: string]: any;
+  }
+) => {
+  try {
+    const response = await api.patch("/change_location", location, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // expected updated location
+  } catch (error: any) {
+    console.error("updateVendorLocation error:", error);
+    throw error.response?.data?.message || "Failed to update location";
+  }
+};
+
+export const initiateVendorEmailChange = async (
+  token: string | null,
+  email: string
+) => {
+  try {
+    const response = await api.patch(
+      "/change_email",
+      { email },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // expected message: "Email OTP sent"
+  } catch (error: any) {
+    console.error("initiateVendorEmailChange error:", error);
+    throw error.response?.data?.message || "Failed to initiate email change";
+  }
+};
+
+export const verifyVendorEmail = async (
+  token: string | null,
+  email: string,
+  otp: string
+) => {
+  try {
+    const response = await api.patch(
+      "/verify_email",
+      { email, otp },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data; // expected message: "Email updated" or similar
+  } catch (error: any) {
+    console.error("verifyVendorEmail error:", error);
+    throw error.response?.data?.message || "Failed to verify email";
+  }
+};
+
+export const updateStoreDetails = async (
+  token: string | null,
+  details: { storeName?: string; storePhone?: string }
+) => {
+  try {
+    const response = await api.patch("/update_store_details", details, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    return response.data; // expected updated details or success message
+  } catch (error: any) {
+    console.error("updateStoreDetails error:", error);
+    throw error.response?.data?.message || "Failed to update store details";
+  }
+};

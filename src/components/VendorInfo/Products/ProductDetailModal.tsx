@@ -33,6 +33,22 @@ interface Product {
   createdAt: string;
   images: string[];
   product_video?: string;
+  productType?: string;
+  listingType?: string;
+  originalPrice?: number;
+  flashSalePrice?: number;
+  flashSaleStartDate?: string;
+  flashSaleEndDate?: string;
+  flashSaleDiscount?: number;
+  startingPrice?: number;
+  reservePrice?: number;
+  auctionDuration?: string;
+  auctionStartDate?: string;
+  auctionEndDate?: string;
+  auctionStatus?: string;
+  flashSaleStatus?: string;
+  highestBid?: { amount: number };
+  bids?: any[];
 }
 
 interface DialogProps {
@@ -114,7 +130,7 @@ const Badge: React.FC<BadgeProps> = ({
 };
 
 const Separator: React.FC = () => (
-  <hr className="my-3 sm:my-4 border-gray-200" />
+  <hr className="my-3 border-gray-200 sm:my-4" />
 );
 
 interface ProductDetailModalProps {
@@ -151,6 +167,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     queryFn: () => getVendorProductById(productId),
     enabled: !!productId,
   });
+  console.log("product", vendor_products);
 
   // Update product mutation
   const updateMutation = useMutation({
@@ -166,8 +183,66 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         formData.append("price", updatedProduct.shippingprice.toString());
       if (updatedProduct.inventory)
         formData.append("inventory", updatedProduct.inventory.toString());
+      // Flash sale / auction fields
+      if (updatedProduct.originalPrice != null)
+        formData.append(
+          "originalPrice",
+          updatedProduct.originalPrice.toString()
+        );
+      if (updatedProduct.flashSalePrice != null)
+        formData.append(
+          "flashSalePrice",
+          updatedProduct.flashSalePrice.toString()
+        );
+      if (updatedProduct.flashSaleEndDate)
+        formData.append(
+          "flashSaleEndDate",
+          new Date(updatedProduct.flashSaleEndDate).toISOString()
+        );
+      if (updatedProduct.flashSaleDiscount != null)
+        formData.append(
+          "flashSaleDiscount",
+          updatedProduct.flashSaleDiscount.toString()
+        );
+      if (updatedProduct.startingPrice != null)
+        formData.append(
+          "startingPrice",
+          updatedProduct.startingPrice.toString()
+        );
+      if (updatedProduct.reservePrice != null)
+        formData.append("reservePrice", updatedProduct.reservePrice.toString());
+      if (updatedProduct.auctionDuration)
+        formData.append(
+          "auctionDuration",
+          updatedProduct.auctionDuration.toString()
+        );
       // Append new images
       newImages.forEach((image, index) => {
+        // Handle start dates: only append updated start date if the event hasn't started yet
+        if (
+          updatedProduct.flashSaleStartDate &&
+          !hasStarted(productData?.flashSaleStartDate)
+        ) {
+          formData.append(
+            "flashSaleStartDate",
+            new Date(updatedProduct.flashSaleStartDate).toISOString()
+          );
+        }
+        const existingAuctionStart =
+          productData?.auctionStartDate ||
+          deriveStartFromEnd(
+            productData?.auctionEndDate,
+            productData?.auctionDuration
+          );
+        if (
+          updatedProduct.auctionStartDate &&
+          !hasStarted(existingAuctionStart, productData?.auctionStatus)
+        ) {
+          formData.append(
+            "auctionStartDate",
+            new Date(updatedProduct.auctionStartDate).toISOString()
+          );
+        }
         if (image) {
           formData.append(`images[${index}]`, image);
         }
@@ -273,6 +348,17 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           inventory: productData.inventory,
           images: productData.images,
           product_video: productData.product_video,
+          productType: productData.productType,
+          listingType: productData.listingType,
+          originalPrice: productData.originalPrice,
+          flashSalePrice: productData.flashSalePrice,
+          flashSaleStartDate: productData.flashSaleStartDate,
+          flashSaleEndDate: productData.flashSaleEndDate,
+          flashSaleDiscount: productData.flashSaleDiscount,
+          startingPrice: productData.startingPrice,
+          reservePrice: productData.reservePrice,
+          auctionDuration: productData.auctionDuration,
+          auctionStartDate: productData.auctionStartDate,
         });
       }
 
@@ -297,6 +383,40 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }).format(date);
   };
 
+  const formatCurrency = (value?: number | null) => {
+    if (value === undefined || value === null) return "₦0.00";
+    try {
+      return new Intl.NumberFormat("en-NG", {
+        style: "currency",
+        currency: "NGN",
+        maximumFractionDigits: 2,
+      }).format(value as number);
+    } catch (e) {
+      return `₦${value}`;
+    }
+  };
+
+  const deriveStartFromEnd = (
+    end?: string | null | undefined,
+    durationHours?: string | number | null | undefined
+  ) => {
+    if (!end || !durationHours) return undefined;
+    const endDate = new Date(end);
+    const hours = Number(durationHours);
+    if (Number.isNaN(hours)) return undefined;
+    const start = new Date(endDate.getTime() - hours * 3600 * 1000);
+    return start.toISOString();
+  };
+
+  const toInputDate = (iso?: string | null | undefined) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    // convert to local datetime-local format: YYYY-MM-DDTHH:MM
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    const localISO = new Date(d.getTime() - tzOffset).toISOString();
+    return localISO.slice(0, 16);
+  };
+
   const handleMediaSelect = (media: string, isVideo = false): void => {
     setSelectedMedia(media);
     setIsVideoSelected(isVideo);
@@ -318,6 +438,24 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   // Use editedProduct.images if available, otherwise fall back to productData.images
   const displayImages = editedProduct.images || productData.images || [];
+
+  const hasStarted = (
+    dateStr?: string | null | undefined,
+    status?: string | null | undefined
+  ) => {
+    // If a start date exists, use it
+    if (dateStr) {
+      const d = new Date(dateStr);
+      const now = new Date();
+      return d <= now;
+    }
+    // Fallback to status, consider Started/Ongoing/Ended as started
+    if (!status) return false;
+    const s = status.toLowerCase();
+    return (
+      s === "started" || s === "ongoing" || s === "ended" || s === "active"
+    );
+  };
 
   // Video handling
   const videoUrl = editedProduct.product_video || productData.product_video;
@@ -344,12 +482,20 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    const numberFields = new Set([
+      "price",
+      "inventory",
+      "shippingprice",
+      "originalPrice",
+      "flashSalePrice",
+      "flashSaleDiscount",
+      "startingPrice",
+      "reservePrice",
+      "auctionDuration",
+    ]);
     setEditedProduct({
       ...editedProduct,
-      [name]:
-        name === "price" || name === "inventory" || name === "shippingprice"
-          ? Number.parseFloat(value)
-          : value,
+      [name]: numberFields.has(name) ? Number.parseFloat(value) : value,
     });
   };
 
@@ -463,6 +609,18 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   };
 
   const confirmDelete = () => {
+    // Prevent delete if product is a flash sale or auction
+    if (
+      productData?.productType === "flash sale" ||
+      productData?.productType === "auction"
+    ) {
+      toast.error("Cannot delete flash sale or auction products", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setShowDeleteConfirm(false);
+      return;
+    }
     deleteMutation.mutate();
   };
 
@@ -478,21 +636,26 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="p-0">
         <ToastContainer />
-        <div className="sticky top-0 z-10 bg-white p-3 sm:p-4 md:p-6 border-b flex items-center justify-between">
-          <DialogTitle className="text-lg sm:text-xl md:text-2xl">
-            {isEditing ? "Edit Product" : "Product Details"}
-          </DialogTitle>
+        <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-white border-b sm:p-4 md:p-6">
+          <div className="flex items-center gap-3">
+            <DialogTitle className="text-lg sm:text-xl md:text-2xl">
+              {isEditing ? "Edit Product" : "Product Details"}
+            </DialogTitle>
+            {productData?.productType && (
+              <Badge variant="secondary">{productData.productType}</Badge>
+            )}
+          </div>
           <div className="flex items-center gap-2 sm:gap-3">
             {isEditing ? (
               <motion.button
                 onClick={handleSave}
-                className="p-2 sm:p-3 hover:bg-green-100 rounded-full"
+                className="p-2 rounded-full sm:p-3 hover:bg-green-100"
                 whileHover={{ scale: 1.1 }}
                 aria-label="Save"
                 disabled={updateMutation.isPending}
               >
                 {updateMutation.isPending ? (
-                  <div className="w-5 h-5 border-2 border-t-green-500 border-green-200 rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-green-200 rounded-full border-t-green-500 animate-spin" />
                 ) : (
                   <Save size={18} className="text-green-600" />
                 )}
@@ -500,7 +663,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             ) : (
               <motion.button
                 onClick={toggleEdit}
-                className="p-2 sm:p-3 hover:bg-gray-100 rounded-full"
+                className="p-2 rounded-full sm:p-3 hover:bg-gray-100"
                 whileHover={{ scale: 1.1 }}
                 aria-label="Edit"
               >
@@ -509,13 +672,23 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             )}
             <motion.button
               onClick={handleDelete}
-              className="p-2 sm:p-3 hover:bg-red-100 rounded-full"
+              className="p-2 rounded-full sm:p-3 hover:bg-red-100 disabled:cursor-not-allowed"
               whileHover={{ scale: 1.1 }}
               aria-label="Delete"
-              disabled={deleteMutation.isPending}
+              disabled={
+                deleteMutation.isPending ||
+                productData?.productType === "flash sale" ||
+                productData?.productType === "auction"
+              }
+              title={
+                productData?.productType === "flash sale" ||
+                productData?.productType === "auction"
+                  ? "Cannot delete flash sale or auction products"
+                  : "Delete"
+              }
             >
               {deleteMutation.isPending ? (
-                <div className="w-5 h-5 border-2 border-t-red-500 border-red-200 rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 border-red-200 rounded-full border-t-red-500 animate-spin" />
               ) : (
                 <Trash2 size={18} className="text-red-500" />
               )}
@@ -527,7 +700,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 }
                 onClose();
               }}
-              className="p-2 sm:p-3 hover:bg-gray-100 rounded-full"
+              className="p-2 rounded-full sm:p-3 hover:bg-gray-100"
               whileHover={{ scale: 1.1 }}
               aria-label="Close"
             >
@@ -538,11 +711,11 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
         <form
           ref={formRef}
-          className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6"
+          className="p-3 space-y-4 sm:p-4 md:p-6 sm:space-y-6"
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 sm:gap-6 md:gap-8">
             <div className="space-y-3 sm:space-y-4">
-              <div className="w-full aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
+              <div className="w-full overflow-hidden bg-gray-100 rounded-lg shadow-lg aspect-video">
                 {isVideoSelected && hasVideo ? (
                   isYouTube ? (
                     <iframe
@@ -557,7 +730,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       src={videoUrl}
                       controls
                       autoPlay
-                      className="w-full h-full object-cover"
+                      className="object-cover w-full h-full"
                       onError={(e) => {
                         console.error("Failed to load video", e);
                         e.currentTarget.poster = "/video-error.svg";
@@ -568,19 +741,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <img
                     src={selectedMedia || displayImages[0]}
                     alt={productData.name}
-                    className="w-full h-full object-cover rounded-lg"
+                    className="object-cover w-full h-full rounded-lg"
                     onError={(e) => {
                       e.currentTarget.src = "/placeholder.svg";
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <div className="flex items-center justify-center w-full h-full bg-gray-100">
                     <ImageIcon className="w-16 h-16 text-gray-300" />
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5 sm:gap-3">
                 {displayImages.map((image: string, index: number) => (
                   <div
                     key={`img-${index}`}
@@ -595,7 +768,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <img
                       src={image}
                       alt={`Product image ${index + 1}`}
-                      className="w-full h-full object-cover"
+                      className="object-cover w-full h-full"
                       onError={(e) => {
                         e.currentTarget.src = "/placeholder.svg";
                       }}
@@ -603,10 +776,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     {isEditing && (
                       <>
                         <label
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                          className="absolute inset-0 flex items-center justify-center transition-opacity bg-black cursor-pointer bg-opacity-30 hover:bg-opacity-50"
                           title="Replace image"
                         >
-                          <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                          <Upload className="w-5 h-5 text-white sm:w-6 sm:h-6" />
                           <motion.input
                             type="file"
                             accept="image/*"
@@ -619,7 +792,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             e.stopPropagation();
                             handleRemoveImage(index);
                           }}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          className="absolute p-1 text-white bg-red-500 rounded-full top-1 right-1 hover:bg-red-600"
                           title="Remove image"
                         >
                           <X size={14} />
@@ -640,12 +813,12 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     onClick={() => handleMediaSelect(videoUrl, true)}
                   >
                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
-                      <Play className="text-white w-6 sm:w-8 h-6 sm:h-8" />
+                      <Play className="w-6 h-6 text-white sm:w-8 sm:h-8" />
                     </div>
                     <img
                       src={videoThumbnail || "/video-placeholder.jpg"}
                       alt="Video thumbnail"
-                      className="w-full h-full object-cover opacity-70"
+                      className="object-cover w-full h-full opacity-70"
                       onError={(e) => {
                         e.currentTarget.src = "/video-placeholder.jpg";
                       }}
@@ -653,10 +826,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     {isEditing && (
                       <>
                         <label
-                          className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 cursor-pointer hover:bg-opacity-50 transition-opacity"
+                          className="absolute inset-0 flex items-center justify-center transition-opacity bg-black cursor-pointer bg-opacity-30 hover:bg-opacity-50"
                           title="Replace video"
                         >
-                          <Upload className="text-white w-5 sm:w-6 h-5 sm:h-6" />
+                          <Upload className="w-5 h-5 text-white sm:w-6 sm:h-6" />
                           <motion.input
                             type="file"
                             accept="video/*"
@@ -669,7 +842,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             e.stopPropagation();
                             handleRemoveVideo();
                           }}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          className="absolute p-1 text-white bg-red-500 rounded-full top-1 right-1 hover:bg-red-600"
                           title="Remove video"
                         >
                           <X size={14} />
@@ -681,9 +854,9 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* Add video button (only in edit mode when no video exists) */}
                 {isEditing && !hasVideo && (
-                  <div className="w-full aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative">
-                    <label className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
-                      <Play className="text-gray-400 w-8 h-8 mb-1" />
+                  <div className="relative w-full overflow-hidden bg-gray-100 rounded-md cursor-pointer aspect-square">
+                    <label className="absolute inset-0 flex flex-col items-center justify-center transition-colors bg-gray-100 hover:bg-gray-200">
+                      <Play className="w-8 h-8 mb-1 text-gray-400" />
                       <span className="text-xs text-gray-500">Add Video</span>
                       <motion.input
                         type="file"
@@ -704,7 +877,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     <div>
                       <label
                         htmlFor="name"
-                        className="block text-sm sm:text-base font-medium text-gray-700 mb-1"
+                        className="block mb-1 text-sm font-medium text-gray-700 sm:text-base"
                       >
                         Product Name
                       </label>
@@ -714,14 +887,14 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         name="name"
                         value={editedProduct.name || ""}
                         onChange={handleInputChange}
-                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        className="w-full p-2 text-sm border border-gray-300 rounded-md sm:p-3 focus:ring-blue-500 focus:border-blue-500 sm:text-base"
                         required
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="description"
-                        className="block text-sm sm:text-base font-medium text-gray-700 mb-1"
+                        className="block mb-1 text-sm font-medium text-gray-700 sm:text-base"
                       >
                         Description
                       </label>
@@ -735,7 +908,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         style={{ minHeight: "100px" }}
                         rows={4}
                       />
-                      <div className="text-xs text-gray-500 mt-1 flex justify-between">
+                      <div className="flex justify-between mt-1 text-xs text-gray-500">
                         <span>
                           Characters: {(editedProduct.description || "").length}
                         </span>
@@ -751,10 +924,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </div>
                 ) : (
                   <>
-                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+                    <h1 className="text-xl font-bold sm:text-2xl md:text-3xl">
                       {productData.name}
                     </h1>
-                    <p className="text-gray-700 text-sm sm:text-base">
+                    <p className="text-sm text-gray-700 sm:text-base">
                       {productData.description}
                     </p>
                   </>
@@ -765,13 +938,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
                     Price
                   </h3>
                   {isEditing ? (
                     <div className="">
                       <div className="flex">
-                        <span className=" flex items-center pl-3 text-gray-500 mr-2">
+                        <span className="flex items-center pl-3 mr-2 text-gray-500 ">
                           ₦
                         </span>
                         <motion.input
@@ -788,19 +961,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-lg sm:text-xl font-bold">
+                    <p className="text-lg font-bold sm:text-xl">
                       ₦{productData.price?.toFixed(2)}
                     </p>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
                     Shipping fee
                   </h3>
                   {isEditing ? (
                     <div className="">
                       <div className="flex ">
-                        <span className="flex items-center pl-3 text-gray-500 mr-2">
+                        <span className="flex items-center pl-3 mr-2 text-gray-500">
                           ₦
                         </span>
                         <motion.input
@@ -817,13 +990,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <p className="text-lg sm:text-xl font-bold">
+                    <p className="text-lg font-bold sm:text-xl">
                       ₦{productData.shippingprice?.toFixed(2)}
                     </p>
                   )}
                 </div>
                 <div>
-                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
                     Inventory
                   </h3>
                   {isEditing ? (
@@ -834,27 +1007,371 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         name="inventory"
                         value={editedProduct.inventory || ""}
                         onChange={handleInputChange}
-                        className="w-full p-2 sm:p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+                        className="w-full p-2 text-sm border border-gray-300 rounded-md sm:p-3 focus:ring-blue-500 focus:border-blue-500 sm:text-base"
                         min="0"
                         required
                       />
                     </div>
                   ) : (
-                    <p className="text-lg sm:text-xl font-bold">
+                    <p className="text-lg font-bold sm:text-xl">
                       {productData.inventory}
                     </p>
                   )}
                 </div>
               </div>
+              <Separator />
+
+              {/* Listing-specific fields (Flash Sale or Auction) */}
+              {productData?.productType === "flash sale" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
+                    Flash Sale Details
+                  </h3>
+                  {isEditing ? (
+                    <div className="grid grid-cols-1 gap-3">
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Original Price
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">₦</span>
+                          <input
+                            type="number"
+                            name="originalPrice"
+                            value={
+                              editedProduct.originalPrice ??
+                              productData.originalPrice ??
+                              ""
+                            }
+                            onChange={handleInputChange}
+                            className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Flash Sale Price
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">₦</span>
+                          <input
+                            type="number"
+                            name="flashSalePrice"
+                            value={
+                              editedProduct.flashSalePrice ??
+                              productData.flashSalePrice ??
+                              ""
+                            }
+                            onChange={handleInputChange}
+                            className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Flash Sale Start
+                        </label>
+                        <input
+                          type="datetime-local"
+                          name="flashSaleStartDate"
+                          value={
+                            editedProduct.flashSaleStartDate
+                              ? toInputDate(
+                                  editedProduct.flashSaleStartDate as string
+                                )
+                              : toInputDate(productData.flashSaleStartDate)
+                          }
+                          onChange={handleInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                          disabled={hasStarted(
+                            productData.flashSaleStartDate,
+                            productData.flashSaleStatus
+                          )}
+                        />
+                        {hasStarted(
+                          productData.flashSaleStartDate,
+                          productData.flashSaleStatus
+                        ) && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            Flash sale has started — start date cannot be
+                            modified.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Flash Sale End
+                        </label>
+                        <input
+                          type="datetime-local"
+                          name="flashSaleEndDate"
+                          value={
+                            editedProduct.flashSaleEndDate
+                              ? toInputDate(
+                                  editedProduct.flashSaleEndDate as string
+                                )
+                              : toInputDate(productData.flashSaleEndDate)
+                          }
+                          onChange={handleInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Discount (%)
+                        </label>
+                        <input
+                          type="number"
+                          name="flashSaleDiscount"
+                          value={
+                            editedProduct.flashSaleDiscount ??
+                            productData.flashSaleDiscount ??
+                            ""
+                          }
+                          onChange={handleInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Original Price
+                        </div>
+                        <div className="text-sm font-semibold">
+                          ₦{productData.originalPrice}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Flash Sale Price
+                        </div>
+                        <div className="text-sm font-semibold">
+                          ₦{productData.flashSalePrice}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Flash Sale Start
+                        </div>
+                        <div className="text-sm">
+                          {productData.flashSaleStartDate
+                            ? formatDate(productData.flashSaleStartDate)
+                            : "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Flash Sale End
+                        </div>
+                        <div className="text-sm">
+                          {productData.flashSaleEndDate
+                            ? formatDate(productData.flashSaleEndDate)
+                            : "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Discount</div>
+                        <div className="text-sm">
+                          {productData.flashSaleDiscount ?? "-"}%
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {productData?.productType === "auction" && (
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
+                    Auction Details
+                  </h3>
+                  {isEditing ? (
+                    <div className="grid grid-cols-1 gap-3">
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Starting Price
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">₦</span>
+                          <input
+                            type="number"
+                            name="startingPrice"
+                            value={
+                              editedProduct.startingPrice ??
+                              productData.startingPrice ??
+                              ""
+                            }
+                            onChange={handleInputChange}
+                            className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Reserve Price
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <span className="text-gray-500">₦</span>
+                          <input
+                            type="number"
+                            name="reservePrice"
+                            value={
+                              editedProduct.reservePrice ??
+                              productData.reservePrice ??
+                              ""
+                            }
+                            onChange={handleInputChange}
+                            className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                            step="0.01"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Auction Start
+                        </label>
+                        <input
+                          type="datetime-local"
+                          name="auctionStartDate"
+                          value={
+                            editedProduct.auctionStartDate
+                              ? toInputDate(
+                                  editedProduct.auctionStartDate as string
+                                )
+                              : toInputDate(
+                                  productData.auctionStartDate ||
+                                    deriveStartFromEnd(
+                                      productData.auctionEndDate,
+                                      productData.auctionDuration
+                                    )
+                                )
+                          }
+                          onChange={handleInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                          disabled={hasStarted(
+                            productData.auctionStartDate ||
+                              deriveStartFromEnd(
+                                productData.auctionEndDate,
+                                productData.auctionDuration
+                              ),
+                            productData.auctionStatus
+                          )}
+                        />
+                        {hasStarted(
+                          productData.auctionStartDate ||
+                            deriveStartFromEnd(
+                              productData.auctionEndDate,
+                              productData.auctionDuration
+                            ),
+                          productData.auctionStatus
+                        ) && (
+                          <p className="mt-1 text-xs text-gray-500">
+                            Auction has started — start date cannot be modified.
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block mb-1 text-xs text-gray-500">
+                          Auction Duration (hours)
+                        </label>
+                        <input
+                          type="number"
+                          name="auctionDuration"
+                          value={
+                            editedProduct.auctionDuration ??
+                            productData.auctionDuration ??
+                            ""
+                          }
+                          onChange={handleInputChange}
+                          className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Starting Price
+                        </div>
+                        <div className="text-sm font-semibold">
+                          {formatCurrency(productData.startingPrice)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Reserve Price
+                        </div>
+                        <div className="text-sm font-semibold">
+                          {formatCurrency(productData.reservePrice)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Auction Start
+                        </div>
+                        <div className="text-sm">
+                          {productData.auctionStartDate ||
+                          deriveStartFromEnd(
+                            productData.auctionEndDate,
+                            productData.auctionDuration
+                          )
+                            ? formatDate(
+                                productData.auctionStartDate ||
+                                  deriveStartFromEnd(
+                                    productData.auctionEndDate,
+                                    productData.auctionDuration
+                                  )
+                              )
+                            : "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Duration</div>
+                        <div className="text-sm">
+                          {productData.auctionDuration ?? "-"} hours
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Highest Bid</div>
+                        <div className="text-sm">
+                          {formatCurrency(productData.highestBid?.amount ?? 0)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">Auction End</div>
+                        <div className="text-sm">
+                          {productData.auctionEndDate
+                            ? formatDate(productData.auctionEndDate)
+                            : "-"}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-500">
+                          Auction Status
+                        </div>
+                        <div className="text-sm">
+                          {productData.auctionStatus ?? "-"}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <Separator />
 
               <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
                     Category
                   </h3>
-                  <div className="mt-1 flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mt-1">
                     <Badge variant="secondary">{productData.category}</Badge>
                     <Badge variant="outline">{productData.sub_category}</Badge>
                     <Badge variant="outline">{productData.sub_category2}</Badge>
@@ -862,7 +1379,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="font-medium text-gray-500 text-sm sm:text-base">
+                  <h3 className="text-sm font-medium text-gray-500 sm:text-base">
                     Added on
                   </h3>
                   <p className="text-sm sm:text-base">
@@ -890,14 +1407,14 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
-              <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 text-red-600">
+              <div className="flex items-center gap-2 mb-3 text-red-600 sm:gap-3 sm:mb-4">
                 <AlertTriangle size={20} className="sm:w-6 sm:h-6" />
-                <h3 className="text-base sm:text-lg font-semibold">
+                <h3 className="text-base font-semibold sm:text-lg">
                   Delete Product
                 </h3>
               </div>
 
-              <p className="mb-4 sm:mb-6 text-sm sm:text-base">
+              <p className="mb-4 text-sm sm:mb-6 sm:text-base">
                 Are you sure you want to delete{" "}
                 <span className="font-semibold">{productData.name}</span>? This
                 action cannot be undone.

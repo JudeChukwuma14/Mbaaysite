@@ -19,65 +19,35 @@ import {
   Eye,
   MessageSquare,
 } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { useVendorOrders } from "@/hook/useOrders";
 
-const returnRequests = [
-  {
-    id: "RET-001",
-    customerName: "Sarah Johnson",
-    customerEmail: "sarah.j@email.com",
-    productName: "Wireless Bluetooth Headphones",
-    productImage: "/wireless-headphones.png",
-    orderNumber: "ORD-12345",
-    returnReason: "Defective - Left speaker not working",
-    requestDate: "2024-01-15",
-    status: "pending",
-    refundAmount: "$89.99",
-    description:
-      "The left speaker stopped working after 2 weeks of use. Customer has provided video evidence of the issue.",
-  },
-  {
-    id: "RET-002",
-    customerName: "Mike Chen",
-    customerEmail: "mike.chen@email.com",
-    productName: "Fitness Smartwatch",
-    productImage: "/fitness-smartwatch.png",
-    orderNumber: "ORD-12346",
-    returnReason: "Wrong size - Too small",
-    requestDate: "2024-01-14",
-    status: "approved",
-    refundAmount: "$199.99",
-    description:
-      "Customer ordered medium size but needs large. Product is in original packaging, unused.",
-  },
-  {
-    id: "RET-003",
-    customerName: "Emma Davis",
-    customerEmail: "emma.davis@email.com",
-    productName: "Portable Bluetooth Speaker",
-    productImage: "/bluetooth-speaker.png",
-    orderNumber: "ORD-12347",
-    returnReason: "Not as described - Sound quality poor",
-    requestDate: "2024-01-13",
-    status: "rejected",
-    refundAmount: "$45.99",
-    description:
-      "Customer claims sound quality is poor, but product is working as designed. Return period has expired.",
-  },
-  {
-    id: "RET-004",
-    customerName: "David Wilson",
-    customerEmail: "david.w@email.com",
-    productName: "Wireless Bluetooth Headphones",
-    productImage: "/wireless-headphones.png",
-    orderNumber: "ORD-12348",
-    returnReason: "Damaged in shipping",
-    requestDate: "2024-01-12",
-    status: "completed",
-    refundAmount: "$89.99",
-    description:
-      "Package arrived with damaged headphones. Refund processed and replacement sent.",
-  },
-];
+// Order interface
+// Order shape is imported from API or returned in useOrders; we don't need to declare it here.
+
+// Return request shape used in UI
+interface ReturnRequest {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  productName: string;
+  productImage?: string;
+  orderNumber: string;
+  returnReason?: string;
+  requestDate?: string;
+  status?: string;
+  refundAmount?: string | number;
+  description?: string;
+  condition?: string;
+  method?: string;
+  comments?: string;
+  rawOrder?: any;
+}
+
+// Placeholder is kept for fallback while API not ready
+// We'll compute API-derived return requests further down
+const returnRequests: ReturnRequest[] = [];
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -96,11 +66,58 @@ const statusIcons = {
 const ReturnProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedReturn, setSelectedReturn] = useState<
-    (typeof returnRequests)[0] | null
-  >(null);
+  const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(
+    null
+  );
 
-  const filteredReturns = returnRequests.filter((request) => {
+  const user = useSelector((state: RootState) => state.vendor);
+
+  const { data: ordersResponse } = useVendorOrders({
+    token: user.token ?? "",
+  });
+
+  // Build API-based return requests from ordersResponse
+  const orders = ordersResponse?.data?.orders || [];
+  const apiReturnRequests = (orders as any[])
+    // Only include orders with explicit returnDetails
+    .filter((o) => !!o.returnDetails)
+    .map((o) => ({
+      id: o._id,
+      customerName: `${o.buyerInfo?.first_name || ""} ${
+        o.buyerInfo?.last_name || ""
+      }`.trim(),
+      customerEmail: o.buyerInfo?.email || "",
+      productName: Array.isArray(o.product)
+        ? o.product?.[0]?.name
+        : o.product?.name || "",
+      productImage: Array.isArray(o.product)
+        ? o.product?.[0]?.image
+        : o.product?.image || "/placeholder.svg",
+      orderNumber: o._id,
+      returnReason:
+        o.returnDetails?.reason || o.returnDetails?.returnReason || "",
+      requestDate:
+        o.returnDetails?.requestedAt ||
+        o.returnDetails?.requested_at ||
+        o.createdAt,
+      condition: o.returnDetails?.condition || "",
+      method: o.returnDetails?.method || "",
+      comments: o.returnDetails?.comments || "",
+      status:
+        (o.returnDetails?.status &&
+          (o.returnDetails.status as string).toLowerCase()) ||
+        (o.status === "Return Requested"
+          ? "pending"
+          : (o.status && (o.status as string).toLowerCase()) || "pending"),
+      refundAmount: o.returnDetails?.refundAmount || o.refundAmount || "",
+      description: o.returnDetails?.comments || "",
+      rawOrder: o,
+    }));
+
+  const combinedReturns: ReturnRequest[] =
+    apiReturnRequests.length > 0 ? apiReturnRequests : returnRequests;
+
+  const filteredReturns = combinedReturns.filter((request) => {
     const matchesSearch =
       request.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -115,9 +132,9 @@ const ReturnProducts = () => {
     console.log(`[v0] Updating return ${returnId} to status: ${newStatus}`);
   };
   return (
-    <div className="space-y-6 overflow-x-hidden max-w-full p-0">
+    <div className="max-w-full p-0 space-y-6 overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
             Return Management
@@ -128,7 +145,7 @@ const ReturnProducts = () => {
         </div>
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <Package className="w-4 h-4" />
-          <span>{returnRequests.length} total returns</span>
+          <span>{combinedReturns.length} total returns</span>
         </div>
       </div>
 
@@ -166,7 +183,7 @@ const ReturnProducts = () => {
               <span className="text-sm font-medium text-gray-600">Pending</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {returnRequests.filter((r) => r.status === "pending").length}
+              {combinedReturns.filter((r) => r.status === "pending").length}
             </p>
           </CardContent>
         </Card>
@@ -179,7 +196,7 @@ const ReturnProducts = () => {
               </span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {returnRequests.filter((r) => r.status === "approved").length}
+              {combinedReturns.filter((r) => r.status === "approved").length}
             </p>
           </CardContent>
         </Card>
@@ -192,7 +209,7 @@ const ReturnProducts = () => {
               </span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {returnRequests.filter((r) => r.status === "rejected").length}
+              {combinedReturns.filter((r) => r.status === "rejected").length}
             </p>
           </CardContent>
         </Card>
@@ -205,7 +222,7 @@ const ReturnProducts = () => {
               </span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {returnRequests.filter((r) => r.status === "completed").length}
+              {combinedReturns.filter((r) => r.status === "completed").length}
             </p>
           </CardContent>
         </Card>
@@ -224,10 +241,10 @@ const ReturnProducts = () => {
               return (
                 <div
                   key={request.id}
-                  className="p-4 transition-colors border rounded-lg hover:bg-gray-50 overflow-x-hidden"
+                  className="p-4 overflow-x-hidden transition-colors border rounded-lg hover:bg-gray-50"
                 >
-                  <div className="flex items-start justify-between flex-wrap">
-                    <div className="flex gap-4 flex-1">
+                  <div className="flex flex-wrap items-start justify-between">
+                    <div className="flex flex-1 gap-4">
                       <img
                         src={
                           request.productImage ||
@@ -249,8 +266,10 @@ const ReturnProducts = () => {
                             }
                           >
                             <StatusIcon className="w-3 h-3 mr-1" />
-                            {request.status.charAt(0).toUpperCase() +
-                              request.status.slice(1)}
+                            {request.status
+                              ? request.status.charAt(0).toUpperCase() +
+                                request.status.slice(1)
+                              : "-"}
                           </Badge>
                         </div>
                         <p className="mb-1 text-sm text-gray-600 break-all">
@@ -264,7 +283,9 @@ const ReturnProducts = () => {
                         </p>
                         <p className="mb-2 text-sm text-gray-600">
                           Order: {request.orderNumber} • Requested:{" "}
-                          {request.requestDate}
+                          {request.requestDate
+                            ? new Date(request.requestDate).toLocaleString()
+                            : "-"}
                         </p>
                         <p className="text-sm font-medium text-red-600">
                           Reason: {request.returnReason}
@@ -359,8 +380,10 @@ const ReturnProducts = () => {
                       ]
                     }`}
                   >
-                    {selectedReturn.status.charAt(0).toUpperCase() +
-                      selectedReturn.status.slice(1)}
+                    {selectedReturn.status
+                      ? selectedReturn.status.charAt(0).toUpperCase() +
+                        selectedReturn.status.slice(1)
+                      : "-"}
                   </Badge>
                 </div>
               </div>
@@ -375,13 +398,28 @@ const ReturnProducts = () => {
                     Email: {selectedReturn.customerEmail}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Request Date: {selectedReturn.requestDate}
+                    Request Date:{" "}
+                    {selectedReturn.requestDate
+                      ? new Date(selectedReturn.requestDate).toLocaleString()
+                      : "-"}
                   </p>
                 </div>
                 <div>
                   <h4 className="mb-2 font-semibold">Return Information</h4>
                   <p className="text-sm text-gray-600">
                     Reason: {selectedReturn.returnReason}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Condition:{" "}
+                    {selectedReturn.condition ||
+                      selectedReturn.rawOrder?.returnDetails?.condition ||
+                      "-"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    Method:{" "}
+                    {selectedReturn.method ||
+                      selectedReturn.rawOrder?.returnDetails?.method ||
+                      "-"}
                   </p>
                   <p className="text-sm text-gray-600">
                     Status: {selectedReturn.status}

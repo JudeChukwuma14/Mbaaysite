@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Country,
   State,
@@ -10,6 +10,10 @@ import {
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useForm, Controller } from "react-hook-form";
+// import { useSelector } from "react-redux";
+// import { RootState } from "@/redux/store";
+import { useCancelOrPostponeOrder } from "@/hook/useOrders";
+import { toast } from "react-toastify";
 
 type FormData = {
   orderId: string;
@@ -38,6 +42,7 @@ const CancellationForm: React.FC = () => {
     watch,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<FormData>({
     defaultValues: {
       action: "cancel",
@@ -57,13 +62,54 @@ const CancellationForm: React.FC = () => {
       ? City.getCitiesOfState(selectedCountry, selectedState)
       : [];
 
-  const onSubmit = (data: FormData) => {
-    console.log(data);
-    // Handle form submission
+  // const token = useSelector(
+  //   (state: RootState) => state.user.token || state.vendor.token
+  // );
+
+  const cancelOrPostponeMutation = useCancelOrPostponeOrder();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const onSubmit = async (data: FormData) => {
+    const address = data.streetAddress2
+      ? `${data.streetAddress}, ${data.streetAddress2}`
+      : data.streetAddress;
+
+    const payload: any = {
+      orderId: data.orderId,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      postalCode: data.postalCode,
+      address,
+      country: data.country,
+      state: data.state,
+      city: data.city,
+      isCancellation: data.action === "cancel",
+      isPostponement: data.action === "postpone",
+      cancellationReason: data.action === "cancel" ? data.reason : undefined,
+      postponementFromDate:
+        data.action === "postpone" ? data.fromDate : undefined,
+      postponementToDate: data.action === "postpone" ? data.toDate : undefined,
+    };
+
+    setIsSubmitting(true);
+    try {
+      const res = await cancelOrPostponeMutation.mutateAsync({ payload });
+      console.log("RYRR", res);
+      // Optionally reset form or show additional UI; react-query toast already notifies
+      reset();
+      toast.success("Request submitted successfully!");
+    } catch (err) {
+      // error handled by hook onError, optionally log
+      console.error("Submit error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="w-full max-w-4xl p-4 sm:p-6 mx-auto overflow-x-hidden">
+    <div className="w-full max-w-4xl p-4 mx-auto overflow-x-hidden sm:p-6">
       <h2 className="mb-6 text-2xl font-semibold text-center">
         Cancellation / Postponement Form
       </h2>
@@ -316,7 +362,7 @@ const CancellationForm: React.FC = () => {
           <legend className="mb-4 text-sm font-medium">
             Do you want to cancel or postpone your order?
           </legend>
-          <div className="flex flex-col md:flex-row md:items-center gap-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
             <label className="flex items-center">
               <input
                 type="radio"
@@ -428,9 +474,14 @@ const CancellationForm: React.FC = () => {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full p-3 font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring focus:ring-orange-400 rounded-md"
+          disabled={isSubmitting}
+          className={`w-full p-3 font-medium text-white focus:outline-none focus:ring focus:ring-orange-400 rounded-md ${
+            isSubmitting
+              ? "bg-orange-300 cursor-not-allowed"
+              : "bg-orange-500 hover:bg-orange-600"
+          }`}
         >
-          Submit
+          {isSubmitting ? "Submitting..." : "Submit"}
         </button>
       </form>
     </div>
