@@ -30,7 +30,7 @@ const FirstCartCard: React.FC<FirstCartCardProps> = ({ product }) => {
         id: product.id,
         name: product.title,
         price: parseFloat(product.currentPrice.replace("$", "")),
-        quantity: 1,
+        inventory: 1,
         image: product.image,
       })
     );

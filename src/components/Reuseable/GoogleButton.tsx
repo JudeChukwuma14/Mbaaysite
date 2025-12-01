@@ -43,6 +43,11 @@ export const GoogleButton = () => {
                     name: data.data.name,
                     email: data.data.email,
                     phoneNumber: data.data.phoneNumber || "",
+                    orders: [],
+                    location:{
+                      city: "",
+                      country: ""
+                    }
                   },
                   token: data.token,
                 })

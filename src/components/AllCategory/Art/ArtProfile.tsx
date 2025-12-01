@@ -144,7 +144,7 @@
 //   };
 
 //   if (!id) {
-//     return <Navigate to="/shop" replace />;
+//     return <Navigate to="/random-product" replace />;
 //   }
 //   if (loading) {
 //     return <Spinner />;
@@ -363,7 +363,7 @@ const ArtProfile: React.FC = () => {
   };
 
   if (!id) {
-    return <Navigate to="/shop" replace />;
+    return <Navigate to="/random-product" replace />;
   }
   if (loading) {
     return <Spinner />;
@@ -501,11 +501,10 @@ const ArtProfile: React.FC = () => {
             <button
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                currentPage === 1
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-orange-500 hover:bg-orange-600"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${currentPage === 1
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-orange-500 hover:bg-orange-600"
+                }`}
             >
               <FaArrowLeft />
               Previous
@@ -516,11 +515,10 @@ const ArtProfile: React.FC = () => {
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                currentPage === totalPages
-                  ? "bg-gray-500 cursor-not-allowed"
-                  : "bg-orange-500 hover:bg-orange-600"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 font-medium text-white rounded-lg transition duration-300 ${currentPage === totalPages
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-orange-500 hover:bg-orange-600"
+                }`}
             >
               Next
               <FaArrowRight />

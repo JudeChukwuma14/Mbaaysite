@@ -77,6 +77,9 @@ const OrderList = lazy(
 const Canclellation = lazy(
   () => import("@/components/profileMangement/payment/CancellationForm")
 );
+const ReturnForm = lazy(
+  () => import("@/components/profileMangement/payment/ReturnForm")
+);
 const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
   () => import("@/components/profileMangement/payment/OrderDetail")
@@ -1124,6 +1127,10 @@ const routesConfig: RouteObject[] = [
       {
         path: "/dashboard/canclellation",
         element: withSuspense(Canclellation),
+      },
+       {
+        path: "/dashboard/retrunproduct",
+        element: withSuspense(ReturnForm),
       },
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },

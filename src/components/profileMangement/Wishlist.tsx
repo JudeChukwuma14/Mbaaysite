@@ -22,7 +22,7 @@ interface WishlistItem {
   name: string;
   price: number;
   image: string;
-  quantity?: number;
+  inventory?: number;
 }
 
 const Wishlist: React.FC = () => {
@@ -82,7 +82,7 @@ const Wishlist: React.FC = () => {
           id: item.id,
           name: item.name,
           price: item.price, // Store base price (NGN) in cart
-          quantity: 1,
+          inventory: item.inventory,
           image: item.image || "/placeholder.svg",
         })
       );

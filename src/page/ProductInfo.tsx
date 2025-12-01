@@ -338,7 +338,7 @@ const ProductDetails: React.FC = () => {
           id: product._id,
           name: product.name,
           price: product.price,
-          quantity,
+         inventory: product.inventory,
           image:
             product.images[0] ||
             product.poster?.avatar ||

@@ -33,6 +33,7 @@ interface FormValues {
   paymentOption: "Pay Before Delivery" | "Pay After Delivery";
 }
 
+
 interface CityOption {
   value: string;
   label: string;
@@ -438,7 +439,7 @@ function PaymentDetails({
           <button
             type="submit"
             disabled={isSubmitting || isSessionLoading}
-            className="w-full px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto"
+            className="w-full px-6 py-3 font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed md:w-auto"
             aria-label="Place order"
           >
             {isSubmitting || isSessionLoading ? (

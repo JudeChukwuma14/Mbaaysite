@@ -125,7 +125,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
           id,
           name: title,
           price: currentBid, // Store base price (NGN) in cart
-          quantity: 1,
+          inventory: 1,
           image: image || "/placeholder.svg",
         })
       );

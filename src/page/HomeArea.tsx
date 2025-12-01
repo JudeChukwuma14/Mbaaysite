@@ -165,7 +165,7 @@ const HomeArea: React.FC = () => {
         <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
         <p className="max-w-md mb-6 text-gray-500">{error}</p>
         <Link
-          to="/shop"
+          to="/random-product"
           className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600"
         >
           <FaShoppingCart />
@@ -206,25 +206,25 @@ const HomeArea: React.FC = () => {
         <div className="grid grid-cols-2 gap-3 md:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading
             ? Array.from({ length: 10 }).map((_, i) => (
-                <ProductSkeleton key={i} />
-              ))
+              <ProductSkeleton key={i} />
+            ))
             : products
-                .sort(
-                  (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                )
-                .slice(0, 15)
-                .map((product) => (
-                  <NewArrival
-                    key={product._id}
-                    product={{
-                      ...product,
-                      id: product._id,
-                      poster: product.images[0] || "",
-                    }}
-                  />
-                ))}
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt).getTime() -
+                  new Date(a.createdAt).getTime()
+              )
+              .slice(0, 15)
+              .map((product) => (
+                <NewArrival
+                  key={product._id}
+                  product={{
+                    ...product,
+                    id: product._id,
+                    poster: product.images[0] || "",
+                  }}
+                />
+              ))}
         </div>
       </section>
 
@@ -280,36 +280,36 @@ const HomeArea: React.FC = () => {
         <div className="grid grid-cols-2 gap-2 mb:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {loading
             ? Array.from({ length: 5 }).map((_, i) => (
-                <VendorSkeleton key={i} />
-              ))
+              <VendorSkeleton key={i} />
+            ))
             : getVender.slice(0, 5).map((profile) => {
-                const avatarUrl = profile.avatar
-                  ? profile.avatar
-                  : createInitialAvatar(profile.storeName || "V");
+              const avatarUrl = profile.avatar
+                ? profile.avatar
+                : createInitialAvatar(profile.storeName || "V");
 
-                const isArtVendor =
-                  profile.craftCategories?.includes("Art & Sculptures");
-                return (
-                  <Link
-                    to={
-                      isArtVendor
-                        ? `/art-profile/${profile._id}`
-                        : `/veiws-profile/${profile._id}`
+              const isArtVendor =
+                profile.craftCategories?.includes("Art & Sculptures");
+              return (
+                <Link
+                  to={
+                    isArtVendor
+                      ? `/art-profile/${profile._id}`
+                      : `/veiws-profile/${profile._id}`
+                  }
+                  key={profile._id}
+                >
+                  <VendorCard
+                    name={profile.storeName}
+                    craft={profile.craftCategories[0]}
+                    avatar={avatarUrl}
+                    backgroundImage={
+                      profile?.businessLogo ||
+                      "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
                     }
-                    key={profile._id}
-                  >
-                    <VendorCard
-                      name={profile.storeName}
-                      craft={profile.craftCategories[0]}
-                      avatar={avatarUrl}
-                      backgroundImage={
-                        profile?.businessLogo ||
-                        "https://mbaaysite-6b8n.vercel.app/assets/MBLogo-spwX6zWd.png"
-                      }
-                    />
-                  </Link>
-                );
-              })}
+                  />
+                </Link>
+              );
+            })}
         </div>
 
         <div className="flex justify-center mt-10">

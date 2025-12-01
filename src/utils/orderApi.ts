@@ -32,7 +32,7 @@ export interface OrderData {
   postalCode: string;
   couponCode: string;
   paymentOption: "Pay Before Delivery" | "Pay After Delivery";
-  cartItems: OrderCartItem[];
+  cartItems?: OrderCartItem[]; 
   pricing: OrderPricing;
 }
 

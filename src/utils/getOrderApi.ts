@@ -18,6 +18,7 @@ export interface Order {
     postalCode: string;
   };
   product: {
+    id: string;
     name: string;
     category: string;
     subCategory: string;
@@ -83,6 +84,7 @@ export const fetchOrders = async (token: string, role?: "user" | "vendor"): Prom
         postalCode: order.buyerInfo.postalCode || "",
       },
       product: {
+        id: order.product?._id || "",
         name: order.product?.name || "Unknown Product",
         category: order.product?.category || "Unknown",
         subCategory: order.product?.sub_category || "Unknown",
@@ -95,8 +97,8 @@ export const fetchOrders = async (token: string, role?: "user" | "vendor"): Prom
         order.payStatus === "Successful"
           ? "Paid"
           : order.payStatus === "Failed"
-          ? "Failed"
-          : "Pending",
+            ? "Failed"
+            : "Pending",
       orderStatus: validStatuses.includes(order.status) ? order.status : "Pending",
       paymentOption: order.paymentOption || "Unknown",
       createdAt: order.createdAt || new Date().toISOString(),
