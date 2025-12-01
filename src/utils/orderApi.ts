@@ -2,7 +2,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-interface OrderCartItem {
+export interface OrderCartItem {
   productId: string;
   name: string;
   price: number;
