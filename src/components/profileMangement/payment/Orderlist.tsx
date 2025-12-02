@@ -1,4 +1,5 @@
-// src/components/OrderList.tsx
+
+// src/components/OrderList.tsx - CORRECTED IMPORTS
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,10 @@ import {
   ShoppingBag,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Truck,
 } from "lucide-react";
 import { getOrdersWithSession, Order } from "@/utils/getOrderApi";
 import { confirmOrderReceived } from "@/utils/orderApi";
@@ -22,52 +27,33 @@ import {
   formatDate,
   getPaymentStatusColor,
   getStatusColor,
-} from "@/utils/orderUtils";
+} from "@/utils/orderUtils"; // Removed getStatusIcon
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
-import { ReviewPromptModal } from "../review/ReviewPromptModal";
 import { motion, AnimatePresence } from "framer-motion";
-
-interface OrderItem {
-  productId: string;
-  name: string;
-  category: string;
-  subCategory: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
+import { ReviewPromptModal } from "../review/ReviewPromptModal";
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(
-    null
-  );
+  const [confirmingOrderId, setConfirmingOrderId] = useState<string | null>(null);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
-
-  // NEW REVIEW STATE
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [orderToReview, setOrderToReview] = useState<Order | null>(null);
+
 
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
   const vendor = useSelector((state: RootState) => state.vendor);
   const role = user.token ? "user" : vendor.token ? "vendor" : null;
-  const token =
-    role === "user" ? user.token : role === "vendor" ? vendor.token : null;
+  const token = role === "user" ? user.token : role === "vendor" ? vendor.token : null;
   const isAuthenticated = !!token && !!role;
 
   useEffect(() => {
-    console.log("Redux state:", { user, vendor, role, token });
-  }, [user, vendor, role, token]);
-
-  useEffect(() => {
     if (!isAuthenticated || !token || !role) {
-      console.log("Authentication failed:", { isAuthenticated, token, role });
       navigate("/selectpath", { replace: true });
       return;
     }
@@ -75,7 +61,7 @@ export default function OrderList() {
     const loadOrders = async () => {
       try {
         const data = await getOrdersWithSession(token, role);
-        console.log("Loaded orders from API:", data);
+        console.log("Loaded grouped orders:", data);
         setOrders(data);
       } catch (err: any) {
         const errorMessage = err.message || "Failed to load orders";
@@ -99,9 +85,13 @@ export default function OrderList() {
   }, [navigate, isAuthenticated, token, role]);
 
   const handleConfirmReceipt = async (orderId: string) => {
-    setConfirmingOrderId(orderId); // Set loading state
+    // Extract the original order IDs from the grouped order ID
+    const originalOrderIds = orderId.split('-').slice(2).join('-');
+
+    setConfirmingOrderId(orderId);
     try {
-      await confirmOrderReceived(orderId);
+      // Confirm the first order in the group (you might need to confirm all)
+      await confirmOrderReceived(originalOrderIds);
 
       let confirmedOrder: Order | undefined;
       setOrders((prevOrders) =>
@@ -120,7 +110,6 @@ export default function OrderList() {
 
       toast.success("Order confirmed and vendor paid.");
 
-      // Trigger Review Modal
       if (confirmedOrder) {
         setOrderToReview(confirmedOrder);
         setIsReviewModalOpen(true);
@@ -132,7 +121,6 @@ export default function OrderList() {
     }
   };
 
-  // Function to close the modal and reset state
   const handleCloseReviewModal = () => {
     setIsReviewModalOpen(false);
     setOrderToReview(null);
@@ -146,33 +134,26 @@ export default function OrderList() {
     setExpandedOrderId(expandedOrderId === orderId ? null : orderId);
   };
 
-  // Calculate total items in an order
-  const calculateTotalItems = (order: Order) => {
-    // If order has items array, use its length
-    if ((order as any).items && Array.isArray((order as any).items)) {
-      return (order as any).items.length;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "Delivered":
+        return <CheckCircle className="w-4 h-4" />;
+      case "Shipped":
+        return <Truck className="w-4 h-4" />;
+      case "Processing":
+        return <Clock className="w-4 h-4" />;
+      case "Cancelled":
+        return <XCircle className="w-4 h-4" />;
+      default:
+        return <Package className="w-4 h-4" />;
     }
-    // Otherwise, it's a single product order
-    return 1;
-  };
-
-  // Calculate total price for an order
-  const calculateOrderTotal = (order: Order) => {
-    // If order has items array, sum all items
-    if ((order as any).items && Array.isArray((order as any).items)) {
-      return (order as any).items.reduce((total: number, item: OrderItem) => {
-        return total + (item.price * item.quantity);
-      }, 0);
-    }
-    // Otherwise, use the single product total
-    return order.totalPrice;
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 border-4 border-t-orange-600 border-gray-200 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 mx-auto mb-4 border-4 border-t-orange-600 border-gray-200 rounded-full animate-spin" />
           <p className="text-lg text-gray-700">Loading your orders...</p>
           <p className="text-sm text-gray-500">This may take a moment</p>
         </div>
@@ -190,11 +171,7 @@ export default function OrderList() {
             </svg>
           </div>
           <p className="text-lg font-medium text-red-600">{error}</p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => window.location.reload()}
-          >
+          <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
             Retry Loading Orders
           </Button>
         </div>
@@ -210,49 +187,40 @@ export default function OrderList() {
           <p className="text-gray-600">View and manage your order history</p>
           <div className="flex items-center gap-4 mt-2">
             <Badge variant="outline" className="px-3 py-1">
-              Total Orders: {orders.length}
+              {orders.length} Transaction{orders.length !== 1 ? 's' : ''}
             </Badge>
             <Badge variant="outline" className="px-3 py-1">
-              Total Items: {orders.reduce((total, order) => total + calculateTotalItems(order), 0)}
+              {orders.reduce((total, order) => total + order.items.length, 0)} Total Items
             </Badge>
           </div>
         </div>
 
         <div className="space-y-6">
           {orders.map((order) => {
-            const totalItems = calculateTotalItems(order);
-            const orderTotal = calculateOrderTotal(order);
-            const hasMultipleItems = totalItems > 1;
+            const hasMultipleItems = order.items.length > 1;
+            const StatusIcon = getStatusIcon(order.orderStatus);
 
             return (
-              <Card
-                key={order.id}
-                className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200"
-              >
+              <Card key={order.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-200">
                 <CardHeader className="pb-4">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-wrap items-center gap-3">
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-semibold text-gray-900">
-                          #{order.orderId.slice(-8).toUpperCase()}
+                          Order #{order.orderId.slice(-8).toUpperCase()}
                         </span>
                         {hasMultipleItems && (
                           <Badge variant="secondary" className="text-xs">
-                            {totalItems} items
+                            {order.items.length} items
                           </Badge>
                         )}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Badge
-                          className={`${getStatusColor(order.orderStatus)} border`}
-                        >
+                        <Badge className={`${getStatusColor(order.orderStatus)} border flex items-center gap-1`}>
+                          {StatusIcon}
                           {order.orderStatus}
                         </Badge>
-                        <Badge
-                          className={`${getPaymentStatusColor(
-                            order.paymentStatus
-                          )} border`}
-                        >
+                        <Badge className={`${getPaymentStatusColor(order.paymentStatus)} border`}>
                           {order.paymentStatus}
                         </Badge>
                       </div>
@@ -266,48 +234,45 @@ export default function OrderList() {
 
                 <CardContent className="pt-0">
                   <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                    {/* Customer Details Column */}
+                    {/* Customer & Shipping Info */}
                     <div className="space-y-4">
-                      <h3 className="flex items-center gap-2 font-semibold text-gray-900">
-                        <User className="w-4 h-4" />
-                        Customer Details
-                      </h3>
-                      <div className="space-y-2 text-sm">
-                        <p className="font-medium text-gray-900">
-                          {order.buyer.fullName}
-                        </p>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail className="w-3 h-3" />
-                          <span className="truncate">{order.buyer.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-3 h-3" />
-                          {order.buyer.phone}
+                      <div>
+                        <h3 className="flex items-center gap-2 font-semibold text-gray-900 mb-3">
+                          <User className="w-4 h-4" />
+                          Customer Details
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                          <p className="font-medium text-gray-900">{order.buyer.fullName}</p>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Mail className="w-3 h-3" />
+                            <span className="truncate">{order.buyer.email}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Phone className="w-3 h-3" />
+                            {order.buyer.phone}
+                          </div>
                         </div>
                       </div>
-                      <div className="pt-2">
-                        <h4 className="flex items-center gap-2 font-medium text-gray-900">
+
+                      <div>
+                        <h4 className="flex items-center gap-2 font-medium text-gray-900 mb-2">
                           <MapPin className="w-4 h-4" />
                           Shipping Address
                         </h4>
                         <div className="text-sm text-gray-600">
                           <p className="truncate">{order.shippingAddress.street}</p>
-                          <p>
-                            {order.shippingAddress.city},{" "}
-                            {order.shippingAddress.region}{" "}
-                            {order.shippingAddress.postalCode}
-                          </p>
+                          <p>{order.shippingAddress.city}, {order.shippingAddress.region} {order.shippingAddress.postalCode}</p>
                           <p>{order.shippingAddress.country}</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* Product Details Column */}
+                    {/* Order Items */}
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <h3 className="flex items-center gap-2 font-semibold text-gray-900">
                           <Package className="w-4 h-4" />
-                          {hasMultipleItems ? "Order Items" : "Product Details"}
+                          Order Items ({order.items.length})
                         </h3>
                         {hasMultipleItems && (
                           <Button
@@ -331,174 +296,115 @@ export default function OrderList() {
                         )}
                       </div>
 
-                      {hasMultipleItems && (order as any).items ? (
-                        <>
-                          {/* Show first item by default */}
-                          <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                            <img
-                              src={(order as any).items[0].image || "https://via.placeholder.com/80"}
-                              alt={(order as any).items[0].name}
-                              width={80}
-                              height={80}
-                              className="object-cover border border-gray-200 rounded-lg"
-                            />
-                            <div className="flex-1 space-y-2">
-                              <h4 className="font-medium text-gray-900">
-                                {(order as any).items[0].name}
-                              </h4>
-                              <div className="text-sm text-gray-600">
-                                <p>
-                                  {(order as any).items[0].category} →{" "}
-                                  {(order as any).items[0].subCategory}
-                                </p>
-                                <p>
-                                  Quantity:{" "}
-                                  <span className="font-medium">
-                                    {(order as any).items[0].quantity}
-                                  </span>
-                                </p>
-                                <p>
-                                  Price:{" "}
-                                  <span className="font-medium">
-                                    {new Intl.NumberFormat("en-NG", {
-                                      style: "currency",
-                                      currency: "NGN",
-                                    }).format((order as any).items[0].price)}
-                                  </span>
-                                </p>
-                              </div>
+                      <div className="space-y-3">
+                        {/* Always show first item */}
+                        <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+                          <img
+                            src={order.items[0].image}
+                            alt={order.items[0].name}
+                            width={80}
+                            height={80}
+                            className="object-cover border border-gray-200 rounded-lg"
+                          />
+                          <div className="flex-1 space-y-2">
+                            <h4 className="font-medium text-gray-900 truncate">{order.items[0].name}</h4>
+                            <div className="text-sm text-gray-600">
+                              <p>{order.items[0].category} → {order.items[0].subCategory}</p>
+                              <p>Quantity: <span className="font-medium">{order.items[0].quantity}</span></p>
+                              <p>Price: <span className="font-medium">
+                                {new Intl.NumberFormat("en-NG", {
+                                  style: "currency",
+                                  currency: "NGN",
+                                }).format(order.items[0].price)}
+                              </span></p>
                             </div>
                           </div>
+                        </div>
 
-                          {/* Show other items when expanded */}
+                        {/* Show other items when expanded */}
+                        {hasMultipleItems && (
                           <AnimatePresence>
-                            {expandedOrderId === order.id && (
+                            {expandedOrderId === order.id ? (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
                                 exit={{ opacity: 0, height: 0 }}
                                 className="space-y-3"
                               >
-                                {(order as any).items.slice(1).map((item: OrderItem) => (
-                                  <div key={item.productId} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+                                {order.items.slice(1).map((item) => (
+                                  <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
                                     <img
-                                      src={item.image || "https://via.placeholder.com/80"}
+                                      src={item.image}
                                       alt={item.name}
                                       width={80}
                                       height={80}
                                       className="object-cover border border-gray-200 rounded-lg"
                                     />
                                     <div className="flex-1 space-y-2">
-                                      <h4 className="font-medium text-gray-900">
-                                        {item.name}
-                                      </h4>
+                                      <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
                                       <div className="text-sm text-gray-600">
-                                        <p>
-                                          {item.category} → {item.subCategory}
-                                        </p>
-                                        <p>
-                                          Quantity:{" "}
-                                          <span className="font-medium">
-                                            {item.quantity}
-                                          </span>
-                                        </p>
-                                        <p>
-                                          Price:{" "}
-                                          <span className="font-medium">
-                                            {new Intl.NumberFormat("en-NG", {
-                                              style: "currency",
-                                              currency: "NGN",
-                                            }).format(item.price)}
-                                          </span>
-                                        </p>
+                                        <p>{item.category} → {item.subCategory}</p>
+                                        <p>Quantity: <span className="font-medium">{item.quantity}</span></p>
+                                        <p>Price: <span className="font-medium">
+                                          {new Intl.NumberFormat("en-NG", {
+                                            style: "currency",
+                                            currency: "NGN",
+                                          }).format(item.price)}
+                                        </span></p>
                                       </div>
                                     </div>
                                   </div>
                                 ))}
                               </motion.div>
+                            ) : order.items.length > 1 && (
+                              <p className="text-sm text-gray-500 pl-3">
+                                + {order.items.length - 1} more item{order.items.length - 1 > 1 ? 's' : ''}
+                              </p>
                             )}
                           </AnimatePresence>
-
-                          {!expandedOrderId && totalItems > 1 && (
-                            <p className="text-sm text-gray-500">
-                              + {totalItems - 1} more item{totalItems - 1 > 1 ? 's' : ''}
-                            </p>
-                          )}
-                        </>
-                      ) : (
-                        // Single product display
-                        <div className="flex gap-4">
-                          <img
-                            src={order.product.image}
-                            alt={order.product.name}
-                            width={80}
-                            height={80}
-                            className="object-cover border border-gray-200 rounded-lg"
-                          />
-                          <div className="flex-1 space-y-2">
-                            <h4 className="font-medium text-gray-900">
-                              {order.product.name}
-                            </h4>
-                            <div className="text-sm text-gray-600">
-                              <p>
-                                {order.product.category} →{" "}
-                                {order.product.subCategory}
-                              </p>
-                              <p>
-                                Quantity:{" "}
-                                <span className="font-medium">
-                                  {order.quantity}
-                                </span>
-                              </p>
-                              <p>
-                                Price:{" "}
-                                <span className="font-medium">
-                                  {new Intl.NumberFormat("en-NG", {
-                                    style: "currency",
-                                    currency: "NGN",
-                                  }).format(order.product.price)}
-                                </span>
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
 
-                    {/* Order Summary Column */}
+                    {/* Order Summary & Actions */}
                     <div className="space-y-4">
                       <h3 className="flex items-center gap-2 font-semibold text-gray-900">
                         <CreditCard className="w-4 h-4" />
                         Order Summary
                       </h3>
+
                       {order.orderStatus !== "Delivered" && (
-                        <p className="text-sm text-gray-600">
-                          Waiting for vendor to mark this order as Delivered.
-                        </p>
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-sm text-amber-800">
+                            Waiting for vendor to mark this order as Delivered.
+                          </p>
+                        </div>
                       )}
+
                       <div className="space-y-3">
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Total Amount:
-                          </span>
+                          <span className="text-sm text-gray-600">Total Amount:</span>
                           <span className="text-lg font-bold text-gray-900">
                             {new Intl.NumberFormat("en-NG", {
                               style: "currency",
                               currency: "NGN",
-                            }).format(orderTotal)}
+                            }).format(order.totalPrice)}
                           </span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">
-                            Payment Method:
-                          </span>
+                          <span className="text-sm text-gray-600">Payment Method:</span>
                           <span className="text-sm font-medium text-gray-900">
-                            {order.paymentOption === "Pay Before Delivery"
-                              ? "Credit Card"
-                              : "Cash on Delivery"}
+                            {order.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-600">Items Total:</span>
+                          <span className="text-sm font-medium text-gray-900">
+                            {order.items.length} item{order.items.length !== 1 ? 's' : ''}
                           </span>
                         </div>
                       </div>
+
                       <div className="flex flex-col gap-2 pt-4 sm:flex-row">
                         <Button
                           variant="outline"
@@ -515,13 +421,13 @@ export default function OrderList() {
                             variant="default"
                             size="sm"
                             onClick={() => handleConfirmReceipt(order.id)}
-                            disabled={confirmingOrderId === order.id}
+                            disabled={confirmingOrderId === order.id || order.paymentStatus !== "Paid"}
                             className="flex items-center gap-2"
                           >
                             {confirmingOrderId === order.id ? (
                               <div className="w-4 h-4 border-2 rounded-full border-t-white animate-spin" />
                             ) : (
-                              "Confirm Order"
+                              "Confirm Receipt"
                             )}
                           </Button>
                         ) : (
@@ -549,20 +455,15 @@ export default function OrderList() {
             <Card className="bg-white border border-gray-200 shadow-sm">
               <CardContent className="py-12 text-center">
                 <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                  No orders found
-                </h3>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">No orders found</h3>
                 <p className="mb-6 text-gray-600">Start shopping to see your orders here.</p>
-                <Button onClick={() => navigate("/products")}>
-                  Browse Products
-                </Button>
+                <Button onClick={() => navigate("/products")}>Browse Products</Button>
               </CardContent>
             </Card>
           )}
         </div>
       </div>
 
-      {/* Review Modal */}
       {isReviewModalOpen && orderToReview && (
         <ReviewPromptModal
           isOpen={isReviewModalOpen}
