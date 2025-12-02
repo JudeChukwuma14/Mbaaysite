@@ -8,11 +8,11 @@ import { Star, ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 interface ProductData {
-    id: string;
+    id: string; // For display purposes
     name: string;
     image: string;
     orderId: string;
-    
+    productId: string; // For API submission
 }
 
 interface ReviewFormProps {
@@ -40,7 +40,7 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
         onSubmit({
             rating,
             comment: comment.trim(),
-            productId: product.id, // Use id as productId
+            productId: product.productId,
             orderId: product.orderId
         });
     };
@@ -82,7 +82,7 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
 
             {/* Star Rating Input */}
             <div className="space-y-3">
-                <Label className="text-base font-medium text-center">
+                <Label className="text-base font-medium">
                     How would you rate this product? <span className="text-red-500">*</span>
                 </Label>
 
@@ -99,9 +99,9 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
                                 aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
                             >
                                 <Star
-                                    className={`w-8 h-8 transition-colors ${star <= (hoverRating || rating)
-                                            ? 'text-yellow-500 fill-yellow-500'
-                                            : 'text-gray-300 fill-gray-100'
+                                    className={`w-12 h-12 transition-colors ${star <= (hoverRating || rating)
+                                        ? 'text-yellow-500 fill-yellow-500'
+                                        : 'text-gray-300 fill-gray-100'
                                         }`}
                                 />
                             </button>
@@ -169,7 +169,13 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
                 </Button>
             </div>
 
-
+            {/* Tips */}
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700">
+                    <strong>Tip:</strong> Be honest and specific about your experience.
+                    Your review helps other customers make informed decisions.
+                </p>
+            </div>
         </form>
     );
 }

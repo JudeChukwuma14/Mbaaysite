@@ -5,18 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 // Assuming Order interface and type definitions are available
 import { Order } from "@/utils/getOrderApi";
-
 import { toast } from "react-toastify";
 import { ReviewForm } from './ReviewForm';
 
-
 // Helper type for a product to be reviewed
 interface ProductToReview {
-    id: string; // Product ID
+    id: string; // Product ID - for display purposes
     name: string;
     image: string;
-    orderId: string;
-    productId: string;  // Needed for the API submission
+    orderId: string; // Needed for the API submission
+    productId: string; // Add this - for API submission (should match id)
 }
 
 interface ReviewPromptModalProps {
@@ -32,7 +30,6 @@ const submitReviewApi = async (reviewData: any) => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return { success: true };
 }
-
 
 export function ReviewPromptModal({ isOpen, onClose, order }: ReviewPromptModalProps) {
     // State to hold the product the user is currently reviewing (switches to ReviewForm view)
@@ -86,6 +83,9 @@ export function ReviewPromptModal({ isOpen, onClose, order }: ReviewPromptModalP
                                             src={item.image}
                                             alt={item.name}
                                             className="object-cover w-12 h-12 rounded"
+                                            onError={(e) => {
+                                                e.currentTarget.src = "https://via.placeholder.com/48";
+                                            }}
                                         />
                                         <div className="flex flex-col">
                                             <span className="font-medium text-gray-800 line-clamp-1">{item.name}</span>
@@ -93,7 +93,7 @@ export function ReviewPromptModal({ isOpen, onClose, order }: ReviewPromptModalP
                                         </div>
                                     </div>
                                     <Button
-                                      onClick={() => setProductToReview({
+                                        onClick={() => setProductToReview({
                                             id: item.id, // For display in ReviewForm
                                             name: item.name,
                                             image: item.image,

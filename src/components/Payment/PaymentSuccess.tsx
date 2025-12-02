@@ -332,7 +332,7 @@ export default function PaymentSuccess() {
   };
 
   const viewOrderDetails = () => {
-    navigate(`/dashboard/order/${orderId}`, {
+    navigate(`dashboard/orderlist`, {
       state: { orderId, orderData: processedOrderData }
     });
   };

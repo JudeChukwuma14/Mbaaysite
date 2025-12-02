@@ -1,5 +1,4 @@
-
-// src/components/OrderList.tsx - CORRECTED IMPORTS
+// src/components/OrderList.tsx - FINAL VERSION
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,13 +26,14 @@ import {
   formatDate,
   getPaymentStatusColor,
   getStatusColor,
-} from "@/utils/orderUtils"; // Removed getStatusIcon
+} from "@/utils/orderUtils";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReviewPromptModal } from "../review/ReviewPromptModal";
+
 
 export default function OrderList() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -43,7 +43,6 @@ export default function OrderList() {
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [orderToReview, setOrderToReview] = useState<Order | null>(null);
-
 
   const navigate = useNavigate();
   const user = useSelector((state: RootState) => state.user);
@@ -85,13 +84,13 @@ export default function OrderList() {
   }, [navigate, isAuthenticated, token, role]);
 
   const handleConfirmReceipt = async (orderId: string) => {
-    // Extract the original order IDs from the grouped order ID
-    const originalOrderIds = orderId.split('-').slice(2).join('-');
+    // FIXED: Extract the original order ID correctly
+    // The orderId is in format: "order-group-{index}-{originalId}"
+    const originalOrderId = orderId.split('-').slice(3).join('-') || orderId;
 
     setConfirmingOrderId(orderId);
     try {
-      // Confirm the first order in the group (you might need to confirm all)
-      await confirmOrderReceived(originalOrderIds);
+      await confirmOrderReceived(originalOrderId);
 
       let confirmedOrder: Order | undefined;
       setOrders((prevOrders) =>
@@ -297,71 +296,85 @@ export default function OrderList() {
                       </div>
 
                       <div className="space-y-3">
-                        {/* Always show first item */}
-                        <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                          <img
-                            src={order.items[0].image}
-                            alt={order.items[0].name}
-                            width={80}
-                            height={80}
-                            className="object-cover border border-gray-200 rounded-lg"
-                          />
-                          <div className="flex-1 space-y-2">
-                            <h4 className="font-medium text-gray-900 truncate">{order.items[0].name}</h4>
-                            <div className="text-sm text-gray-600">
-                              <p>{order.items[0].category} → {order.items[0].subCategory}</p>
-                              <p>Quantity: <span className="font-medium">{order.items[0].quantity}</span></p>
-                              <p>Price: <span className="font-medium">
-                                {new Intl.NumberFormat("en-NG", {
-                                  style: "currency",
-                                  currency: "NGN",
-                                }).format(order.items[0].price)}
-                              </span></p>
+                        {/* Always show first item - Added safety check for empty items array */}
+                        {order.items.length > 0 ? (
+                          <>
+                            <div className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+                              <img
+                                src={order.items[0].image}
+                                alt={order.items[0].name}
+                                width={80}
+                                height={80}
+                                className="object-cover border border-gray-200 rounded-lg"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://via.placeholder.com/80";
+                                }}
+                              />
+                              <div className="flex-1 space-y-2">
+                                <h4 className="font-medium text-gray-900 truncate">{order.items[0].name}</h4>
+                                <div className="text-sm text-gray-600">
+                                  <p>{order.items[0].category} → {order.items[0].subCategory}</p>
+                                  <p>Quantity: <span className="font-medium">{order.items[0].quantity}</span></p>
+                                  <p>Price: <span className="font-medium">
+                                    {new Intl.NumberFormat("en-NG", {
+                                      style: "currency",
+                                      currency: "NGN",
+                                    }).format(order.items[0].price)}
+                                  </span></p>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        </div>
 
-                        {/* Show other items when expanded */}
-                        {hasMultipleItems && (
-                          <AnimatePresence>
-                            {expandedOrderId === order.id ? (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="space-y-3"
-                              >
-                                {order.items.slice(1).map((item) => (
-                                  <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
-                                    <img
-                                      src={item.image}
-                                      alt={item.name}
-                                      width={80}
-                                      height={80}
-                                      className="object-cover border border-gray-200 rounded-lg"
-                                    />
-                                    <div className="flex-1 space-y-2">
-                                      <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
-                                      <div className="text-sm text-gray-600">
-                                        <p>{item.category} → {item.subCategory}</p>
-                                        <p>Quantity: <span className="font-medium">{item.quantity}</span></p>
-                                        <p>Price: <span className="font-medium">
-                                          {new Intl.NumberFormat("en-NG", {
-                                            style: "currency",
-                                            currency: "NGN",
-                                          }).format(item.price)}
-                                        </span></p>
+                            {/* Show other items when expanded */}
+                            {hasMultipleItems && (
+                              <AnimatePresence>
+                                {expandedOrderId === order.id ? (
+                                  <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="space-y-3"
+                                  >
+                                    {order.items.slice(1).map((item) => (
+                                      <div key={item.id} className="flex gap-4 p-3 bg-gray-50 rounded-lg">
+                                        <img
+                                          src={item.image}
+                                          alt={item.name}
+                                          width={80}
+                                          height={80}
+                                          className="object-cover border border-gray-200 rounded-lg"
+                                          onError={(e) => {
+                                            e.currentTarget.src = "https://via.placeholder.com/80";
+                                          }}
+                                        />
+                                        <div className="flex-1 space-y-2">
+                                          <h4 className="font-medium text-gray-900 truncate">{item.name}</h4>
+                                          <div className="text-sm text-gray-600">
+                                            <p>{item.category} → {item.subCategory}</p>
+                                            <p>Quantity: <span className="font-medium">{item.quantity}</span></p>
+                                            <p>Price: <span className="font-medium">
+                                              {new Intl.NumberFormat("en-NG", {
+                                                style: "currency",
+                                                currency: "NGN",
+                                              }).format(item.price)}
+                                            </span></p>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </motion.div>
-                            ) : order.items.length > 1 && (
-                              <p className="text-sm text-gray-500 pl-3">
-                                + {order.items.length - 1} more item{order.items.length - 1 > 1 ? 's' : ''}
-                              </p>
+                                    ))}
+                                  </motion.div>
+                                ) : order.items.length > 1 && (
+                                  <p className="text-sm text-gray-500 pl-3">
+                                    + {order.items.length - 1} more item{order.items.length - 1 > 1 ? 's' : ''}
+                                  </p>
+                                )}
+                              </AnimatePresence>
                             )}
-                          </AnimatePresence>
+                          </>
+                        ) : (
+                          <div className="p-3 bg-gray-50 rounded-lg text-center">
+                            <p className="text-gray-500">No items found for this order</p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -457,7 +470,7 @@ export default function OrderList() {
                 <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                 <h3 className="mb-2 text-lg font-semibold text-gray-900">No orders found</h3>
                 <p className="mb-6 text-gray-600">Start shopping to see your orders here.</p>
-                <Button onClick={() => navigate("/products")}>Browse Products</Button>
+                <Button onClick={() => navigate("/random-product")}>Browse Products</Button>
               </CardContent>
             </Card>
           )}
