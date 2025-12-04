@@ -46,42 +46,129 @@ export default function PaymentFailed({
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("PaymentFailed state:", state); // Debug log
+    console.log("PaymentFailed state:", state);
+    console.log("PaymentFailed searchParams:", Object.fromEntries(searchParams));
+    
     const reference = searchParams.get("reference");
-    if (reference && !state?.orderData) {
-      setIsLoading(true);
-      getPaymentStatus(reference)
-        .then(({ orderId, orderData }) => {
-          setOrderNumber(orderId || defaultOrderNumber);
-          setOrderData(orderData || null);
-          setAmount(`$${orderData?.pricing.total || defaultAmount}`);
-          setEmail(orderData?.email || defaultEmail);
-          setPaymentMethod(
-            orderData?.paymentOption === "Pay Before Delivery" ? "Credit Card" : "Cash on Delivery"
-          );
-          setErrorCode(state?.errorCode || defaultErrorCode);
-          setErrorMessage(state?.errorMessage || defaultErrorMessage);
-        })
-        .catch((error) => {
-          console.error("PaymentFailed error:", error);
-          setErrorCode(state?.errorCode || "ERR_PAYMENT_STATUS_FETCH");
-          setErrorMessage(
-            state?.errorMessage || "Failed to fetch payment status. Please try again later."
-          );
-        })
-        .finally(() => setIsLoading(false));
-    } else if (state?.orderData || state?.errorCode) {
+    
+    // If we have state data, use it directly
+    if (state?.orderData || state?.errorCode) {
+      console.log("Using state data:", state);
+      
+      // Handle orderData from state (might be mapped or raw backend data)
+      const orderDataFromState = state.orderData;
+      
       setOrderNumber(state.orderId || defaultOrderNumber);
-      setOrderData(state.orderData || null);
-      setAmount(`$${state.orderData?.pricing.total || defaultAmount}`);
-      setEmail(state.orderData?.email || defaultEmail);
+      setOrderData(orderDataFromState || null);
+      
+      // Extract amount from orderData if available
+      if (orderDataFromState?.pricing?.total) {
+        const total = orderDataFromState.pricing.total;
+        setAmount(`₦${Number(total).toFixed(2)}`);
+      } else {
+        setAmount(defaultAmount);
+      }
+      
+      setEmail(orderDataFromState?.email || defaultEmail);
       setPaymentMethod(
-        state.orderData?.paymentOption === "before" ? "Credit Card" : "Cash on Delivery"
+        orderDataFromState?.paymentOption === "Pay Before Delivery" 
+          ? "Credit/Debit Card" 
+          : "Cash on Delivery"
       );
       setErrorCode(state.errorCode || defaultErrorCode);
       setErrorMessage(state.errorMessage || defaultErrorMessage);
+      
+      setIsLoading(false);
+    } 
+    // If we have a reference but no state data, fetch it
+    else if (reference) {
+      console.log("Fetching payment status with reference:", reference);
+      setIsLoading(true);
+      
+      // Use the actual API call
+      getPaymentStatus(reference)
+        .then((response) => {
+          console.log("Fetched payment status:", response);
+          
+          const backendOrderData = response.orderData;
+          let orderDataToUse = null;
+          
+          // Map backend data to frontend format if needed
+          if (backendOrderData) {
+            // Check if it's an array or single object
+            let order;
+            if (Array.isArray(backendOrderData)) {
+              order = backendOrderData[0]?.order || backendOrderData[0];
+            } else {
+              order = backendOrderData;
+            }
+            
+            if (order) {
+              // Extract cart items
+              const cartItems = order.items?.map((item: any, index: number) => ({
+                productId: item.product?._id || `product-${index}`,
+                name: item.product?.name || `Product ${index + 1}`,
+                price: item.price || item.product?.price || 0,
+                quantity: item.quantity || 1,
+                image: item.product?.images?.[0] || item.product?.poster || "",
+              })) || [];
+              
+              orderDataToUse = {
+                id: order._id || response.orderId,
+                first_name: order.buyerInfo?.first_name || "",
+                last_name: order.buyerInfo?.last_name || "",
+                email: order.buyerInfo?.email || defaultEmail,
+                phone: order.buyerInfo?.phone || "",
+                address: order.buyerInfo?.address || "",
+                country: order.buyerInfo?.country || "",
+                apartment: order.buyerInfo?.apartment || "",
+                city: order.buyerInfo?.city || "",
+                region: order.buyerInfo?.region || "",
+                postalCode: order.buyerInfo?.postalCode || "",
+                couponCode: order.couponCode || "",
+                paymentOption: order.paymentOption || "Pay Before Delivery",
+                cartItems: cartItems,
+                pricing: {
+                  subtotal: order.totalPrice?.toString() || "0.00",
+                  shipping: "0.00",
+                  tax: "0.00",
+                  discount: "0.00",
+                  total: order.totalPrice?.toString() || "0.00",
+                },
+              };
+            }
+          }
+          
+          setOrderNumber(response.orderId || defaultOrderNumber);
+          setOrderData(orderDataToUse);
+          
+          if (orderDataToUse?.pricing?.total) {
+            setAmount(`₦${Number(orderDataToUse.pricing.total).toFixed(2)}`);
+          }
+          
+          setEmail(orderDataToUse?.email || defaultEmail);
+          setPaymentMethod(
+            orderDataToUse?.paymentOption === "Pay Before Delivery" 
+              ? "Credit/Debit Card" 
+              : "Cash on Delivery"
+          );
+          setErrorCode(defaultErrorCode);
+          setErrorMessage(defaultErrorMessage);
+        })
+        .catch((error) => {
+          console.error("PaymentFailed fetch error:", error);
+          setErrorCode("ERR_PAYMENT_STATUS_FETCH");
+          setErrorMessage(
+            "Failed to fetch payment status. Please try again later."
+          );
+        })
+        .finally(() => setIsLoading(false));
+    } else {
+      // Use default props
+      console.log("Using default props");
+      setIsLoading(false);
     }
-  }, [searchParams, state, defaultOrderNumber, defaultAmount, defaultEmail, defaultErrorCode, defaultErrorMessage]);
+  }, [searchParams, state, defaultOrderNumber, defaultAmount, defaultEmail, defaultErrorCode, defaultErrorMessage, defaultPaymentMethod]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -190,27 +277,32 @@ export default function PaymentFailed({
             </div>
           </div>
 
-          {orderData?.cartItems && (
+          {orderData?.cartItems && orderData.cartItems.length > 0 && (
             <div className="mb-6">
               <h3 className="mb-3 text-sm font-medium text-gray-700">Attempted Items</h3>
-              <ul className="space-y-4">
+              <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
                 {orderData.cartItems.map((item) => (
-                  <li key={item.productId} className="flex items-center gap-4">
+                  <div key={item.productId} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
                     <ImageWithFallback
                       src={item.image}
                       alt={item.name}
-                      className="object-cover w-12 h-12 rounded"
+                      fallbackSrc="https://via.placeholder.com/48"
+                      className="object-cover w-12 h-12 rounded-lg"
                     />
-                    <div>
-                      <div className="text-sm font-medium text-gray-800">{item.name}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-800 truncate">
+                        {item.name}
+                      </div>
                       <div className="text-sm text-gray-600">
-                        ${item.price.toFixed(2)} x {item.quantity} = $
-                        {(item.price * item.quantity).toFixed(2)}
+                        ₦{Number(item.price).toFixed(2)} × {item.quantity}
                       </div>
                     </div>
-                  </li>
+                    <div className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+                      ₦{(Number(item.price) * Number(item.quantity)).toFixed(2)}
+                    </div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
@@ -220,23 +312,27 @@ export default function PaymentFailed({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium text-gray-800">${orderData.pricing.subtotal}</span>
+                  <span className="font-medium text-gray-800">₦{Number(orderData.pricing.subtotal).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
-                  <span className="font-medium text-gray-800">${orderData.pricing.tax}</span>
+                  <span className="font-medium text-gray-800">₦{Number(orderData.pricing.tax).toFixed(2)}</span>
                 </div>
-                {orderData.pricing.discount !== "0.00" && (
+                {orderData.pricing.discount && Number(orderData.pricing.discount) !== 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Discount ({orderData.couponCode})</span>
+                    <span className="text-gray-600">Discount</span>
                     <span className="font-medium text-green-600">
-                      -${orderData.pricing.discount}
+                      -₦{Number(orderData.pricing.discount).toFixed(2)}
                     </span>
                   </div>
                 )}
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="font-medium text-gray-800">₦{Number(orderData.pricing.shipping).toFixed(2)}</span>
+                </div>
                 <div className="flex justify-between pt-2 border-t border-gray-200">
                   <span className="font-medium text-gray-800">Total Attempted</span>
-                  <span className="font-semibold text-gray-800">${orderData.pricing.total}</span>
+                  <span className="font-semibold text-gray-800">₦{Number(orderData.pricing.total).toFixed(2)}</span>
                 </div>
               </div>
             </div>

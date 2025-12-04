@@ -128,7 +128,20 @@ const Dashboard = () => {
   };
 
   // Month helpers
-  const monthsShort = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const monthsShort = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const now = new Date();
   const currentMonthIndex = now.getMonth(); // 0-11
   // Rolling last-12 months labels ending at current month
@@ -139,7 +152,10 @@ const Dashboard = () => {
 
   // Attempt to read monthly revenue from API if available
   // Support several possible shapes: venstat.monthlyRevenue or venstat.stats.monthlyRevenue
-  const rawMonthly: any = (venstat as any)?.monthlyRevenue || (venstat as any)?.stats?.monthlyRevenue || [];
+  const rawMonthly: any =
+    (venstat as any)?.monthlyRevenue ||
+    (venstat as any)?.stats?.monthlyRevenue ||
+    [];
   const monthlyMap = new Map<number, number>();
   if (Array.isArray(rawMonthly)) {
     rawMonthly.forEach((item: any) => {
@@ -147,9 +163,9 @@ const Dashboard = () => {
       let m = item?.month;
       let idx: number | null = null;
       if (typeof m === "number") {
-        idx = m >= 1 && m <= 12 ? m - 1 : (m >= 0 && m <= 11 ? m : null);
+        idx = m >= 1 && m <= 12 ? m - 1 : m >= 0 && m <= 11 ? m : null;
       } else if (typeof m === "string") {
-        const up = m.slice(0,3).toLowerCase();
+        const up = m.slice(0, 3).toLowerCase();
         idx = monthsShort.findIndex((s) => s.toLowerCase() === up);
       }
       if (idx !== null && idx >= 0) {
@@ -241,11 +257,15 @@ const Dashboard = () => {
             transition={{ duration: 0.3 }}
           >
             <div>
-              <h3 className="text-sm text-gray-500 dark:text-gray-400">{card.title}</h3>
+              <h3 className="text-sm text-gray-500 dark:text-gray-400">
+                {card.title}
+              </h3>
               {card.loading ? (
                 <div className="w-16 h-8 bg-gray-200 rounded animate-pulse"></div>
               ) : (
-                <p className="text-2xl font-bold text-gray-800 dark:text-white">{card.value}</p>
+                <p className="text-2xl font-bold text-gray-800 dark:text-white">
+                  {card.value}
+                </p>
               )}
             </div>
             {card.icon && (
@@ -265,7 +285,9 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="mb-4 text-lg font-semibold">Revenue Report (last 12 months)</h2>
+          <h2 className="mb-4 text-lg font-semibold">
+            Revenue Report (last 12 months)
+          </h2>
           {/* <div className="flex justify-end mb-3">
             {[1, 3, 6].map((month) => (
               <button
@@ -330,7 +352,9 @@ const Dashboard = () => {
           <div className="flex items-center justify-center py-8">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 border-2 border-orange-500 rounded-full border-t-transparent animate-spin"></div>
-              <span className="text-gray-600 dark:text-gray-300">Loading orders...</span>
+              <span className="text-gray-600 dark:text-gray-300">
+                Loading orders...
+              </span>
             </div>
           </div>
         )}
@@ -354,7 +378,9 @@ const Dashboard = () => {
             {orders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
                 <ShoppingCart className="w-12 h-12 mb-2 text-gray-400" />
-                <p className="text-gray-500 dark:text-gray-300">No orders found</p>
+                <p className="text-gray-500 dark:text-gray-300">
+                  No orders found
+                </p>
                 <p className="text-sm text-gray-400 dark:text-gray-400">
                   Orders will appear here when customers place them
                 </p>
@@ -372,7 +398,9 @@ const Dashboard = () => {
                       transition={{ duration: 0.2, delay: index * 0.05 }}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="text-xs text-gray-500 dark:text-gray-400">Order</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Order
+                        </div>
                         <NavLink
                           to={`/app/order-details/${order._id}`}
                           className="text-xs text-blue-500 hover:text-blue-700 hover:underline"
@@ -380,22 +408,38 @@ const Dashboard = () => {
                           View
                         </NavLink>
                       </div>
-                      <div className="mt-1 font-mono text-sm break-all">{order?._id}</div>
+                      <div className="mt-1 font-mono text-sm break-all">
+                        {order?._id}
+                      </div>
                       <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Customer</div>
-                          <div className="font-medium">{order.buyerInfo.first_name}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Customer
+                          </div>
+                          <div className="font-medium">
+                            {order.buyerInfo.first_name}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Date</div>
-                          <div className="text-gray-600 dark:text-gray-300">{formatDate(order.createdAt)}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Date
+                          </div>
+                          <div className="text-gray-600 dark:text-gray-300">
+                            {formatDate(order.createdAt)}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Amount</div>
-                          <div className="font-semibold">{formatCurrency(order.totalPrice)}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Amount
+                          </div>
+                          <div className="font-semibold">
+                            {formatCurrency(order.totalPrice)}
+                          </div>
                         </div>
                         <div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Status</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
+                            Status
+                          </div>
                           <div className="font-medium">{order.status}</div>
                         </div>
                       </div>
@@ -449,14 +493,15 @@ const Dashboard = () => {
                               <span className="text-sm">
                                 {/* {order.name?.length} item
                                 {order.name?.length > 1 ? "s" : ""} */}
-                                {order.product.name}
+                                {/* {order.product.name} */}
+                                {order?.product?.name ?? "No product"}
                               </span>
-                              {order.name?.[0]?.image && (
+                              {order?.items?.[0]?.image && (
                                 <img
                                   src={
                                     order.items[0].image || "/placeholder.svg"
                                   }
-                                  alt={order.items[0].name}
+                                  alt={order?.items?.[0]?.name ?? "item"}
                                   className="object-cover w-8 h-8 rounded"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src =
