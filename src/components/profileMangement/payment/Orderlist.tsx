@@ -470,7 +470,7 @@ export default function OrderList() {
                 <ShoppingBag className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                 <h3 className="mb-2 text-lg font-semibold text-gray-900">No orders found</h3>
                 <p className="mb-6 text-gray-600">Start shopping to see your orders here.</p>
-                <Button onClick={() => navigate("/random-product")}>Browse Products</Button>
+                <Button className="bg-orange-500" onClick={() => navigate("/random-product")}>Browse Products</Button>
               </CardContent>
             </Card>
           )}

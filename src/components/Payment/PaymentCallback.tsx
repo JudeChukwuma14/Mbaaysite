@@ -24,57 +24,75 @@ export default function PaymentCallback() {
     }
   };
 
-  const mapBackendOrderData = (backendOrderData: any[]): OrderData | null => {
-    if (!backendOrderData || !Array.isArray(backendOrderData) || backendOrderData.length === 0) {
+  const mapBackendOrderData = (backendOrderData: any, orderId: string): OrderData | null => {
+    console.log("Mapping backend order data:", backendOrderData);
+    
+    // Handle case where backendOrderData is null or undefined
+    if (!backendOrderData) {
       console.log("No backend order data found");
       return null;
     }
 
-    // Take the first order as reference (they all have the same buyer info)
-    const firstOrder = backendOrderData[0].order;
+    // Check if it's an array or a single object
+    let orderData;
+    if (Array.isArray(backendOrderData)) {
+      if (backendOrderData.length === 0) {
+        console.log("Empty backend order data array");
+        return null;
+      }
+      // Take the first order if it's an array
+      orderData = backendOrderData[0];
+    } else {
+      // It's already a single order object
+      orderData = backendOrderData;
+    }
 
-    if (!firstOrder || !firstOrder.buyerInfo) {
-      console.log("Order or buyer info missing:", firstOrder);
+    // Extract the order object (handle nested structure)
+    const order = orderData.order || orderData;
+    
+    if (!order || !order.buyerInfo) {
+      console.log("Order or buyer info missing:", order);
       return null;
     }
 
-    // Combine ALL items from all orders into one cart
+    // Extract cart items from the order
     const cartItems: OrderCartItem[] = [];
+    
+    if (order.items && Array.isArray(order.items)) {
+      order.items.forEach((item: any, index: number) => {
+        const product = item.product;
+        if (product) {
+          cartItems.push({
+            productId: product._id || `product-${index}`,
+            name: product.name || `Product ${index + 1}`,
+            price: item.price || product.price || 0,
+            quantity: item.quantity || 1,
+            image: product.images?.[0] || product.poster || "",
+          });
+        }
+      });
+    } else {
+      console.log("No items found in order or items is not an array:", order.items);
+    }
 
-    backendOrderData.forEach((orderData, index) => {
-      const product = orderData.product; // Only get the product
+    // Calculate total price
+    const totalPrice = order.totalPrice || 0;
 
-      if (product) {
-        cartItems.push({
-          productId: product._id || `product-${index}`,
-          name: product.name || `Product ${index + 1}`,
-          price: product.price || 0,
-          quantity: 1, // Assuming quantity 1 for each product in the order
-          image: product.images?.[0] || product.poster || "",
-        });
-      }
-    });
-
-    // Calculate total price from all orders
-    const totalPrice = backendOrderData.reduce((total, orderData) => {
-      return total + (orderData.order?.totalPrice || 0); // Access order.totalPrice directly
-    }, 0);
-
-    // Create mapped order data with combined items
+    // Create mapped order data
     const mappedData: OrderData = {
-      id: firstOrder._id,
-      first_name: firstOrder.buyerInfo.first_name || "",
-      last_name: firstOrder.buyerInfo.last_name || "",
-      email: firstOrder.buyerInfo.email || "",
-      phone: firstOrder.buyerInfo.phone || "",
-      address: firstOrder.buyerInfo.address || "",
-      country: firstOrder.buyerInfo.country || "",
-      apartment: firstOrder.buyerInfo.apartment || "",
-      city: firstOrder.buyerInfo.city || "",
-      region: firstOrder.buyerInfo.region || "",
-      postalCode: firstOrder.buyerInfo.postalCode || "",
-      couponCode: firstOrder.couponCode || "",
-      paymentOption: firstOrder.paymentOption || "Pay Before Delivery",
+      id: order._id || orderId,
+      first_name: order.buyerInfo.first_name || "",
+      last_name: order.buyerInfo.last_name || "",
+      email: order.buyerInfo.email || "",
+      phone: order.buyerInfo.phone || "",
+      address: order.buyerInfo.address || "",
+      country: order.buyerInfo.country || "",
+      apartment: order.buyerInfo.apartment || "",
+      city: order.buyerInfo.city || "",
+      region: order.buyerInfo.region || "",
+      postalCode: order.buyerInfo.postalCode || "",
+      couponCode: order.couponCode || "",
+      paymentOption: order.paymentOption || "Pay Before Delivery",
       cartItems: cartItems,
       pricing: {
         subtotal: totalPrice.toString(),
@@ -85,11 +103,12 @@ export default function PaymentCallback() {
       },
     };
 
-    console.log("Mapped order data with combined items:", {
+    console.log("Successfully mapped order data:", {
+      orderId: mappedData.id,
       totalItems: cartItems.length,
-      items: cartItems.map(item => item.name),
       totalPrice: totalPrice
     });
+    
     return mappedData;
   };
 
@@ -128,19 +147,36 @@ export default function PaymentCallback() {
         const response: PaymentStatusResponse = await getPaymentStatus(reference);
         console.log("Payment status response:", response);
 
-        const backendOrderData = Array.isArray(response.orderData) ? response.orderData : [];
-        const mappedOrderData = mapBackendOrderData(backendOrderData);
+        // The backend returns orderData as a single object, not necessarily an array
+        const backendOrderData = response.orderData;
+        const mappedOrderData = mapBackendOrderData(backendOrderData, response.orderId);
 
-        // Validate response
+        // Add detailed debug logging
+        console.log("Response structure check:", {
+          hasOrderId: !!response.orderId,
+          orderIdType: typeof response.orderId,
+          orderIdValue: response.orderId,
+          orderIdTrimmed: response.orderId?.trim(),
+          hasMappedData: !!mappedOrderData,
+          hasPricing: mappedOrderData?.pricing,
+          hasTotal: mappedOrderData?.pricing?.total,
+          totalValue: mappedOrderData?.pricing?.total,
+          responseKeys: Object.keys(response),
+          responseStructure: response
+        });
+
+        // Validate response - IMPORTANT: Check that total is not "0.00"
         if (
           response.orderId &&
           typeof response.orderId === "string" &&
           response.orderId.trim() !== "" &&
           mappedOrderData &&
           mappedOrderData.pricing &&
-          mappedOrderData.pricing.total
+          mappedOrderData.pricing.total &&
+          mappedOrderData.pricing.total !== "0.00" &&
+          mappedOrderData.pricing.total !== "0"
         ) {
-          console.log("Payment verification successful, clearing session and cart...");
+          console.log("✅ Payment verification successful, clearing session and cart...");
 
           // Clear session and cart
           dispatch(clearSessionId());
@@ -158,14 +194,27 @@ export default function PaymentCallback() {
             replace: true
           });
         } else {
-          console.error("Invalid response structure:", response);
+          console.error("❌ Invalid response structure or validation failed:", {
+            orderIdValid: response.orderId && typeof response.orderId === "string" && response.orderId.trim() !== "",
+            mappedDataValid: !!mappedOrderData,
+            pricingValid: mappedOrderData?.pricing,
+            totalValid: mappedOrderData?.pricing?.total && 
+                       mappedOrderData.pricing.total !== "0.00" && 
+                       mappedOrderData.pricing.total !== "0",
+            totalValue: mappedOrderData?.pricing?.total,
+            responseStructure: response
+          });
+          
           toast.error("Payment verification failed. Invalid response from server.");
+          
+          // Navigate to failed page with useful error info
           navigate("/failed", {
             state: {
               orderId: response.orderId || "unknown",
               orderData: mappedOrderData,
               errorCode: "ERR_INVALID_RESPONSE",
               errorMessage: "Order verification failed. Please contact support.",
+              reference: reference
             },
             replace: true
           });
