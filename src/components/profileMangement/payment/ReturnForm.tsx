@@ -6,7 +6,7 @@ import { RootState } from "@/redux/store";
 import { toast } from "react-toastify";
 import { getOrdersWithSession, OrderItem } from "@/utils/getOrderApi";
 import { useNavigate } from "react-router-dom";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 
 type FormData = {
   orderId: string;
@@ -84,7 +84,7 @@ export default function ReturnForm() {
 
           // Initialize return items
           const initialReturnItems = firstOrder.items.map(
-            (item: OrderItem, index: number) => ({
+            (item: OrderItem) => ({
               productId: item.productId || item.id,
               itemId: `${firstOrder.id}-${item.productId || item.id}`,
               name: item.name,
