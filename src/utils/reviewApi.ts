@@ -5,6 +5,54 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+export interface Review {
+  _id: string;
+  product: string;
+  reviewer: string;
+  reviewerType: string;
+  reviewerName: string;
+  rating: number;
+  title: string;
+  comment: string;
+  verified: boolean;
+  status: string;
+  helpful: number;
+  images: string[];
+  vendorPrivateMessages: any[];
+  vendorReply?: {
+    isPublic: boolean;
+    reply?: string;
+    repliedAt?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface ReviewsResponse {
+  success: boolean;
+  message: string;
+  reviews: Review[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+  stats: {
+    totalReviews: number;
+    averageRating: number;
+    ratingDistribution: {
+      1: number;
+      2: number;
+      3: number;
+      4: number;
+      5: number;
+    };
+    verifiedReviewsCount: number;
+  };
+}
+
 export interface CreateReviewRequest {
   productId: string;
   rating: number;
@@ -13,27 +61,17 @@ export interface CreateReviewRequest {
   images?: string[];
 }
 
-export interface ReviewResponse {
+export interface CreateReviewResponse {
   success: boolean;
   message: string;
-  review?: {
-    _id: string;
-    productId: string;
-    userId: string;
-    rating: number;
-    title: string;
-    comment: string;
-    images: string[];
-    createdAt: string;
-    updatedAt: string;
-  };
+  review?: Review;
 }
 
 export const submitReviewApi = async (
   reviewData: CreateReviewRequest,
   token: string,
   userId: string // Add userId parameter
-): Promise<ReviewResponse> => {
+): Promise<CreateReviewResponse> => {
   try {
     console.log("Submitting review to API:", {
       ...reviewData,
@@ -42,9 +80,13 @@ export const submitReviewApi = async (
     });
 
     // Update the endpoint to include userId
-    const response = await api.post<ReviewResponse>(
+    const response = await api.post<CreateReviewResponse>(
       `/reviews/create/${userId}`,
-      reviewData,
+      {
+        ...reviewData,
+        // Make sure images is always an array (even if empty)
+        images: reviewData.images || [],
+      },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -58,15 +100,8 @@ export const submitReviewApi = async (
     if (!response.data.success) {
       throw new Error(response.data.message || "Review submission failed");
     }
-
     return response.data;
   } catch (error: any) {
-    console.error("Review API Error:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
-
     // Handle specific error cases
     if (error.response?.status === 401) {
       throw new Error("Your session has expired. Please log in again.");
@@ -86,5 +121,108 @@ export const submitReviewApi = async (
         error.message ||
         "Failed to submit review. Please check your connection and try again."
     );
+  }
+};
+
+// In your reviewApi.ts file, update the getProductReviews function:
+
+export const getProductReviews = async (
+  productId: string,
+  page: number = 1,
+  limit: number = 10
+): Promise<ReviewsResponse> => {
+  try {
+    console.log("Fetching reviews for product:", productId);
+    
+    const response = await api.get(
+      `/reviews/product/${productId}`,
+      {
+        params: { page, limit }
+      }
+    );
+
+    console.log("Reviews API Raw Response:", response.data);
+    
+    // Check if response.data has the expected structure
+    const responseData = response.data;
+    
+    // If the API returns the data directly (without success wrapper)
+    if (responseData && (responseData.reviews !== undefined || responseData.success === undefined)) {
+      console.log("Processing direct API response structure");
+      
+      // Check if this is the structure you showed earlier
+      if (responseData.reviews) {
+        return {
+          success: true,
+          message: responseData.message || "Reviews fetched successfully",
+          reviews: responseData.reviews || [],
+          pagination: responseData.pagination || {
+            page: 1,
+            limit: 10,
+            total: responseData.reviews?.length || 0,
+            pages: 1
+          },
+          stats: responseData.stats || {
+            totalReviews: responseData.reviews?.length || 0,
+            averageRating: 0,
+            ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+            verifiedReviewsCount: 0
+          }
+        };
+      }
+    }
+    
+    // If response has success field
+    if (responseData.success !== undefined) {
+      console.log("Processing wrapped API response structure");
+      return responseData;
+    }
+    
+    // If we get here, the response structure is unexpected
+    console.error("Unexpected API response structure:", responseData);
+    throw new Error("Unexpected API response structure");
+    
+  } catch (error: any) {
+    console.error("Reviews API Error:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    });
+    
+    // Handle network errors
+    if (!error.response) {
+      console.error("Network error:", error.message);
+      throw new Error("Network error. Please check your connection.");
+    }
+    
+    // Handle specific error cases
+    if (error.response?.status === 404) {
+      // Product not found or no reviews - return empty
+      return {
+        success: true,
+        message: "No reviews found",
+        reviews: [],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 0,
+          pages: 1
+        },
+        stats: {
+          totalReviews: 0,
+          averageRating: 0,
+          ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+          verifiedReviewsCount: 0
+        }
+      };
+    }
+    
+    // Try to extract error message
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.error ||
+                        error.message || 
+                        "Failed to fetch reviews";
+    
+    throw new Error(errorMessage);
   }
 };
