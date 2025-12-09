@@ -48,6 +48,7 @@ export function ReviewPromptModal({ isOpen, onClose, order }: ReviewPromptModalP
     : 0;
 
   // Reset state when modal closes
+
   useEffect(() => {
     if (!isOpen) {
       setTimeout(() => {
@@ -59,121 +60,128 @@ export function ReviewPromptModal({ isOpen, onClose, order }: ReviewPromptModalP
   }, [isOpen]);
 
   // Handler to submit the review data
-  const handleReviewSubmit = async (reviewData: { 
-    rating: number; 
-    title: string;
-    comment: string; 
-    productId: string; 
-    orderId: string;
-    images?: File[];
-  }) => {
-    if (!productToReview || !token) {
-      toast.error("Unable to submit review. Please try again.");
-      return;
-    }
+const handleReviewSubmit = async (reviewData: { 
+  rating: number; 
+  title: string;
+  comment: string; 
+  productId: string; 
+  orderId: string;
+  images?: File[];
+}) => {
+  if (!productToReview || !token) {
+    toast.error("Unable to submit review. Please try again.");
+    return;
+  }
 
-    setIsSubmitting(true);
-    try {
-      let imageUrls: string[] = [];
+  setIsSubmitting(true);
+  try {
+    let imageUrls: string[] = [];
+    
+    // Convert images to base64 if provided
+    if (reviewData.images && reviewData.images.length > 0) {
+      console.log('Converting images to base64...');
       
-      // Convert images to base64 if provided
-      if (reviewData.images && reviewData.images.length > 0) {
-        console.log('Converting images to base64...');
-        
-        const base64Promises = reviewData.images.map(file => {
-          return new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const base64String = reader.result as string;
-              resolve(base64String);
-            };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
+      const base64Promises = reviewData.images.map(file => {
+        return new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const base64String = reader.result as string;
+            resolve(base64String);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
-        
-        imageUrls = await Promise.all(base64Promises);
-        console.log('Converted images to base64:', imageUrls.length);
-      }
-
-      // Prepare review data for API
-      const apiData = {
-        productId: reviewData.productId,
-        rating: reviewData.rating,
-        title: reviewData.title,
-        comment: reviewData.comment,
-        images: imageUrls, // Send base64 strings or empty array
-      };
-
-      console.log('Submitting review data:', {
-        ...apiData,
-        imagesCount: apiData.images.length
       });
-
-      // Call the review API
-      const result = await submitReviewApi(apiData, token);
-
-      if (result.success) {
-        // Mark this product as reviewed
-        setReviewedProducts(prev => [...prev, productToReview.productId]);
-        
-        // Success message based on whether images were included
-        const hasImages = reviewData.images && reviewData.images.length > 0;
-        const successMessage = hasImages
-          ? `Thanks for reviewing "${productToReview.name}" with photos!`
-          : `Thanks for reviewing "${productToReview.name}"!`;
-        
-        toast.success(
-          <div className="flex items-center gap-2">
-            <ThumbsUp className="w-4 h-4" />
-            <span>{successMessage}</span>
-          </div>, 
-          { 
-            autoClose: 3000,
-            icon: <CheckCircle className="text-green-500" />
-          }
-        );
-
-        // Check if all products have been reviewed
-        const totalReviewed = reviewedProducts.length + 1;
-        if (totalReviewed >= order.items.length) {
-          setTimeout(() => {
-            toast.success(
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4" />
-                <span>You've reviewed all products! Thank you for your feedback.</span>
-              </div>,
-              { 
-                autoClose: 3500,
-                icon: <Sparkles className="text-yellow-500" />
-              }
-            );
-            onClose();
-          }, 1500);
-        }
-        
-        // Go back to product list
-        setProductToReview(null);
-      } else {
-        throw new Error(result.message || "Failed to submit review");
-      }
-    } catch (error: any) {
-      console.error("Review submission error:", error);
-      toast.error(
-        <div className="flex items-start gap-2">
-          <X className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <div>
-            <p className="font-medium">Failed to submit review</p>
-            <p className="text-sm opacity-90">{error.message || "Please try again"}</p>
-          </div>
-        </div>,
-        { autoClose: 5000 }
-      );
-    } finally {
-      setIsSubmitting(false);
+      
+      imageUrls = await Promise.all(base64Promises);
+      console.log('Converted images to base64:', imageUrls.length);
     }
-  };
 
+    // Prepare review data for API
+    const apiData = {
+      productId: reviewData.productId,
+      rating: reviewData.rating,
+      title: reviewData.title,
+      comment: reviewData.comment,
+      images: imageUrls,
+    };
+
+    console.log('Submitting review data:', {
+      ...apiData,
+      imagesCount: apiData.images.length,
+      userId: user.user?._id // Add user ID to logs
+    });
+
+    // Get user ID from Redux state
+    const userId = user.user?._id;
+    
+    if (!userId) {
+      throw new Error("User ID not found. Please log in again.");
+    }
+
+    // Call the review API with user ID
+    const result = await submitReviewApi(apiData, token, userId);
+
+    if (result.success) {
+      // Mark this product as reviewed
+      setReviewedProducts(prev => [...prev, productToReview.productId]);
+      
+      // Success message based on whether images were included
+      const hasImages = reviewData.images && reviewData.images.length > 0;
+      const successMessage = hasImages
+        ? `Thanks for reviewing "${productToReview.name}" with photos!`
+        : `Thanks for reviewing "${productToReview.name}"!`;
+      
+      toast.success(
+        <div className="flex items-center gap-2">
+          <ThumbsUp className="w-4 h-4" />
+          <span>{successMessage}</span>
+        </div>, 
+        { 
+          autoClose: 3000,
+          icon: <CheckCircle className="text-green-500" />
+        }
+      );
+
+      // Check if all products have been reviewed
+      const totalReviewed = reviewedProducts.length + 1;
+      if (totalReviewed >= order.items.length) {
+        setTimeout(() => {
+          toast.success(
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              <span>You've reviewed all products! Thank you for your feedback.</span>
+            </div>,
+            { 
+              autoClose: 3500,
+              icon: <Sparkles className="text-yellow-500" />
+            }
+          );
+          onClose();
+        }, 1500);
+      }
+      
+      // Go back to product list
+      setProductToReview(null);
+    } else {
+      throw new Error(result.message || "Failed to submit review");
+    }
+  } catch (error: any) {
+    console.error("Review submission error:", error);
+    toast.error(
+      <div className="flex items-start gap-2">
+        <X className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <div>
+          <p className="font-medium">Failed to submit review</p>
+          <p className="text-sm opacity-90">{error.message || "Please try again"}</p>
+        </div>
+      </div>,
+      { autoClose: 5000 }
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   // Skip review for now
   const handleSkip = () => {
     setSkipForNow(true);

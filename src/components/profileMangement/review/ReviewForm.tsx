@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Star, ArrowLeft, Image as ImageIcon, X, Upload, AlertCircle, Camera } from 'lucide-react';
+import { Star, ArrowLeft, Image as ImageIcon, X, Upload, Camera } from 'lucide-react';
 import { toast } from 'react-toastify';
 
 interface ProductData {
@@ -383,7 +383,7 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
             </div>
 
             {/* Review Tips */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5">
+            {/* <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-5">
                 <div className="flex items-start gap-3">
                     <div className="p-2 bg-green-100 rounded-full">
                         <AlertCircle className="w-6 h-6 text-green-600" />
@@ -412,7 +412,7 @@ export function ReviewForm({ product, onSubmit, onBack, isSubmitting }: ReviewFo
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Action Buttons */}
             <div className="flex gap-4 pt-2">

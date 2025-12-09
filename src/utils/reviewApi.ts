@@ -30,24 +30,31 @@ export interface ReviewResponse {
 }
 
 export const submitReviewApi = async (
-  reviewData: CreateReviewRequest, 
-  token: string
+  reviewData: CreateReviewRequest,
+  token: string,
+  userId: string // Add userId parameter
 ): Promise<ReviewResponse> => {
   try {
     console.log("Submitting review to API:", {
       ...reviewData,
-      imagesCount: reviewData.images?.length || 0
-    });
-    
-    const response = await api.post<ReviewResponse>("/reviews/create", reviewData, {
-      headers: { 
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+      imagesCount: reviewData.images?.length || 0,
+      userId: userId, // Log userId
     });
 
+    // Update the endpoint to include userId
+    const response = await api.post<ReviewResponse>(
+      `/reviews/create/${userId}`,
+      reviewData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
     console.log("API Response:", response.data);
-    
+
     if (!response.data.success) {
       throw new Error(response.data.message || "Review submission failed");
     }
@@ -57,24 +64,27 @@ export const submitReviewApi = async (
     console.error("Review API Error:", {
       message: error.message,
       response: error.response?.data,
-      status: error.response?.status
+      status: error.response?.status,
     });
-    
+
     // Handle specific error cases
     if (error.response?.status === 401) {
       throw new Error("Your session has expired. Please log in again.");
     } else if (error.response?.status === 400) {
-      throw new Error(error.response?.data?.message || "Invalid review data. Please check your input.");
+      throw new Error(
+        error.response?.data?.message ||
+          "Invalid review data. Please check your input."
+      );
     } else if (error.response?.status === 404) {
       throw new Error("Product not found or review endpoint not available.");
     } else if (error.response?.status === 500) {
       throw new Error("Server error. Please try again later.");
     }
-    
+
     throw new Error(
-      error.response?.data?.message || 
-      error.message || 
-      "Failed to submit review. Please check your connection and try again."
+      error.response?.data?.message ||
+        error.message ||
+        "Failed to submit review. Please check your connection and try again."
     );
   }
 };
