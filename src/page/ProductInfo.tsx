@@ -112,11 +112,11 @@ const ProductDetails: React.FC = () => {
   const vendorState = useSelector((state: RootState) => state.vendor);
   const user = useSelector((state: RootState) => state.user.user);
 
-  useEffect(() => {
-    if (activeTab === "reviews" && product?._id) {
-      fetchProductReviews();
-    }
-  }, [activeTab, product?._id, reviewSortBy]);
+useEffect(() => {
+  if (product?._id) {
+    fetchProductReviews();
+  }
+}, [product?._id, reviewSortBy]);
 
   const fetchProductReviews = async () => {
     if (!product?._id) return;
