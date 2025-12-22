@@ -3,18 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// Select removed for status filter; return requests use method instead
 import {
   Search,
   Package,
   Clock,
-  CheckCircle,
   XCircle,
   Eye,
   MessageSquare,
@@ -36,7 +29,6 @@ interface ReturnRequest {
   orderNumber: string;
   returnReason?: string;
   requestDate?: string;
-  status?: string;
   refundAmount?: string | number;
   description?: string;
   condition?: string;
@@ -49,23 +41,20 @@ interface ReturnRequest {
 // We'll compute API-derived return requests further down
 const returnRequests: ReturnRequest[] = [];
 
-const statusColors = {
-  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  approved: "bg-blue-100 text-blue-800 border-blue-200",
-  rejected: "bg-red-100 text-red-800 border-red-200",
-  completed: "bg-green-100 text-green-800 border-green-200",
+const methodColors = {
+  dropoff: "bg-blue-100 text-blue-800 border-blue-200",
+  pickup: "bg-green-100 text-green-800 border-green-200",
+  other: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
-const statusIcons = {
-  pending: Clock,
-  approved: CheckCircle,
-  rejected: XCircle,
-  completed: Package,
+const methodIcons = {
+  dropoff: Package,
+  pickup: Clock,
+  other: MessageSquare,
 };
 
 const ReturnProducts = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
   const [selectedReturn, setSelectedReturn] = useState<ReturnRequest | null>(
     null
   );
@@ -103,12 +92,7 @@ const ReturnProducts = () => {
       condition: o.returnDetails?.condition || "",
       method: o.returnDetails?.method || "",
       comments: o.returnDetails?.comments || "",
-      status:
-        (o.returnDetails?.status &&
-          (o.returnDetails.status as string).toLowerCase()) ||
-        (o.status === "Return Requested"
-          ? "pending"
-          : (o.status && (o.status as string).toLowerCase()) || "pending"),
+      // Removing status from return request mapping — returns handled by method/returnDetails
       refundAmount: o.returnDetails?.refundAmount || o.refundAmount || "",
       description: o.returnDetails?.comments || "",
       rawOrder: o,
@@ -122,15 +106,10 @@ const ReturnProducts = () => {
       request.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       request.id.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" || request.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
-  const handleStatusUpdate = (returnId: string, newStatus: string) => {
-    // In a real app, this would make an API call
-    console.log(`[v0] Updating return ${returnId} to status: ${newStatus}`);
-  };
+  // Status updates removed for return requests — returns no longer support approve/reject from vendor UI
   return (
     <div className="max-w-full p-0 space-y-6 overflow-x-hidden">
       {/* Header */}
@@ -160,18 +139,7 @@ const ReturnProducts = () => {
             className="pl-10"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Status filter removed — returns do not support vendor-level approve/reject */}
       </div>
 
       {/* Stats Cards */}
@@ -179,50 +147,69 @@ const ReturnProducts = () => {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-yellow-600" />
-              <span className="text-sm font-medium text-gray-600">Pending</span>
+              <Package className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-medium text-gray-600">Dropoff</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {combinedReturns.filter((r) => r.status === "pending").length}
+              {
+                combinedReturns.filter(
+                  (r) =>
+                    (r.method || r.rawOrder?.returnDetails?.method || "")
+                      .toString()
+                      .toLowerCase() === "dropoff"
+                ).length
+              }
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-blue-600" />
-              <span className="text-sm font-medium text-gray-600">
-                Approved
-              </span>
+              <Clock className="w-4 h-4 text-green-600" />
+              <span className="text-sm font-medium text-gray-600">Pickup</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {combinedReturns.filter((r) => r.status === "approved").length}
+              {
+                combinedReturns.filter(
+                  (r) =>
+                    (r.method || r.rawOrder?.returnDetails?.method || "")
+                      .toString()
+                      .toLowerCase() === "pickup"
+                ).length
+              }
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <XCircle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-gray-600">
-                Rejected
-              </span>
+              <XCircle className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-600">Other</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {combinedReturns.filter((r) => r.status === "rejected").length}
+              {
+                combinedReturns.filter((r) => {
+                  const m = (
+                    r.method ||
+                    r.rawOrder?.returnDetails?.method ||
+                    ""
+                  )
+                    .toString()
+                    .toLowerCase();
+                  return m !== "dropoff" && m !== "pickup";
+                }).length
+              }
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <Package className="w-4 h-4 text-green-600" />
-              <span className="text-sm font-medium text-gray-600">
-                Completed
-              </span>
+              <Package className="w-4 h-4 text-gray-600" />
+              <span className="text-sm font-medium text-gray-600">Total</span>
             </div>
             <p className="mt-1 text-2xl font-bold text-gray-900">
-              {combinedReturns.filter((r) => r.status === "completed").length}
+              {combinedReturns.length}
             </p>
           </CardContent>
         </Card>
@@ -236,8 +223,13 @@ const ReturnProducts = () => {
         <CardContent>
           <div className="space-y-4">
             {filteredReturns.map((request) => {
-              const StatusIcon =
-                statusIcons[request.status as keyof typeof statusIcons];
+              const methodKey = (
+                request.method ||
+                request.rawOrder?.returnDetails?.method ||
+                "other"
+              ).toLowerCase();
+              const MethodIcon =
+                (methodIcons as any)[methodKey] || methodIcons.other;
               return (
                 <div
                   key={request.id}
@@ -260,16 +252,17 @@ const ReturnProducts = () => {
                           </h3>
                           <Badge
                             className={
-                              statusColors[
-                                request.status as keyof typeof statusColors
-                              ]
+                              methodColors[
+                                methodKey as keyof typeof methodColors
+                              ] || methodColors.other
                             }
                           >
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {request.status
-                              ? request.status.charAt(0).toUpperCase() +
-                                request.status.slice(1)
-                              : "-"}
+                            <MethodIcon className="w-3 h-3 mr-1" />
+                            {(
+                              request.method ||
+                              request.rawOrder?.returnDetails?.method ||
+                              "-"
+                            ).toString()}
                           </Badge>
                         </div>
                         <p className="mb-1 text-sm text-gray-600 break-all">
@@ -305,28 +298,7 @@ const ReturnProducts = () => {
                           <Eye className="w-4 h-4 mr-1" />
                           View
                         </Button>
-                        {request.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleStatusUpdate(request.id, "approved")
-                              }
-                              className="bg-blue-600 hover:bg-blue-700"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() =>
-                                handleStatusUpdate(request.id, "rejected")
-                              }
-                            >
-                              Reject
-                            </Button>
-                          </>
-                        )}
+                        {/* Approve/Reject removed for return requests — vendor doesn't approve/reject returns */}
                       </div>
                     </div>
                   </div>
@@ -373,17 +345,11 @@ const ReturnProducts = () => {
                   <p className="text-gray-600">
                     Refund Amount: {selectedReturn.refundAmount}
                   </p>
-                  <Badge
-                    className={`mt-2 ${
-                      statusColors[
-                        selectedReturn.status as keyof typeof statusColors
-                      ]
-                    }`}
-                  >
-                    {selectedReturn.status
-                      ? selectedReturn.status.charAt(0).toUpperCase() +
-                        selectedReturn.status.slice(1)
-                      : "-"}
+                  {/* Status removed for return requests — showing method as fallback */}
+                  <Badge className={`mt-2 bg-gray-100 text-gray-800`}>
+                    {selectedReturn.method ||
+                      selectedReturn.rawOrder?.returnDetails?.method ||
+                      "-"}
                   </Badge>
                 </div>
               </div>
@@ -422,7 +388,10 @@ const ReturnProducts = () => {
                       "-"}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Status: {selectedReturn.status}
+                    Method:{" "}
+                    {selectedReturn.method ||
+                      selectedReturn.rawOrder?.returnDetails?.method ||
+                      "-"}
                   </p>
                 </div>
               </div>
@@ -434,32 +403,7 @@ const ReturnProducts = () => {
                 </p>
               </div>
 
-              {selectedReturn.status === "pending" && (
-                <div className="flex gap-2 pt-4 border-t">
-                  <Button
-                    onClick={() => {
-                      handleStatusUpdate(selectedReturn.id, "approved");
-                      setSelectedReturn(null);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    Approve Return
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => {
-                      handleStatusUpdate(selectedReturn.id, "rejected");
-                      setSelectedReturn(null);
-                    }}
-                  >
-                    Reject Return
-                  </Button>
-                  <Button variant="outline">
-                    <MessageSquare className="w-4 h-4 mr-2" />
-                    Contact Customer
-                  </Button>
-                </div>
-              )}
+              {/* Vendor actions removed — returns are informational with method & comments */}
             </CardContent>
           </Card>
         </div>

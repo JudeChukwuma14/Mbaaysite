@@ -1,20 +1,18 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, UserCheck, AlertTriangle, Loader } from "lucide-react";
+import { User, UserCheck, AlertTriangle, Loader, RefreshCw } from "lucide-react";
 import { useVendorCustomer } from "@/hook/useCustomer_Payment";
 import { useSelector } from "react-redux";
 
 interface Customer {
-  name: string;
-  phone: string;
-  location: string;
+  _id: string;
   customer: {
     _id: string;
     email: string;
   };
   status: "Active" | "Inactive";
+  modelType: string;
   lastOrderDate?: string;
-  avatar?: string;
 }
 
 const CustomersPage: React.FC = () => {
@@ -52,25 +50,80 @@ const CustomersPage: React.FC = () => {
   );
 
   /* ---------- Empty State ---------- */
-  const EmptyState = () => (
-    <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-      <User size={48} className="mb-3" />
-      <p className="text-lg">No customers yet.</p>
-    </div>
+  interface EmptyStateProps {
+    filter: 'All' | 'Active' | 'Inactive';
+    onResetFilter: () => void;
+  }
+
+  const EmptyState = ({ filter, onResetFilter }: EmptyStateProps) => (
+    <motion.div 
+      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className="p-6 mb-6 bg-orange-50 rounded-full">
+        <User size={56} className="text-orange-400" />
+      </div>
+      <h3 className="mb-2 text-2xl font-semibold text-gray-800">
+        {filter === 'All' 
+          ? 'No customers found'
+          : `No ${filter.toLowerCase()} customers`}
+      </h3>
+      <p className="max-w-md mb-6 text-gray-500">
+        {filter === 'All' 
+          ? 'There are no customers in your list yet. New customers will appear here.'
+          : `There are currently no customers marked as "${filter.toLowerCase()}".`}
+      </p>
+      {filter !== 'All' && (
+        <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
+          <button
+            onClick={onResetFilter}
+            className="px-6 py-2 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors"
+          >
+            View All Customers
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 transition-colors"
+          >
+            Refresh Page
+          </button>
+        </div>
+      )}
+    </motion.div>
   );
 
   /* ---------- Error State ---------- */
   const ErrorState = () => (
-    <div className="flex flex-col items-center justify-center py-20 text-red-500">
-      <AlertTriangle size={48} className="mb-3" />
-      <p className="text-lg">Couldn’t load customers.</p>
-    </div>
+    <motion.div 
+      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      <div className="p-4 mb-6 bg-red-50 rounded-full">
+        <AlertTriangle size={48} className="text-red-500" />
+      </div>
+      <h3 className="mb-2 text-2xl font-semibold text-gray-800">Something went wrong</h3>
+      <p className="max-w-md mb-6 text-gray-600">
+        We couldn't load the customer data. Please check your connection and try again.
+      </p>
+      <button
+        onClick={() => window.location.reload()}
+        className="flex items-center px-6 py-2 text-sm font-medium text-white bg-red-500 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 transition-colors"
+      >
+        <RefreshCw size={16} className="mr-2" />
+        Try Again
+      </button>
+    </motion.div>
   );
 
   /* ---------- Summary Stats ---------- */
   const stats = {
     total: customers.length,
     active: customers.filter((c) => c.status === "Active").length,
+    modelTypes: [...new Set(customers.map(c => c.modelType))],
   };
 
   return (
@@ -83,9 +136,11 @@ const CustomersPage: React.FC = () => {
         </div>
       )}
       {error && !isLoading && <ErrorState />}
-      {!isLoading && !error && customers.length === 0 && <EmptyState />}
+      {!isLoading && !error && (customers.length === 0 || filtered.length === 0) && (
+        <EmptyState filter={filter} onResetFilter={() => setFilter('All')} />
+      )}
 
-      {!isLoading && !error && customers.length > 0 && (
+      {!isLoading && !error && filtered.length > 0 && (
         <>
           {/* Summary Cards */}
           <motion.div
@@ -112,10 +167,10 @@ const CustomersPage: React.FC = () => {
               whileHover={{ scale: 1.02 }}
             >
               <div className="p-3 bg-green-100 rounded-full">
-                <User className="text-green-500" size={24} />
+                <UserCheck className="text-green-500" size={24} />
               </div>
               <div>
-                <h2 className="text-lg font-bold">Members</h2>
+                <h2 className="text-lg font-bold">Active</h2>
                 <p className="text-2xl font-semibold">{stats.active}</p>
               </div>
             </motion.div>
@@ -125,40 +180,15 @@ const CustomersPage: React.FC = () => {
               whileHover={{ scale: 1.02 }}
             >
               <div className="flex items-center space-x-2">
-                <motion.div
-                  className="flex items-center justify-center p-2 bg-green-100 rounded-full"
-                  whileHover={{ scale: 1.2 }}
-                >
-                  <UserCheck className="text-green-600" size={20} />
-                </motion.div>
-                <h2 className="text-lg font-bold">Active Now</h2>
+                <div className="p-2 bg-purple-100 rounded-full">
+                  <User className="text-purple-600" size={20} />
+                </div>
+                <h2 className="text-lg font-bold">Model Types</h2>
               </div>
-              <div className="flex items-center mt-2 space-x-2">
-                {customers
-                  .filter((c) => c.status === "Active")
-                  .slice(0, 5)
-                  .map((c) => (
-                    <motion.div
-                      key={c.customer?._id}
-                      className="w-10 h-10 overflow-hidden rounded-full ring-2 ring-offset-1 ring-green-300"
-                    >
-                      {c.avatar ? (
-                        <img
-                          src={c.avatar}
-                          alt={c.name}
-                          className="object-cover w-full h-full"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center w-full h-full bg-gray-200">
-                          <span className="font-semibold text-gray-700">
-                            {(
-                              c.customer?.email?.trim().charAt(0) || "?"
-                            ).toUpperCase()}
-                          </span>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
+              <div className="mt-2">
+                <p className="text-sm text-gray-600">
+                  {stats.modelTypes.join(", ") || "N/A"}
+                </p>
               </div>
             </motion.div>
           </motion.div>
@@ -190,16 +220,13 @@ const CustomersPage: React.FC = () => {
               <thead className="sticky top-0 bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-sm font-medium text-left">
-                    Customer
-                  </th>
-                  <th className="px-4 py-2 text-sm font-medium text-left">
-                    Phone
-                  </th>
-                  <th className="px-4 py-2 text-sm font-medium text-left">
                     Email
                   </th>
                   <th className="px-4 py-2 text-sm font-medium text-left">
-                    Location
+                    Model Type
+                  </th>
+                  <th className="px-4 py-2 text-sm font-medium text-left">
+                    Last Order
                   </th>
                   <th className="px-4 py-2 text-sm font-medium text-left">
                     Status
@@ -228,19 +255,15 @@ const CustomersPage: React.FC = () => {
                           exit={{ opacity: 0 }}
                           className="border-b hover:bg-gray-50"
                         >
-                          <td className="flex items-center px-4 py-3 space-x-3 text-sm">
-                            <img
-                              src={c.avatar || "https://via.placeholder.com/32"}
-                              alt=""
-                              className="object-cover w-8 h-8 rounded-full"
-                            />
-                            <span>{c.name}</span>
-                          </td>
-                          <td className="px-4 py-3 text-sm">{c.phone}</td>
                           <td className="px-4 py-3 text-sm break-all">
                             {c.customer?.email}
                           </td>
-                          <td className="px-4 py-3 text-sm">{c.location}</td>
+                          <td className="px-4 py-3 text-sm capitalize">
+                            {c.modelType}
+                          </td>
+                          <td className="px-4 py-3 text-sm">
+                            {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : 'N/A'}
+                          </td>
                           <td className="px-4 py-3 text-sm">
                             <span
                               className={`px-2 py-1 text-xs font-semibold rounded-full ${
