@@ -94,9 +94,10 @@ const ProductDetails: React.FC = () => {
           id: product._id,
           name: product.name,
           price: product.price,
-          quantity,
-          image: product.images[0] || product.poster,
-        }),
+          image: product.images[0] || product.poster || "/placeholder.svg",
+          inventory: product.inventory,
+        })
+
       )
       toast.success(`${product.name} added to cart!`)
     }

@@ -66,6 +66,8 @@ const Home = lazy(() => import("@/page/HomeArea"));
 const About = lazy(() => import("@/page/AboutUs"));
 const Contact = lazy(() => import("@/page/Contact"));
 const Cart = lazy(() => import("@/components/Payment/Cart"));
+const FlashSale = lazy(() => import("@/components/FlashSales/FlashSalePage"));
+const FlashSaleDetailPage = lazy(() => import("@/components/FlashSales/FlashSaleDetailPage"));
 const ProductDetail = lazy(() => import("@/components/ProductDetail"));
 const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
 const EditProfile = lazy(
@@ -76,6 +78,9 @@ const OrderList = lazy(
 );
 const Canclellation = lazy(
   () => import("@/components/profileMangement/payment/CancellationForm")
+);
+const ReturnForm = lazy(
+  () => import("@/components/profileMangement/payment/ReturnForm")
 );
 const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 const OrderDetail = lazy(
@@ -819,6 +824,7 @@ const routesConfig: RouteObject[] = [
       { path: "/about", element: withSuspense(About) },
       { path: "/contact", element: withSuspense(Contact) },
       { path: "/cart", element: withSuspense(Cart) },
+      { path: "/flash-sale", element: withSuspense(FlashSale) },
       {
         path: "/product-details/:id",
         element: withSuspense(ProductDetail),
@@ -839,7 +845,10 @@ const routesConfig: RouteObject[] = [
         element: withSuspense(VendorProfileProduct),
         errorElement: <ErrorPage />,
       },
-
+      {
+  path: '/flash-sale/:id',
+  element:withSuspense(FlashSaleDetailPage)
+},
       // All Category Links
       { path: "/fashion", element: withSuspense(Fashion) },
       { path: "/furniture", element: withSuspense(Furniture) },
@@ -1124,6 +1133,10 @@ const routesConfig: RouteObject[] = [
       {
         path: "/dashboard/canclellation",
         element: withSuspense(Canclellation),
+      },
+       {
+        path: "/dashboard/retrunproduct",
+        element: withSuspense(ReturnForm),
       },
       { path: "/dashboard/review", element: withSuspense(Review) },
       { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },

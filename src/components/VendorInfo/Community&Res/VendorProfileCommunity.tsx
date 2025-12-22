@@ -197,7 +197,7 @@ const VendorProfileCommunity: React.FC = () => {
   const totalProducts = vendor?.products.length || 0;
 
   if (!id) {
-    return <Navigate to="/shop" replace />;
+    return <Navigate to="/random-product" replace />;
   }
   if (loading) {
     return <Spinner />;
@@ -297,23 +297,21 @@ const VendorProfileCommunity: React.FC = () => {
                     <Button
                       onClick={handleFollowToggle}
                       disabled={followMutation.isPending}
-                      className={`${
-                        isFollowing
+                      className={`${isFollowing
                           ? "bg-gray-600 hover:bg-gray-700"
                           : "bg-orange-500 hover:bg-orange-600"
-                      } text-white ${
-                        followMutation.isPending
+                        } text-white ${followMutation.isPending
                           ? "opacity-80 cursor-not-allowed"
                           : ""
-                      } text-sm px-4 py-2`}
+                        } text-sm px-4 py-2`}
                     >
                       {followMutation.isPending
                         ? pendingAction === "unfollow"
                           ? "Unfollowing..."
                           : "Following..."
                         : isFollowing
-                        ? "Unfollow"
-                        : "Follow"}
+                          ? "Unfollow"
+                          : "Follow"}
                     </Button>
                   </div>
                 )}
@@ -430,11 +428,10 @@ const VendorProfileCommunity: React.FC = () => {
                     </h4>
                     <div className="flex items-center gap-2 text-sm">
                       <span
-                        className={`inline-flex items-center gap-1 ${
-                          vendor.subscription.status === "Active"
+                        className={`inline-flex items-center gap-1 ${vendor.subscription.status === "Active"
                             ? "text-green-600"
                             : "text-yellow-600"
-                        }`}
+                          }`}
                       >
                         {vendor.subscription.status === "Active" ? (
                           <FaCheckCircle />

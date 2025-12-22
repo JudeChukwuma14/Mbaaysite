@@ -2,7 +2,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 
-interface OrderCartItem {
+export interface OrderCartItem {
   productId: string;
   name: string;
   price: number;
@@ -32,7 +32,7 @@ export interface OrderData {
   postalCode: string;
   couponCode: string;
   paymentOption: "Pay Before Delivery" | "Pay After Delivery";
-  cartItems: OrderCartItem[];
+  cartItems?: OrderCartItem[]; 
   pricing: OrderPricing;
 }
 

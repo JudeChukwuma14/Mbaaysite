@@ -1,86 +1,129 @@
-import FlashSale from "./FlashSales";
 import Slider from "react-slick";
-import React from "react";
+import React, { useState } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import FlashSaleProductCard from "./FlashSaleProductCard";
 
-// Adjust the import path as needed
-
-// Define the product interface
 interface Product {
-  id: number;
-  title: string;
+  _id: string;
+  name: string;
   price: number;
-  originalPrice: number;
-  image: string;
-  rating: number;
-  reviews: number;
-  performance: string;
+  originalPrice?: number;
+  flashSalePrice?: number;
+  flashSaleStatus?: string;
+  flashSaleDiscount?: number;
+  flashSaleStartDate?: string;
+  flashSaleEndDate?: string;
+  images: string[];
+  poster?: string;
+  inventory?: number;
+  rating?: number;
+  reviews?: number;
+  productType?: string;
 }
 
-// Define the props interface
 interface ProductSliderProps {
   products: Product[];
+  title?: string;
 }
 
-const ProductSlider: React.FC<ProductSliderProps> = ({ products }) => {
+const ProductSlider: React.FC<ProductSliderProps> = ({ 
+  products, 
+  title = "Flash Sale Products" 
+}) => {
+  const [activeSlide, setActiveSlide] = useState(0);
   const sliderRef = React.useRef<Slider | null>(null);
 
   const settings = {
     infinite: true,
-    speed: 1000,
+    speed: 500,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3000,
+    autoplaySpeed: 5000,
     arrows: false,
+    dots: false,
+    afterChange: (current: number) => setActiveSlide(current),
     responsive: [
       {
+        breakpoint: 1280,
+        settings: { slidesToShow: 3, slidesToScroll: 1 }
+      },
+      {
         breakpoint: 1024,
-        settings: { slidesToShow: 3, slidesToScroll: 1 },
+        settings: { slidesToShow: 2, slidesToScroll: 1 }
       },
       {
-        breakpoint: 768,
-        settings: { slidesToShow: 2, slidesToScroll: 1 },
-      },
-      {
-        breakpoint: 480,
-        settings: { slidesToShow: 1, slidesToScroll: 1 },
-      },
-    ],
+        breakpoint: 640,
+        settings: { slidesToShow: 1, slidesToScroll: 1 }
+      }
+    ]
   };
 
+  // Filter flash sale products
+  const flashSaleProducts = products.filter(product => 
+    product.flashSaleStatus === "Active" || 
+    product.productType === "flash sale"
+  );
+
+  if (flashSaleProducts.length === 0) {
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-2xl">
+        <h3 className="text-2xl font-bold text-gray-700 mb-4">{title}</h3>
+        <p className="text-gray-500">No flash sale products available at the moment.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative p-4">
+    <div className="relative px-4 py-4">
+      {/* Custom Navigation Buttons */}
+      <button
+        className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-2 bg-white shadow-lg text-gray-800 p-2.5 rounded-full z-10 hover:bg-gray-50 transition-colors duration-200"
+        onClick={() => sliderRef.current?.slickPrev()}
+        aria-label="Previous slide"
+      >
+        <FaChevronLeft className="text-lg" />
+      </button>
+      
+      <button
+        className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-2 bg-white shadow-lg text-gray-800 p-2.5 rounded-full z-10 hover:bg-gray-50 transition-colors duration-200"
+        onClick={() => sliderRef.current?.slickNext()}
+        aria-label="Next slide"
+      >
+        <FaChevronRight className="text-lg" />
+      </button>
+
+      {/* Slider */}
       <Slider ref={sliderRef} {...settings}>
-        {products.map((product) => (
-          <div key={product.id} className="px-2">
-            <FlashSale
-              title={product.title}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              image={product.image}
-              rating={product.rating}
-              reviews={product.reviews}
-              performance={product.performance}
-            />
+        {flashSaleProducts.map((product) => (
+          <div key={product._id} className="px-2">
+            {/* Wrapper div to ensure consistent height */}
+            <div className="h-full">
+              <FlashSaleProductCard product={product} />
+            </div>
           </div>
         ))}
       </Slider>
-      {/* Custom Navigation Buttons */}
-      <button
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
-        onClick={() => sliderRef.current?.slickPrev()}
-      >
-        <FaChevronLeft />
-      </button>
-      <button
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white p-2 rounded-full z-10"
-        onClick={() => sliderRef.current?.slickNext()}
-      >
-        <FaChevronRight />
-      </button>
+
+      {/* Slide Indicators */}
+      <div className="flex justify-center mt-6">
+        <div className="flex space-x-2">
+          {Array.from({ length: Math.min(Math.ceil(flashSaleProducts.length / 4), 5) }).map((_, index) => (
+            <button
+              key={index}
+              onClick={() => sliderRef.current?.slickGoTo(index * 4)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                Math.floor(activeSlide / 4) === index 
+                  ? 'w-6 bg-orange-500' 
+                  : 'bg-gray-300 hover:bg-gray-400'
+              }`}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

@@ -53,7 +53,7 @@ const sidebarLayout: SidebarItem[] = [
     children: [
       { title: "Order List", link: "/dashboard/orderlist" },
       { title: "Cancel Order", link: "/dashboard/canclellation" },
-      { title: "Review", link: "/dashboard/review" },
+      { title: "Return Order", link: "/dashboard/retrunproduct" },
     ],
   },
 ];

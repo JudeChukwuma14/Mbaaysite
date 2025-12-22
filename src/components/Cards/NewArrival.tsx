@@ -17,6 +17,7 @@ interface Product {
   price: number;
   images: string[];
   poster: string;
+  inventory?: number;
 }
 
 interface NewArrivalProps {
@@ -29,6 +30,9 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const [isLoading, setIsLoading] = useState(false);
   const [convertedPrice, setConvertedPrice] = useState(product.price);
+
+  const stock = product.inventory ?? 0;
+  const isOutOfStock = stock <= 0;
 
   // Ensure sessionId is initialized
   useEffect(() => {
@@ -69,10 +73,11 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
         addItem({
           id: product._id,
           name: product.name,
-          price: product.price, // Store base price (NGN) in cart
-          quantity: 1,
+          price: product.price,
           image: product.images[0] || product.poster || "/placeholder.svg",
+          inventory: product.inventory,
         })
+
       );
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
@@ -136,11 +141,15 @@ const NewArrival: React.FC<NewArrivalProps> = ({ product }) => {
 
         <div className="p-4 pt-0">
           <button
-            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-gray-700 transition-all duration-300 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-600"
             onClick={handleAddToCartClick}
+            disabled={isOutOfStock}
+            className={`w-full py-3 px-4 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 ${isOutOfStock
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300"
+              : "bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg"
+              }`}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
+            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
       </div>

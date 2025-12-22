@@ -17,6 +17,7 @@ interface Product {
   price: number;
   images: string[];
   poster: string;
+  inventory?: number;
 }
 
 interface BestSellingCardProps {
@@ -29,6 +30,9 @@ const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const [isLoading, setIsLoading] = useState(false);
   const [convertedPrice, setConvertedPrice] = useState(product.price);
+
+  const stock = product.inventory ?? 0;
+  const isOutOfStock = stock <= 0;
 
   // Ensure sessionId is initialized
   useEffect(() => {
@@ -69,9 +73,9 @@ const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
         addItem({
           id: product._id,
           name: product.name,
-          price: product.price, // Store base price (NGN) in cart
-          quantity: 1,
+          price: product.price,
           image: product.images[0] || product.poster || "/placeholder.svg",
+          inventory: product.inventory,
         })
       );
       toast.success(`${product.name} added to cart!`);
@@ -128,7 +132,7 @@ const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
               <span className="text-sm font-semibold text-gray-900">Loading...</span>
             ) : (
               <span className="text-sm font-semibold text-gray-900">
-                 {currencySymbol} {formatPrice(convertedPrice)}
+                {currencySymbol} {formatPrice(convertedPrice)}
               </span>
             )}
           </div>
@@ -136,12 +140,15 @@ const BestSellingCard: React.FC<BestSellingCardProps> = ({ product }) => {
 
         <div className="p-4 pt-0">
           <button
-            className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-300 bg-orange-500 border border-orange-300 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-600"
             onClick={handleAddToCartClick}
-            disabled={isLoading || !sessionId}
+            disabled={isOutOfStock}
+            className={`w-full py-3 px-4 rounded-md font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 ${isOutOfStock
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed border border-gray-300"
+              : "bg-orange-500 text-white hover:bg-orange-600 shadow-md hover:shadow-lg"
+              }`}
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
-            Add to Cart
+            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
           </button>
         </div>
       </div>

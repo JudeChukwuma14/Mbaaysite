@@ -45,7 +45,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <h2 className="mb-2 text-2xl font-semibold text-gray-400">Error</h2>
     <p className="max-w-md mb-6 text-gray-500">{message}</p>
     <Link
-      to="/shop"
+      to="/random-product"
       className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
       aria-label="Continue shopping"
     >
@@ -70,7 +70,7 @@ const EmptyState: React.FC = () => (
       No products are available in this category. Browse our shop to find other great products!
     </p>
     <Link
-      to="/shop"
+      to="/random-product"
       className="flex items-center gap-2 px-6 py-2 font-medium text-white transition duration-300 bg-orange-500 rounded-lg hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-400"
       aria-label="Continue shopping"
     >
@@ -94,7 +94,7 @@ const BSS: React.FC = () => {
 
         console.log("API Response:", result);
         const uniqueSub2 = [
-          ...new Set(allProducts.map((p:any) => p.sub_category2?.trim())),
+          ...new Set(allProducts.map((p: any) => p.sub_category2?.trim())),
         ];
         console.log("Unique sub_category2 values:", uniqueSub2);
 
@@ -106,7 +106,7 @@ const BSS: React.FC = () => {
             category === "fashion clothing and fabrics" &&
             sub1 === "footwear & shoes" &&
             sub2 ===
-               "belts & sashes (e.g., kente sashes,obi belts,traditional leather belts)"
+            "belts & sashes (e.g., kente sashes,obi belts,traditional leather belts)"
           );
         });
         console.log("Filtered products:", filtered);
@@ -116,8 +116,8 @@ const BSS: React.FC = () => {
         const errorMessage = err.message.includes("Network")
           ? "Network error. Please check your connection and try again."
           : err.response?.status === 404
-          ? "No products found for Belts & Sashes. Try again later."
-          : "Failed to fetch Belts & Sashes products. Please try again.";
+            ? "No products found for Belts & Sashes. Try again later."
+            : "Failed to fetch Belts & Sashes products. Please try again.";
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -212,10 +212,10 @@ const BSS: React.FC = () => {
             <motion.div key={product._id} variants={childVariants}>
               <NewArrival
                 product={{
-                    ...product,
+                  ...product,
                   id: product._id,
                   poster: product.images[0] || "/placeholder.svg",
-                  
+
                 }}
               />
             </motion.div>

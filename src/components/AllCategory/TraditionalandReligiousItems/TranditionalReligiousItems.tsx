@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getAllProduct} from "@/utils/productApi";
+import { getAllProduct } from "@/utils/productApi";
 import {
   FaChevronRight,
   FaHome,
@@ -40,7 +40,7 @@ const SUBCATEGORIES: Subcategory[] = [
   { image: "https://i.pinimg.com/736x/65/3c/6b/653c6ba3e812c1b7015ff472f71e440d.jpg", text: "Ceremonial & Ritual Tools", link: "/ceremonial-ritual-tools" },
   { image: "https://i.pinimg.com/736x/56/cb/8a/56cb8a80deedea7ba5f3c87a7ba57d5f.jpg", text: "Spiritual Healing & Meditation Items", link: "/spiritual-healing" },
   { image: "https://i.pinimg.com/736x/1a/b7/21/1ab72197d48cd7e5469f2eeb1b80a9b8.jpg", text: "Cultural & Festive Items", link: "/cultural-festive" },
-    { image: "https://i.pinimg.com/736x/ec/2f/95/ec2f95ff9af7625d5fadd4ca39ce3826.jpg", text: "Ritual Tools", link: "/ritual-tools" },
+  { image: "https://i.pinimg.com/736x/ec/2f/95/ec2f95ff9af7625d5fadd4ca39ce3826.jpg", text: "Ritual Tools", link: "/ritual-tools" },
 ];
 
 // Animation variants for containers
@@ -79,7 +79,7 @@ const ErrorMessage: React.FC<{ message: string }> = ({ message }) => (
     <h2 className="mb-2 text-2xl font-semibold text-gray-800">Something Went Wrong</h2>
     <p className="max-w-md mb-6 text-gray-600">{message}</p>
     <Link
-      to="/shop"
+      to="/random-product"
       className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-300 bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
       aria-label="Continue shopping"
     >
@@ -105,7 +105,7 @@ const EmptyState: React.FC = () => (
       No products are available in this category. Browse our shop to find your favorite products!
     </p>
     <Link
-      to="/shop"
+      to="/random-product"
       className="flex items-center gap-2 px-4 py-2 font-medium text-white transition-colors duration-300 bg-orange-600 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
       aria-label="Continue shopping"
     >

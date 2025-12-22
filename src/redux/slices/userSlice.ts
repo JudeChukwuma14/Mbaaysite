@@ -6,6 +6,11 @@ interface User {
   name: string;
   email: string;
   phoneNumber: string;
+  orders: string[];
+  location:{
+    city: string;
+    country: string;
+  }
 }
 
 export interface Message {

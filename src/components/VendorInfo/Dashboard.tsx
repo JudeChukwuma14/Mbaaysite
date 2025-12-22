@@ -411,7 +411,8 @@ const Dashboard = () => {
                       <div className="mt-1 font-mono text-sm break-all">
                         {order?._id}
                       </div>
-                      <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
+
+                      <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
                             Customer
@@ -493,14 +494,16 @@ const Dashboard = () => {
                               <span className="text-sm">
                                 {/* {order.name?.length} item
                                 {order.name?.length > 1 ? "s" : ""} */}
-                                {order.product?.name}
+
+                                {/* {order.product.name} */}
+                                {order?.product?.name ?? "No product"}
                               </span>
-                              {order?.name?.[0]?.image && (
+                              {order?.items?.[0]?.image && (
                                 <img
                                   src={
                                     order.items[0].image || "/placeholder.svg"
                                   }
-                                  alt={order.items[0]?.name}
+                                  alt={order?.items?.[0]?.name ?? "item"}
                                   className="object-cover w-8 h-8 rounded"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src =
