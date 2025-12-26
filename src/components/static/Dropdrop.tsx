@@ -35,12 +35,12 @@ export default function Dropdown() {
       if (typeof item === "string") {
         return (
           <li key={item} className="cursor-pointer hover:text-black">
-            <Link to={`${linkPrefix}/${item.toLowerCase().replace(/\s+/g, '-')}`}>
+            {/* <Link to={`${linkPrefix}/${item.toLowerCase().replace(/\s+/g, '-')}`}> */}
               {item}
-            </Link>
+            {/* </Link> */}
           </li>
         );
-      } else if (item.title && item.items) {
+      } else if (item.title ) {
         return (
           <div key={item.title} className="mt-2">
             <span className="text-[10px] font-semibold">{item.title}</span>
