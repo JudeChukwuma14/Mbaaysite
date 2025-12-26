@@ -6,8 +6,7 @@ import { useVendorPayments } from "@/hook/useCustomer_Payment";
 
 interface Invoice {
   id: string | number;
-  customerName: string;
-  email: string;
+  modelType: string;
   date: string;
   amount: number; // use number so we can sum
   status: "Paid" | "Unpaid";
@@ -17,7 +16,7 @@ type PaymentRecord = {
   paymentId: string;
   status: "Successful" | "Failed";
   amount: number;
-  customer: { _id: string; email: string };
+  modelType: string;
   date: string;
 };
 
@@ -36,13 +35,13 @@ const PaymentsPage = () => {
     const raw: PaymentRecord[] = data?.payments ?? [];
     return raw.map((p) => ({
       id: p.paymentId,
-      customerName: p.customer?.email?.split("@")[0], // quick placeholder
-      email: p.customer?.email,
+      modelType: p.modelType,
       date: new Date(p.date).toLocaleDateString(),
       amount: p.amount,
       status: p.status === "Successful" ? "Paid" : "Unpaid",
     }));
   }, [data]);
+
   const { totalAmount, paidAmount, unpaidAmount } = useMemo(() => {
     const paid = invoices.filter((i) => i.status === "Paid");
     const unpaid = invoices.filter((i) => i.status === "Unpaid");
@@ -74,7 +73,7 @@ const PaymentsPage = () => {
 
   const SkeletonRow = () => (
     <tr className="border-b animate-pulse">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <td key={i} className="px-4 py-3">
           <div className="w-full h-4 bg-gray-200 rounded"></div>
         </td>
@@ -95,9 +94,7 @@ const PaymentsPage = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="border-b">
-                <th>Invoice ID</th>
-                <th>Customer</th>
-                <th>Email</th>
+                <th>Model Type</th>
                 <th>Date</th>
                 <th>Amount</th>
                 <th>Status</th>
@@ -205,9 +202,7 @@ const PaymentsPage = () => {
         <table className="w-full text-left">
           <thead>
             <tr className="border-b">
-              <th className="px-2 py-2">Invoice ID</th>
-              <th>Customer</th>
-              <th>Email</th>
+              <th className="px-4 py-2">Model Type</th>
               <th>Date</th>
               <th>Amount</th>
               <th>Status</th>
@@ -216,7 +211,7 @@ const PaymentsPage = () => {
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center">
+                <td colSpan={4} className="py-12 text-center">
                   <div className="flex flex-col items-center text-gray-500">
                     <CreditCard size={40} className="mb-2" />
                     <p className="text-sm font-medium">
@@ -236,9 +231,9 @@ const PaymentsPage = () => {
                     exit={{ opacity: 0, y: -6 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <td className="px-2 py-2">{inv.id}</td>
-                    <td>{inv.customerName}</td>
-                    <td className="break-all">{inv.email}</td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium capitalize">{inv.modelType}</div>
+                    </td>
                     <td>{inv.date}</td>
                     <td>${inv.amount.toLocaleString()}</td>
                     <td>

@@ -7,7 +7,13 @@ import {
   getUnreadChatCount,
   markChatAsRead,
 } from "@/utils/vendorChatApi";
+import {
+  getVendorReviews,
+  replyToReview,
+  sendPrivateReviewMessage,
+} from "@/utils/vendorApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 export const useVendors = () => {
   return useQuery({
@@ -132,21 +138,29 @@ export const useMarkChatAsRead = () => {
       // Refresh chats list and unread badge
       queryClient.invalidateQueries({ queryKey: ["chats"] });
       // Invalidate the specific unread count for this user
-      queryClient.invalidateQueries({ queryKey: ["unread-chat-count", variables.userId] });
+      queryClient.invalidateQueries({
+        queryKey: ["unread-chat-count", variables.userId],
+      });
 
       // Optimistically set this chat's unread to 0 and recompute total
-      queryClient.setQueryData(["unread-chat-count", variables.userId], (prev: any) => {
-        try {
-          const chats = { ...(prev?.chats || {}) } as Record<string, number>;
-          if (variables.chatId) chats[variables.chatId] = 0;
-          const total = Object.values(chats).reduce((a, b) => a + (Number(b) || 0), 0);
-          return { count: total, chats } as any;
-        } catch {
-          // Fallback simple decrement
-          const prevCount = Number(prev?.count ?? 0);
-          return { count: Math.max(0, prevCount - 1) } as any;
+      queryClient.setQueryData(
+        ["unread-chat-count", variables.userId],
+        (prev: any) => {
+          try {
+            const chats = { ...(prev?.chats || {}) } as Record<string, number>;
+            if (variables.chatId) chats[variables.chatId] = 0;
+            const total = Object.values(chats).reduce(
+              (a, b) => a + (Number(b) || 0),
+              0
+            );
+            return { count: total, chats } as any;
+          } catch {
+            // Fallback simple decrement
+            const prevCount = Number(prev?.count ?? 0);
+            return { count: Math.max(0, prevCount - 1) } as any;
+          }
         }
-      });
+      );
       // Also update this chat's messages cache to mark my sent messages as read
       queryClient.setQueryData(["messages", variables.chatId], (prev: any) => {
         if (!prev) return prev;
@@ -164,6 +178,76 @@ export const useMarkChatAsRead = () => {
           return prev;
         }
       });
+    },
+  });
+};
+
+// Hook for fetching vendor reviews (with optional paging and status filter)
+export const useVendorReviews = (params: {
+  token?: string | null;
+  page?: number;
+  limit?: number;
+  status?: string;
+}) => {
+  const { token, page = 1, limit = 10, status } = params || {};
+  return useQuery({
+    queryKey: ["vendorReviews", { token, page, limit, status }],
+    queryFn: () => getVendorReviews(token ?? null, { page, limit, status }),
+    enabled: !!token,
+    staleTime: 1000 * 60 * 3, // 3 minutes
+    retry: 1,
+  });
+};
+
+// Mutation: reply publicly or privately to a review
+export const useReplyToReview = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      token,
+      reviewId,
+      payload,
+    }: {
+      token?: string | null;
+      reviewId: string;
+      payload: { message: string; isPublic?: boolean; messageType?: string };
+    }) => replyToReview(token ?? null, reviewId, payload),
+    onSuccess: (_data, _variables) => {
+      // invalidate vendor reviews to refetch with updated replies
+      queryClient.invalidateQueries({ queryKey: ["vendorReviews"] });
+      toast.success("Replied to review successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    },
+    onError: (error: any) => {
+      console.error("Failed to reply review:", error);
+      toast.error(error.message || "Failed to reply review");
+    },
+  });
+};
+
+// Mutation: send a private message related to a review (vendor <-> customer)
+export const useSendPrivateReviewMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      token,
+      body,
+    }: {
+      token?: string | null;
+      body: { reviewId: string; message: string; messageType?: string };
+    }) => sendPrivateReviewMessage(token ?? null, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendorReviews"] });
+      toast.success("Private message sent", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    },
+    onError: (error: any) => {
+      console.error("Failed to send private message:", error);
+      toast.error(error.message || "Failed to send message");
     },
   });
 };

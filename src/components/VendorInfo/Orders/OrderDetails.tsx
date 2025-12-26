@@ -10,13 +10,104 @@ import {
   MapPin,
   Package,
   User,
+  Calendar,
+  XCircle,
+  Clock as ClockIcon,
+  RotateCcw,
+  Truck,
+  PackageCheck,
+  PackageX,
+  Package2
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 import { motion } from "framer-motion";
-// import { useSelector } from "react-redux";
-// import type { RootState } from "@/redux/store";
 import { useOneOrder } from "@/hook/useOrders";
-import type { Orders } from "@/utils/orderVendorApi";
+import { toast } from 'react-toastify';
+
+
+type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | 
+  "Cancellation Requested" | "Postponement Requested" | "Return Requested";
+
+type PayStatus = "Pending" | "Successful" | "Payment Failed";
+
+type PaymentOption = "Pay Before Delivery" | "Pay After Delivery";
+
+interface BuyerInfo {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  region: string;
+  apartment?: string;
+  postalCode: string;
+  sessionId: string;
+  companyName?: string;
+  userId: string;
+  saveInfo: boolean;
+  couponCode?: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  poster: string;
+  price: number;
+  uploadedBy: string | null;
+}
+
+interface OrderItem {
+  _id: string;
+  product: Product;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+interface PostponementDates {
+  from: string | Date;
+  to: string | Date;
+}
+
+interface ReturnedProduct {
+  productId: string;
+  quantity: number;
+  name?: string;
+  image?: string;
+  reason?: string;
+  condition?: string;
+}
+
+interface ReturnDetails {
+  reason: string;
+  condition: string;
+  method: string;
+  comments?: string;
+  requestedAt: string | Date;
+  returnedProducts: ReturnedProduct[];
+}
+
+interface Order {
+  _id: string;
+  buyerInfo: BuyerInfo;
+  buyerSession: string;
+  items: OrderItem[];
+  status: OrderStatus;
+  payStatus: PayStatus;
+  paymentOption: PaymentOption;
+  userId: string;
+  totalPrice: number;
+  cancelledQuantity?: number;
+  postponedQuantity?: number;
+  returnedQuantity?: number;
+  postponementDates?: PostponementDates;
+  returnDetails?: ReturnDetails;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
 
 // Google Maps loader
 declare global {
@@ -64,6 +155,55 @@ interface LocationCoordinates {
 const OrderDetailsPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
   // const user: any = useSelector((state: RootState) => state.vendor);
+  
+// Add these imports at the top with other imports
+
+// Inside the OrderDetailsPage component, add these states
+const [showRejectModal, setShowRejectModal] = useState<string | null>(null);
+const [rejectNote, setRejectNote] = useState('');
+const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Handle status update (approve/reject)
+const handleCancellationAction = async (orderId: string, action: 'accept' | 'reject', comments: string = '') => {
+  setIsProcessing(true);
+  try {
+    const response = await fetch('/api/orders/handle-cancellation', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        orderId,
+        actorId: 'vendor-id-here', // Replace with actual vendor ID
+        actorType: 'vendor',
+        action,
+        comments
+      }),
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to process request');
+    }
+
+    toast.success(`Cancellation request ${action === 'accept' ? 'approved' : 'rejected'} successfully`);
+    // Refresh order data
+    if (refetch) await refetch();
+    
+    return data;
+  } catch (error: any) {
+    console.error('Error processing cancellation action:', error);
+    toast.error(error.message || 'Failed to process request');
+    throw error;
+  } finally {
+    setIsProcessing(false);
+    setShowRejectModal(null);
+    setRejectNote('');
+  }
+};
+  
+ 
 
   // New state for map functionality
   const [coordinates, setCoordinates] = useState<LocationCoordinates | null>(
@@ -174,30 +314,24 @@ const OrderDetailsPage = () => {
     }
   }, [mapsReady, coordinates]);
 
-  type ProductType = {
-    price: number;
-    quantity?: number;
-    image?: string;
-    name?: string;
-    _id?: string;
-  };
+  // type ProductType = {
+  //   price: number;
+  //   quantity?: number;
+  //   image?: string;
+  //   name?: string;
+  //   _id?: string;
+  // };
 
-  const calculateTotal = (
-    product: ProductType | ProductType[],
-    quantity?: number
-  ) => {
-    let subtotal = 0;
-    if (Array.isArray(product)) {
-      subtotal = product.reduce(
-        (sum, item) => sum + item.price * (item.quantity ?? 1),
-        0
-      );
-    } else if (product?.price) {
-      subtotal = product.price * (quantity ?? 1);
-    }
-    const tax = subtotal * 0.1;
-    return { subtotal, tax, total: subtotal + tax };
-  };
+  // Calculate totals from order items
+  // const calculateOrderTotal = (items: typeof order.items) => {
+  //   const subtotal = items.reduce((sum:number, item:any) => sum + (item.total || 0), 0);
+  //   const tax = subtotal * 0.1;
+  //   return {
+  //     subtotal: subtotal - tax, // Back-calculate subtotal before tax
+  //     tax,
+  //     total: subtotal
+  //   };
+  // };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -216,18 +350,48 @@ const OrderDetailsPage = () => {
     });
   };
 
-  const getStatusColor = (status: Orders["status"]) => {
+  const getStatusColor = (status: OrderStatus) => {
     switch (status) {
       case "Processing":
         return "bg-yellow-400 text-white";
       case "Delivered":
         return "bg-green-500 text-white";
       case "Cancelled":
+      case "Cancellation Requested":
         return "bg-red-500 text-white";
       case "Pending":
         return "bg-blue-500 text-white";
+      case "Shipped":
+        return "bg-indigo-500 text-white";
+      case "Postponement Requested":
+        return "bg-purple-500 text-white";
+      case "Return Requested":
+        return "bg-pink-500 text-white";
       default:
         return "bg-gray-500 text-white";
+    }
+  };
+
+  const getStatusIcon = (status: OrderStatus) => {
+    switch (status) {
+      case "Processing":
+        return <Loader2 className="w-5 h-5 animate-spin" />;
+      case "Delivered":
+        return <PackageCheck className="w-5 h-5" />;
+      case "Cancelled":
+        return <XCircle className="w-5 h-5" />;
+      case "Cancellation Requested":
+        return <PackageX className="w-5 h-5" />;
+      case "Pending":
+        return <ClockIcon className="w-5 h-5" />;
+      case "Shipped":
+        return <Truck className="w-5 h-5" />;
+      case "Postponement Requested":
+        return <Calendar className="w-5 h-5" />;
+      case "Return Requested":
+        return <RotateCcw className="w-5 h-5" />;
+      default:
+        return <Package2 className="w-5 h-5" />;
     }
   };
 
@@ -294,10 +458,12 @@ const OrderDetailsPage = () => {
     );
   }
 
-  const { subtotal, tax, total } = calculateTotal(
-    order.product,
-    order.quantity
-  );
+  
+// Calculate totals from all items
+const itemsTotal = order.items.reduce((sum: number, item:any) => sum + (item.total || 0), 0);
+const tax = itemsTotal * 0.1;
+const subtotal = itemsTotal - tax;
+const total = order.totalPrice;
 
   return (
     <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
@@ -332,11 +498,12 @@ const OrderDetailsPage = () => {
             Delivery Status
           </h2>
           <div
-            className={`absolute top-5 right-5 px-4 py-2 rounded-full ${getStatusColor(
+            className={`absolute top-5 right-5 px-4 py-2 rounded-full flex items-center gap-2 ${getStatusColor(
               order.status
             )}`}
           >
-            {order.status}
+            {getStatusIcon(order.status)}
+            <span>{order.status}</span>
           </div>
 
           <div className="relative h-64 overflow-hidden bg-gray-200 rounded">
@@ -442,14 +609,14 @@ const OrderDetailsPage = () => {
             Order Items
           </h2>
           <div className="space-y-4">
-            {order?.product && (
-              <div className="flex items-center justify-between pb-4 border-b last:border-b-0">
+            {order.items.map((item:any) => (
+              <div key={item._id} className="flex items-center justify-between pb-4 border-b last:border-b-0">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 overflow-hidden bg-gray-200 rounded-lg">
-                    {order?.product.image ? (
+                    {item.product.poster ? (
                       <img
-                        src={order?.product.image || "/placeholder.svg"}
-                        alt={order.product.name}
+                        src={item.product.poster}
+                        alt={item.product.name}
                         className="object-cover w-full h-full"
                       />
                     ) : (
@@ -460,27 +627,26 @@ const OrderDetailsPage = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800">
-                      {order.product?.name || "Unknown Product"}
+                      {item.product?.name || "Unknown Product"}
                     </h4>
                     <p className="text-sm text-gray-500 break-all">
-                      Product ID: {order.product?._id || "N/A"}
+                      Product ID: {item.product?._id || "N/A"}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-sm text-gray-500">
-                    Quantity: {order.quantity}
+                    Quantity: {item.quantity}
                   </p>
                   <p className="font-bold">
-                    {formatCurrency(order?.product.price)}
+                    {formatCurrency(item.price)}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Total:{" "}
-                    {formatCurrency(order?.product.price * order.quantity)}
+                    Total: {formatCurrency(item.total)}
                   </p>
                 </div>
               </div>
-            )}
+            ))}
           </div>
 
           {/* Order Summary */}
@@ -543,6 +709,228 @@ const OrderDetailsPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Status-Specific Details */}
+     {order.status === "Cancellation Requested" && (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.3 }}
+    className="p-5 bg-white rounded-lg shadow lg:col-span-3"
+  >
+    <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-red-600">
+      <XCircle className="w-5 h-5" />
+      Cancellation Request
+    </h2>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div>
+        <h4 className="font-semibold text-gray-800">Cancelled Items</h4>
+        <p className="text-gray-600">{order.cancelledQuantity || 1} item(s)</p>
+      </div>
+      <div>
+        <h4 className="font-semibold text-gray-800">Requested On</h4>
+        <p className="text-gray-600">{formatDate(order.updatedAt)}</p>
+      </div>
+      <div className="md:col-span-3">
+        <h4 className="mb-2 font-semibold text-gray-800">Action Required</h4>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={isProcessing}
+            className={`px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 ${
+              isProcessing ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+            onClick={async () => {
+              try {
+                await handleCancellationAction(order._id, 'accept');
+              } catch (error) {
+                // Error is already handled in the function
+              }
+            }}
+          >
+            {isProcessing ? 'Processing...' : 'Approve Cancellation'}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={isProcessing}
+            className={`px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ${
+              isProcessing ? 'opacity-70 cursor-not-allowed' : ''
+            }`}
+            onClick={() => setShowRejectModal('cancellation')}
+          >
+            Reject Cancellation
+          </motion.button>
+        </div>
+        
+        {showRejectModal === 'cancellation' && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+            <label htmlFor="rejectReason" className="block text-sm font-medium text-gray-700 mb-2">
+              Reason for rejection
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                id="rejectReason"
+                value={rejectNote}
+                onChange={(e) => setRejectNote(e.target.value)}
+                placeholder="Please specify the reason for rejection"
+                className="flex-1 min-w-0 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                disabled={isProcessing}
+              />
+              <button
+                onClick={async () => {
+                  if (!rejectNote.trim()) return;
+                  try {
+                    await handleCancellationAction(order._id, 'reject', rejectNote);
+                  } catch (error) {
+                    // Error is already handled in the function
+                  }
+                }}
+                disabled={!rejectNote.trim() || isProcessing}
+                className={`px-4 py-2 text-sm font-medium text-white rounded-md ${
+                  !rejectNote.trim() || isProcessing
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {isProcessing ? 'Submitting...' : 'Submit Rejection'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </motion.div>
+)}
+
+        {order.status === "Postponement Requested" && order.postponementDates && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-5 bg-white rounded-lg shadow lg:col-span-3"
+          >
+            <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-purple-600">
+              <Calendar className="w-5 h-5" />
+              Postponement Request
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <h4 className="font-semibold text-gray-800">Postponed Items</h4>
+                <p className="text-gray-600">{order.postponedQuantity || 1} item(s)</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">New Delivery Window</h4>
+                <p className="text-gray-600">
+                  {formatDate(order.postponementDates.from)} - {formatDate(order.postponementDates.to)}
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Requested On</h4>
+                <p className="text-gray-600">{formatDate(order.updatedAt)}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {order.status === "Return Requested" && order.returnDetails && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-5 bg-white rounded-lg shadow lg:col-span-3"
+          >
+            <h2 className="flex items-center gap-2 mb-4 text-lg font-bold text-red-600">
+              <AlertCircle className="w-5 h-5" />
+              Return Request Details
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <div>
+                <h4 className="font-semibold text-gray-800">Reason for Return</h4>
+                <p className="text-gray-600">{order.returnDetails.reason}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Item Condition</h4>
+                <p className="text-gray-600">{order.returnDetails.condition}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-gray-800">Return Method</h4>
+                <p className="text-gray-600">{order.returnDetails.method}</p>
+              </div>
+              {order.returnDetails.comments && (
+                <div className="md:col-span-2">
+                  <h4 className="font-semibold text-gray-800">Additional Comments</h4>
+                  <p className="text-gray-600">{order.returnDetails.comments}</p>
+                </div>
+              )}
+              <div>
+                <h4 className="font-semibold text-gray-800">Requested On</h4>
+                <p className="text-gray-600">
+                  {new Date(order.returnDetails.requestedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </p>
+              </div>
+              {order.returnDetails.returnedProducts?.length > 0 && (
+                <div className="md:col-span-3">
+                  <h4 className="mb-2 font-semibold text-gray-800">Returned Products</h4>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Product</th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Quantity</th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Reason</th>
+                          <th className="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Condition</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {order.returnDetails.returnedProducts.map((product : any, index: number) => (
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                {product.image && (
+                                  <div className="flex-shrink-0 w-10 h-10">
+                                    <img className="w-10 h-10 rounded-full" src={product.image} alt={product.name} />
+                                  </div>
+                                )}
+                                <div className="ml-4">
+                                  <div className="text-sm font-medium text-gray-900">{product.name || 'Product'}</div>
+                                  <div className="text-sm text-gray-500">#{product._id || 'N/A'}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{product.quantity || 1}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm text-gray-900">{product.reason || 'N/A'}</div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 text-xs font-semibold leading-5 rounded-full ${
+                                product.condition === 'New' ? 'bg-green-100 text-green-800' :
+                                product.condition === 'Used' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {product.condition || 'N/A'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </motion.div>
     </main>
   );

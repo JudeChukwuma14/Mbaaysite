@@ -214,9 +214,9 @@ const Dashboard = () => {
   };
 
   return (
-    <main className="flex-1 p-4 sm:p-5 overflow-visible lg:overflow-auto overflow-x-hidden max-w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <main className="flex-1 max-w-full p-4 overflow-visible overflow-x-hidden text-gray-900 sm:p-5 lg:overflow-auto bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
       {/* Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+      <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
         {[
           {
             title: "Money Earned",
@@ -252,7 +252,7 @@ const Dashboard = () => {
         ].map((card, index) => (
           <motion.div
             key={index}
-            className="flex items-center justify-between p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 overflow-hidden transform-gpu"
+            className="flex items-center justify-between p-4 overflow-hidden bg-white shadow-sm sm:p-5 dark:bg-gray-800 rounded-xl ring-1 ring-gray-100 dark:ring-gray-700 transform-gpu"
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
           >
@@ -280,7 +280,7 @@ const Dashboard = () => {
       {/* Chart and Notifications */}
       <div className="w-full gap-4">
         <motion.div
-          className="col-span-2 p-4 sm:p-5 bg-white dark:bg-gray-800 rounded-xl shadow-sm ring-1 ring-gray-100 dark:ring-gray-700 max-w-full"
+          className="max-w-full col-span-2 p-4 bg-white shadow-sm sm:p-5 dark:bg-gray-800 rounded-xl ring-1 ring-gray-100 dark:ring-gray-700"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -331,12 +331,12 @@ const Dashboard = () => {
 
       {/* Orders Table */}
       <motion.div
-        className="p-4 sm:p-5 mt-5 bg-white dark:bg-gray-800 rounded-lg shadow"
+        className="p-4 mt-5 bg-white rounded-lg shadow sm:p-5 dark:bg-gray-800"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 className="font-bold">Recent Orders</h2>
           <NavLink
             to="/app/orders"
@@ -388,11 +388,11 @@ const Dashboard = () => {
             ) : (
               <>
                 {/* Mobile order list */}
-                <div className="md:hidden space-y-3">
+                <div className="space-y-3 md:hidden">
                   {orders.map((order: any, index: any) => (
                     <motion.div
                       key={order._id}
-                      className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
+                      className="p-3 bg-white border border-gray-200 rounded-lg dark:border-gray-700 dark:bg-gray-800"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.05 }}
@@ -411,6 +411,7 @@ const Dashboard = () => {
                       <div className="mt-1 font-mono text-sm break-all">
                         {order?._id}
                       </div>
+
                       <div className="mt-2 grid grid-cols-2 gap-2 text-sm">
                         <div>
                           <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -448,7 +449,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Desktop table */}
-                <div className="hidden md:block overflow-x-auto">
+                <div className="hidden overflow-x-auto md:block">
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b dark:border-gray-700">
@@ -493,6 +494,7 @@ const Dashboard = () => {
                               <span className="text-sm">
                                 {/* {order.name?.length} item
                                 {order.name?.length > 1 ? "s" : ""} */}
+
                                 {/* {order.product.name} */}
                                 {order?.product?.name ?? "No product"}
                               </span>

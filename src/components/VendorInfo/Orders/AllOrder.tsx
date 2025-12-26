@@ -14,7 +14,6 @@ import { Link } from "react-router-dom";
 // Order interface
 interface Order {
   _id: string;
-  orderDate: string;
   buyerInfo: {
     first_name: string;
     last_name: string;
@@ -25,27 +24,48 @@ interface Order {
     country: string;
     region: string;
     apartment: string;
-    postalCode: number;
+    postalCode: string;
+    sessionId?: string;
+    companyName?: string;
+    userId?: string;
   };
-  deliveryAddress: {
-    street: string;
-    city: string;
-    state: string;
-    country: string;
-    fullAddress: string;
+  returnDetails?: {
+    reason?: string;
+    condition?: string;
+    method?: string;
+    comments?: string;
+    requestedAt?: string;
+    returnedProducts: Array<{
+      _id?: string;
+      name?: string;
+      image?: string;
+      quantity?: number;
+      reason?: string;
+      condition?: string;
+    }>;
   };
-  totalPrice: number;
-  status: "Processing" | "Delivered" | "Return Requested" | "Pending";
-  product: {
-    _id: string;
-    name: string;
+  items: Array<{
+    product: {
+      _id: string;
+      name: string;
+      poster: string;
+      price: number;
+      uploadedBy: string | null;
+    };
     quantity: number;
     price: number;
-    image: string;
-  };
+    total: number;
+    _id: string;
+  }>;
+  totalPrice: number;
+  buyerSession: string;
+  status: "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | "Cancellation Requested" | "Postponement Requested" | "Return Requested";
   payStatus: "Successful" | "Pending" | "Failed";
+  userId: string;
+  paymentOption: string;
   createdAt: string;
   updatedAt: string;
+  __v?: number;
 }
 
 const AllOrdersPage: React.FC = () => {
@@ -144,8 +164,16 @@ const AllOrdersPage: React.FC = () => {
     switch (status) {
       case "Processing":
         return "text-yellow-400";
+      case "Shipped":
+        return "text-blue-400";
       case "Delivered":
         return "text-green-500";
+      case "Cancelled":
+        return "text-red-500";
+      case "Cancellation Requested":
+        return "text-red-400";
+      case "Postponement Requested":
+        return "text-purple-400";
       case "Return Requested":
         return "text-red-500";
       case "Pending":
@@ -248,20 +276,36 @@ const AllOrdersPage: React.FC = () => {
         )}
       </div>
 
-      {/* Search + Payment Filter + Sort */}
-      <div className="flex flex-wrap justify-between gap-3 mb-4">
+      {/* Search + Filters + Sort */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <input
           type="text"
           placeholder="Search by ID or Customer..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg sm:w-1/3"
+          className="px-4 py-2 border rounded-lg flex-1 min-w-[200px]"
         />
+
+        <select
+          value={currentTab}
+          onChange={(e) => handleTabChange(e.target.value)}
+          className="px-4 py-2 border rounded-lg min-w-[180px]"
+        >
+          <option value="All">All Statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="Processing">Processing</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>
+          <option value="Cancelled">Cancelled</option>
+          <option value="Cancellation Requested">Cancellation Requested</option>
+          <option value="Postponement Requested">Postponement Requested</option>
+          <option value="Return Requested">Return Requested</option>
+        </select>
 
         <select
           value={paymentFilter}
           onChange={(e) => setPaymentFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg"
+          className="px-4 py-2 border rounded-lg min-w-[180px]"
         >
           <option value="All">All Payments</option>
           <option value="Successful">Successful</option>
@@ -348,40 +392,47 @@ const AllOrdersPage: React.FC = () => {
                   <div className="mt-1 font-mono text-sm break-all">
                     #{order._id}
                   </div>
-                  <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
-                    <div>
-                      <div className="text-xs text-gray-500">Date</div>
-                      <div>{formatDate(order.createdAt)}</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Customer</div>
-                      <div>
-                        {order.buyerInfo.first_name} {order.buyerInfo.last_name}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Item</div>
-                      <div className="truncate" title={order.product.name}>
-                        {order.product.name}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Amount</div>
-                      <div className="font-semibold">
-                        {formatAmount(order.totalPrice)}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500">Status</div>
-                      <div
-                        className={`font-medium ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {order.status}
-                      </div>
-                    </div>
-                  </div>
+                 <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
+  <div>
+    <div className="text-xs text-gray-500">Date</div>
+    <div>{formatDate(order.createdAt)}</div>
+  </div>
+  <div>
+    <div className="text-xs text-gray-500">Customer</div>
+    <div>
+      {order.buyerInfo.first_name} {order.buyerInfo.last_name}
+    </div>
+  </div>
+  <div className="col-span-2">
+    <div className="text-xs text-gray-500">Items</div>
+    <div className="space-y-1">
+      {order.items.slice(0, 2).map((item, i) => (
+        <div key={i} className="flex items-center justify-between">
+          <span className="truncate" title={item.product.name}>
+            {item.quantity} × {item.product.name}
+          </span>
+        </div>
+      ))}
+      {order.items.length > 2 && (
+        <div className="text-xs text-gray-500">
+          +{order.items.length - 2} more items
+        </div>
+      )}
+    </div>
+  </div>
+  <div>
+    <div className="text-xs text-gray-500">Amount</div>
+    <div className="font-semibold">
+      {formatAmount(order.totalPrice)}
+    </div>
+  </div>
+  <div>
+    <div className="text-xs text-gray-500">Status</div>
+    <div className={`font-medium ${getStatusColor(order.status)}`}>
+      {order.status}
+    </div>
+  </div>
+</div>
                 </motion.div>
               ))}
             </div>
@@ -418,7 +469,20 @@ const AllOrdersPage: React.FC = () => {
                       <td className="px-4 py-3">
                         {order.buyerInfo.first_name} {order.buyerInfo.last_name}
                       </td>
-                      <td className="px-4 py-3">{order.product.name}</td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col gap-1">
+                          {order.items.slice(0, 2).map((item, i) => (
+                            <div key={i} className="text-sm">
+                              {item.product.name} × {item.quantity}
+                            </div>
+                          ))}
+                          {order.items.length > 2 && (
+                            <div className="text-xs text-gray-500">
+                              +{order.items.length - 2} more items
+                            </div>
+                          )}
+                        </div>
+                      </td>
 
                       <td className="px-4 py-3 font-semibold">
                         {formatAmount(order.totalPrice)}

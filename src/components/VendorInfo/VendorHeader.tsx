@@ -467,7 +467,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
                   )}
                 </div>
 
-                {notifications?.length > 0 && unreadCount > 1 && (
+                {notifications?.length > 0 && (
                   <div
                     className={`p-4 border-t ${
                       darkMode

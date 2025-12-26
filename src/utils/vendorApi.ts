@@ -318,3 +318,84 @@ export const updateStoreDetails = async (
     throw error.response?.data?.message || "Failed to update store details";
   }
 };
+
+// ---- Reviews endpoints used by vendor ----
+const REVIEWS_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/reviews";
+
+/** Reply to a review (public or private reply)
+ * PATCH /api/reviews/reply/:reviewId
+ * payload: { message: string, isPublic?: boolean (default true), messageType?: string }
+ */
+export const replyToReview = async (
+  token: string | null,
+  reviewId: string,
+  payload: { message: string; isPublic?: boolean; messageType?: string }
+) => {
+  try {
+    const response = await axios.patch(
+      `${REVIEWS_BASE_URL}/reply/${reviewId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("replyToReview error:", error);
+    throw error.response?.data?.message || "Failed to reply to review";
+  }
+};
+
+/** Send a private review message (vendor <-> customer)
+ * POST /api/reviews/private-message
+ * body: { reviewId, message, messageType }
+ */
+export const sendPrivateReviewMessage = async (
+  token: string | null,
+  body: { reviewId: string; message: string; messageType?: string }
+) => {
+  try {
+    const response = await axios.post(
+      `${REVIEWS_BASE_URL}/private-message`,
+      body,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("sendPrivateReviewMessage error:", error);
+    throw error.response?.data?.message || "Failed to send private message";
+  }
+};
+
+/** Get all reviews for vendor's products
+ * GET /api/reviews/vendor
+ * Query params: page, limit, status
+ * Returns: { reviews: [], stats: {}, pagination: {} }
+ */
+export const getVendorReviews = async (
+  token: string | null,
+  params?: { page?: number; limit?: number; status?: string }
+) => {
+  try {
+    const response = await axios.get(`${REVIEWS_BASE_URL}/vendor`, {
+      params: {
+        ...(params || {}),
+      },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error("getVendorReviews error:", error);
+    throw error.response?.data?.message || "Failed to fetch vendor reviews";
+  }
+};
