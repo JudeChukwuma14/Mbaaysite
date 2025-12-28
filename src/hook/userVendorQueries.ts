@@ -249,7 +249,7 @@ export const useReplyToReview = () => {
 
       return { previous };
     },
-    onError: (error: any, variables: any, context: any) => {
+    onError: (error: any, _variables, context: any) => {
       const prev = context?.previous as Array<any> | undefined;
       if (prev) {
         for (const [key, data] of prev) {
