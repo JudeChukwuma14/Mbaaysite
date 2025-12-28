@@ -28,86 +28,86 @@ import { toast } from 'react-toastify';
 type OrderStatus = "Pending" | "Processing" | "Shipped" | "Delivered" | "Cancelled" | 
   "Cancellation Requested" | "Postponement Requested" | "Return Requested";
 
-type PayStatus = "Pending" | "Successful" | "Payment Failed";
+// type PayStatus = "Pending" | "Successful" | "Payment Failed";
 
-type PaymentOption = "Pay Before Delivery" | "Pay After Delivery";
+// type PaymentOption = "Pay Before Delivery" | "Pay After Delivery";
 
-interface BuyerInfo {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  country: string;
-  region: string;
-  apartment?: string;
-  postalCode: string;
-  sessionId: string;
-  companyName?: string;
-  userId: string;
-  saveInfo: boolean;
-  couponCode?: string;
-}
+// interface BuyerInfo {
+//   first_name: string;
+//   last_name: string;
+//   email: string;
+//   phone: string;
+//   address: string;
+//   city: string;
+//   country: string;
+//   region: string;
+//   apartment?: string;
+//   postalCode: string;
+//   sessionId: string;
+//   companyName?: string;
+//   userId: string;
+//   saveInfo: boolean;
+//   couponCode?: string;
+// }
 
-interface Product {
-  _id: string;
-  name: string;
-  poster: string;
-  price: number;
-  uploadedBy: string | null;
-}
+// interface Product {
+//   _id: string;
+//   name: string;
+//   poster: string;
+//   price: number;
+//   uploadedBy: string | null;
+// }
 
-interface OrderItem {
-  _id: string;
-  product: Product;
-  quantity: number;
-  price: number;
-  total: number;
-}
+// interface OrderItem {
+//   _id: string;
+//   product: Product;
+//   quantity: number;
+//   price: number;
+//   total: number;
+// }
 
-interface PostponementDates {
-  from: string | Date;
-  to: string | Date;
-}
+// interface PostponementDates {
+//   from: string | Date;
+//   to: string | Date;
+// }
 
-interface ReturnedProduct {
-  productId: string;
-  quantity: number;
-  name?: string;
-  image?: string;
-  reason?: string;
-  condition?: string;
-}
+// interface ReturnedProduct {
+//   productId: string;
+//   quantity: number;
+//   name?: string;
+//   image?: string;
+//   reason?: string;
+//   condition?: string;
+// }
 
-interface ReturnDetails {
-  reason: string;
-  condition: string;
-  method: string;
-  comments?: string;
-  requestedAt: string | Date;
-  returnedProducts: ReturnedProduct[];
-}
+// interface ReturnDetails {
+//   reason: string;
+//   condition: string;
+//   method: string;
+//   comments?: string;
+//   requestedAt: string | Date;
+//   returnedProducts: ReturnedProduct[];
+// }
 
-interface Order {
-  _id: string;
-  buyerInfo: BuyerInfo;
-  buyerSession: string;
-  items: OrderItem[];
-  status: OrderStatus;
-  payStatus: PayStatus;
-  paymentOption: PaymentOption;
-  userId: string;
-  totalPrice: number;
-  cancelledQuantity?: number;
-  postponedQuantity?: number;
-  returnedQuantity?: number;
-  postponementDates?: PostponementDates;
-  returnDetails?: ReturnDetails;
-  createdAt: string;
-  updatedAt: string;
-  __v?: number;
-}
+// interface Order {
+//   _id: string;
+//   buyerInfo: BuyerInfo;
+//   buyerSession: string;
+//   items: OrderItem[];
+//   status: OrderStatus;
+//   payStatus: PayStatus;
+//   paymentOption: PaymentOption;
+//   userId: string;
+//   totalPrice: number;
+//   cancelledQuantity?: number;
+//   postponedQuantity?: number;
+//   returnedQuantity?: number;
+//   postponementDates?: PostponementDates;
+//   returnDetails?: ReturnDetails;
+//   createdAt: string;
+//   updatedAt: string;
+//   __v?: number;
+// }
 
 // Google Maps loader
 declare global {
@@ -405,7 +405,7 @@ const handleCancellationAction = async (orderId: string, action: 'accept' | 'rej
   // Loading state
   if (isLoading) {
     return (
-      <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
+      <main className="max-w-full min-h-screen p-4 overflow-x-hidden bg-gray-100 sm:p-5">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="flex items-center gap-3">
             <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
@@ -421,7 +421,7 @@ const handleCancellationAction = async (orderId: string, action: 'accept' | 'rej
   // Error state
   if (isError || !order) {
     return (
-      <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
+      <main className="max-w-full min-h-screen p-4 overflow-x-hidden bg-gray-100 sm:p-5">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <AlertCircle className="w-16 h-16 text-red-500" />
           <div className="text-center">
@@ -466,9 +466,9 @@ const subtotal = itemsTotal - tax;
 const total = order.totalPrice;
 
   return (
-    <main className="min-h-screen p-4 sm:p-5 bg-gray-100 overflow-x-hidden max-w-full">
+    <main className="max-w-full min-h-screen p-4 overflow-x-hidden bg-gray-100 sm:p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-4">
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -515,7 +515,7 @@ const total = order.totalPrice;
                 </div>
               </div>
             ) : coordinates ? (
-              <div ref={mapRef} className="h-full w-full rounded" />
+              <div ref={mapRef} className="w-full h-full rounded" />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
@@ -765,18 +765,18 @@ const total = order.totalPrice;
         </div>
         
         {showRejectModal === 'cancellation' && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <label htmlFor="rejectReason" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="p-4 mt-4 rounded-lg bg-gray-50">
+            <label htmlFor="rejectReason" className="block mb-2 text-sm font-medium text-gray-700">
               Reason for rejection
             </label>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <input
                 type="text"
                 id="rejectReason"
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
                 placeholder="Please specify the reason for rejection"
-                className="flex-1 min-w-0 block w-full px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
+                className="flex-1 block w-full min-w-0 px-3 py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-orange-500 focus:border-orange-500"
                 disabled={isProcessing}
               />
               <button

@@ -68,37 +68,38 @@ export default function ProfilePage() {
     queryKey: ["one_community", communityid],
     queryFn: () => get_one_community(communityid),
   });
+  console.log("one",one_community)
 
   return (
-    <div className=" min-h-screen mx-auto bg-white overflow-x-hidden max-w-full">
+    <div className="max-w-full min-h-screen mx-auto overflow-x-hidden bg-white ">
       {isLoading ? (
         <div className="px-6 pt-6">
-          <Skeleton className="h-32 w-full rounded-xl" />
+          <Skeleton className="w-full h-32 rounded-xl" />
           <div className="px-0 pt-8">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Skeleton className="h-6 w-28" />
                 </div>
-                <Skeleton className="h-6 w-40" />
+                <Skeleton className="w-40 h-6" />
               </div>
-              <Skeleton className="h-7 w-64" />
+              <Skeleton className="w-64 h-7" />
               <Skeleton className="h-4 w-[600px]" />
             </div>
 
             <div className="flex gap-3 mt-4">
-              <Skeleton className="h-16 flex-1 rounded-xl" />
-              <Skeleton className="h-16 flex-1 rounded-xl" />
+              <Skeleton className="flex-1 h-16 rounded-xl" />
+              <Skeleton className="flex-1 h-16 rounded-xl" />
             </div>
 
             <div className="flex items-center gap-3 mt-4">
-              <Skeleton className="h-9 w-24 rounded-full" />
-              <Skeleton className="h-9 flex-1 rounded-full" />
+              <Skeleton className="w-24 rounded-full h-9" />
+              <Skeleton className="flex-1 rounded-full h-9" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-6">
               {Array.from({ length: 4 }).map((_, i) => (
-                <Skeleton key={i} className="h-40 w-full rounded-xl" />
+                <Skeleton key={i} className="w-full h-40 rounded-xl" />
               ))}
             </div>
           </div>
@@ -111,7 +112,7 @@ export default function ProfilePage() {
               type="button"
               aria-label="Go back"
               onClick={() => navigate(-1)}
-              className="absolute top-3 left-3 p-2 bg-white/80 hover:bg-white rounded-full shadow"
+              className="absolute p-2 rounded-full shadow top-3 left-3 bg-white/80 hover:bg-white"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
@@ -123,10 +124,10 @@ export default function ProfilePage() {
           </div>
 
           {/* Profile Info */}
-          <div className="px-4 sm:px-6 pt-6 sm:pt-8">
+          <div className="px-4 pt-6 sm:px-6 sm:pt-8">
             <div className="space-y-1">
               {/*main Holder For Community Name and Created By*/}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center sm:gap-3">
                 {/* Community Name and Created By*/}
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm sm:text-base">Community</h2>
@@ -135,13 +136,13 @@ export default function ProfilePage() {
                 {/*  Created By*/}
                 <div className="flex items-center gap-2">
                   <h2 className="text-sm sm:text-base">Created by:</h2>
-                  <span className="break-words text-sm sm:text-base">
+                  <span className="text-sm break-words sm:text-base">
                     {one_community?.admin?.storeName}
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                <h2 className="text-lg sm:text-xl font-semibold break-words">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                <h2 className="text-lg font-semibold break-words sm:text-xl">
                   {one_community?.name}
                 </h2>
                 {one_community?.admin._id === user.vendor._id ? (
@@ -167,7 +168,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-3 mt-4 flex-wrap">
+            <div className="flex flex-wrap gap-3 mt-4">
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 className="flex-1 p-2 bg-white border shadow-sm rounded-xl"
@@ -199,11 +200,11 @@ export default function ProfilePage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
-              <button className="px-4 sm:px-6 py-2 text-sm font-medium rounded-full bg-gray-50 order-2 sm:order-1">
+            <div className="flex flex-col items-stretch gap-3 mt-4 sm:flex-row sm:items-center">
+              <button className="order-2 px-4 py-2 text-sm font-medium rounded-full sm:px-6 bg-gray-50 sm:order-1">
                 Posts
               </button>
-              {one_community?.admin._id === user.vendor._id ? (
+              {one_community?.admin?._id === user?.vendor?._id ? (
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -214,7 +215,7 @@ export default function ProfilePage() {
                   Create Post
                 </motion.button>
               ) : (
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 order-1 sm:order-2">
+                <div className="flex flex-col order-1 gap-2 sm:flex-row sm:gap-3 sm:order-2">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -238,14 +239,14 @@ export default function ProfilePage() {
             </div>
 
             {/* Posts Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mt-4 sm:mt-6">
+            <div className="grid grid-cols-1 gap-3 mt-4 sm:grid-cols-2 sm:gap-4 sm:mt-6">
               {one_community?.communityPosts?.map((props: any) => (
                 <motion.div
                   key={props?.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className="overflow-hidden bg-white border rounded-xl shadow-sm"
+                  className="overflow-hidden bg-white border shadow-sm rounded-xl"
                 >
                   {props.posts_Images?.length > 0 && (
                     <div
@@ -282,7 +283,7 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="p-3 sm:p-4">
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500 sm:text-sm">
                       <div className="flex items-center gap-1">
                         <FileText className="w-3 h-3 sm:w-4 sm:h-4" />
                         {props?.createdTime.split("T")[0]}
@@ -292,10 +293,10 @@ export default function ProfilePage() {
                         {moment(props?.createdTime).fromNow()}
                       </div>
                     </div>
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-2 break-words">
+                    <p className="mt-2 text-sm text-gray-600 break-words line-clamp-2">
                       {props?.content}
                     </p>
-                    <div className="flex items-center gap-3 sm:gap-4 mt-3 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-3 mt-3 sm:gap-4">
                       <div className="flex items-center gap-1">
                         <motion.button
                           whileHover={{ scale: 1.1 }}
@@ -304,18 +305,18 @@ export default function ProfilePage() {
                         >
                           👍
                         </motion.button>
-                        <span className="text-xs sm:text-sm text-gray-500">
+                        <span className="text-xs text-gray-500 sm:text-sm">
                           {props?.likes?.length || 0} Likes
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MessageSquare className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
-                        <span className="text-xs sm:text-sm text-gray-500">
+                        <MessageSquare className="w-3 h-3 text-gray-500 sm:w-4 sm:h-4" />
+                        <span className="text-xs text-gray-500 sm:text-sm">
                           {props?.comments?.length || 0} Comments
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MdOutlineRateReview className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
+                        <MdOutlineRateReview className="w-3 h-3 text-gray-500 sm:w-4 sm:h-4" />
                       </div>
                     </div>
                   </div>

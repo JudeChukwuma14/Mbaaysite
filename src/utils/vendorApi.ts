@@ -323,21 +323,22 @@ export const updateStoreDetails = async (
 const REVIEWS_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/reviews";
 
 /** Reply to a review (public or private reply)
- * PATCH /api/reviews/reply/:reviewId
- * payload: { message: string, isPublic?: boolean (default true), messageType?: string }
+ * PATCH /api/reviews/reply
+ * body: { reviewId, message: string, isPublic?: boolean (default true), messageType?: string }
  */
 export const replyToReview = async (
-  token: string | null,
   reviewId: string,
   payload: { message: string; isPublic?: boolean; messageType?: string }
 ) => {
   try {
+    // The backend expects reviewId in both the URL params and request body
+    const body = { reviewId, ...payload } as Record<string, any>;
+
     const response = await axios.patch(
       `${REVIEWS_BASE_URL}/reply/${reviewId}`,
-      payload,
+      body,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       }
@@ -345,7 +346,11 @@ export const replyToReview = async (
     return response.data;
   } catch (error: any) {
     console.error("replyToReview error:", error);
-    throw error.response?.data?.message || "Failed to reply to review";
+    throw (
+      error.response?.data?.message ||
+      error.message ||
+      "Failed to reply to review"
+    );
   }
 };
 
@@ -380,19 +385,14 @@ export const sendPrivateReviewMessage = async (
  * Query params: page, limit, status
  * Returns: { reviews: [], stats: {}, pagination: {} }
  */
-export const getVendorReviews = async (
-  token: string | null,
-  params?: { page?: number; limit?: number; status?: string }
-) => {
+export const getVendorReviews = async (token: string | null) => {
   try {
     const response = await axios.get(`${REVIEWS_BASE_URL}/vendor`, {
-      params: {
-        ...(params || {}),
-      },
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log("Re", response);
     return response.data;
   } catch (error: any) {
     console.error("getVendorReviews error:", error);
