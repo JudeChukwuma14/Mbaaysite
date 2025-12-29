@@ -183,16 +183,11 @@ export const useMarkChatAsRead = () => {
 };
 
 // Hook for fetching vendor reviews (with optional paging and status filter)
-export const useVendorReviews = (params: {
-  token?: string | null;
-  page?: number;
-  limit?: number;
-  status?: string;
-}) => {
-  const { token, page = 1, limit = 10, status } = params || {};
+export const useVendorReviews = (params: { token?: string | null }) => {
+  const { token } = params || {};
   return useQuery({
-    queryKey: ["vendorReviews", { token, page, limit, status }],
-    queryFn: () => getVendorReviews(token ?? null, { page, limit, status }),
+    queryKey: ["vendorReviews", { token }],
+    queryFn: () => getVendorReviews(token ?? null),
     enabled: !!token,
     staleTime: 1000 * 60 * 3, // 3 minutes
     retry: 1,
@@ -203,26 +198,77 @@ export const useVendorReviews = (params: {
 export const useReplyToReview = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      token,
+    mutationFn: async ({
       reviewId,
       payload,
     }: {
-      token?: string | null;
       reviewId: string;
-      payload: { message: string; isPublic?: boolean; messageType?: string };
-    }) => replyToReview(token ?? null, reviewId, payload),
+      payload: { message: string; isPublic?: boolean; reviewId?: string };
+    }) => {
+      if (!payload?.message || !payload.message.trim())
+        throw new Error("Reply message is required");
+      return replyToReview(reviewId, payload);
+    },
+    // Optimistic update: update all vendorReviews queries so UI updates regardless of key shape
+    onMutate: async (variables) => {
+      const { reviewId, payload } = variables as any;
+
+      // find all queries that start with ['vendorReviews']
+      const queries = queryClient.getQueriesData({
+        queryKey: ["vendorReviews"],
+      });
+      await queryClient.cancelQueries({ queryKey: ["vendorReviews"] });
+
+      const previous: Array<any> = queries.map(([k, data]: any) => [k, data]);
+
+      try {
+        for (const [key] of queries) {
+          queryClient.setQueryData(key, (old: any) => {
+            if (!old) return old;
+            const cloned = { ...old };
+            const reviews = Array.isArray(cloned.reviews) ? cloned.reviews : [];
+            cloned.reviews = reviews.map((r: any) => {
+              const idMatches = String(r._id ?? r.id) === String(reviewId);
+              if (!idMatches) return r;
+              return {
+                ...r,
+                vendorReply: {
+                  message: payload.message.trim(),
+                  repliedAt: new Date().toISOString(),
+                  repliedBy: "you",
+                  isPublic: payload.isPublic !== false,
+                },
+              };
+            });
+            return cloned;
+          });
+        }
+      } catch (e) {
+        // ignore optimistic update failures
+      }
+
+      return { previous };
+    },
+    onError: (error: any, _variables, context: any) => {
+      const prev = context?.previous as Array<any> | undefined;
+      if (prev) {
+        for (const [key, data] of prev) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+      console.error("Failed to reply review:", error);
+      toast.error(error.message || "Failed to reply review");
+    },
     onSuccess: (_data, _variables) => {
-      // invalidate vendor reviews to refetch with updated replies
+      // invalidate vendor reviews to refetch authoritative data
       queryClient.invalidateQueries({ queryKey: ["vendorReviews"] });
       toast.success("Replied to review successfully", {
         position: "top-right",
         autoClose: 3000,
       });
     },
-    onError: (error: any) => {
-      console.error("Failed to reply review:", error);
-      toast.error(error.message || "Failed to reply review");
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["vendorReviews"] });
     },
   });
 };

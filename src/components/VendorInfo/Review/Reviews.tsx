@@ -3,14 +3,17 @@ import { useState } from "react";
 import { Star, Heart, Smile, Send } from "lucide-react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
-import { useVendorReviews } from "@/hook/userVendorQueries";
+import { useVendorReviews, useReplyToReview } from "@/hook/userVendorQueries";
+import { toast } from "react-hot-toast";
 
 const Reviews = () => {
   const [activeReply, setActiveReply] = useState<string | null>(null); // track which review is being replied to
   const [replyType, setReplyType] = useState("Private"); // dropdown value
   const [like, setLike] = useState(false);
-  const user = useSelector((state: RootState) => state.vendor);
-  const rowsPerPage = 20;
+  const user = useSelector((state: RootState) => state.vendor.token);
+  const [replyMessage, setReplyMessage] = useState<string>("");
+
+  const replyMutation = useReplyToReview();
 
   const {
     data: reviewsResponse,
@@ -18,10 +21,7 @@ const Reviews = () => {
     isError,
     error,
   } = useVendorReviews({
-    token: user.token ?? "",
-    page: 1,
-    limit: rowsPerPage,
-    status: "",
+    token: user ?? "",
   });
   console.log("Reviews response:", reviewsResponse);
 
@@ -257,11 +257,36 @@ const Reviews = () => {
                     <textarea
                       placeholder="Write your reply..."
                       rows={2}
+                      value={replyMessage}
+                      onChange={(e) => setReplyMessage(e.target.value)}
                       className="w-full p-2 text-sm border rounded resize-none"
                     ></textarea>
                     <div className="flex items-center justify-end gap-2 mt-2">
                       <Smile size={18} className="text-orange-500" />
-                      <button className="p-2 text-white bg-orange-500 rounded-full">
+                      <button
+                        onClick={() => {
+                          // validation
+                          if (!replyMessage || !replyMessage.trim()) {
+                            toast.error("Reply message is required");
+                            return;
+                          }
+
+                          replyMutation.mutate({
+                            reviewId: review._id,
+                            payload: {
+                              message: replyMessage.trim(),
+                              isPublic: replyType === "Public",
+                              reviewId: review._id,
+                            },
+                          });
+
+                          // clear local textarea and close
+                          setReplyMessage("");
+                          setActiveReply(null);
+                        }}
+                        disabled={Boolean((replyMutation as any).isLoading)}
+                        className="p-2 text-white bg-orange-500 rounded-full disabled:opacity-60"
+                      >
                         <Send size={16} />
                       </button>
                     </div>
