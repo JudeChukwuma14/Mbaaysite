@@ -7,11 +7,12 @@ import SettingsReducer from "./slices/settingsSlice";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import sessionReducer from "./slices/sessionSlice";
+import notificationSlice from "./slices/notificationSlice"
 
 const persistConfig = {
   key: "root",
   storage,
-  whitelist: ["cart", "wishlist", "user", "vendor", "settings", "session"],
+  whitelist: ["cart", "wishlist", "user", "vendor", "settings", "session", "notifications"],
 };
 
 const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   vendor: vendorReducer,
   settings: SettingsReducer,
   session: sessionReducer,
+  notifications: notificationSlice
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
