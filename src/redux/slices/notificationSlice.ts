@@ -35,7 +35,7 @@ export interface NotificationState {
   pagination?: Pagination
   loading?: boolean
   error?: string | null
-  totalUnreadMessages?: number  // ← For chat unread badge in sidebar
+  totalUnreadMessages?: number
 }
 
 const initialState: NotificationState = {
@@ -50,7 +50,6 @@ const notificationSlice = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
-    // Set full notification list (with pagination)
     setNotifications: (
       state,
       action: PayloadAction<{ notifications: Notification[]; pagination?: Pagination }>
@@ -62,7 +61,6 @@ const notificationSlice = createSlice({
       state.error = null
     },
 
-    // Append more notifications (for future "Load More")
     appendNotifications: (
       state,
       action: PayloadAction<{ notifications: Notification[]; pagination?: Pagination }>
@@ -72,7 +70,6 @@ const notificationSlice = createSlice({
       state.pagination = pagination
     },
 
-    // Add a single new notification (e.g., real-time)
     addNotification: (state, action: PayloadAction<Notification>) => {
       state.notifications.unshift(action.payload)
       if (state.pagination) {
@@ -80,33 +77,30 @@ const notificationSlice = createSlice({
       }
     },
 
-    // Mark one as read
+    // MARK SINGLE NOTIFICATION AS READ
     markNotificationAsRead: (state, action: PayloadAction<string>) => {
-      const notification = state.notifications.find(n => n._id === action.payload)
-      if (notification) {
-        notification.isRead = true
+      const notificationIndex = state.notifications.findIndex(n => n._id === action.payload)
+      if (notificationIndex !== -1) {
+        state.notifications[notificationIndex].isRead = true
       }
     },
 
-    // Mark all as read
+    // MARK ALL NOTIFICATIONS AS READ
     markAllNotificationsAsRead: (state) => {
-      state.notifications.forEach(n => {
-        n.isRead = true
+      state.notifications.forEach(notification => {
+        notification.isRead = true
       })
     },
 
-    // Clear all
+    setTotalUnreadMessages: (state, action: PayloadAction<number>) => {
+      state.totalUnreadMessages = action.payload
+    },
+
     clearNotifications: (state) => {
       state.notifications = []
       state.pagination = undefined
     },
 
-    // Set total unread chat messages (for sidebar badge)
-    setTotalUnreadMessages: (state, action: PayloadAction<number>) => {
-      state.totalUnreadMessages = action.payload
-    },
-
-    // Optional loading/error states
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.loading = action.payload
     },
@@ -124,8 +118,8 @@ export const {
   addNotification,
   markNotificationAsRead,
   markAllNotificationsAsRead,
-  clearNotifications,
   setTotalUnreadMessages,
+  clearNotifications,
   setLoading,
   setError,
 } = notificationSlice.actions
