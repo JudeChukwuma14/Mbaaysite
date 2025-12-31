@@ -74,6 +74,7 @@ export default function SocialFeed() {
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
   });
+  console.log("co",comm_posts);
   // Keep post feed in sync when communities change (e.g., user joins/leaves)
   useEffect(() => {
     if (!isLoadingCommunities) {
@@ -881,16 +882,16 @@ export default function SocialFeed() {
                                             }}
                                           >
                                             <div className="flex items-start gap-2">
-                                              {!vendors?.avatar ? (
+                                              {!reply?.user?.avatar ? (
                                                 <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
-                                                  {vendors?.storeName
+                                                  {reply?.user?.storeName
                                                     ?.charAt(0)
                                                     ?.toUpperCase()}
                                                 </div>
                                               ) : (
                                                 <img
                                                   src={
-                                                    vendors?.avatar ||
+                                                    reply?.user?.avatar ||
                                                     "/placeholder.svg"
                                                   }
                                                   alt="Vendor"
@@ -899,7 +900,7 @@ export default function SocialFeed() {
                                               )}
                                               <div className="flex-grow">
                                                 <p className="text-sm font-medium text-gray-900">
-                                                  {vendors?.storeName ||
+                                                  {reply?.user?.storeName ||
                                                     "Anonymous"}
                                                 </p>
                                                 <p className="text-sm text-gray-700 mt-1">
