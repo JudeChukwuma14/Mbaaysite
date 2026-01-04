@@ -10,16 +10,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 
+
+type MessageStatus = "sending" | "sent" | "delivered" | "read";
+
 interface Message {
   _id: string;
   content: string;
   images?: string[];
   video?: string;
   time: string;
+  timestamp: Date;
   sent: boolean;
   type: "text" | "image" | "video" | "file";
   replyTo?: string;
   isUploading?: boolean;
+  status?: MessageStatus;
+  unreadCount?: number; // for sender-side unread badge
 }
 
 interface MessageBubbleProps {
@@ -33,11 +39,6 @@ const MessageBubble = ({ message, onDelete, onEdit }: MessageBubbleProps) => {
   const [editContent, setEditContent] = useState(message.content);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  console.log(
-    "DEBUG: Rendering MessageBubble with message:",
-    JSON.stringify({ ...message, sent: message.sent }, null, 2)
-  );
 
   const handleEdit = () => {
     if (editContent.trim() && editContent !== message.content) {
