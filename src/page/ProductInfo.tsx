@@ -125,7 +125,7 @@ useEffect(() => {
     setReviewsError(null);
     try {
       const response = await getProductReviews(product._id);
-      console.log("Fetched reviews response:", response);
+      
 
       // Check if response is valid
       if (response && response.success !== false) {
@@ -223,16 +223,7 @@ useEffect(() => {
     });
   };
 
-  // Debug user and session state
-  useEffect(() => {
-    console.log("DEBUG: User state:", JSON.stringify(user, null, 2));
-    console.log(
-      "DEBUG: Session ID:",
-      sessionId,
-      "isSessionLoading:",
-      isSessionLoading
-    );
-  }, [user, sessionId, isSessionLoading]);
+ 
 
   // Initialize sessionId if missing
   useEffect(() => {
@@ -241,7 +232,7 @@ useEffect(() => {
         setIsSessionLoading(true);
         try {
           await dispatch(initializeSession());
-          console.log("DEBUG: Session initialized successfully");
+          
         } catch (error) {
           console.error("DEBUG: Session initialization failed:", error);
           toast.error("Failed to initialize session. Please try again.");
@@ -260,10 +251,6 @@ useEffect(() => {
       try {
         if (!id) throw new Error("Product ID is undefined");
         const data = await getProductsById(id);
-        console.log(
-          "DEBUG: Product data:",
-          JSON.stringify(data.product, null, 2)
-        );
         if (!data.product || !data.product._id)
           throw new Error("Product not found");
         setProduct(data.product);
@@ -278,44 +265,29 @@ useEffect(() => {
           data.product.poster._id &&
           data.product.poster.storeName
         ) {
-          console.log(
-            "DEBUG: Using poster as vendor data:",
-            JSON.stringify(data.product.poster, null, 2)
-          );
           vendorData = {
             _id: data.product.poster._id,
             storeName: data.product.poster.storeName,
             avatar: data.product.poster.avatar,
           };
         } else if (data.product.vendorId) {
-          console.log(
-            "DEBUG: Fetching vendor with vendorId:",
-            data.product.vendorId
-          );
+          
           vendorData =
             vendorState?.vendor?._id === data.product.vendorId
               ? vendorState.vendor
               : await get_single_vendor(data.product.vendorId);
-          console.log(
-            "DEBUG: Vendor data from API:",
-            JSON.stringify(vendorData, null, 2)
-          );
+         
           if (!vendorData || !vendorData._id) {
             throw new Error(
               "Vendor data not found for vendorId: " + data.product.vendorId
             );
           }
         } else {
-          console.warn(
-            "DEBUG: No vendorId or valid poster found in product data"
-          );
+     
           setError("Vendor information unavailable for this product.");
         }
         setVendor(vendorData);
-        console.log(
-          "DEBUG: Vendor state set:",
-          JSON.stringify(vendorData, null, 2)
-        );
+     
       } catch (err: any) {
         console.error("DEBUG: Fetch error:", err);
         setError(
@@ -337,12 +309,7 @@ useEffect(() => {
       try {
         const price = await convertPrice(product.price, "NGN", currency);
         setConvertedPrice(price);
-        console.log(
-          "DEBUG: Price converted:",
-          price,
-          "for currency:",
-          currency
-        );
+       
       } catch (error) {
         console.error("DEBUG: Failed to convert price:", error);
         setConvertedPrice(product.price); // Fallback to base price
@@ -369,17 +336,9 @@ useEffect(() => {
       return;
     }
     try {
-      console.log(
-        "DEBUG: Starting chat with vendor:",
-        vendor._id,
-        "for product:",
-        product._id
-      );
+  
       const newChat = await startChat(vendor._id);
-      console.log(
-        "DEBUG: startChat response:",
-        JSON.stringify(newChat, null, 2)
-      );
+  
       if (!newChat?.success || !newChat?.chat?._id) {
         throw new Error("Failed to start chat");
       }
@@ -390,10 +349,7 @@ useEffect(() => {
         newChat.chat._id,
         initialMessage
       );
-      console.log(
-        "DEBUG: sendMessage response:",
-        JSON.stringify(messageResponse, null, 2)
-      );
+   
       if (!messageResponse?.success) {
         throw new Error("Failed to send initial message");
       }

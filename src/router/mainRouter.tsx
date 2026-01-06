@@ -1135,12 +1135,12 @@ const routesConfig: RouteObject[] = [
         element: withSuspense(Canclellation),
       },
        {
-        path: "/dashboard/retrunproduct",
+        path: "retrunproduct",
         element: withSuspense(ReturnForm),
       },
-      { path: "/dashboard/review", element: withSuspense(Review) },
-      { path: "/dashboard/wishlist", element: withSuspense(Wishlist) },
-      { path: "/dashboard/addresses", element: withSuspense(Address) },
+      { path: "review", element: withSuspense(Review) },
+      { path: "wishlist", element: withSuspense(Wishlist) },
+      { path: "addresses", element: withSuspense(Address) },
       {
         path: "/dashboard/messages",
         element: (

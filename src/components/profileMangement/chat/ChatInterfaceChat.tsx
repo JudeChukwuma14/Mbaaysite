@@ -451,16 +451,7 @@ const ChatInterfaceChat: React.FC = () => {
             : new Date(`1970-01-01T${b.time}`).getTime();
           return timeB - timeA;
         });
-
         setChats(sortedChats);
-
-        if (
-          !selectedChat &&
-          sortedChats.length > 0 &&
-          !location.state?.chatId
-        ) {
-          setSelectedChat(sortedChats[0]._id);
-        }
       } catch (error: any) {
         const errorMsg =
           error.response?.data?.message ||
