@@ -392,47 +392,47 @@ const AllOrdersPage: React.FC = () => {
                   <div className="mt-1 font-mono text-sm break-all">
                     #{order._id}
                   </div>
-                 <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
-  <div>
-    <div className="text-xs text-gray-500">Date</div>
-    <div>{formatDate(order.createdAt)}</div>
-  </div>
-  <div>
-    <div className="text-xs text-gray-500">Customer</div>
-    <div>
-      {order.buyerInfo.first_name} {order.buyerInfo.last_name}
-    </div>
-  </div>
-  <div className="col-span-2">
-    <div className="text-xs text-gray-500">Items</div>
-    <div className="space-y-1">
-      {order.items.slice(0, 2).map((item, i) => (
-        <div key={i} className="flex items-center justify-between">
-          <span className="truncate" title={item.product.name}>
-            {item.quantity} × {item.product.name}
-          </span>
-        </div>
-      ))}
-      {order.items.length > 2 && (
-        <div className="text-xs text-gray-500">
-          +{order.items.length - 2} more items
-        </div>
-      )}
-    </div>
-  </div>
-  <div>
-    <div className="text-xs text-gray-500">Amount</div>
-    <div className="font-semibold">
-      {formatAmount(order.totalPrice)}
-    </div>
-  </div>
-  <div>
-    <div className="text-xs text-gray-500">Status</div>
-    <div className={`font-medium ${getStatusColor(order.status)}`}>
-      {order.status}
-    </div>
-  </div>
-</div>
+                  <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
+                    <div>
+                      <div className="text-xs text-gray-500">Date</div>
+                      <div>{formatDate(order.createdAt)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Customer</div>
+                      <div>
+                        {order.buyerInfo.first_name} {order.buyerInfo.last_name}
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="text-xs text-gray-500">Items</div>
+                      <div className="space-y-1">
+                        {order.items.slice(0, 2).map((item, i) => (
+                          <div key={i} className="flex items-center justify-between">
+                            <span className="truncate" title={item.product.name}>
+                              {item.quantity} × {item.product.name}
+                            </span>
+                          </div>
+                        ))}
+                        {order.items.length > 2 && (
+                          <div className="text-xs text-gray-500">
+                            +{order.items.length - 2} more items
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Amount</div>
+                      <div className="font-semibold">
+                        {formatAmount(order.totalPrice)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-gray-500">Status</div>
+                      <div className={`font-medium ${getStatusColor(order.status)}`}>
+                        {order.status}
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
