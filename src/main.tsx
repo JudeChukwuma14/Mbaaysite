@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
-import { mainRouter } from "./router/mainRouter";
+// import { mainRouter } from "./router/mainRouter";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import store, { persistor } from "./redux/store";
@@ -13,6 +13,7 @@ import ErrorBoundary from "./components/Error/ErrorBoundary";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./index.css";
 import "./App.css";
+import { indexRoutes } from "./router/mainIndexRoutes";
 
 // Replace with your Google Client ID from Google Cloud Console
 const GOOGLE_CLIENT_ID = "625711431090-8p1bbgs1hra8rg4mgjq6vrqr73gchds4.apps.googleusercontent.com";
@@ -46,7 +47,7 @@ createRoot(document.getElementById("root")!).render(
               pauseOnHover
               theme="light" />
             <DarkModeProvider>
-              <RouterProvider router={mainRouter} />
+              <RouterProvider router={indexRoutes} />
             </DarkModeProvider>
           </GoogleOAuthProvider>
         </ErrorBoundary>

@@ -1,4 +1,4 @@
-// components/ChatListSkeleton.tsx
+
 import { Skeleton } from "@/components/ui/skeleton";
 
 const ChatListSkeleton = () => {

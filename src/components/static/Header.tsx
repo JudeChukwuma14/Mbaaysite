@@ -262,7 +262,7 @@ const Header: React.FC = () => {
               to="/app/all-post"
               className="text-sm font-medium text-white transition-colors duration-200 hover:text-orange-500"
             >
-              Community
+              Timeline
             </Link>
           )}
           {/* <Link
@@ -494,7 +494,7 @@ const Header: React.FC = () => {
                 className="px-6 py-3 transition-colors duration-200 hover:bg-gray-50 hover:text-orange-500"
                 onClick={toggleMenu}
               >
-                Community
+                Timeline
               </Link>
             )}
             {/* <Link

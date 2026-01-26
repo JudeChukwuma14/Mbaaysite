@@ -21,8 +21,13 @@ const CheckOut = lazy(
 const Canclellation = lazy(
   () => import("@/components/profileMangement/payment/CancellationForm")
 );
+const Wishlist = lazy(() => import("@/components/profileMangement/Wishlist"));
+const ReturnForm = lazy(
+  () => import("@/components/profileMangement/payment/ReturnForm")
+);
+const Review = lazy(() => import("@/components/profileMangement/ReviewForm"));
 // const ReturnForm = lazy(()=>import("@/components/profileMangement/review/ReviewForm"))
-
+const Address = lazy(() => import("@/components/profileMangement/Addresses"));
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
     <Component />
@@ -40,7 +45,13 @@ export const dashboardRoutes: RouteObject[] = [
       { path: "orderdetail", element: withSuspense(OrderDetail) },
       { path: "checkout", element: withSuspense(CheckOut) },
       { path: "canclellation", element: withSuspense(Canclellation) },
-      // {path:"retrunproduct", element:withSuspense(ReturnForm)},
+       {
+        path: "retrunproduct",
+        element: withSuspense(ReturnForm),
+      },
+      { path: "review", element: withSuspense(Review) },
+      { path: "wishlist", element: withSuspense(Wishlist) },
+      { path: "addresses", element: withSuspense(Address) },
       {
         path: "messages",
         element: (

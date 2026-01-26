@@ -55,7 +55,7 @@ const withSuspense = (Component: React.ComponentType) => (
 );
 
 // This file loads only when user accesses /categories/*
-const CategoryRoutes: RouteObject[] = [
+const Category: RouteObject[] = [
   {
     path: "/fashion",
     element: withSuspense(Fashion),
@@ -114,4 +114,4 @@ const CategoryRoutes: RouteObject[] = [
   },
 ];
 
-export default CategoryRoutes;
+export default Category;
