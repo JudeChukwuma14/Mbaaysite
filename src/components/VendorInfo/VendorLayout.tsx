@@ -6,11 +6,16 @@ import { useDarkMode } from "../Context/DarkModeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ChatWidget } from "./VendorCustomerCare/CustomerCareWidget";
+import { useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
 // import DashboardPaymentHandler from "./DashboardPaymentHandler";
 // Import dark mode context
 
+
 const VendorLayout: React.FC = () => {
   const { darkMode } = useDarkMode(); // Use context instead of local state
+  const vendor = useSelector((state: RootState) => state.vendor);
+  console.log("Vendor info",vendor)
 
   const queryClient = new QueryClient();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -21,7 +26,11 @@ const VendorLayout: React.FC = () => {
         <div className="flex h-screen">
           {/* Sidebar */}
           {/* <DashboardPaymentHandler /> */}
-          <DashboardSidebar darkMode={darkMode} isOpen={isSidebarOpen} />
+          <DashboardSidebar 
+            darkMode={darkMode} 
+            isOpen={isSidebarOpen} 
+            onClose={() => setIsSidebarOpen(false)}
+          />
 
           {/* Main Content */}
           <div className="flex flex-col flex-1">
@@ -29,7 +38,7 @@ const VendorLayout: React.FC = () => {
             <VendorHeader onToggleSidebar={() => setIsSidebarOpen((v) => !v)} />{" "}
             {/* No need to pass darkMode here, since it can use the context */}
             {/* Scrollable Outlet */}
-            <main className="flex-1 p-4 overflow-y-auto bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+            <main className="flex-1 p-4 overflow-y-auto text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
               <Outlet />
 
               <span className="text-lg font-bold text-white">

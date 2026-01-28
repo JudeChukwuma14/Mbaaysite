@@ -214,8 +214,8 @@ const CustomersPage: React.FC = () => {
             </select>
           </motion.div>
 
-          {/* Table */}
-          <div className="overflow-x-auto rounded-lg shadow">
+          {/* Desktop Table View */}
+          <div className="hidden overflow-x-auto rounded-lg shadow md:block">
             <table className="min-w-full bg-white rounded-lg">
               <thead className="sticky top-0 bg-gray-100">
                 <tr>
@@ -280,6 +280,51 @@ const CustomersPage: React.FC = () => {
                 </AnimatePresence>
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="grid gap-4 md:hidden">
+            {paginated.map((c) => (
+              <motion.div
+                key={`${c.customer?._id}-${c.customer?.email}`}
+                layout
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="p-4 bg-white rounded-lg shadow border hover:shadow-md transition-shadow"
+              >
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div>
+                    <span className="text-xs text-gray-500">Email</span>
+                    <p className="font-medium text-sm break-all">{c.customer?.email}</p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500">Model Type</span>
+                    <p className="font-medium text-sm capitalize">{c.modelType}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div>
+                    <span className="text-xs text-gray-500">Last Order</span>
+                    <p className="font-medium text-sm">
+                      {c.lastOrderDate ? new Date(c.lastOrderDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-xs text-gray-500">Status</span>
+                    <span
+                      className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                        c.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {c.status}
+                    </span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
 
           {/* Pagination */}

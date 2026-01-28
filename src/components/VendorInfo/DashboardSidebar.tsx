@@ -28,11 +28,13 @@ import { RiProfileLine } from "react-icons/ri";
 interface DashboardSidebarProps {
   darkMode: boolean;
   isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   darkMode,
   isOpen = false,
+  onClose,
 }) => {
   interface RootState {
     vendor: {
@@ -90,6 +92,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
 
   const handleLinkClick = () => {
     setOpenDropdown(null);
+    // Close sidebar on mobile when a link is clicked
+    if (window.innerWidth < 768 && onClose) {
+      onClose();
+    }
   };
 
   return (
@@ -118,7 +124,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           />
           <NavItem
             title="Orders"
-            subItems={["Orders", "MyOrders", "Cancellation"]}
+            subItems={["Orders", "MyOrders"]}
             Icon={ShoppingCart}
             isOpen={openDropdown === "Orders"}
             onToggle={() => handleDropdownToggle("Orders")}
@@ -126,7 +132,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
           />
           <NavItem
             title="Products"
-            subItems={["All Products", "New Product", "Return Product"]}
+            subItems={["All Products", "New Product"]}
             Icon={Box}
             isOpen={openDropdown === "Products"}
             onToggle={() => handleDropdownToggle("Products")}

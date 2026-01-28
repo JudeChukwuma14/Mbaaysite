@@ -1271,13 +1271,13 @@ export default function EditVendorProfile() {
                   <div className="flex items-center gap-4 text-sm">
                     <div>
                       <div className="font-semibold">
-                        {user.vendor?.followers.length}
+                        {vendors?.followers.length}
                       </div>
                       <div className="text-gray-500">Followers</div>
                     </div>
                     <div>
                       <div className="font-semibold">
-                        {user.vendor?.following.length}
+                        {vendors?.following.length}
                       </div>
                       <div className="text-gray-500">Following</div>
                     </div>

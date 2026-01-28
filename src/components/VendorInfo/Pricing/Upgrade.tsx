@@ -215,84 +215,85 @@ export default function Upgrade() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {/* Back */}
-        <div className="mb-4 sm:mb-6">
+        <div className="mb-3 sm:mb-5">
           <Button
             variant="ghost"
             onClick={() => navigate("/app/pricing")}
-            className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base"
+            className="flex items-center gap-1.5 text-muted-foreground text-xs sm:text-sm md:text-base px-2 sm:px-3"
+            size="sm"
           >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Pricing
+            <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span>Back to Pricing</span>
           </Button>
         </div>
 
         {/* Header */}
-        <div className="text-center mb-6 sm:mb-8">
+        <div className="text-center mb-5 sm:mb-7">
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold px-2"
+            className="text-xl sm:text-2xl md:text-3xl font-bold px-2"
           >
             Upgrade to {plan}
           </motion.h1>
-          <p className="text-muted-foreground mt-2 text-sm sm:text-base px-4">
+          <p className="text-muted-foreground mt-1.5 text-xs sm:text-sm md:text-base px-3">
             Choose your billing cycle and confirm your upgrade
           </p>
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-2xl border bg-card p-6 shadow-sm"
+          className="rounded-xl sm:rounded-2xl border bg-card p-4 sm:p-5 md:p-6 shadow-sm"
         >
           {/* Selected Categories Summary */}
           {selectedCategories.length > 0 && (
-            <div className="p-4 mb-6 rounded-lg bg-primary/5">
-              <h3 className="mb-2 font-medium text-primary">
+            <div className="p-3 sm:p-4 mb-4 sm:mb-5 rounded-lg bg-primary/5 border border-primary/10">
+              <h3 className="mb-1.5 text-sm sm:text-base font-medium text-primary">
                 Selected Categories
               </h3>
-              <div className="text-sm">
+              <div className="text-xs sm:text-sm break-words line-clamp-2">
                 {selectedCategories.slice(0, 3).join(", ")}
                 {selectedCategories.length > 3 && (
-                  <span className="font-medium">
+                  <span className="font-medium whitespace-nowrap">
                     {" "}
                     and {selectedCategories.length - 3} more
                   </span>
                 )}
               </div>
-              <div className="mt-1 text-xs text-muted-foreground">
+              <div className="mt-1 text-[10px] sm:text-xs text-muted-foreground">
                 Total: {selectedCategories.length} of {maxCategories} categories
               </div>
             </div>
           )}
 
           {/* Billing Toggle */}
-          <div className="flex justify-center mb-6">
-            <div className="inline-flex items-center gap-1 p-1 bg-muted rounded-lg overflow-x-auto max-w-full">
+          <div className="flex justify-center mb-4 sm:mb-5">
+            <div className="inline-flex items-center gap-0.5 p-0.5 bg-muted rounded-lg overflow-x-auto w-full max-w-md">
               {(
                 [
-                  "Monthly",
-                  "Quarterly",
-                  "HalfYearly",
-                  "Yearly",
-                ] as DisplayBillingCycle[]
-              ).map((cycle) => (
+                  { label: "Monthly", value: "Monthly" },
+                  { label: "3 Months", value: "Quarterly" },
+                  { label: "6 Months", value: "HalfYearly" },
+                  { label: "Yearly", value: "Yearly" },
+                ] as const
+              ).map(({ label, value }) => (
                 <button
-                  key={cycle}
-                  onClick={() => setBilling(cycle)}
-                  className={`px-3 sm:px-4 py-2 text-sm font-medium rounded-md transition-all whitespace-nowrap flex-shrink-0 ${
-                    billing === cycle
+                  key={value}
+                  onClick={() => setBilling(value as DisplayBillingCycle)}
+                  className={`flex-1 min-w-[70px] sm:min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] xs:text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap flex-shrink-0 justify-center items-center ${
+                    billing === value
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {cycle === "HalfYearly" ? "6 Months" : cycle}
-                  {cycle !== "Monthly" && (
-                    <span className="ml-1 text-xs text-primary">
-                      -{discount[cycle.toLowerCase() as keyof DiscountRates]}%
+                  {label}
+                  {value !== "Monthly" && (
+                    <span className="ml-0.5 text-[8px] xs:text-[10px] text-primary font-bold">
+                      -{discount[value.toLowerCase() as keyof DiscountRates]}%
                     </span>
                   )}
                 </button>
@@ -301,24 +302,23 @@ export default function Upgrade() {
           </div>
 
           {/* Price */}
-          <div className="rounded-lg bg-muted/40 p-4 mb-6">
+          <div className="rounded-lg bg-muted/20 p-3 sm:p-4 mb-5 border border-muted">
             <div className="text-center">
-              <div className="text-3xl font-bold">
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">
                 ₦{amount.toLocaleString()}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 per {billingLabel}
                 {billing !== "Monthly" && (
-                  <div className="mt-1">
-                    <span className="font-medium text-green-600">
-                      Save {savingsPercentage}% (₦
-                      {savingsAmount.toLocaleString()})
+                  <div className="mt-0.5">
+                    <span className="font-medium text-green-600 text-xs sm:text-sm">
+                      Save {savingsPercentage}% (₦{savingsAmount.toLocaleString()})
                     </span>
                   </div>
                 )}
               </div>
               {billing !== "Monthly" && (
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-1 text-[10px] xs:text-xs text-muted-foreground">
                   Equivalent to ₦
                   {Math.round(
                     amount /
@@ -335,45 +335,44 @@ export default function Upgrade() {
           </div>
 
           {/* Features */}
-          <div className="space-y-2 mb-6">
-            <div className="flex items-start gap-2 text-sm">
-              <Check className="w-4 h-4 text-primary mt-0.5" />
-              <span>All {plan} plan features</span>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <Check className="w-4 h-4 text-primary mt-0.5" />
-              <span>Priority support</span>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <Check className="w-4 h-4 text-primary mt-0.5" />
-              <span>No setup fees</span>
-            </div>
-            <div className="flex items-start gap-2 text-sm">
-              <Check className="w-4 h-4 text-primary mt-0.5" />
-              <span>30-day money-back guarantee</span>
-            </div>
-            {selectedCategories.length > 0 && (
-              <div className="flex items-start gap-2 text-sm">
-                <Check className="w-4 h-4 text-primary mt-0.5" />
-                <span>
-                  Access to {selectedCategories.length} categor
-                  {selectedCategories.length === 1 ? "y" : "ies"}
-                </span>
+          <div className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-5">
+            {[
+              `All ${plan} plan features`,
+              'Priority support',
+              'No setup fees',
+              '30-day money-back guarantee',
+              ...(selectedCategories.length > 0 
+                ? [`Access to ${selectedCategories.length} categor${selectedCategories.length === 1 ? 'y' : 'ies'}`] 
+                : [])
+            ].map((feature, index) => (
+              <div key={index} className="flex items-start gap-2">
+                <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary mt-0.5 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">{feature}</span>
               </div>
-            )}
+            ))}
           </div>
 
           {/* Action */}
           <Button
             onClick={() => mutate()}
             disabled={isPending}
-            className="w-full"
+            className="w-full text-sm sm:text-base py-1.5 h-auto"
             size="lg"
           >
-            {isPending ? "Processing..." : `Upgrade to ${plan}`}
+            {isPending ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing...
+              </span>
+            ) : (
+              `Upgrade to ${plan}`
+            )}
           </Button>
 
-          <p className="mt-4 text-xs text-center text-muted-foreground">
+          <p className="mt-3 text-[10px] xs:text-xs text-center text-muted-foreground leading-relaxed">
             Your subscription renews automatically at the end of each billing
             period until canceled. You can manage your plan in Account Settings.
           </p>
@@ -382,12 +381,12 @@ export default function Upgrade() {
         {/* Error message for missing billing selection */}
         {!billing && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-2 p-3 mt-4 text-red-700 rounded-lg bg-red-50"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-start gap-2 p-2.5 mt-3 text-red-600 rounded-lg bg-red-50 border border-red-100 text-xs sm:text-sm"
           >
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">Please select a billing cycle</span>
+            <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mt-0.5 flex-shrink-0" />
+            <span>Please select a billing cycle to continue</span>
           </motion.div>
         )}
       </div>

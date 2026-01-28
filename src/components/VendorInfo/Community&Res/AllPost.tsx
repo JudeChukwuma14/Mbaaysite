@@ -74,7 +74,7 @@ export default function SocialFeed() {
     queryKey: ["comm_posts"],
     queryFn: () => get_posts_feed(user.token),
   });
-  console.log("co",comm_posts);
+  console.log("co", comm_posts);
   // Keep post feed in sync when communities change (e.g., user joins/leaves)
   useEffect(() => {
     if (!isLoadingCommunities) {

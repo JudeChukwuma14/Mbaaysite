@@ -568,11 +568,11 @@ export function ChatListSidebar({
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
     if (!searchQuery.trim()) return chatList;
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery?.toLowerCase();
     return chatList.filter(
       (chat: any) =>
-        chat.name.toLowerCase().includes(query) ||
-        chat.lastMessage.toLowerCase().includes(query)
+        chat.name?.toLowerCase()?.includes(query) ||
+        chat.lastMessage?.toLowerCase()?.includes(query)
     );
   }, [chatList, searchQuery]);
 

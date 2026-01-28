@@ -254,7 +254,7 @@ const formatTime = (time: number) => {
 
 // Normalize attachments coming from API
 const normalizeAttachmentType = (t: any): FileAttachment["type"] => {
-  const s = typeof t === "string" ? t.toLowerCase() : "";
+  const s = typeof t === "string" ? t?.toLowerCase() : "";
   if (s.startsWith("image")) return "image";
   if (s.startsWith("video")) return "video";
   return "document";
@@ -942,8 +942,8 @@ const DeleteDialog = React.memo(
     onConfirm: () => void;
   }) =>
     isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div className="p-4 sm:p-6 bg-white rounded-lg w-full max-w-sm sm:max-w-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div className="w-full max-w-sm p-4 bg-white rounded-lg sm:p-6 sm:max-w-md">
           <h3 className="mb-4 text-lg font-semibold">Delete message?</h3>
           <p className="mb-4 text-sm text-gray-600">
             This message will be permanently deleted.
@@ -997,8 +997,8 @@ const VideoPlayer = React.memo(
   }) =>
     isOpen &&
     videoUrl && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-2 sm:p-4">
-        <div className="relative w-full max-w-full sm:max-w-4xl p-2 sm:p-4 bg-white rounded-lg aspect-video">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black bg-opacity-75 sm:p-4">
+        <div className="relative w-full max-w-full p-2 bg-white rounded-lg sm:max-w-4xl sm:p-4 aspect-video">
           <div className="absolute z-10 flex items-center gap-2 top-2 right-2">
             <motion.button
               onClick={() => onSave(videoUrl)}
@@ -1082,8 +1082,8 @@ const MediaGallery = React.memo(
   }) =>
     isOpen &&
     files && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-2 sm:p-4">
-        <div className="relative flex items-center justify-center w-full h-full max-w-full sm:max-w-5xl max-h-full sm:max-h-5xl">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black bg-opacity-90 sm:p-4">
+        <div className="relative flex items-center justify-center w-full h-full max-w-full max-h-full sm:max-w-5xl sm:max-h-5xl">
           <motion.button
             onClick={onClose}
             className="absolute z-10 p-2 text-white bg-gray-800 rounded-full top-4 right-4 hover:bg-gray-700"
@@ -1154,8 +1154,8 @@ const PinDurationDialog = React.memo(
     onClose: () => void;
   }) =>
     isOpen && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-        <div className="p-4 sm:p-6 bg-white rounded-lg w-full max-w-sm sm:max-w-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+        <div className="w-full max-w-sm p-4 bg-white rounded-lg sm:p-6 sm:max-w-md">
           <h3 className="mb-4 text-lg font-semibold">
             Pin message for how long?
           </h3>
@@ -1570,7 +1570,14 @@ export default function ChatInterface() {
   // Keep view pinned to bottom when new messages arrive
   useEffect(() => {
     if (!activeChat) return;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Use requestAnimationFrame for smoother scrolling on mobile
+    const rafId = requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ 
+        behavior: "smooth",
+        block: "end"
+      });
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [activeChat, visibleMessages.length]);
 
   useEffect(() => {
@@ -1950,7 +1957,7 @@ export default function ChatInterface() {
   console.log(user.vendor);
   // Render
   return (
-    <div className="flex h-full bg-gray-50 overflow-x-hidden max-w-full">
+    <div className="flex h-full max-w-full overflow-x-hidden bg-gray-50">
       <ChatListSidebar
         chats={chats}
         activeChat={activeChat}
@@ -1970,13 +1977,13 @@ export default function ChatInterface() {
           <motion.div
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="flex items-center flex-shrink-0 gap-4 p-3 sm:p-4 border-b shadow-sm bg-gradient-to-r from-white to-gray-50 flex-wrap"
+            className="flex flex-wrap items-center flex-shrink-0 gap-4 p-3 border-b shadow-sm sm:p-4 bg-gradient-to-r from-white to-gray-50"
           >
             {/* Mobile back button */}
             <button
               type="button"
               onClick={() => setActiveChat("")}
-              className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-full hover:bg-gray-100"
+              className="inline-flex items-center justify-center rounded-full md:hidden w-9 h-9 hover:bg-gray-100"
               aria-label="Back to chats"
             >
               <ChevronLeft className="w-5 h-5 text-gray-600" />
@@ -2073,7 +2080,7 @@ export default function ChatInterface() {
         {activeChatDetails && (
           <div
             key={activeChat}
-            className="flex-1 p-3 sm:p-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+            className="flex-1 p-3 overflow-y-auto sm:p-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
           >
             <AnimatePresence>
               {activeMessages.length === 0 ? (

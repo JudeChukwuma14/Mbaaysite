@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ArrowLeft, ImageIcon } from "lucide-react";
 import { create_community } from "@/utils/communityApi";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 interface CommunityModalProps {
   isOpen: boolean;
@@ -24,8 +26,10 @@ export default function CommunityModal({
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const user = useSelector((state: any) => state.vendor);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +48,20 @@ export default function CommunityModal({
     }
 
     const token = user?.token || null;
-
+    setLoading(true);
     try {
-      await create_community(token, formData);
+      const res = await create_community(token, formData);
+      console.log(res);
+      setLoading(false);
       onSend(name, description, image);
       resetForm();
       onClose();
+      toast.success("Community created successfully!");
+      if (res?.data?.data?._id) {
+        navigate(`/app/comunity-detail/${res.data.data._id}`);
+      }
     } catch (error) {
+      setLoading(false);
       console.error("Failed to create community:", error);
       alert("Failed to create community. Please try again.");
     }
@@ -114,7 +125,7 @@ export default function CommunityModal({
             className="fixed inset-x-4 top-20 bottom-20 md:inset-auto md:top-[10%] md:left-[35%] md:max-w-md w-full md:-translate-x-[50%] bg-white rounded-lg shadow-xl overflow-hidden z-50 flex flex-col max-h-[80vh] md:max-h-[85vh]"
           >
             <div className="flex flex-col h-full">
-              <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+              <div className="flex items-center justify-between flex-shrink-0 p-4 border-b">
                 <div className="flex items-center">
                   {step === 2 && (
                     <motion.button
@@ -141,7 +152,7 @@ export default function CommunityModal({
 
             <form
               onSubmit={step === 1 ? handleNextStep : handleSubmit}
-              className="flex-1 min-h-0 flex flex-col"
+              className="flex flex-col flex-1 min-h-0"
             >
               <div className="flex-1 p-4 space-y-4 overflow-y-auto">
                 {step === 1 ? (
@@ -213,7 +224,7 @@ export default function CommunityModal({
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-2 p-4 border-t flex-shrink-0">
+              <div className="flex items-center justify-end flex-shrink-0 gap-2 p-4 border-t">
                 <button
                   type="button"
                   onClick={onClose}
@@ -231,12 +242,12 @@ export default function CommunityModal({
                 ) : (
                   <button
                     type="submit"
-                    disabled={!image}
+                    disabled={!image || loading}
                     className={`px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] hover:bg-orange-300 rounded-lg transition-colors ${
                       !image ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    Create
+                    {loading ? "Creating..." : "Create Community"}
                   </button>
                 )}
               </div>
