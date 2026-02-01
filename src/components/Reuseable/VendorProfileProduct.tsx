@@ -247,7 +247,7 @@ const VendorProfileProduct: React.FC = () => {
                 <button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
-                  className={`mt-4 flex items-center gap-2 px-3 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                  className={`mt-4 flex items-center gap-2 px-3 py-2 w-[200px]  justify-center  font-medium text-white rounded-lg transition duration-300 ${
                     isFollowing
                       ? "bg-red-500 hover:bg-red-600"
                       : "bg-orange-500 hover:bg-orange-600"

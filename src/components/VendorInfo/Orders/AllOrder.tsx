@@ -302,16 +302,7 @@ const AllOrdersPage: React.FC = () => {
           <option value="Return Requested">Return Requested</option>
         </select>
 
-        <select
-          value={paymentFilter}
-          onChange={(e) => setPaymentFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg min-w-[180px]"
-        >
-          <option value="All">All Payments</option>
-          <option value="Successful">Successful</option>
-          <option value="Pending">Pending</option>
-          <option value="Failed">Failed</option>
-        </select>
+       
 
         <motion.button
           whileHover={{ scale: 1.05 }}
