@@ -445,7 +445,7 @@ const AllOrdersPage: React.FC = () => {
                     <th className="px-4 py-3">Order ID</th>
                     <th className="px-4 py-3">Date</th>
                     <th className="px-4 py-3">Customer</th>
-                    <th className="px-4 py-3">Item</th>
+                    {/* <th className="px-4 py-3">Item</th> */}
                     <th className="px-4 py-3">Amount</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Action</th>
@@ -469,7 +469,7 @@ const AllOrdersPage: React.FC = () => {
                       <td className="px-4 py-3">
                         {order.buyerInfo.first_name} {order.buyerInfo.last_name}
                       </td>
-                      <td className="px-4 py-3">
+                      {/* <td className="px-4 py-3">
                         <div className="flex flex-col gap-1">
                           {order.items.slice(0, 2).map((item, i) => (
                             <div key={i} className="text-sm">
@@ -482,7 +482,7 @@ const AllOrdersPage: React.FC = () => {
                             </div>
                           )}
                         </div>
-                      </td>
+                      </td> */}
 
                       <td className="px-4 py-3 font-semibold">
                         {formatAmount(order.totalPrice)}

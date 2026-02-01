@@ -285,7 +285,7 @@ export default function UpgradePage() {
     if (targetPlanIndex > currentPlanIndex) {
       return (
         <motion.button
-          className="w-full py-2 text-sm font-medium text-center text-white transition-colors bg-blue-600 rounded hover:bg-blue-700"
+          className="w-full py-2 text-sm font-medium text-center text-white transition-colors bg-orange-600 rounded hover:bg-orange-700"
           onClick={() => handleGetStarted(plan)}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -454,7 +454,7 @@ export default function UpgradePage() {
 
                     <div className="mb-3 sm:mb-4">
                       <div className="flex items-baseline gap-1 sm:gap-2">
-                        <span className="text-3xl sm:text-4xl lg:text-5xl font-bold">
+                        <span className="text-3xl sm:text-4xl lg:text-3xl font-bold">
                           ₦{price.toLocaleString()}
                         </span>
                         <span className="text-sm sm:text-base text-muted-foreground">

@@ -615,7 +615,7 @@ const total = order.totalPrice;
                   <div className="w-16 h-16 overflow-hidden bg-gray-200 rounded-lg">
                     {item.product.poster ? (
                       <img
-                        src={item.product.poster}
+                        src={item.product.images[0]}
                         alt={item.product.name}
                         className="object-cover w-full h-full"
                       />
