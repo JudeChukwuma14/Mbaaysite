@@ -1,10 +1,13 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useParams, Link, Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import NewArrival from "../Cards/NewArrival";
 import { getAllVendor } from "@/utils/vendorApi";
+import { follow_vendor, unfollow_vendor } from "@/utils/communityApi";
+import { getAuthToken } from "@/utils/UserChat";
 import Spinner from "../Common/Spinner";
-import { FaRegSadTear, FaShoppingCart, FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaRegSadTear, FaShoppingCart, FaArrowLeft, FaArrowRight, FaUserPlus, FaUserMinus } from "react-icons/fa";
 
 // Default banner image
 const defaultBanner =
@@ -38,6 +41,10 @@ const VendorProfileProduct: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [followLoading, setFollowLoading] = useState(false);
+
+  const currentUser = useSelector((state: any) => state.user.user || state.vendor.vendor);
+  const token = getAuthToken();
 
   useEffect(() => {
     const fetchVendorData = async () => {
@@ -97,6 +104,54 @@ const VendorProfileProduct: React.FC = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const isFollowing = currentUser && vendor ? vendor.followers.includes(currentUser._id) : false;
+
+  const handleFollowToggle = async () => {
+    if (!token || !currentUser || !vendor) {
+      console.error("Missing required data:", { token: !!token, currentUser: !!currentUser, vendor: !!vendor });
+      alert("Please log in to follow/unfollow vendors");
+      return;
+    }
+
+    setFollowLoading(true);
+    try {
+      console.log("Attempting to", isFollowing ? "unfollow" : "follow", "vendor:", vendor._id);
+      console.log("Using token:", token ? "present" : "missing");
+
+      let response;
+      if (isFollowing) {
+        response = await unfollow_vendor(token, vendor._id);
+        console.log("Unfollow response:", response);
+        // Update local state
+        setVendor(prev => prev ? {
+          ...prev,
+          followers: prev.followers.filter(id => id !== currentUser._id)
+        } : null);
+      } else {
+        response = await follow_vendor(token, vendor._id);
+        console.log("Follow response:", response);
+        // Update local state
+        setVendor(prev => prev ? {
+          ...prev,
+          followers: [...prev.followers, currentUser._id]
+        } : null);
+      }
+
+      console.log("Follow/unfollow operation successful");
+    } catch (error: any) {
+      console.error("Error toggling follow:", error);
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", error.response.data);
+      } else if (error.message) {
+        console.error("Error message:", error.message);
+      }
+      alert(`Error: ${error.response?.data?.message || error.message || "Unknown error occurred"}`);
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -163,7 +218,7 @@ const VendorProfileProduct: React.FC = () => {
                 )}
               </div>
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col flex-1">
               <h1 className="text-3xl font-bold tracking-wider text-white md:text-4xl">
                 {vendor.storeName}
               </h1>
@@ -177,6 +232,37 @@ const VendorProfileProduct: React.FC = () => {
                   <div className="text-gray-300">Following</div>
                 </div>
               </div>
+              {!currentUser && (
+                <div className="mt-4 text-sm text-white">
+                  <Link
+                    to="/signin"
+                    className="inline-flex items-center gap-2 px-4 py-2 font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-300"
+                  >
+                    <FaUserPlus />
+                    Log in to Follow Vendors
+                  </Link>
+                </div>
+              )}
+              {currentUser && currentUser._id !== vendor._id && (
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={followLoading}
+                  className={`mt-4 flex items-center gap-2 px-3 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                    isFollowing
+                      ? "bg-red-500 hover:bg-red-600"
+                      : "bg-orange-500 hover:bg-orange-600"
+                  } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                >
+                  {followLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : isFollowing ? (
+                    <FaUserMinus />
+                  ) : (
+                    <FaUserPlus />
+                  )}
+                  {isFollowing ? "Unfollow" : "Follow"}
+                </button>
+              )}
             </div>
           </div>
         </div>

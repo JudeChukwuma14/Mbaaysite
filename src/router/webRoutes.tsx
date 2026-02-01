@@ -26,6 +26,9 @@ const AuctionList = lazy(() => import("@/components/AuctionPage/AuctionList"));
 const ArtProfile = lazy(
   () => import("@/components/AllCategory/Art/ArtProfile")
 );
+const VendorProfileProduct = lazy(
+  () => import("@/components/Reuseable/VendorProfileProduct")
+);
 
 const withSuspense = (Component: React.ComponentType) => (
   <Suspense fallback={<Spinner />}>
@@ -54,6 +57,11 @@ export const webRoutes: RouteObject[] = [
       { path: "auction/:id", element: withSuspense(AuctionDetail) },
       { path: "auctionlist", element: withSuspense(AuctionList) },
       { path: "art-profile/:id", element: withSuspense(ArtProfile) },
+        {
+        path: "/veiws-profile/:id",
+        element: withSuspense(VendorProfileProduct),
+        errorElement: <ErrorPage />,
+      },
       ...Category,
       ...categoryRoutes,
     ],

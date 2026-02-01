@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, ArrowLeft, AlertCircle } from "lucide-react";
+import { Check, ArrowLeft, AlertCircle, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useMutation } from "@tanstack/react-query";
-import { upgradePlan } from "@/utils/upgradeApi";
+import { upgradePlan, verifySubscriptionPayment } from "@/utils/upgradeApi";
 import { useSelector } from "react-redux";
 
 // Define the billing cycle types for both display and API
@@ -76,6 +76,8 @@ export default function Upgrade() {
   const selectedCategories = locationState?.selectedCategories || [];
   const maxCategories = locationState?.maxCategories || 0;
   const [billing, setBilling] = useState<DisplayBillingCycle>("Monthly");
+  const [isCallbackLoading, setIsCallbackLoading] = useState(false);
+  const [callbackStatus, setCallbackStatus] = useState<'success' | 'failed' | null>(null);
   const user = useSelector((s: any) => s.vendor);
 
   const pricing: PricingTiers = {
@@ -163,6 +165,51 @@ export default function Upgrade() {
     },
   });
 
+  // Handle subscription callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const trxref = urlParams.get('trxref');
+    const reference = urlParams.get('reference');
+
+    // Check if this is a callback from Paystack
+    if (trxref && reference) {
+      console.log('Payment callback detected:', { trxref, reference });
+      handlePaymentCallback(reference);
+    }
+  }, []);
+
+  // Handle payment callback
+  const handlePaymentCallback = async (reference: string) => {
+    setIsCallbackLoading(true);
+    try {
+      console.log('Verifying payment with reference:', reference);
+      const response = await verifySubscriptionPayment(reference);
+
+      if (response.success) {
+        setCallbackStatus('success');
+        toast.success('Payment successful! Your subscription has been upgraded.');
+
+        // Clear stored plan data
+        localStorage.removeItem('plan');
+        localStorage.removeItem('paymentReference');
+
+        // Redirect to dashboard after a delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 3000);
+      } else {
+        setCallbackStatus('failed');
+        toast.error(response.message || 'Payment verification failed');
+      }
+    } catch (error: any) {
+      console.error('Payment verification error:', error);
+      setCallbackStatus('failed');
+      toast.error(error.message || 'Failed to verify payment');
+    } finally {
+      setIsCallbackLoading(false);
+    }
+  };
+
   // Redirect if no valid plan is provided
   useEffect(() => {
     if (!plan || !pricing[plan]) {
@@ -212,6 +259,59 @@ export default function Upgrade() {
   } else if (billing === "Yearly") {
     savingsPercentage = discount.yearly;
     savingsAmount = monthlyCost * 12 - pricing[plan].Yearly;
+  }
+
+  // Show callback status if we're processing a payment callback
+  if (isCallbackLoading || callbackStatus) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md mx-auto px-4 py-8 text-center"
+        >
+          {isCallbackLoading && (
+            <>
+              <div className="w-16 h-16 mx-auto mb-4 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <h2 className="text-xl font-semibold mb-2">Verifying Payment</h2>
+              <p className="text-muted-foreground">
+                Please wait while we confirm your payment...
+              </p>
+            </>
+          )}
+
+          {callbackStatus === 'success' && (
+            <>
+              <CheckCircle className="w-16 h-16 mx-auto mb-4 text-green-500" />
+              <h2 className="text-xl font-semibold mb-2 text-green-600">
+                Payment Successful!
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Your subscription has been upgraded successfully.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Redirecting to dashboard in a few seconds...
+              </p>
+            </>
+          )}
+
+          {callbackStatus === 'failed' && (
+            <>
+              <XCircle className="w-16 h-16 mx-auto mb-4 text-red-500" />
+              <h2 className="text-xl font-semibold mb-2 text-red-600">
+                Payment Failed
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                We couldn't verify your payment. Please contact support if you were charged.
+              </p>
+              <Button onClick={() => navigate('/app/pricing')}>
+                Back to Pricing
+              </Button>
+            </>
+          )}
+        </motion.div>
+      </div>
+    );
   }
 
   return (

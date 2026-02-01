@@ -51,7 +51,8 @@ export const follow_vendor = async (
     console.log(response);
     return response;
   } catch (error) {
-    console.log(error);
+    console.error("Error following vendor:", error);
+    throw error;
   }
 };
 
@@ -72,7 +73,8 @@ export const unfollow_vendor = async (
     console.log(response);
     return response;
   } catch (error) {
-    console.log(error);
+    console.error("Error unfollowing vendor:", error);
+    throw error;
   }
 };
 

@@ -4,7 +4,7 @@ import axios from "axios";
 const API_CHAT_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/chat";
 const API_VENDOR_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
-const getAuthToken = () => {
+export const getAuthToken = () => {
   const state = store.getState();
   const token = state.vendor.token || state.user.token || null;
   return token;
