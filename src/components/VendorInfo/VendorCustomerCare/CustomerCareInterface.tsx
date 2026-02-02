@@ -132,7 +132,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   // Redirect to /selectpath if not authenticated
   useEffect(() => {
     if (isOpen && (!senderId || !token)) {
-      console.log("DEBUG: No senderId or token, redirecting to /selectpath");
+      // console.log("DEBUG: No senderId or token, redirecting to /selectpath");
       localStorage.setItem("redirectToChat", "true");
       navigate("/selectpath");
       onClose();
@@ -158,14 +158,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket.IO connected, socketId:", socketRef.current?.id);
+      // console.log("Socket.IO connected, socketId:", socketRef.current?.id);
       if (chatId) {
         socketRef.current?.emit("joinChat", chatId);
       }
     });
 
     socketRef.current.on("customerCareChatStarted", (chat) => {
-      console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
+      // console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
       dispatch(setVendorChatId(chat._id));
       localStorage.setItem(`chatId-${senderId}`, chat._id);
       socketRef.current?.emit("joinChat", chat._id);
@@ -173,7 +173,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("customerCareMessage", (msg) => {
-      console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
+      // console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
       const isSentByCurrentUser = msg.sender?._id === senderId;
       const newMessage: Message = {
         id: msg._id,
@@ -201,14 +201,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             ) < 2000)
       );
       if (existingMessage) {
-        console.log(
-          "DEBUG: Replacing message, id:",
-          msg._id,
-          "tempId:",
-          msg.tempId,
-          "existing:",
-          JSON.stringify(existingMessage, null, 2)
-        );
+        // console.log(
+        //   "DEBUG: Replacing message, id:",
+        //   msg._id,
+        //   "tempId:",
+        //   msg.tempId,
+        //   "existing:",
+        //   JSON.stringify(existingMessage, null, 2)
+        // );
         dispatch(
           setVendorMessages(
             messages.map((m) =>
@@ -227,7 +227,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           )
         );
       } else {
-        console.log("DEBUG: Adding new message, id:", msg._id);
+        // console.log("DEBUG: Adding new message, id:", msg._id);
         dispatch(addVendorMessage(newMessage));
         if (!isSentByCurrentUser) {
           triggerNotification(newMessage);
@@ -242,7 +242,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("reconnect", () => {
-      console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
+      // console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
       if (chatId) {
         socketRef.current?.emit("joinChat", chatId);
         fetchMessages(chatId);
@@ -250,14 +250,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("typing", ({ chatId: typingChatId, sender }) => {
-      console.log(`💬 ${sender} is typing in chat ${typingChatId}`);
+      // console.log(`💬 ${sender} is typing in chat ${typingChatId}`);
       if (typingChatId === chatId && sender !== senderId) {
         setOtherUserTyping(sender);
       }
     });
 
     socketRef.current.on("stopTyping", ({ chatId: typingChatId, sender }) => {
-      console.log(`🛑 ${sender} stopped typing in chat ${typingChatId}`);
+      // console.log(`🛑 ${sender} stopped typing in chat ${typingChatId}`);
       if (typingChatId === chatId && sender !== senderId) {
         setOtherUserTyping(null);
       }
@@ -298,7 +298,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     for (let i = 0; i < retries; i++) {
       setError(null);
       try {
-        console.log("Starting chat with:", { senderId, token });
+        // console.log("Starting chat with:", { senderId, token });
         const response = await axios.post(
           `${API_CHAT_BASE_URL}/start-customer-care`,
           { userId: senderId },
@@ -309,10 +309,10 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             },
           }
         );
-        console.log(
-          "Start chat response:",
-          JSON.stringify(response.data, null, 2)
-        );
+        // console.log(
+        //   "Start chat response:",
+        //   JSON.stringify(response.data, null, 2)
+        // );
         const newChatId = response.data.chatId || response.data.chat?._id;
         dispatch(setVendorChatId(newChatId));
         localStorage.setItem(`chatId-${senderId}`, newChatId);
@@ -338,19 +338,9 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     if (!targetChatId || !token) return;
 
     try {
-      console.log(
-        "Fetching messages for chatId:",
-        targetChatId,
-        "with senderId:",
-        senderId
-      );
       const response = await axios.get(
         `${API_CHAT_BASE_URL}/customer_care_chatmessages/${targetChatId}`,
         { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log(
-        "Fetch messages response:",
-        JSON.stringify(response.data, null, 2)
       );
       const fetchedMessages = (response.data.messages || []).map(
         (msg: any) => ({
@@ -410,13 +400,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
 
     try {
-      console.log("Sending message with:", {
-        chatId,
-        content: inputValue,
-        senderId,
-        socketId: socketRef.current?.id,
-      });
-      const response = await axios.post(
+      await axios.post(
         `${API_CHAT_BASE_URL}/send-message`,
         { chatId, content: inputValue, senderId },
         {
@@ -426,10 +410,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             "x-socket-id": socketRef.current?.id,
           },
         }
-      );
-      console.log(
-        "Send message response:",
-        JSON.stringify(response.data, null, 2)
       );
       setInputValue("");
     } catch (err: any) {

@@ -95,9 +95,6 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
         );
       }
     },
-    onSuccess: (data) => {
-      console.log("Mark Success:", data);
-    },
     onSettled: () => {
       queryClient.invalidateQueries({
         queryKey: ["vendorNotification", user.vendor._id],
@@ -115,8 +112,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
     }) => {
       return markOneAsRead(vendorId, notificationId);
     },
-    onSuccess: (data) => {
-      console.log("Single notification marked as read:", data);
+    onSuccess: () => {
       // Refetch notifications to update the UI
       queryClient.invalidateQueries({
         queryKey: ["vendorNotification", user.vendor._id],

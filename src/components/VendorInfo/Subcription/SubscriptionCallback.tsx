@@ -23,8 +23,6 @@ export default function SubscriptionCallback() {
       const billing = retrievedData.billing;
       const amount = retrievedData.amount;
 
-      console.log("Retrieved plan:", plan);
-      console.log("Retrieved selectedCategories:", billing);
 
       if (!reference) {
         toast.error("No payment reference");
@@ -43,7 +41,7 @@ export default function SubscriptionCallback() {
       try {
         if (reference) {
           const data = await verifySubscriptionPayment(reference as any);
-          console.log(data);
+          // console.log(data);
           if (data.success) {
             setIsLoading(false);
             toast.success("Payment confirmed – plan upgraded!");
@@ -72,7 +70,7 @@ export default function SubscriptionCallback() {
         }
       } catch (e: any) {
         setIsLoading(false);
-        console.log(e);
+        // console.log(e);
         toast.error(e?.response?.data?.message || "Verification error");
         navigate("/app/pricing", { replace: true });
       } finally {

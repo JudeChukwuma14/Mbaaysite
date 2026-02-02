@@ -99,7 +99,7 @@ const KYCVerification: React.FC = () => {
     }
   }, [showRejectedScreen, rejectionTimerDone]);
 
-  const documentTypes = ["National ID Card", "Passport", "Driver's License"];
+  const documentTypes = ["National ID", "Passport", "Driver's License"];
 
   const resetForm = () => {
     setCountry("");
@@ -163,8 +163,8 @@ const KYCVerification: React.FC = () => {
 
     try {
       setUploading(true);
-      const res = await vendorKycUpload(user.token, formData);
-      console.log("Upload success:", res);
+      await vendorKycUpload(user.token, formData);
+      // console.log("Upload success:", res);
 
       dispatch(updateKycVendor("Processing"));
       // refresh get vendor

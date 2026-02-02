@@ -774,8 +774,7 @@ export default function EditVendorProfile() {
       // Add return policy if it exists
       if (returnPolicy && user.token) {
         formData.append("returnPolicy", returnPolicy);
-        upload_return_policy(user.token, formData).then((res) => {
-          console.log(res);
+        upload_return_policy(user.token, formData).then(() => {
           queryClient.invalidateQueries({ queryKey: ["vendor"] });
         });
       }
@@ -1198,7 +1197,7 @@ export default function EditVendorProfile() {
           <h1 className="text-xl font-bold sm:text-2xl">Edit Vendor Profile</h1>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 bg-blue-100 rounded-full">
-              Be Mbaay {user.vendor?.kycStatus}
+              Be Mbaay {vendors?.kycStatus}
               <MdVerified size={20} className="text-blue-500" />
             </div>
           </div>
