@@ -23,7 +23,7 @@ const VendorLayout: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <div className={darkMode ? "dark" : ""}>
-        <div className="flex h-screen overflow-hidden">
+        <div className="flex h-screen">
           {/* Sidebar */}
           {/* <DashboardPaymentHandler /> */}
           <DashboardSidebar 
@@ -33,15 +33,13 @@ const VendorLayout: React.FC = () => {
           />
 
           {/* Main Content */}
-          <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          <div className="flex flex-col flex-1">
             {/* Header */}
             <VendorHeader onToggleSidebar={() => setIsSidebarOpen((v) => !v)} />{" "}
             {/* No need to pass darkMode here, since it can use the context */}
             {/* Scrollable Outlet */}
             <main className="flex-1 p-4 overflow-y-auto text-gray-900 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
-              <div className="max-w-full overflow-x-hidden">
-                <Outlet />
-              </div>
+              <Outlet />
 
               <span className="text-lg font-bold text-white">
                 <ChatWidget />
