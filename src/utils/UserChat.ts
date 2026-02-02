@@ -4,7 +4,7 @@ import axios from "axios";
 const API_CHAT_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/chat";
 const API_VENDOR_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/vendor";
 
-const getAuthToken = () => {
+export const getAuthToken = () => {
   const state = store.getState();
   const token = state.vendor.token || state.user.token || null;
   return token;
@@ -172,4 +172,66 @@ export const getAllVendor = async () => {
     },
   });
   return response.data;
+};
+
+// NEW: Get total unread chat count for a user
+export const getUnreadChatCount = async (userId: string) => {
+  const token = getAuthToken();
+  if (!token) throw new Error("No auth token found");
+  
+  try {
+    console.log(`[CHAT] Getting unread count for user: ${userId}`);
+    const response = await axios.get(
+      `${API_CHAT_BASE_URL}/get_unread_chat_count/${userId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    console.log("[CHAT] Unread count response:", {
+      status: response.status,
+      data: response.data,
+    });
+    
+    // Expecting a shape like { count: number }
+    return response.data;
+  } catch (error: any) {
+    console.error("Error getting unread chat count:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to get unread count"
+    );
+  }
+};
+
+// NEW: Mark a chat as read for a user
+export const markChatAsRead = async (chatId: string, userId: string) => {
+  const token = getAuthToken();
+  if (!token) throw new Error("No auth token found");
+  
+  try {
+    console.log(`[CHAT] Marking chat as read: ${chatId} for user: ${userId}`);
+    const response = await axios.patch(
+      `${API_CHAT_BASE_URL}/mark_chat_as_read/${chatId}/${userId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    
+    console.log("[CHAT] Mark as read response:", {
+      status: response.status,
+      data: response.data,
+    });
+    
+    return response.data;
+  } catch (error: any) {
+    console.error("Error marking chat as read:", error);
+    throw new Error(
+      error.response?.data?.message || "Failed to mark chat as read"
+    );
+  }
 };

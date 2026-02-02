@@ -1,0 +1,102 @@
+/* Masked icon utility for sidebar nav */
+.mask-icon {
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    display: inline-block;
+}
+
+/* Icon mask classes */
+.icon-home {
+    -webkit-mask-image: url(/assets/icons/home.svg);
+    mask-image: url(/assets/icons/home.svg);
+}
+.icon-timeline {
+    -webkit-mask-image: url(/assets/icons/timeline.svg);
+    mask-image: url(/assets/icons/timeline.svg);
+}
+.icon-chat {
+    -webkit-mask-image: url(/assets/icons/chat.svg);
+    mask-image: url(/assets/icons/chat.svg);
+}
+.icon-marketplace {
+    -webkit-mask-image: url(/assets/icons/marketplace.svg);
+    mask-image: url(/assets/icons/marketplace.svg);
+}
+.icon-services {
+    -webkit-mask-image: url(/assets/icons/services.svg);
+    mask-image: url(/assets/icons/services.svg);
+}
+.icon-subscription {
+    -webkit-mask-image: url(/assets/icons/subscription.svg);
+    mask-image: url(/assets/icons/subscription.svg);
+}
+.icon-settings {
+    -webkit-mask-image: url(/assets/icons/settings.svg);
+    mask-image: url(/assets/icons/settings.svg);
+}
+
+/* Sidebar & menu animations */
+@keyframes sidebarSlideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sidebar-panel.sidebar-opening {
+    animation: sidebarSlideIn 0.3s var(--ease, cubic-bezier(0.4, 0, 0.2, 1)) both;
+}
+
+.menu-link {
+    opacity: 1;
+}
+.sidebar-opening .menu-link {
+    animation: fadeSlideUp 0.45s both;
+}
+.sidebar-opening .menu-link:nth-child(1) {
+    animation-delay: 0.08s;
+}
+.sidebar-opening .menu-link:nth-child(2) {
+    animation-delay: 0.12s;
+}
+.sidebar-opening .menu-link:nth-child(3) {
+    animation-delay: 0.16s;
+}
+.sidebar-opening .menu-link:nth-child(4) {
+    animation-delay: 0.2s;
+}
+.sidebar-opening .menu-link:nth-child(5) {
+    animation-delay: 0.24s;
+}
+.sidebar-opening .menu-link:nth-child(6) {
+    animation-delay: 0.28s;
+}
+.sidebar-opening .menu-link:nth-child(7) {
+    animation-delay: 0.32s;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-panel.sidebar-opening,
+    .sidebar-opening .menu-link {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

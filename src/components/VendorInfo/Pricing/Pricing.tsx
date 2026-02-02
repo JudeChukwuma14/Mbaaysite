@@ -378,7 +378,33 @@ export default function UpgradePage() {
                 Start free and scale as you grow. Upgrade anytime to unlock more categories and powerful features.
               </motion.p>
 
-          
+              {/* Billing Toggle */}
+              {/* <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="hidden sm:flex items-center gap-1 p-1 bg-white rounded-xl shadow-lg border border-gray-200"
+              >
+                {(["Monthly", "Quarterly", "HalfYearly", "Yearly"] as const).map((cycle) => (
+                  <button
+                    key={cycle}
+                    onClick={() => setBillingCycle(cycle)}
+                    className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all whitespace-nowrap ${
+                      billingCycle === cycle
+                        ? "bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-md"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                  >
+                    {cycle === "HalfYearly" ? "6 Months" : cycle}
+                    {cycle !== "Monthly" && (
+                      <span className="ml-1 text-xs text-green-600 font-bold">
+                        -{discounts[cycle as keyof typeof discounts]}%
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </motion.div> */}
+
               {/* Mobile Billing Toggle */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

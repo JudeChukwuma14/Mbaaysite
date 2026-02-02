@@ -37,7 +37,10 @@ import { addToCart, updateCartQuantity } from "@/utils/cartApi";
 import { initializeSession } from "@/redux/slices/sessionSlice";
 import { get_single_vendor } from "@/utils/vendorApi";
 import { getProductReviews, Review } from "@/utils/reviewApi";
+import { follow_vendor, unfollow_vendor } from "@/utils/communityApi";
+import { getAuthToken } from "@/utils/UserChat";
 import { Button } from "@/components/ui/button";
+import { FaUserPlus, FaUserMinus } from "react-icons/fa";
 
 interface Product {
   _id: string;
@@ -67,6 +70,7 @@ interface Vendor {
   _id: string;
   storeName: string;
   avatar?: string;
+  followers?: string[];
 }
 
 const ProductDetails: React.FC = () => {
@@ -101,6 +105,7 @@ const ProductDetails: React.FC = () => {
   >("newest");
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
   const [expandedReviews, setExpandedReviews] = useState<string[]>([]);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -498,6 +503,49 @@ useEffect(() => {
       setQuantity(newQuantity);
     } catch (error) {
       toast.error("Failed to update quantity. Please try again.");
+    }
+  };
+
+  const isFollowing = user && vendor ? vendor.followers?.includes(user._id) : false;
+
+  const handleFollowToggle = async () => {
+    if (!user?._id || !vendor) {
+      toast.error("Please log in to follow vendors");
+      return;
+    }
+
+    setFollowLoading(true);
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
+
+      console.log("Attempting to", isFollowing ? "unfollow" : "follow", "vendor:", vendor._id);
+
+      if (isFollowing) {
+        await unfollow_vendor(token, vendor._id);
+        // Update local state - remove from followers
+        setVendor(prev => prev ? {
+          ...prev,
+          followers: prev.followers?.filter(id => id !== user._id) || []
+        } : null);
+        // toast.success(`Unfollowed ${vendor.storeName}`);
+      } else {
+        await follow_vendor(token, vendor._id);
+        // Update local state - add to followers
+        setVendor(prev => prev ? {
+          ...prev,
+          followers: [...(prev.followers || []), user._id]
+        } : null);
+        // toast.success(`Following ${vendor.storeName}`);
+      }
+    } catch (error: any) {
+      console.error("Error toggling follow:", error);
+      toast.error(error.response?.data?.message || error.message || "Failed to update follow status");
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -969,30 +1017,63 @@ useEffect(() => {
             {/* Vendor Information */}
             {vendor ? (
               <div className="mb-4">
-                <Link
-                  to={`/veiws-profile/${vendor._id}`}
-                  key={vendor._id}
-                  className="flex items-center gap-2 group"
-                  aria-label={`View ${vendor.storeName}'s profile`}
-                >
-                  {vendor.avatar ? (
-                    <img
-                      src={vendor.avatar}
-                      alt={`${vendor.storeName} logo`}
-                      className="object-cover w-8 h-8 transition-transform border border-gray-300 rounded-full group-hover:scale-110"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder.svg";
-                      }}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white bg-orange-500 border border-gray-300 rounded-full">
-                      {vendor.storeName.charAt(0).toUpperCase() || "V"}
-                    </div>
+                <div className="flex items-center justify-between gap-4">
+                  <Link
+                    to={`/veiws-profile/${vendor._id}`}
+                    key={vendor._id}
+                    className="flex items-center gap-2 group flex-1"
+                    aria-label={`View ${vendor.storeName}'s profile`}
+                  >
+                    {vendor.avatar ? (
+                      <img
+                        src={vendor.avatar}
+                        alt={`${vendor.storeName} logo`}
+                        className="object-cover w-8 h-8 transition-transform border border-gray-300 rounded-full group-hover:scale-110"
+                        onError={(e) => {
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center w-8 h-8 text-sm font-bold text-white bg-orange-500 border border-gray-300 rounded-full">
+                        {vendor.storeName.charAt(0).toUpperCase() || "V"}
+                      </div>
+                    )}
+                    <span className="text-sm font-medium text-gray-700 group-hover:text-orange-600 line-clamp-1">
+                      Sold by {vendor.storeName}
+                    </span>
+                  </Link>
+
+                  {/* Follow Button */}
+                  {user && user._id !== vendor._id && (
+                    <button
+                      onClick={handleFollowToggle}
+                      disabled={followLoading}
+                      className={`flex items-center gap-2 px-3 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                        isFollowing
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-orange-500 hover:bg-orange-600"
+                      } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      {followLoading ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : isFollowing ? (
+                        <FaUserMinus />
+                      ) : (
+                        <FaUserPlus />
+                      )}
+                      {isFollowing ? "Unfollow" : "Follow"}
+                    </button>
                   )}
-                  <span className="text-sm font-medium text-gray-700 group-hover:text-orange-600 line-clamp-1">
-                    Sold by {vendor.storeName}
-                  </span>
-                </Link>
+                  {!user && (
+                    <Link
+                      to="/signin"
+                      className="flex items-center gap-2 px-3 py-2 font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-300"
+                    >
+                      <FaUserPlus />
+                      Follow
+                    </Link>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="mb-4 text-sm text-gray-500">
