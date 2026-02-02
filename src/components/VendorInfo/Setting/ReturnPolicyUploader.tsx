@@ -253,19 +253,19 @@ export default function ReturnPolicyUploader({
     const fileIcon = getFileIcon(fileName);
 
     return (
-      <div className="flex items-center justify-between bg-gray-100 p-3 rounded mt-2">
+      <div className="flex items-center justify-between bg-gray-100 p-2 sm:p-3 rounded mt-2 gap-2">
         <ToastContainer />
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xl flex-shrink-0">{fileIcon}</span>
-          <span className="text-sm truncate">{fileName}</span>
+          <span className="text-lg sm:text-xl flex-shrink-0">{fileIcon}</span>
+          <span className="text-xs sm:text-sm truncate">{fileName}</span>
         </div>
         <motion.button
-          className="text-red-500 hover:text-red-700 flex-shrink-0 ml-2"
+          className="text-red-500 hover:text-red-700 flex-shrink-0 p-1 rounded hover:bg-red-50 transition-colors"
           onClick={removeReturnPolicy}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <IoMdClose size={18} />
+          <IoMdClose size={16} className="sm:w-4 sm:h-4" />
         </motion.button>
       </div>
     );
@@ -273,36 +273,36 @@ export default function ReturnPolicyUploader({
 
   return (
     <motion.div
-      className="bg-white p-4 sm:p-5 rounded-lg shadow space-y-4"
+      className="bg-white p-3 sm:p-4 md:p-5 rounded-lg shadow space-y-3 sm:space-y-4"
       initial={{ x: -50, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ delay: 0.8 }}
     >
-      <h2 className="text-lg font-semibold">Return Policy</h2>
+      <h2 className="text-base sm:text-lg font-semibold">Return Policy</h2>
 
       {returnPolicyName || vendors?.returnPolicy ? (
         <>
           {renderFilePreview()}
           {returnPolicyText && returnPolicyText.startsWith("File uploaded:") ? (
-            <div className="mt-2 p-3 bg-gray-50 rounded border text-sm">
+            <div className="mt-2 p-2 sm:p-3 bg-gray-50 rounded border text-xs sm:text-sm">
               {returnPolicyText}
             </div>
           ) : returnPolicyText ? (
-            <div className="mt-2 p-3 bg-gray-50 rounded border text-sm max-h-40 overflow-y-auto">
-              <pre className="whitespace-pre-wrap">{returnPolicyText}</pre>
+            <div className="mt-2 p-2 sm:p-3 bg-gray-50 rounded border text-xs sm:text-sm max-h-32 sm:max-h-40 overflow-y-auto">
+              <pre className="whitespace-pre-wrap break-words">{returnPolicyText}</pre>
             </div>
           ) : null}
         </>
       ) : (
         <div
-          className="border-dashed border-2 border-orange-500 p-5 rounded-lg text-center space-y-2 cursor-pointer"
+          className="border-dashed border-2 border-orange-500 p-3 sm:p-4 md:p-5 rounded-lg text-center space-y-2 cursor-pointer hover:border-orange-600 hover:bg-orange-50 transition-colors"
           onClick={() => returnPolicyRef.current?.click()}
           onDragOver={handleDragOver}
           onDrop={handleFileDrop}
         >
-          <FiUploadCloud size={40} className="mx-auto text-gray-400" />
-          <p>Click to upload or drag and drop</p>
-          <p className="text-xs text-gray-500">
+          <FiUploadCloud size={32} className="mx-auto text-gray-400 sm:w-8 sm:h-8 md:w-10 md:h-10" />
+          <p className="text-sm sm:text-base">Click to upload or drag and drop</p>
+          <p className="text-xs text-gray-500 px-2">
             Upload your return policy (.txt, .pdf, .doc, .docx)
           </p>
           <motion.input

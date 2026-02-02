@@ -333,13 +333,23 @@ export default function EditVendorProfile() {
   useEffect(() => {
     if (typeof window !== "undefined" && !imagesLoaded) {
       try {
+        // Prioritize vendor data over localStorage
+        const vendorProfileImage = vendors?.avatar;
+        const vendorBannerImage = vendors?.businessLogo;
+        
         const storedProfileImage = localStorage.getItem("vendorAvatar");
         const storedBannerImage = localStorage.getItem("businessLogo");
 
-        if (storedProfileImage) {
+        // Use vendor data if available, otherwise fallback to localStorage
+        if (vendorProfileImage) {
+          setProfileImage(vendorProfileImage);
+        } else if (storedProfileImage) {
           setProfileImage(storedProfileImage);
         }
-        if (storedBannerImage) {
+        
+        if (vendorBannerImage) {
+          setBannerImage(vendorBannerImage);
+        } else if (storedBannerImage) {
           setBannerImage(storedBannerImage);
         }
 
@@ -348,7 +358,7 @@ export default function EditVendorProfile() {
         console.error("Error loading images from localStorage:", error);
       }
     }
-  }, [imagesLoaded]);
+  }, [imagesLoaded, vendors]);
 
   // Auto-open/scroll when navigated with ?open=account or ?open=return-policy
   useEffect(() => {
@@ -403,8 +413,17 @@ export default function EditVendorProfile() {
         accountNumber: vendors.bankAccount?.accountNumber || prev.accountNumber,
         bankName: vendors.bankAccount?.bankName || prev.bankName,
       }));
+
+      // Set profile and banner images from vendor data
+      if (vendors.avatar && !profileImage) {
+        setProfileImage(vendors.avatar);
+      }
+      if (vendors.businessLogo && !bannerImage) {
+        setBannerImage(vendors.businessLogo);
+      }
     }
   }, [vendors]);
+
   // Enhanced useEffect to listen for Mbaay policy upload events
   useEffect(() => {
     const handleMbaayPolicyUpload = (event: CustomEvent) => {

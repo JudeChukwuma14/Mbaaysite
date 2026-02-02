@@ -298,7 +298,7 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
           <AnimatePresence>
             {showNotifications && (
               <motion.div
-                className={`fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 mt-2 md:mt-2 w-auto md:w-80 lg:w-96 shadow-xl rounded-xl overflow-hidden border z-50 max-h-[80vh] md:max-h-96 ${
+              className={`fixed md:absolute inset-x-4 md:inset-x-auto md:right-0 mt-2 md:mt-2 w-full md:w-80 lg:w-96 shadow-xl rounded-xl overflow-hidden border z-50 max-h-[85vh] md:max-h-[500px] ${
                   darkMode
                     ? "bg-gray-800 text-white border-gray-700"
                     : "bg-white text-gray-900 border-gray-200"
@@ -492,14 +492,14 @@ const VendorHeader: React.FC<{ onToggleSidebar?: () => void }> = ({
           </AnimatePresence>
         </div>
         {!vendors?.avatar ? (
-          <div className="w-[50px] h-[50px] rounded-[50%] bg-orange-300 text-white flex items-center justify-center">
+         <div className="w-10 h-10 rounded-full bg-orange-300 text-white flex items-center justify-center flex-shrink-0">
             {vendors?.storeName?.charAt(0)?.toUpperCase()}
           </div>
         ) : (
           <img
             src={vendors?.avatar || "/placeholder.svg"}
             alt="Vendor"
-            className="w-10 h-10 rounded-full"
+               className="w-10 h-10 rounded-full object-cover flex-shrink-0 border-0"
           />
         )}
       </div>

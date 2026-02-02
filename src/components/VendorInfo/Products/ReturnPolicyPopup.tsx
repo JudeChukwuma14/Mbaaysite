@@ -165,46 +165,46 @@ ReturnPolicyPopupProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <motion.div
-        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+        className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-auto max-h-[90vh] overflow-y-auto"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-red-500">
+        <div className="flex justify-between items-center mb-3 sm:mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-red-500">
             Return Policy Required
           </h2>
           <motion.button
             onClick={() => setShowReturnPolicyPopup(false)}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100 transition-colors"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <IoMdClose size={24} />
+            <IoMdClose size={20} className="sm:w-5 sm:h-5" />
           </motion.button>
         </div>
 
-        <div className="mb-6 space-y-4">
-          <p className="text-gray-700">
+        <div className="mb-4 sm:mb-6 space-y-3 sm:space-y-4">
+          <p className="text-gray-700 text-sm sm:text-base">
             You must have a return policy before adding products. Choose one of
             these options:
           </p>
 
-          <div className="border rounded-lg p-4">
-            <h3 className="font-medium text-lg mb-2">
+          <div className="border rounded-lg p-3 sm:p-4">
+            <h3 className="font-medium text-base sm:text-lg mb-2">
               Option 1: Use Mbaay's Default Policy
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
               Download and automatically upload our standard return policy that
               meets all platform requirements.
             </p>
             <button
               onClick={handleDownloadPolicy}
               disabled={isDownloading}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors w-full justify-center ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-colors w-full justify-center text-sm sm:text-base ${
                 hasDownloaded
                   ? "bg-green-50 text-green-600 border border-green-200"
                   : "bg-blue-50 text-blue-600 hover:bg-blue-100"
@@ -212,39 +212,42 @@ ReturnPolicyPopupProps) {
             >
               {isDownloading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                  Downloading & Uploading...
+                  <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                  <span className="hidden sm:inline">Downloading & Uploading...</span>
+                  <span className="sm:hidden">Downloading...</span>
                 </>
               ) : hasDownloaded ? (
                 <>
-                  <FiCheck />
-                  Policy Downloaded & Uploaded Successfully
+                  <FiCheck className="w-4 h-4" />
+                  <span className="hidden sm:inline">Policy Downloaded & Uploaded Successfully</span>
+                  <span className="sm:hidden">Downloaded & Uploaded</span>
                 </>
               ) : (
                 <>
-                  <FiDownload />
-                  Accept and Download Mbaay Return Policy
+                  <FiDownload className="w-4 h-4" />
+                  <span className="hidden sm:inline">Accept and Download Mbaay Return Policy</span>
+                  <span className="sm:hidden">Accept Mbaay Policy</span>
                 </>
               )}
             </button>
-            <p className="text-xs text-gray-500 mt-2">
+            <p className="text-xs text-gray-500 mt-2 leading-relaxed">
               {hasDownloaded
                 ? "The Mbaay return policy has been automatically uploaded to your profile."
                 : "By using this option, you agree to apply Mbaay's default return policy to your store and it will be automatically uploaded to your profile."}
             </p>
           </div>
 
-          <div className="border rounded-lg p-4">
-            <h3 className="font-medium text-lg mb-2">
+          <div className="border rounded-lg p-3 sm:p-4">
+            <h3 className="font-medium text-base sm:text-lg mb-2">
               Option 2: Upload Your Own Policy
             </h3>
-            <p className="text-sm text-gray-600 mb-3">
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
               Upload a custom return policy that meets or exceeds Mbaay's
               minimum standards.
             </p>
             <button
               onClick={handleUploadClick}
-              className="w-full px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+              className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base"
             >
               Upload Custom Policy
             </button>
@@ -253,7 +256,7 @@ ReturnPolicyPopupProps) {
 
         <div className="flex justify-end">
           <button
-            className="px-4 py-2 text-gray-500 hover:text-gray-700"
+            className="px-3 sm:px-4 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded transition-colors text-sm sm:text-base"
             onClick={() => setShowReturnPolicyPopup(false)}
           >
             Cancel

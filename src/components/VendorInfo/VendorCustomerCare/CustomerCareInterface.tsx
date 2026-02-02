@@ -50,6 +50,8 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const hasAutoResponse = useRef<boolean>(false);
@@ -247,6 +249,20 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
       }
     });
 
+    socketRef.current.on("typing", ({ chatId: typingChatId, sender }) => {
+      console.log(`💬 ${sender} is typing in chat ${typingChatId}`);
+      if (typingChatId === chatId && sender !== senderId) {
+        setOtherUserTyping(sender);
+      }
+    });
+
+    socketRef.current.on("stopTyping", ({ chatId: typingChatId, sender }) => {
+      console.log(`🛑 ${sender} stopped typing in chat ${typingChatId}`);
+      if (typingChatId === chatId && sender !== senderId) {
+        setOtherUserTyping(null);
+      }
+    });
+
     return () => {
       socketRef.current?.emit("leaveChat", chatId);
       socketRef.current?.disconnect();
@@ -424,9 +440,33 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   };
 
+  // Handle input change with typing indicators
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    
+    if (!isTyping && e.target.value.trim() && chatId) {
+      setIsTyping(true);
+      socketRef.current?.emit("typing", { chatId, sender: senderId });
+    }
+  };
+
+  // Handle typing timeout
+  useEffect(() => {
+    if (isTyping) {
+      const timeout = setTimeout(() => {
+        setIsTyping(false);
+        socketRef.current?.emit("stopTyping", { chatId, sender: senderId });
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [inputValue, isTyping, chatId, senderId]);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      setIsTyping(false);
+      socketRef.current?.emit("stopTyping", { chatId, sender: senderId });
       handleSendMessage();
     }
   };
@@ -558,6 +598,22 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             </div>
           ))}
         </div>
+        
+        {/* Typing Indicator */}
+        {otherUserTyping && (
+          <div className="flex justify-start mt-2">
+            <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+                <span className="text-xs">{otherUserTyping} is typing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       {/* Input */}
@@ -565,7 +621,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         <div className="flex items-center space-x-1">
           <input
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-1 w-full px-3 py-1 text-base transition-colors bg-transparent border rounded-md shadow-sm h-9 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"

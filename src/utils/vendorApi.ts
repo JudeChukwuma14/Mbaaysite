@@ -328,7 +328,8 @@ const REVIEWS_BASE_URL = "https://ilosiwaju-mbaay-2025.com/api/v1/reviews";
  */
 export const replyToReview = async (
   reviewId: string,
-  payload: { message: string; isPublic?: boolean; messageType?: string }
+  payload: { message: string; isPublic?: boolean; messageType?: string },
+  token: string | null
 ) => {
   try {
     // The backend expects reviewId in both the URL params and request body
@@ -340,6 +341,7 @@ export const replyToReview = async (
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
       }
     );

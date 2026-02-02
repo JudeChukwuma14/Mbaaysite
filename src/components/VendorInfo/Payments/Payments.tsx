@@ -1,6 +1,21 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CreditCard, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { 
+  CreditCard, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle, 
+  TrendingUp, 
+  TrendingDown,
+  Calendar,
+  Filter,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownRight
+} from "lucide-react";
 import { useSelector } from "react-redux";
 import { useVendorPayments } from "@/hook/useCustomer_Payment";
 
@@ -81,339 +96,488 @@ const PaymentsPage = () => {
 
   /* ---------- skeletons ---------- */
   const SkeletonCard = () => (
-    <div className="p-5 bg-white rounded-lg shadow animate-pulse">
-      <div className="w-3/4 h-4 mb-2 bg-gray-200 rounded"></div>
-      <div className="w-1/2 h-6 bg-gray-200 rounded"></div>
-    </div>
+    <motion.div 
+      className="p-4 sm:p-6 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg border border-gray-100 animate-pulse"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-20 h-4 bg-gray-200 rounded"></div>
+        <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+      </div>
+      <div className="w-32 h-8 bg-gray-200 rounded mb-2"></div>
+      <div className="w-24 h-3 bg-gray-200 rounded"></div>
+    </motion.div>
   );
 
   const SkeletonRow = () => (
-    <tr className="border-b animate-pulse">
+    <motion.tr className="border-b border-gray-100 animate-pulse" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       {Array.from({ length: 5 }).map((_, i) => (
-        <td key={i} className="px-4 py-3">
+        <td key={i} className="px-4 py-4">
           <div className="w-full h-4 bg-gray-200 rounded"></div>
         </td>
       ))}
-    </tr>
+    </motion.tr>
   );
 
   /* ---------- render ---------- */
   if (isLoading)
     return (
-      <main className="p-5 overflow-x-hidden max-w-full">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-5">
-          <SkeletonCard />
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-        <div className="p-5 bg-white rounded-lg shadow">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b">
-                <th>Model Type</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <SkeletonRow key={i} />
-              ))}
-            </tbody>
-          </table>
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto">
+          <motion.div 
+            className="mb-8"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Payment Analytics</h1>
+            <p className="text-gray-600">Track your payment history and insights</p>
+          </motion.div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+          
+          <motion.div 
+            className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+              <div className="w-32 h-6 bg-gray-200 rounded"></div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left"><div className="w-20 h-4 bg-gray-200 rounded"></div></th>
+                    <th className="px-4 py-3 text-left"><div className="w-16 h-4 bg-gray-200 rounded"></div></th>
+                    <th className="px-4 py-3 text-left"><div className="w-16 h-4 bg-gray-200 rounded"></div></th>
+                    <th className="px-4 py-3 text-left"><div className="w-16 h-4 bg-gray-200 rounded"></div></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
         </div>
       </main>
     );
 
   if (error)
     return (
-      <main className="flex flex-col items-center justify-center p-5 text-red-500 h-96">
-        <AlertTriangle size={48} className="mb-3" />
-        <p className="text-lg">Couldn’t load payments.</p>
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-red-100 p-8"
+          >
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle size={32} className="text-red-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Unable to Load Payments</h2>
+            <p className="text-gray-600 mb-6">We couldn't retrieve your payment data. Please try again later.</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              Retry
+            </button>
+          </motion.div>
+        </div>
       </main>
     );
 
   if (!invoices.length)
     return (
-      <main className="flex flex-col items-center justify-center p-5 text-gray-400 h-96">
-        <CreditCard size={48} className="mb-3" />
-        <p className="text-lg">No invoices yet.</p>
+      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8 flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8"
+          >
+            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CreditCard size={32} className="text-blue-500" />
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Payments Yet</h2>
+            <p className="text-gray-600">Your payment history will appear here once you start receiving payments.</p>
+          </motion.div>
+        </div>
       </main>
     );
 
   return (
-    <main className="p-5 overflow-x-hidden max-w-full">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
-        <motion.div
-          className="flex items-center justify-between p-5 text-blue-500 bg-white rounded-lg shadow"
-          whileHover={{ scale: 1.02 }}
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 p-4 sm:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <motion.div 
+          className="mb-8"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          <div>
-            <h3 className="text-sm text-gray-500">Total Invoices</h3>
-            <p className="text-2xl font-bold text-gray-800">
-              ${totalAmount.toLocaleString()}
-            </p>
-          </div>
-          <CreditCard className="w-8 h-8" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Payment Analytics</h1>
+          <p className="text-gray-600">Track your payment history and financial insights</p>
         </motion.div>
 
-        <motion.div
-          className="flex items-center justify-between p-5 text-green-500 bg-white rounded-lg shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <div>
-            <h3 className="text-sm text-gray-500">Paid</h3>
-            <p className="text-2xl font-bold text-gray-800">
-              ${paidAmount.toLocaleString()}
-            </p>
-          </div>
-          <CheckCircle className="w-8 h-8" />
-        </motion.div>
-
-        <motion.div
-          className="flex items-center justify-between p-5 text-red-500 bg-white rounded-lg shadow"
-          whileHover={{ scale: 1.02 }}
-        >
-          <div>
-            <h3 className="text-sm text-gray-500">Unpaid</h3>
-            <p className="text-2xl font-bold text-gray-800">
-              ${unpaidAmount.toLocaleString()}
-            </p>
-          </div>
-          <XCircle className="w-8 h-8" />
-        </motion.div>
-      </div>
-
-      {/* Filter */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <div className="flex flex-wrap gap-2">
-          {(["All status", "Paid", "Unpaid"] as const).map((status) => (
-            <button
-              key={status}
-              onClick={() => {
-                setFilter(status);
-                setCurrentPage(1);
-              }}
-              className={`px-4 py-2 rounded text-sm font-medium transition ${
-                filter === status
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-            >
-              {status}
-            </button>
-          ))}
-        </div>
-        <input
-          type="text"
-          placeholder="Search Product..."
-          className="w-full sm:w-64 px-3 py-2 border rounded-lg outline-orange-500"
-        />
-      </div>
-
-      {/* Table */}
-      <div className="p-5 overflow-x-auto bg-white rounded-lg shadow">
-        {/* Desktop Table View */}
-        <div className="hidden overflow-x-auto md:block">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b">
-                <th className="px-4 py-2">Model Type</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center">
-                    <div className="flex flex-col items-center text-gray-500">
-                      <CreditCard size={40} className="mb-2" />
-                      <p className="text-sm font-medium">
-                        No payments found for "{filter.toLowerCase()}".
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                <AnimatePresence>
-                  {paginated.map((inv) => (
-                    <motion.tr
-                      key={inv.id}
-                      className="border-b hover:bg-gray-50"
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -6 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <td className="px-4 py-3">
-                        <div className="font-medium capitalize">{inv.modelType}</div>
-                      </td>
-                      <td>{inv.date}</td>
-                      <td>${inv.amount.toLocaleString()}</td>
-                      <td>
-                        <span
-                          className={`px-3 py-1 rounded-lg text-white text-xs font-semibold ${
-                            inv.status === "Paid" ? "bg-green-500" : "bg-red-500"
-                          }`}
-                        >
-                          {inv.status}
-                        </span>
-                      </td>
-                    </motion.tr>
-                  ))}
-                </AnimatePresence>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Card View */}
-        <div className="grid gap-4 md:hidden">
-          {paginated.length === 0 ? (
-            <div className="py-12 text-center">
-              <div className="flex flex-col items-center text-gray-500">
-                <CreditCard size={40} className="mb-2" />
-                <p className="text-sm font-medium">
-                  No payments found for "{filter.toLowerCase()}".
-                </p>
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 gap-4 sm:gap-6 mb-8 lg:grid-cols-3">
+          <motion.div
+            className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-xl p-6 text-white"
+            whileHover={{ scale: 1.02, y: -2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-blue-400 rounded-full opacity-20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Wallet className="w-6 h-6" />
+                </div>
+                <TrendingUp className="w-5 h-5 text-blue-100" />
+              </div>
+              <h3 className="text-blue-100 text-sm font-medium mb-1">Total Revenue</h3>
+              <p className="text-2xl sm:text-3xl font-bold">
+                ${totalAmount.toLocaleString()}
+              </p>
+              <div className="mt-3 flex items-center text-xs text-blue-100">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>All time earnings</span>
               </div>
             </div>
-          ) : (
-            <AnimatePresence>
-              {paginated.map((inv) => (
-                <motion.div
-                  key={inv.id}
-                  className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <div>
-                      <span className="text-xs text-gray-500">Model Type</span>
-                      <p className="font-medium capitalize">{inv.modelType}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-gray-500">Date</span>
-                      <p className="font-medium">{inv.date}</p>
-                    </div>
+          </motion.div>
+
+          <motion.div
+            className="relative overflow-hidden bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-xl p-6 text-white"
+            whileHover={{ scale: 1.02, y: -2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-green-400 rounded-full opacity-20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+                <TrendingUp className="w-5 h-5 text-green-100" />
+              </div>
+              <h3 className="text-green-100 text-sm font-medium mb-1">Paid Amount</h3>
+              <p className="text-2xl sm:text-3xl font-bold">
+                ${paidAmount.toLocaleString()}
+              </p>
+              <div className="mt-3 flex items-center text-xs text-green-100">
+                <ArrowUpRight className="w-3 h-3 mr-1" />
+                <span>Successfully received</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            className="relative overflow-hidden bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-xl p-6 text-white"
+            whileHover={{ scale: 1.02, y: -2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-orange-400 rounded-full opacity-20"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <XCircle className="w-6 h-6" />
+                </div>
+                <TrendingDown className="w-5 h-5 text-orange-100" />
+              </div>
+              <h3 className="text-orange-100 text-sm font-medium mb-1">Pending Amount</h3>
+              <p className="text-2xl sm:text-3xl font-bold">
+                ${unpaidAmount.toLocaleString()}
+              </p>
+              <div className="mt-3 flex items-center text-xs text-orange-100">
+                <ArrowDownRight className="w-3 h-3 mr-1" />
+                <span>Awaiting payment</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Filter and Search */}
+        <motion.div 
+          className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 sm:p-6 mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Filter className="w-5 h-5 text-gray-500" />
+              <div className="flex flex-wrap gap-2">
+                {(["All status", "Paid", "Unpaid"] as const).map((status) => (
+                  <motion.button
+                    key={status}
+                    onClick={() => {
+                      setFilter(status);
+                      setCurrentPage(1);
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      filter === status
+                        ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {status}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search transactions..."
+                className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Payment Table */}
+        <motion.div 
+          className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="p-4 sm:p-6 border-b border-gray-100">
+            <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-gray-500" />
+              Transaction History
+            </h2>
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-100">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product Type</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-16">
+                      <div className="flex flex-col items-center text-gray-500">
+                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                          <CreditCard size={24} className="text-gray-400" />
+                        </div>
+                        <p className="text-sm font-medium">
+                          No transactions found for "{filter.toLowerCase()}".
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">Try adjusting your filters</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <AnimatePresence>
+                    {paginated.map((inv, index) => (
+                      <motion.tr
+                        key={inv.id}
+                        className="hover:bg-gray-50 transition-colors"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center mr-3">
+                              <Wallet className="w-4 h-4 text-blue-600" />
+                            </div>
+                            <span className="font-medium text-gray-900 capitalize">{inv.modelType}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{inv.date}</td>
+                        <td className="px-6 py-4">
+                          <span className="font-semibold text-gray-900">${inv.amount.toLocaleString()}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                              inv.status === "Paid" 
+                                ? "bg-green-100 text-green-800 border border-green-200" 
+                                : "bg-orange-100 text-orange-800 border border-orange-200"
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                              inv.status === "Paid" ? "bg-green-500" : "bg-orange-500"
+                            }`}></span>
+                            {inv.status}
+                          </span>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden p-4 sm:p-6 space-y-4">
+            {paginated.length === 0 ? (
+              <div className="py-12 text-center">
+                <div className="flex flex-col items-center text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <CreditCard size={24} className="text-gray-400" />
                   </div>
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <div>
-                      <span className="text-xs text-gray-500">Amount</span>
-                      <p className="font-medium text-lg">${inv.amount.toLocaleString()}</p>
-                    </div>
-                    <div>
-                      <span className="text-xs text-gray-500">Status</span>
+                  <p className="text-sm font-medium">
+                    No transactions found for "{filter.toLowerCase()}".
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Try adjusting your filters</p>
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence>
+                {paginated.map((inv, index) => (
+                  <motion.div
+                    key={inv.id}
+                    className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-xl p-4 shadow-sm"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, delay: index * 0.05 }}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-3">
+                          <Wallet className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900 capitalize">{inv.modelType}</p>
+                          <p className="text-xs text-gray-500">{inv.date}</p>
+                        </div>
+                      </div>
                       <span
-                        className={`inline-block px-3 py-1 rounded-lg text-white text-xs font-semibold ${
-                          inv.status === "Paid" ? "bg-green-500" : "bg-red-500"
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          inv.status === "Paid" 
+                            ? "bg-green-100 text-green-800 border border-green-200" 
+                            : "bg-orange-100 text-orange-800 border border-orange-200"
                         }`}
                       >
+                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                          inv.status === "Paid" ? "bg-green-500" : "bg-orange-500"
+                        }`}></span>
                         {inv.status}
                       </span>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          )}
-        </div>
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <span className="text-sm text-gray-500">Amount</span>
+                      <span className="font-bold text-lg text-gray-900">${inv.amount.toLocaleString()}</span>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
+          </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-4">
-            <div className="text-sm text-gray-600">
-              Showing <span className="font-medium">{(validCurrentPage - 1) * rowsPerPage + 1}</span> to{' '}
-              <span className="font-medium">
-                {Math.min(validCurrentPage * rowsPerPage, sortedFiltered.length)}
-              </span>{' '}
-              of <span className="font-medium">{sortedFiltered.length}</span> {sortedFiltered.length === 1 ? 'result' : 'results'}
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Page Size Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setPageSizeOpen(!pageSizeOpen)}
-                  onBlur={() => setTimeout(() => setPageSizeOpen(false), 200)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  aria-haspopup="listbox"
-                  aria-expanded={pageSizeOpen}
-                >
-                  {rowsPerPage} per page
-                  <svg
-                    className={`w-4 h-4 transition-transform ${pageSizeOpen ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {pageSizeOpen && (
-                  <div 
-                    className="absolute bottom-full mb-1 right-0 z-10 w-40 py-1 bg-white rounded-md shadow-lg border border-gray-200"
-                    role="listbox"
-                  >
-                    {[4, 8, 12, 20].map((size) => (
-                      <button
-                        key={size}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setRowsPerPage(size);
-                          setCurrentPage(1);
-                          setPageSizeOpen(false);
-                        }}
-                        className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 ${
-                          rowsPerPage === size ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
-                        }`}
-                        role="option"
-                        aria-selected={rowsPerPage === size}
-                      >
-                        {size} per page
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Pagination Buttons */}
-              <div className="flex items-center border rounded-lg overflow-hidden divide-x">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={validCurrentPage === 1}
-                  className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  aria-label="Previous page"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                
-                <div className="px-4 py-2 text-sm text-gray-700 bg-gray-50">
-                  {validCurrentPage} / {totalPages}
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="p-4 sm:p-6 border-t border-gray-100 bg-gray-50">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-600">
+                  Showing <span className="font-medium text-gray-900">{(validCurrentPage - 1) * rowsPerPage + 1}</span> to{' '}
+                  <span className="font-medium text-gray-900">
+                    {Math.min(validCurrentPage * rowsPerPage, sortedFiltered.length)}
+                  </span>{' '}
+                  of <span className="font-medium text-gray-900">{sortedFiltered.length}</span> {sortedFiltered.length === 1 ? 'result' : 'results'}
                 </div>
                 
-                <button
-                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                  disabled={validCurrentPage === totalPages}
-                  className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  aria-label="Next page"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* Page Size Selector */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setPageSizeOpen(!pageSizeOpen)}
+                      onBlur={() => setTimeout(() => setPageSizeOpen(false), 200)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                      aria-haspopup="listbox"
+                      aria-expanded={pageSizeOpen}
+                    >
+                      {rowsPerPage} per page
+                      <ChevronLeft
+                        className={`w-4 h-4 transition-transform ${pageSizeOpen ? 'rotate-90' : ''}`}
+                      />
+                    </button>
+                    {pageSizeOpen && (
+                      <div 
+                        className="absolute bottom-full mb-2 right-0 z-20 w-40 py-2 bg-white rounded-lg shadow-xl border border-gray-200"
+                        role="listbox"
+                      >
+                        {[4, 8, 12, 20].map((size) => (
+                          <button
+                            key={size}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setRowsPerPage(size);
+                              setCurrentPage(1);
+                              setPageSizeOpen(false);
+                            }}
+                            className={`w-full px-4 py-2 text-sm text-left hover:bg-gray-50 transition-colors ${
+                              rowsPerPage === size ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-700'
+                            }`}
+                            role="option"
+                            aria-selected={rowsPerPage === size}
+                          >
+                            {size} per page
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pagination Buttons */}
+                  <div className="flex items-center bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={validCurrentPage === 1}
+                      className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      aria-label="Previous page"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    
+                    <div className="px-4 py-2 text-sm font-medium text-gray-900 bg-gray-50 border-l border-r border-gray-200">
+                      {validCurrentPage} / {totalPages}
+                    </div>
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={validCurrentPage === totalPages}
+                      className="p-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                      aria-label="Next page"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </motion.div>
       </div>
     </main>
   );
