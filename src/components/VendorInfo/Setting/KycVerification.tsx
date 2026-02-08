@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { updateKycVendor } from "@/redux/slices/vendorSlice";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface CountryOption {
   code: string;
@@ -44,9 +44,9 @@ const KYCVerification: React.FC = () => {
   const [showRejectedScreen, setShowRejectedScreen] = useState(false);
   const [rejectionTimerDone, setRejectionTimerDone] = useState(false);
   const dispatch = useDispatch();
+  const queryClient = useQueryClient();
 
   const user = useSelector((state: RootState) => state.vendor);
-  console.log("User from Redux:", user);
 
   // Properly typed useQuery hook
   const { data: vendorData, isLoading: vendorLoading } = useQuery({
@@ -54,7 +54,6 @@ const KYCVerification: React.FC = () => {
     queryFn: () => get_single_vendor(user?.token || ""),
     enabled: !!user?.token,
   });
-  console.log(vendorData);
 
   const vendor = vendorData;
   const kycStatus = vendor?.kycStatus || "Pending";
@@ -100,7 +99,7 @@ const KYCVerification: React.FC = () => {
     }
   }, [showRejectedScreen, rejectionTimerDone]);
 
-  const documentTypes = ["National ID Card", "Passport", "Driver's License"];
+  const documentTypes = ["National ID", "Passport", "Driver's License"];
 
   const resetForm = () => {
     setCountry("");
@@ -164,10 +163,12 @@ const KYCVerification: React.FC = () => {
 
     try {
       setUploading(true);
-      const res = await vendorKycUpload(user.token, formData);
-      console.log("Upload success:", res);
+      await vendorKycUpload(user.token, formData);
+      // console.log("Upload success:", res);
 
       dispatch(updateKycVendor("Processing"));
+      // refresh get vendor
+       queryClient.invalidateQueries({ queryKey: ["vendors"] });
       toast.success("Documents uploaded successfully! Under review.");
 
       // Reset form after successful upload

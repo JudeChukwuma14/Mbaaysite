@@ -6,16 +6,15 @@ import { useDarkMode } from "../Context/DarkModeContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ChatWidget } from "./VendorCustomerCare/CustomerCareWidget";
-import { useSelector } from "react-redux";
-import { RootState } from "@/redux/store";
+// import { useSelector } from "react-redux";
+// import { RootState } from "@/redux/store";
 // import DashboardPaymentHandler from "./DashboardPaymentHandler";
 // Import dark mode context
 
 
 const VendorLayout: React.FC = () => {
   const { darkMode } = useDarkMode(); // Use context instead of local state
-  const vendor = useSelector((state: RootState) => state.vendor);
-  console.log("Vendor info",vendor)
+  // const vendor = useSelector((state: RootState) => state.vendor);
 
   const queryClient = new QueryClient();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

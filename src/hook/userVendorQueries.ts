@@ -201,13 +201,15 @@ export const useReplyToReview = () => {
     mutationFn: async ({
       reviewId,
       payload,
+      token,
     }: {
       reviewId: string;
       payload: { message: string; isPublic?: boolean; reviewId?: string };
+      token?: string | null;
     }) => {
       if (!payload?.message || !payload.message.trim())
         throw new Error("Reply message is required");
-      return replyToReview(reviewId, payload);
+      return replyToReview(reviewId, payload, token ?? null);
     },
     // Optimistic update: update all vendorReviews queries so UI updates regardless of key shape
     onMutate: async (variables) => {

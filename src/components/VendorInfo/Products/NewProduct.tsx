@@ -34,7 +34,7 @@ const NewProduct = () => {
     queryFn: () => getVendorProducts(user.token),
   });
 
-  console.log("Vendor data", vendors);
+  // console.log("Vendor data", vendors);
 
   const subCategories: Record<string, string[]> = {
     "Beauty and Wellness": ["Skincare", "Haircare", "Makeup", "Fragrance"],
@@ -607,7 +607,7 @@ const NewProduct = () => {
 
         const flashPrice = toNumber(flashSaleDetails.flashSalePrice);
         const regularPrice = toNumber(price);
-        console.log(flashPrice >= regularPrice);
+        // console.log(flashPrice >= regularPrice);
         if (flashPrice >= regularPrice)
           throw new Error("Flash sale price must be lower than regular price");
 
@@ -714,7 +714,7 @@ const NewProduct = () => {
       setIsLoading(false);
     }
   };
-  console.log(flashSaleDetails);
+  // console.log(flashSaleDetails);
 
   const getCurrentTheme = () => {
     if (!activeCategory)

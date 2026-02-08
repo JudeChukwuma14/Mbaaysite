@@ -50,6 +50,8 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   const [inputValue, setInputValue] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [otherUserTyping, setOtherUserTyping] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const hasAutoResponse = useRef<boolean>(false);
@@ -130,7 +132,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
   // Redirect to /selectpath if not authenticated
   useEffect(() => {
     if (isOpen && (!senderId || !token)) {
-      console.log("DEBUG: No senderId or token, redirecting to /selectpath");
+      // console.log("DEBUG: No senderId or token, redirecting to /selectpath");
       localStorage.setItem("redirectToChat", "true");
       navigate("/selectpath");
       onClose();
@@ -156,14 +158,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("connect", () => {
-      console.log("Socket.IO connected, socketId:", socketRef.current?.id);
+      // console.log("Socket.IO connected, socketId:", socketRef.current?.id);
       if (chatId) {
         socketRef.current?.emit("joinChat", chatId);
       }
     });
 
     socketRef.current.on("customerCareChatStarted", (chat) => {
-      console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
+      // console.log("🆕 New Chat:", JSON.stringify(chat, null, 2));
       dispatch(setVendorChatId(chat._id));
       localStorage.setItem(`chatId-${senderId}`, chat._id);
       socketRef.current?.emit("joinChat", chat._id);
@@ -171,7 +173,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("customerCareMessage", (msg) => {
-      console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
+      // console.log("📩 CC Message:", JSON.stringify(msg, null, 2));
       const isSentByCurrentUser = msg.sender?._id === senderId;
       const newMessage: Message = {
         id: msg._id,
@@ -199,14 +201,14 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             ) < 2000)
       );
       if (existingMessage) {
-        console.log(
-          "DEBUG: Replacing message, id:",
-          msg._id,
-          "tempId:",
-          msg.tempId,
-          "existing:",
-          JSON.stringify(existingMessage, null, 2)
-        );
+        // console.log(
+        //   "DEBUG: Replacing message, id:",
+        //   msg._id,
+        //   "tempId:",
+        //   msg.tempId,
+        //   "existing:",
+        //   JSON.stringify(existingMessage, null, 2)
+        // );
         dispatch(
           setVendorMessages(
             messages.map((m) =>
@@ -225,7 +227,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           )
         );
       } else {
-        console.log("DEBUG: Adding new message, id:", msg._id);
+        // console.log("DEBUG: Adding new message, id:", msg._id);
         dispatch(addVendorMessage(newMessage));
         if (!isSentByCurrentUser) {
           triggerNotification(newMessage);
@@ -240,10 +242,24 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     });
 
     socketRef.current.on("reconnect", () => {
-      console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
+      // console.log("Socket.IO reconnected, socketId:", socketRef.current?.id);
       if (chatId) {
         socketRef.current?.emit("joinChat", chatId);
         fetchMessages(chatId);
+      }
+    });
+
+    socketRef.current.on("typing", ({ chatId: typingChatId, sender }) => {
+      // console.log(`💬 ${sender} is typing in chat ${typingChatId}`);
+      if (typingChatId === chatId && sender !== senderId) {
+        setOtherUserTyping(sender);
+      }
+    });
+
+    socketRef.current.on("stopTyping", ({ chatId: typingChatId, sender }) => {
+      // console.log(`🛑 ${sender} stopped typing in chat ${typingChatId}`);
+      if (typingChatId === chatId && sender !== senderId) {
+        setOtherUserTyping(null);
       }
     });
 
@@ -282,7 +298,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     for (let i = 0; i < retries; i++) {
       setError(null);
       try {
-        console.log("Starting chat with:", { senderId, token });
+        // console.log("Starting chat with:", { senderId, token });
         const response = await axios.post(
           `${API_CHAT_BASE_URL}/start-customer-care`,
           { userId: senderId },
@@ -293,10 +309,10 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             },
           }
         );
-        console.log(
-          "Start chat response:",
-          JSON.stringify(response.data, null, 2)
-        );
+        // console.log(
+        //   "Start chat response:",
+        //   JSON.stringify(response.data, null, 2)
+        // );
         const newChatId = response.data.chatId || response.data.chat?._id;
         dispatch(setVendorChatId(newChatId));
         localStorage.setItem(`chatId-${senderId}`, newChatId);
@@ -322,19 +338,9 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     if (!targetChatId || !token) return;
 
     try {
-      console.log(
-        "Fetching messages for chatId:",
-        targetChatId,
-        "with senderId:",
-        senderId
-      );
       const response = await axios.get(
         `${API_CHAT_BASE_URL}/customer_care_chatmessages/${targetChatId}`,
         { headers: { Authorization: `Bearer ${token}` } }
-      );
-      console.log(
-        "Fetch messages response:",
-        JSON.stringify(response.data, null, 2)
       );
       const fetchedMessages = (response.data.messages || []).map(
         (msg: any) => ({
@@ -394,13 +400,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
 
     try {
-      console.log("Sending message with:", {
-        chatId,
-        content: inputValue,
-        senderId,
-        socketId: socketRef.current?.id,
-      });
-      const response = await axios.post(
+      await axios.post(
         `${API_CHAT_BASE_URL}/send-message`,
         { chatId, content: inputValue, senderId },
         {
@@ -411,10 +411,6 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
           },
         }
       );
-      console.log(
-        "Send message response:",
-        JSON.stringify(response.data, null, 2)
-      );
       setInputValue("");
     } catch (err: any) {
       console.error("Send message error:", err.response?.data || err.message);
@@ -424,9 +420,33 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
     }
   };
 
+  // Handle input change with typing indicators
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+    
+    if (!isTyping && e.target.value.trim() && chatId) {
+      setIsTyping(true);
+      socketRef.current?.emit("typing", { chatId, sender: senderId });
+    }
+  };
+
+  // Handle typing timeout
+  useEffect(() => {
+    if (isTyping) {
+      const timeout = setTimeout(() => {
+        setIsTyping(false);
+        socketRef.current?.emit("stopTyping", { chatId, sender: senderId });
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [inputValue, isTyping, chatId, senderId]);
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      setIsTyping(false);
+      socketRef.current?.emit("stopTyping", { chatId, sender: senderId });
       handleSendMessage();
     }
   };
@@ -558,6 +578,22 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
             </div>
           ))}
         </div>
+        
+        {/* Typing Indicator */}
+        {otherUserTyping && (
+          <div className="flex justify-start mt-2">
+            <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm text-gray-600">
+              <div className="flex items-center space-x-2">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                </div>
+                <span className="text-xs">{otherUserTyping} is typing...</span>
+              </div>
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       {/* Input */}
@@ -565,7 +601,7 @@ export const ChatInterface = ({ isOpen, onClose }: ChatInterfaceProps) => {
         <div className="flex items-center space-x-1">
           <input
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={handleInputChange}
             onKeyPress={handleKeyPress}
             placeholder="Type your message..."
             className="flex-1 w-full px-3 py-1 text-base transition-colors bg-transparent border rounded-md shadow-sm h-9 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
