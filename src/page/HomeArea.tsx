@@ -16,7 +16,7 @@ import sev3 from "../assets/image/Services-2.png";
 import { FaRegSadTear, FaShoppingCart } from "react-icons/fa";
 import { IoFlash } from "react-icons/io5";
 const CategoriesSection = lazy(
-  () => import("@/components/Reuseable/CategoriesSection")
+  () => import("@/components/Reuseable/CategoriesSection"),
 );
 
 import BestSellingCard from "@/components/Cards/BestSellingCard";
@@ -102,39 +102,36 @@ const HomeArea: React.FC = () => {
       setFlashSaleLoading(true);
       try {
         const result = await getAllProduct();
-        console.log("API Response:", result);
-        
+
         // Handle both array and object responses
         const productsData = Array.isArray(result)
           ? result
           : result.products || [];
-
-        console.log("Total products fetched:", productsData.length);
-
         // Filter regular sales products
         const salesProducts = productsData.filter(
-          (product: Product) => product.productType === "sales"
+          (product: Product) => product.productType === "sales",
         );
-
-        console.log("Sales products:", salesProducts.length);
 
         // Filter active flash sale products
         const flashSaleProducts = productsData.filter((product: Product) => {
-          const isFlashSale = product.flashSaleStatus === "Active" || 
-                            product.productType === "flash sale";
-          
-          console.log(`Product: ${product.name}, Flash Sale Status: ${product.flashSaleStatus}, Type: ${product.productType}, Is Flash: ${isFlashSale}`);
-          
+          const isFlashSale =
+            product.flashSaleStatus === "Active" ||
+            product.productType === "flash sale";
+
           return isFlashSale;
         });
 
         console.log("Flash sale products found:", flashSaleProducts.length);
-        flashSaleProducts.forEach((p: Product) => console.log(p.name, p.flashSaleStatus, p.productType));
+        flashSaleProducts.forEach((p: Product) =>
+          console.log(p.name, p.flashSaleStatus, p.productType),
+        );
 
         // For development/testing, you can merge mock data
-        const finalFlashSaleProducts = process.env.NODE_ENV === 'development' && flashSaleProducts.length === 0
-          ? flashSale // Use mock data if no real flash sale products
-          : flashSaleProducts;
+        const finalFlashSaleProducts =
+          process.env.NODE_ENV === "development" &&
+          flashSaleProducts.length === 0
+            ? flashSale // Use mock data if no real flash sale products
+            : flashSaleProducts;
 
         // Add sale counts for best selling calculation
         const productsWithSales = salesProducts.map((product: Product) => ({
@@ -147,8 +144,8 @@ const HomeArea: React.FC = () => {
           .sort(
             (
               a: Product & { saleCount: number },
-              b: Product & { saleCount: number }
-            ) => b.saleCount - a.saleCount
+              b: Product & { saleCount: number },
+            ) => b.saleCount - a.saleCount,
           )
           .slice(0, 5);
 
@@ -157,11 +154,11 @@ const HomeArea: React.FC = () => {
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const newArrivalsData = salesProducts
           .filter(
-            (product: Product) => new Date(product.createdAt) >= thirtyDaysAgo
+            (product: Product) => new Date(product.createdAt) >= thirtyDaysAgo,
           )
           .sort(
             (a: Product, b: Product) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
           )
           .slice(0, 15);
 
@@ -170,11 +167,8 @@ const HomeArea: React.FC = () => {
         setBestSellingProducts(bestSelling);
         setNewArrivals(newArrivalsData);
         setFlashSaleProducts(finalFlashSaleProducts);
-
       } catch (err) {
-        console.error("Error fetching products:", err);
         setError("Failed to fetch products. Please try again.");
-        
       } finally {
         setLoading(false);
         setFlashSaleLoading(false);
@@ -253,7 +247,7 @@ const HomeArea: React.FC = () => {
                 .sort(
                   (a, b) =>
                     new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
+                    new Date(a.createdAt).getTime(),
                 )
                 .slice(0, 15)
                 .map((product) => (
@@ -449,7 +443,7 @@ const HomeArea: React.FC = () => {
             </div>
 
             {/* Flash Sale Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl">
+            {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl">
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600">
                   {flashSaleProducts.length}
@@ -458,17 +452,24 @@ const HomeArea: React.FC = () => {
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600">
-                  {Math.max(...flashSaleProducts.map(p => p.flashSaleDiscount || 0))}%
+                  {Math.max(
+                    ...flashSaleProducts.map((p) => p.flashSaleDiscount || 0),
+                  )}
+                  %
                 </div>
                 <div className="text-gray-600">Maximum Discount</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600">
-                  {flashSaleProducts.filter(p => p.inventory && p.inventory > 0).length}
+                  {
+                    flashSaleProducts.filter(
+                      (p) => p.inventory && p.inventory > 0,
+                    ).length
+                  }
                 </div>
                 <div className="text-gray-600">In Stock</div>
               </div>
-            </div>
+            </div> */}
           </>
         ) : (
           <div className="text-center py-12 bg-gradient-to-b from-orange-50 to-transparent rounded-2xl">

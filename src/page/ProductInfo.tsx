@@ -86,7 +86,7 @@ const ProductDetails: React.FC = () => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [activeTab, setActiveTab] = useState<"description" | "reviews">(
-    "description"
+    "description",
   );
   const [convertedPrice, setConvertedPrice] = useState(0);
   const [isPriceLoading, setIsPriceLoading] = useState(false);
@@ -111,17 +111,17 @@ const ProductDetails: React.FC = () => {
 
   const dispatch = useDispatch();
   const currency = useSelector(
-    (state: RootState) => state.settings.currency || "NGN"
+    (state: RootState) => state.settings.currency || "NGN",
   );
   const sessionId = useSelector((state: RootState) => state.session.sessionId);
   const vendorState = useSelector((state: RootState) => state.vendor);
   const user = useSelector((state: RootState) => state.user.user);
 
-useEffect(() => {
-  if (product?._id) {
-    fetchProductReviews();
-  }
-}, [product?._id, reviewSortBy]);
+  useEffect(() => {
+    if (product?._id) {
+      fetchProductReviews();
+    }
+  }, [product?._id, reviewSortBy]);
 
   const fetchProductReviews = async () => {
     if (!product?._id) return;
@@ -130,7 +130,6 @@ useEffect(() => {
     setReviewsError(null);
     try {
       const response = await getProductReviews(product._id);
-      
 
       // Check if response is valid
       if (response && response.success !== false) {
@@ -141,7 +140,7 @@ useEffect(() => {
             averageRating: 0,
             ratingDistribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
             verifiedReviewsCount: 0,
-          }
+          },
         );
 
         // Sort reviews
@@ -155,7 +154,7 @@ useEffect(() => {
       // Handle specific error messages
       if (error.message.includes("Network error")) {
         setReviewsError(
-          "Unable to connect to server. Please check your internet connection."
+          "Unable to connect to server. Please check your internet connection.",
         );
       } else if (error.message.includes("No reviews found")) {
         // This is not an error - just no reviews
@@ -176,7 +175,7 @@ useEffect(() => {
   };
   const sortReviews = (
     reviewsToSort: Review[],
-    sortBy: "newest" | "highest" | "lowest"
+    sortBy: "newest" | "highest" | "lowest",
   ) => {
     let sorted = [...reviewsToSort];
 
@@ -184,7 +183,7 @@ useEffect(() => {
       case "newest":
         sorted.sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
         break;
       case "highest":
@@ -228,8 +227,6 @@ useEffect(() => {
     });
   };
 
- 
-
   // Initialize sessionId if missing
   useEffect(() => {
     if (!sessionId) {
@@ -237,7 +234,6 @@ useEffect(() => {
         setIsSessionLoading(true);
         try {
           await dispatch(initializeSession());
-          
         } catch (error) {
           console.error("DEBUG: Session initialization failed:", error);
           toast.error("Failed to initialize session. Please try again.");
@@ -260,7 +256,7 @@ useEffect(() => {
           throw new Error("Product not found");
         setProduct(data.product);
         setSelectedMedia(
-          data.product.images[0] || data.product.poster || "/placeholder.svg"
+          data.product.images[0] || data.product.poster || "/placeholder.svg",
         );
 
         // Set vendor from poster or vendorId
@@ -276,27 +272,24 @@ useEffect(() => {
             avatar: data.product.poster.avatar,
           };
         } else if (data.product.vendorId) {
-          
           vendorData =
             vendorState?.vendor?._id === data.product.vendorId
               ? vendorState.vendor
               : await get_single_vendor(data.product.vendorId);
-         
+
           if (!vendorData || !vendorData._id) {
             throw new Error(
-              "Vendor data not found for vendorId: " + data.product.vendorId
+              "Vendor data not found for vendorId: " + data.product.vendorId,
             );
           }
         } else {
-     
           setError("Vendor information unavailable for this product.");
         }
         setVendor(vendorData);
-     
       } catch (err: any) {
         console.error("DEBUG: Fetch error:", err);
         setError(
-          err.message || "Failed to load product or vendor. Please try again."
+          err.message || "Failed to load product or vendor. Please try again.",
         );
       } finally {
         setLoading(false);
@@ -314,7 +307,6 @@ useEffect(() => {
       try {
         const price = await convertPrice(product.price, "NGN", currency);
         setConvertedPrice(price);
-       
       } catch (error) {
         console.error("DEBUG: Failed to convert price:", error);
         setConvertedPrice(product.price); // Fallback to base price
@@ -341,9 +333,8 @@ useEffect(() => {
       return;
     }
     try {
-  
       const newChat = await startChat(vendor._id);
-  
+
       if (!newChat?.success || !newChat?.chat?._id) {
         throw new Error("Failed to start chat");
       }
@@ -352,9 +343,9 @@ useEffect(() => {
       const initialMessage = `Hi, I'm interested in ${product.name}`;
       const messageResponse = await sendMessage(
         newChat.chat._id,
-        initialMessage
+        initialMessage,
       );
-   
+
       if (!messageResponse?.success) {
         throw new Error("Failed to send initial message");
       }
@@ -443,7 +434,7 @@ useEffect(() => {
           inventory: product.inventory,
           image:
             product.images[0] || product.poster?.avatar || "/placeholder.svg",
-        })
+        }),
       );
       toast.success(`${product.name} added to cart!`);
     } catch (error) {
@@ -463,7 +454,7 @@ useEffect(() => {
         quantity: 1,
         image:
           product.images[0] || product.poster?.avatar || "/placeholder.svg",
-      })
+      }),
     );
     toast.success(`${product.name} added to your wishlist!`);
   };
@@ -506,7 +497,8 @@ useEffect(() => {
     }
   };
 
-  const isFollowing = user && vendor ? vendor.followers?.includes(user._id) : false;
+  const isFollowing =
+    user && vendor ? vendor.followers?.includes(user._id) : false;
 
   const handleFollowToggle = async () => {
     if (!user?._id || !vendor) {
@@ -522,28 +514,46 @@ useEffect(() => {
         return;
       }
 
-      console.log("Attempting to", isFollowing ? "unfollow" : "follow", "vendor:", vendor._id);
+      console.log(
+        "Attempting to",
+        isFollowing ? "unfollow" : "follow",
+        "vendor:",
+        vendor._id,
+      );
 
       if (isFollowing) {
         await unfollow_vendor(token, vendor._id);
         // Update local state - remove from followers
-        setVendor(prev => prev ? {
-          ...prev,
-          followers: prev.followers?.filter(id => id !== user._id) || []
-        } : null);
+        setVendor((prev) =>
+          prev
+            ? {
+                ...prev,
+                followers:
+                  prev.followers?.filter((id) => id !== user._id) || [],
+              }
+            : null,
+        );
         // toast.success(`Unfollowed ${vendor.storeName}`);
       } else {
         await follow_vendor(token, vendor._id);
         // Update local state - add to followers
-        setVendor(prev => prev ? {
-          ...prev,
-          followers: [...(prev.followers || []), user._id]
-        } : null);
+        setVendor((prev) =>
+          prev
+            ? {
+                ...prev,
+                followers: [...(prev.followers || []), user._id],
+              }
+            : null,
+        );
         // toast.success(`Following ${vendor.storeName}`);
       }
     } catch (error: any) {
       console.error("Error toggling follow:", error);
-      toast.error(error.response?.data?.message || error.message || "Failed to update follow status");
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Failed to update follow status",
+      );
     } finally {
       setFollowLoading(false);
     }
@@ -574,8 +584,8 @@ useEffect(() => {
                       i < Math.floor(reviewStats.averageRating)
                         ? "text-yellow-400 fill-yellow-400"
                         : i < reviewStats.averageRating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300 fill-gray-100"
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-gray-300 fill-gray-100"
                     }`}
                   />
                 ))}
@@ -647,7 +657,7 @@ useEffect(() => {
                 value={reviewSortBy}
                 onChange={(e) =>
                   handleReviewSortChange(
-                    e.target.value as "newest" | "highest" | "lowest"
+                    e.target.value as "newest" | "highest" | "lowest",
                   )
                 }
                 className="appearance-none pl-4 pr-10 py-2 text-sm border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
@@ -950,7 +960,7 @@ useEffect(() => {
                 <div className="w-full h-full">
                   <iframe
                     src={`https://www.youtube.com/embed/${getYouTubeVideoId(
-                      selectedMedia || ""
+                      selectedMedia || "",
                     )}`}
                     title={`${product.name} Video`}
                     frameBorder="0"
@@ -996,7 +1006,7 @@ useEffect(() => {
                   {media.includes("youtube.com") ? (
                     <img
                       src={`https://img.youtube.com/vi/${getYouTubeVideoId(
-                        media
+                        media,
                       )}/0.jpg`}
                       alt={`${product.name} video thumbnail`}
                       className="object-cover w-full h-full"
@@ -1015,12 +1025,15 @@ useEffect(() => {
 
           <div className="flex flex-col min-w-0">
             {/* Vendor Information */}
-            {vendor ? (
+            {vendor && (
               <div className="mb-4">
                 <div className="flex items-center justify-between gap-4">
                   <Link
-                    to={`/veiws-profile/${vendor._id}`}
-                    key={vendor._id}
+                    to={
+                      vendor._id === "admin"
+                        ? "/about"
+                        : `/veiws-profile/${vendor._id}`
+                    }
                     className="flex items-center gap-2 group flex-1"
                     aria-label={`View ${vendor.storeName}'s profile`}
                   >
@@ -1043,28 +1056,29 @@ useEffect(() => {
                     </span>
                   </Link>
 
-                  {/* Follow Button */}
-                  {user && user._id !== vendor._id && (
-                    <button
-                      onClick={handleFollowToggle}
-                      disabled={followLoading}
-                      className={`flex items-center gap-2 px-3 py-2 font-medium text-white rounded-lg transition duration-300 ${
-                        isFollowing
-                          ? "bg-red-500 hover:bg-red-600"
-                          : "bg-orange-500 hover:bg-orange-600"
-                      } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      {followLoading ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : isFollowing ? (
-                        <FaUserMinus />
-                      ) : (
-                        <FaUserPlus />
-                      )}
-                      {isFollowing ? "Unfollow" : "Follow"}
-                    </button>
-                  )}
-                  {!user && (
+                  {vendor._id !== "admin" &&
+                    user &&
+                    user._id !== vendor._id && (
+                      <button
+                        onClick={handleFollowToggle}
+                        disabled={followLoading}
+                        className={`flex items-center gap-2 px-3 py-2 font-medium text-white rounded-lg transition duration-300 ${
+                          isFollowing
+                            ? "bg-red-500 hover:bg-red-600"
+                            : "bg-orange-500 hover:bg-orange-600"
+                        } ${followLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                      >
+                        {followLoading ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : isFollowing ? (
+                          <FaUserMinus />
+                        ) : (
+                          <FaUserPlus />
+                        )}
+                        {isFollowing ? "Unfollow" : "Follow"}
+                      </button>
+                    )}
+                  {vendor._id !== "admin" && !user && (
                     <Link
                       to="/signin"
                       className="flex items-center gap-2 px-3 py-2 font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition duration-300"
@@ -1074,10 +1088,6 @@ useEffect(() => {
                     </Link>
                   )}
                 </div>
-              </div>
-            ) : (
-              <div className="mb-4 text-sm text-gray-500">
-                Vendor information unavailable
               </div>
             )}
 
@@ -1094,8 +1104,8 @@ useEffect(() => {
                         i < Math.floor(reviewStats.averageRating)
                           ? "text-yellow-400 fill-yellow-400"
                           : i < reviewStats.averageRating
-                          ? "text-yellow-400 fill-yellow-400"
-                          : "text-gray-300"
+                            ? "text-yellow-400 fill-yellow-400"
+                            : "text-gray-300"
                       }`}
                     />
                   ))}
