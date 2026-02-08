@@ -202,14 +202,13 @@ const Contact: React.FC = () => {
       };
 
       // Send email using EmailJS
-      const response = await emailjs.send(
+      await emailjs.send(
         EMAILJS_CONFIG.SERVICE_ID,
         EMAILJS_CONFIG.TEMPLATE_ID,
         templateParams,
         EMAILJS_CONFIG.PUBLIC_KEY,
       );
 
-      console.log("Email sent successfully:", response);
       setSubmitStatus("success");
 
       // Reset form after successful submission
@@ -344,33 +343,6 @@ const Contact: React.FC = () => {
                 </div>
               </motion.div>
             ))}
-
-            {/* Additional Info Card */}
-            <motion.div
-              variants={itemVariants}
-              className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-6 border border-orange-100"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-gray-900">
-                    Email Delivery Status
-                  </h4>
-                  <p className="text-sm text-gray-600">Powered by EmailJS</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-2xl font-bold text-orange-600">
-                    99.9%
-                  </div>
-                  <div className="text-xs text-gray-500">Success Rate</div>
-                </div>
-              </div>
-              <div className="mt-4 pt-4 border-t border-orange-200">
-                <div className="flex items-center text-sm text-gray-600">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <span>Instant delivery confirmation</span>
-                </div>
-              </div>
-            </motion.div>
           </div>
 
           {/* Contact Form Card */}
@@ -624,14 +596,7 @@ const Contact: React.FC = () => {
                       </motion.div>
                     )}
 
-                    {/* EmailJS Branding (Optional) */}
-                    <div className="text-center text-xs text-gray-400">
-                      <p>
-                        Powered by{" "}
-                        <span className="font-semibold">EmailJS</span> • Secure
-                        email delivery
-                      </p>
-                    </div>
+                   
 
                     {/* Privacy Note */}
                     <p className="text-center text-sm text-gray-500">
